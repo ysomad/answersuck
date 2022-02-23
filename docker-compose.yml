@@ -1,0 +1,55 @@
+version: "3.9"
+
+volumes:
+  pg-data:
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "pass"
+      POSTGRES_DB: "postgres"
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+      - MONGODB_DATABASE=authService
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    volumes:
+      - /home/ysomad/mongodb/db:/data/db
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: always
+    command: redis-server --requirepass secret
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    container_name: app
+    image: app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
