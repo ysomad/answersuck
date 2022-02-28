@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/quizly/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/app"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 

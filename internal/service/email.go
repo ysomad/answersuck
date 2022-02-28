@@ -6,9 +6,8 @@ import (
 
 	"golang.org/x/text/language"
 
-	"github.com/quizly/quizly-backend/internal/app"
-
-	"github.com/quizly/quizly-backend/pkg/email"
+	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/pkg/email"
 )
 
 type emailService struct {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/quizly/quizly-backend/internal/app"
-	"github.com/quizly/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
 
-	"github.com/quizly/quizly-backend/pkg/auth"
+	"github.com/quizlyfun/quizly-backend/pkg/auth"
 )
 
 type authService struct {

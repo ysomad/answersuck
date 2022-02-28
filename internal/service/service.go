@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/quizly/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 
 type (
