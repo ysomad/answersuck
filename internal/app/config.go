@@ -17,6 +17,8 @@ type (
 		AccessToken `yaml:"access_token"`
 		Session     `yaml:"session"`
 		OAuth       `yaml:"oauth"`
+		Email       `yaml:"email"`
+		SMTP        `yaml:"smtp"`
 	}
 
 	App struct {
@@ -80,5 +82,16 @@ type (
 	AccessToken struct {
 		AccessTokenTTL        time.Duration `env-required:"true" yaml:"ttl" env:"ACCESS_TOKEN_TTL"`
 		AccessTokenSigningKey string        `env-required:"true" yaml:"signing_key" env:"ACCESS_TOKEN_SIGNING_KEY"`
+	}
+
+	Email struct {
+		EmailVerificationTemplate string `env-required:"true" yaml:"verification_template" env:"EMAIL_VERIFICATION_TEMPLATE"`
+	}
+
+	SMTP struct {
+		SMTPHost string `env-required:"true" yaml:"host" env:"SMTP_HOST"`
+		SMTPPort int    `env-required:"true" yaml:"port" env:"SMTP_PORT"`
+		SMTPFrom string `env-required:"true" yaml:"from" env:"SMTP_FROM"`
+		SMTPPass string `env-required:"true" env:"SMTP_PASSWORD"`
 	}
 )

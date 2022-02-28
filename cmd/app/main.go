@@ -10,16 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ilyakaznacheev/cleanenv"
 
-	"github.com/Quizish/quizish-backend/internal/app"
-	v1 "github.com/Quizish/quizish-backend/internal/handler/http/v1"
-	"github.com/Quizish/quizish-backend/internal/repository"
-	"github.com/Quizish/quizish-backend/internal/service"
-	"github.com/Quizish/quizish-backend/pkg/auth"
-	"github.com/Quizish/quizish-backend/pkg/httpserver"
-	"github.com/Quizish/quizish-backend/pkg/logging"
-	"github.com/Quizish/quizish-backend/pkg/mongodb"
-	"github.com/Quizish/quizish-backend/pkg/postgres"
-	"github.com/Quizish/quizish-backend/pkg/validation"
+	"github.com/quizlyfun/quizly-backend/internal/app"
+	v1 "github.com/quizlyfun/quizly-backend/internal/handler/http/v1"
+	"github.com/quizlyfun/quizly-backend/internal/repository"
+	"github.com/quizlyfun/quizly-backend/internal/service"
+	"github.com/quizlyfun/quizly-backend/pkg/auth"
+	"github.com/quizlyfun/quizly-backend/pkg/httpserver"
+	"github.com/quizlyfun/quizly-backend/pkg/logging"
+	"github.com/quizlyfun/quizly-backend/pkg/mongodb"
+	"github.com/quizlyfun/quizly-backend/pkg/postgres"
+	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
 
 func main() {
@@ -64,13 +64,15 @@ func run(cfg *app.Config) {
 	sessionRepo := repository.NewSessionRepository(mdb)
 	sessionService := service.NewSessionService(cfg, sessionRepo)
 
-	accountRepo := repository.NewAccountRepository(pg)
-	accountService := service.NewAccountService(cfg, accountRepo, sessionService)
+	emailService := service.NewEmailService(cfg)
 
 	tokenManager, err := auth.NewTokenManager(cfg.AccessTokenSigningKey)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - auth.NewJWTManager: %w", err))
 	}
+
+	accountRepo := repository.NewAccountRepository(pg)
+	accountService := service.NewAccountService(cfg, accountRepo, sessionService, tokenManager, emailService)
 
 	authService := service.NewAuthService(cfg, tokenManager, accountService, sessionService)
 

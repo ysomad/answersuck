@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Quizish/quizish-backend/pkg/utils"
+	"github.com/quizlyfun/quizlyfun-backend/pkg/utils"
 )
 
 var (

@@ -11,11 +11,6 @@ import (
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
 
-type ErrorTranslator interface {
-	// Translate translates received error into map of errors
-	TranslateError(err error) map[string]string
-}
-
 type ginTranslator struct {
 	validate *validator.Validate
 	trans    ut.Translator

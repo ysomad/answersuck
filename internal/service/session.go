@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Quizish/quizish-backend/internal/app"
-	"github.com/Quizish/quizish-backend/internal/domain"
+	"github.com/quizly/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 
 type sessionService struct {

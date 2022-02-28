@@ -11,11 +11,11 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 
-	"github.com/Quizish/quizish-backend/internal/domain"
-	"github.com/Quizish/quizish-backend/pkg/postgres"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/pkg/postgres"
 )
 
-const accountsTable = "accounts"
+const accountTable = "account"
 
 type accountRepository struct {
 	*postgres.Postgres
@@ -27,7 +27,7 @@ func NewAccountRepository(pg *postgres.Postgres) *accountRepository {
 
 func (r *accountRepository) Create(ctx context.Context, acc domain.Account) (domain.Account, error) {
 	sql, args, err := r.Builder.
-		Insert(accountsTable).
+		Insert(accountTable).
 		Columns("username, email, password, is_verified").
 		Values(acc.Username, acc.Email, acc.PasswordHash, acc.Verified).
 		Suffix("RETURNING id").
@@ -55,7 +55,7 @@ func (r *accountRepository) Create(ctx context.Context, acc domain.Account) (dom
 func (r *accountRepository) FindByID(ctx context.Context, aid string) (domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select("username, email, password, created_at, updated_at, is_verified").
-		From(accountsTable).
+		From(accountTable).
 		Where(sq.Eq{"id": aid, "is_archived": false}).
 		ToSql()
 	if err != nil {
@@ -85,7 +85,7 @@ func (r *accountRepository) FindByID(ctx context.Context, aid string) (domain.Ac
 func (r *accountRepository) FindByEmail(ctx context.Context, email string) (domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select("id, username, password, created_at, updated_at, is_verified").
-		From(accountsTable).
+		From(accountTable).
 		Where(sq.Eq{"email": email, "is_archived": false}).
 		ToSql()
 	if err != nil {
@@ -114,7 +114,7 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (doma
 
 func (r *accountRepository) Archive(ctx context.Context, aid string, archive bool) error {
 	sql, args, err := r.Builder.
-		Update(accountsTable).
+		Update(accountTable).
 		Set("is_archived", archive).
 		Set("updated_at", time.Now()).
 		Where(sq.Eq{"id": aid, "is_archived": !archive}).

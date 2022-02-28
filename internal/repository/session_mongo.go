@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
 
-	"github.com/Quizish/quizish-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 
 type sessionRepository struct {

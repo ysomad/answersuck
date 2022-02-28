@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 
-	"github.com/Quizish/quizish-backend/internal/domain"
+	"github.com/quizly/quizly-backend/internal/domain"
 )
 
 type (
 	Account interface {
-		// Creates new account.
+		// Create creates new account.
 		Create(ctx context.Context, acc domain.Account) (domain.Account, error)
 
 		// GetByID account.
@@ -20,8 +20,8 @@ type (
 		// Delete sets account IsArchive state to true.
 		Delete(ctx context.Context, aid, sid string) error
 
-		// Verify verifies account using provided code.
-		Verify(ctx context.Context, code string) error
+		// Verify verifies account using provided token.
+		Verify(ctx context.Context, aid, code string) error
 	}
 
 	AccountRepo interface {
@@ -67,6 +67,11 @@ type (
 
 		// TerminateAll account sessions excluding current session with id.
 		TerminateAll(ctx context.Context, aid, sid string) error
+	}
+
+	Email interface {
+		// SendAccountVerificationEmail sends email with verification link to given email.
+		SendAccountVerificationEmail(ctx context.Context, to string) error
 	}
 
 	SessionRepo interface {

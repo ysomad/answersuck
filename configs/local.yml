@@ -39,3 +39,11 @@ session:
 access_token:
   ttl: 1m
   signing_key: "secret"
+
+smtp:
+  host: "smtp.gmail.com"
+  port: 587
+  from: "followkacsa@gmail.com"
+
+email:
+  verification_template: "./templates/verification_email_%s.html"

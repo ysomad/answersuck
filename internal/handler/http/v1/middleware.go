@@ -7,10 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Quizish/quizish-backend/internal/app"
-	"github.com/Quizish/quizish-backend/internal/domain"
-	"github.com/Quizish/quizish-backend/internal/service"
-	"github.com/Quizish/quizish-backend/pkg/logging"
+	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/service"
+
+	"github.com/quizlyfun/quizly-backend/pkg/logging"
 )
 
 func sessionMiddleware(l logging.Logger, cfg *app.Config, session service.Session) gin.HandlerFunc {

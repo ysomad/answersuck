@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/Quizish/quizish-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 
 // accountID returns account id from context

@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/Quizish/quizish-backend/pkg/utils"
+	"github.com/quizlyfun/quizlyfun-backend/pkg/utils"
 )
 
 var (

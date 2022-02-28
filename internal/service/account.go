@@ -4,21 +4,27 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Quizish/quizish-backend/internal/app"
-	"github.com/Quizish/quizish-backend/internal/domain"
+	"github.com/quizly/quizly-backend/internal/app"
+	"github.com/quizly/quizly-backend/internal/domain"
+
+	"github.com/quizly/quizly-backend/pkg/auth"
 )
 
 type accountService struct {
 	cfg     *app.Config
 	repo    AccountRepo
+	token   auth.TokenManager
 	session Session
+	email   Email
 }
 
-func NewAccountService(cfg *app.Config, r AccountRepo, s Session) *accountService {
+func NewAccountService(cfg *app.Config, r AccountRepo, s Session, t auth.TokenManager, e Email) *accountService {
 	return &accountService{
 		cfg:     cfg,
 		repo:    r,
+		token:   t,
 		session: s,
+		email:   e,
 	}
 }
 
@@ -30,6 +36,10 @@ func (s *accountService) Create(ctx context.Context, acc domain.Account) (domain
 	a, err := s.repo.Create(ctx, acc)
 	if err != nil {
 		return domain.Account{}, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
+	}
+
+	if err = s.email.SendAccountVerificationEmail(ctx, a.Email); err != nil {
+		return domain.Account{}, fmt.Errorf("accountService - Create - s.email.SendVerification: %w", err)
 	}
 
 	return a, nil
@@ -65,7 +75,7 @@ func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 	return nil
 }
 
-func (s *accountService) Verify(ctx context.Context, code string) error {
+func (s *accountService) Verify(ctx context.Context, aid, code string) error {
 	panic("implement")
 
 	return nil

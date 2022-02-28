@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Quizish/quizish-backend/internal/app"
-	"github.com/Quizish/quizish-backend/internal/domain"
-	"github.com/Quizish/quizish-backend/pkg/auth"
+	"github.com/quizly/quizly-backend/internal/app"
+	"github.com/quizly/quizly-backend/internal/domain"
+
+	"github.com/quizly/quizly-backend/pkg/auth"
 )
 
 type authService struct {

@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/service"
 
-	"github.com/Quizish/quizish-backend/internal/app"
-	"github.com/Quizish/quizish-backend/internal/service"
-	"github.com/Quizish/quizish-backend/pkg/auth"
-	"github.com/Quizish/quizish-backend/pkg/logging"
-	"github.com/Quizish/quizish-backend/pkg/validation"
+	"github.com/quizlyfun/quizly-backend/pkg/auth"
+	"github.com/quizlyfun/quizly-backend/pkg/logging"
+	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
 
 const route = "/api/v1"
