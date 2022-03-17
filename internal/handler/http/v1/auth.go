@@ -44,7 +44,7 @@ func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
 }
 
 type loginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
+	Login    string `json:"login" binding:"required,email|alphanum"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -54,12 +54,11 @@ func (h *authHandler) login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
 		abortWithValidationError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
-		return
 	}
 
-	s, err := h.auth.EmailLogin(
+	s, err := h.auth.Login(
 		c.Request.Context(),
-		r.Email,
+		r.Login,
 		r.Password,
 		domain.Device{
 			IP:        c.ClientIP(),

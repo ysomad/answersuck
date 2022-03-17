@@ -42,30 +42,9 @@ func (s *sessionService) GetByID(ctx context.Context, sid string) (domain.Sessio
 	return sess, nil
 }
 
-func (s *sessionService) GetAll(ctx context.Context, aid string) ([]domain.Session, error) {
-	sessions, err := s.repo.FindAll(ctx, aid)
-	if err != nil {
-		return nil, fmt.Errorf("sessionService - GetAll - s.repo.FindAll: %w", err)
-	}
-
-	return sessions, nil
-}
-
-func (s *sessionService) Terminate(ctx context.Context, sid, currSid string) error {
-	if sid == currSid {
-		return fmt.Errorf("sessionService - Terminate: %w", domain.ErrSessionNotTerminated)
-	}
-
+func (s *sessionService) Terminate(ctx context.Context, sid string) error {
 	if err := s.repo.Delete(ctx, sid); err != nil {
 		return fmt.Errorf("sessionService - Terminate - s.repo.Delete: %w", err)
-	}
-
-	return nil
-}
-
-func (s *sessionService) TerminateAll(ctx context.Context, aid, sid string) error {
-	if err := s.repo.DeleteAll(ctx, aid, sid); err != nil {
-		return fmt.Errorf("sessionService - TerminateAll - s.repo.DeleteAll: %w", err)
 	}
 
 	return nil

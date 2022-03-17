@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/mail"
 
 	"github.com/quizlyfun/quizly-backend/internal/app"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
@@ -26,29 +27,40 @@ func NewAuthService(cfg *app.Config, t auth.TokenManager, a Account, s Session) 
 	}
 }
 
-func (s *authService) EmailLogin(ctx context.Context, email, password string, d domain.Device) (domain.Session, error) {
-	a, err := s.account.GetByEmail(ctx, email)
+func (s *authService) Login(ctx context.Context, login, password string, d domain.Device) (domain.Session, error) {
+	var a domain.Account
+
+	_, err := mail.ParseAddress(login)
 	if err != nil {
-		return domain.Session{}, fmt.Errorf("authService - EmailLogin - s.account.GetByEmail: %w", err)
+		// login is not email
+		a, err = s.account.GetByUsername(ctx, login)
+		if err != nil {
+			return domain.Session{}, fmt.Errorf("authService - Login - s.account.GetByUsername: %w", err)
+		}
+	} else {
+		// login is email
+		a, err = s.account.GetByEmail(ctx, login)
+		if err != nil {
+			return domain.Session{}, fmt.Errorf("authService - Login - s.account.GetByEmail: %w", err)
+		}
 	}
 
 	a.Password = password
 
-	if err = a.CompareHashAndPassword(); err != nil {
-		return domain.Session{}, fmt.Errorf("authService - EmailLogin - a.CompareHashAndPassword: %w", err)
+	if err := a.CompareHashAndPassword(); err != nil {
+		return domain.Session{}, fmt.Errorf("authService - Login - a.CompareHashAndPassword: %w", err)
 	}
 
 	sess, err := s.session.Create(ctx, a.ID, d)
 	if err != nil {
-		return domain.Session{}, fmt.Errorf("authService - EmailLogin - s.session.Create: %w", err)
+		return domain.Session{}, fmt.Errorf("authService - Login - s.session.Create: %w", err)
 	}
 
 	return sess, nil
-
 }
 
 func (s *authService) Logout(ctx context.Context, sid string) error {
-	if err := s.session.Terminate(ctx, sid, ""); err != nil {
+	if err := s.session.Terminate(ctx, sid); err != nil {
 		return fmt.Errorf("authService - Logout - s.session.Terminate: %w", err)
 	}
 

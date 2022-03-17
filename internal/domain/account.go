@@ -14,6 +14,7 @@ var (
 	// Client errors
 	ErrAccountAlreadyExist         = errors.New("account with given email or username already exist")
 	ErrAccountIncorrectCredentials = errors.New("provided credentials are not correct")
+	ErrAccountEmptyEmailOrUsername = errors.New("email or username should be provided")
 
 	// System errors
 	ErrAccountNotFound             = errors.New("account not found")

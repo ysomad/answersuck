@@ -40,6 +40,5 @@ func SetupHandlers(handler *gin.Engine, d *Deps) {
 	{
 		newAccountHandler(h, d)
 		newAuthHandler(h, d)
-		newSessionHandler(h, d)
 	}
 }
