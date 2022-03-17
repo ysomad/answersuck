@@ -17,6 +17,9 @@ type (
 		// GetByEmail account.
 		GetByEmail(ctx context.Context, email string) (domain.Account, error)
 
+		// GetByUsername account.
+		GetByUsername(ctx context.Context, uname string) (domain.Account, error)
+
 		// Delete sets account IsArchive state to true.
 		Delete(ctx context.Context, aid, sid string) error
 
@@ -33,6 +36,9 @@ type (
 
 		// FindByEmail account in DB.
 		FindByEmail(ctx context.Context, email string) (domain.Account, error)
+
+		// FindByUsername account in DB.
+		FindByUsername(ctx context.Context, uname string) (domain.Account, error)
 
 		// Archive sets entity.Account.IsArchive state to provided value.
 		Archive(ctx context.Context, aid string, archive bool) error

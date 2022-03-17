@@ -66,6 +66,15 @@ func (s *accountService) GetByEmail(ctx context.Context, email string) (domain.A
 	return acc, nil
 }
 
+func (s *accountService) GetByUsername(ctx context.Context, uname string) (domain.Account, error) {
+	acc, err := s.repo.FindByUsername(ctx, uname)
+	if err != nil {
+		return domain.Account{}, fmt.Errorf("accountService - GetByUsername - s.repo.FindByUsername: %w", err)
+	}
+
+	return acc, nil
+}
+
 func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 	if err := s.repo.Archive(ctx, aid, true); err != nil {
 		return fmt.Errorf("accountService - Archive - s.repo.Archive: %w", err)

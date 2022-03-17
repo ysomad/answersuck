@@ -112,6 +112,36 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (doma
 	return a, nil
 }
 
+func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (domain.Account, error) {
+	sql, args, err := r.Builder.
+		Select("id, email, password, created_at, updated_at, is_verified").
+		From(accountTable).
+		Where(sq.Eq{"username": uname, "is_archived": false}).
+		ToSql()
+	if err != nil {
+		return domain.Account{}, fmt.Errorf("r.Builder.Select: %w", err)
+	}
+
+	a := domain.Account{Username: uname}
+
+	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
+		&a.ID,
+		&a.Email,
+		&a.PasswordHash,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+		&a.Verified,
+	); err != nil {
+		if err == pgx.ErrNoRows {
+			return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+		}
+
+		return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return a, nil
+}
+
 func (r *accountRepository) Archive(ctx context.Context, aid string, archive bool) error {
 	sql, args, err := r.Builder.
 		Update(accountTable).
