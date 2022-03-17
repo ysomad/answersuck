@@ -33,6 +33,9 @@ func (s *accountService) Create(ctx context.Context, acc domain.Account) (domain
 		return domain.Account{}, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
 	}
 
+	// TODO: implement email verification
+	acc.Verified = true
+
 	a, err := s.repo.Create(ctx, acc)
 	if err != nil {
 		return domain.Account{}, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
