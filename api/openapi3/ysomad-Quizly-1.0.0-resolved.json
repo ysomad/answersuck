@@ -1,13 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Quizish backend API",
+    "title": "Quizly backend API",
     "contact": {
       "email": "malykhsey@gmail.com"
-    },
-    "license": {
-      "name": "MIT",
-      "url": "https://github.com/Quizish/quizish-backend/blob/main/LICENSE"
     },
     "version": "1.0.0"
   },
@@ -37,36 +33,6 @@
   ],
   "paths": {
     "/accounts": {
-      "get": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Get account",
-        "operationId": "accountGet",
-        "responses": {
-          "200": {
-            "description": "Successful operation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Account"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized or expired session."
-          },
-          "500": {
-            "description": "Internal Server Error."
-          }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
-      },
       "post": {
         "tags": [
           "account"
@@ -112,6 +78,51 @@
             "description": "Internal Server Error."
           }
         }
+      }
+    },
+    "/accounts/{accountId}": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Get account",
+        "operationId": "accountGet",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "String ID of the account",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or expired session."
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": [
@@ -128,6 +139,17 @@
             "required": true,
             "style": "form",
             "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "String ID of the account",
+            "required": true,
+            "style": "simple",
+            "explode": false,
             "schema": {
               "type": "string"
             }
@@ -164,7 +186,7 @@
         ]
       }
     },
-    "/accounts/password/reset": {
+    "/accounts/reset-password": {
       "post": {
         "tags": [
           "account"
@@ -176,7 +198,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountForgotPasswordRequest"
+                "$ref": "#/components/schemas/AccountResetPasswordRequest"
               }
             }
           },
@@ -200,7 +222,9 @@
             "description": "Internal Server Error."
           }
         }
-      },
+      }
+    },
+    "/accounts/reset-password/callback": {
       "patch": {
         "tags": [
           "account"
@@ -225,7 +249,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountResetPasswordRequest"
+                "$ref": "#/components/schemas/AccountResetPasswordCallbackRequest"
               }
             }
           },
@@ -260,7 +284,7 @@
           "auth"
         ],
         "summary": "Login",
-        "description": "Creates new session and sets its id in cookies.",
+        "description": "Creates new session and sets its id in cookies. Login might be email or username.",
         "operationId": "authLogin",
         "requestBody": {
           "content": {
@@ -298,6 +322,16 @@
           },
           "401": {
             "description": "Incorrect email or password.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Already logged in.",
             "content": {
               "application/json": {
                 "schema": {
@@ -406,148 +440,6 @@
           }
         ]
       }
-    },
-    "/sessions": {
-      "get": {
-        "tags": [
-          "session"
-        ],
-        "summary": "Get sessions",
-        "operationId": "sessionGetAccount",
-        "responses": {
-          "200": {
-            "description": "Successful operation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionArray"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized."
-          },
-          "500": {
-            "description": "Internal Server Error."
-          }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "session"
-        ],
-        "summary": "Terminate all sessions",
-        "description": "To terminate all user sessions, access token should be provided at query param, request it at `/auth/token/`.",
-        "operationId": "sessionDelete",
-        "parameters": [
-          {
-            "name": "token",
-            "in": "query",
-            "description": "Short live access token",
-            "required": true,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful operation."
-          },
-          "401": {
-            "description": "Unauthorized.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Invalid or expired access token."
-          },
-          "500": {
-            "description": "Internal Server Error."
-          }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
-      }
-    },
-    "/sessions/{sessionId}": {
-      "delete": {
-        "tags": [
-          "session"
-        ],
-        "summary": "Terminate session",
-        "description": "To terminate user session access token should be provided at query parameters, request it at `/auth/token/`.",
-        "operationId": "sessionDeleteUser",
-        "parameters": [
-          {
-            "name": "sessionId",
-            "in": "path",
-            "description": "String ID of the session to terminate",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "token",
-            "in": "query",
-            "description": "Short live access token",
-            "required": true,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful operation."
-          },
-          "400": {
-            "description": "Bad request.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized."
-          },
-          "403": {
-            "description": "Invalid or expired access token."
-          },
-          "500": {
-            "description": "Internal Server Error."
-          }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
-      }
     }
   },
   "components": {
@@ -569,12 +461,6 @@
             "maxLength": 255,
             "type": "string",
             "format": "email"
-          },
-          "password": {
-            "maxLength": 64,
-            "minLength": 4,
-            "type": "string",
-            "format": "password"
           },
           "createdAt": {
             "type": "string",
@@ -620,7 +506,10 @@
           }
         }
       },
-      "AccountForgotPasswordRequest": {
+      "AccountResetPasswordRequest": {
+        "required": [
+          "email"
+        ],
         "type": "object",
         "properties": {
           "email": {
@@ -629,10 +518,13 @@
           }
         }
       },
-      "AccountResetPasswordRequest": {
+      "AccountResetPasswordCallbackRequest": {
+        "required": [
+          "password"
+        ],
         "type": "object",
         "properties": {
-          "newPassword": {
+          "password": {
             "maxLength": 64,
             "minLength": 4,
             "type": "string",
@@ -642,65 +534,19 @@
       },
       "LoginRequest": {
         "required": [
-          "email",
+          "login",
           "password"
         ],
         "type": "object",
         "properties": {
-          "email": {
+          "login": {
             "type": "string",
-            "format": "email"
+            "format": "email or string"
           },
           "password": {
             "type": "string",
             "format": "password"
           }
-        }
-      },
-      "Session": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique string generated via Cryptographically Secure Pseudorandom Number Generator"
-          },
-          "accountId": {
-            "type": "string",
-            "description": "UUID v4",
-            "format": "uuid"
-          },
-          "provider": {
-            "type": "string",
-            "description": "OAuth2 data provider",
-            "format": "string"
-          },
-          "userAgent": {
-            "type": "string"
-          },
-          "ip": {
-            "type": "string",
-            "format": "ipv4"
-          },
-          "ttl": {
-            "type": "integer",
-            "description": "session expiry in seconds"
-          },
-          "expiresAt": {
-            "type": "integer",
-            "description": "unix timestamp",
-            "format": "int64"
-          },
-          "createdAt": {
-            "type": "integer",
-            "description": "unix timestamp",
-            "format": "int64"
-          }
-        }
-      },
-      "SessionArray": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Session"
         }
       },
       "AccessTokenRequest": {
@@ -723,9 +569,9 @@
       "AccessTokenResponse": {
         "type": "object",
         "properties": {
-          "accessToken": {
+          "token": {
             "type": "string",
-            "description": "JWT token contains Account ID as subject in payload"
+            "description": "JWT token contains Account ID as subject, audience in payload"
           }
         }
       },
@@ -747,11 +593,11 @@
             "type": "string"
           },
           "detail": {
-            "$ref": "#/components/schemas/ValidationErrorResponse_detail"
+            "$ref": "#/components/schemas/ValidationErrorResponseDetail"
           }
         }
       },
-      "ValidationErrorResponse_detail": {
+      "ValidationErrorResponseDetail": {
         "type": "object",
         "properties": {
           "fieldName": {

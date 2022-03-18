@@ -2,7 +2,7 @@ include .env
 export
 
 compose-up:
-	docker-compose up --build -d postgres mongodb redis && docker-compose logs -f
+	docker-compose up --build -d postgres redis && docker-compose logs -f
 .PHONY: compose-up
 
 compose-down:
@@ -13,6 +13,12 @@ run:
 	go mod tidy && go mod download && \
 	GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate ./cmd/app
 .PHONY: run
+
+run18:
+	go1.18 mod tidy && go1.18 mod download && \
+	GIN_MODE=debug CGO_ENABLED=0 go1.18 run -tags migrate ./cmd/app
+.PHONY: run
+
 
 migrate-create:
 	migrate create -ext sql -dir migrations $(name)

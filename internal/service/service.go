@@ -58,6 +58,11 @@ type (
 		ParseAccessToken(ctx context.Context, token, audience string) (string, error)
 	}
 
+	Email interface {
+		// SendAccountVerificationEmail sends email with verification link to given email.
+		SendAccountVerificationEmail(ctx context.Context, to string) error
+	}
+
 	Session interface {
 		// Create new session for account with id and device of given provider
 		Create(ctx context.Context, aid string, d domain.Device) (domain.Session, error)
@@ -67,11 +72,6 @@ type (
 
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
-	}
-
-	Email interface {
-		// SendAccountVerificationEmail sends email with verification link to given email
-		SendAccountVerificationEmail(ctx context.Context, to string) error
 	}
 
 	SessionRepo interface {

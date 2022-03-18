@@ -54,6 +54,7 @@ func (h *authHandler) login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
 		abortWithValidationError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		return
 	}
 
 	s, err := h.auth.Login(
@@ -77,12 +78,12 @@ func (h *authHandler) login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(h.cfg.SessionCookie, s.ID, s.TTL, "", "", h.cfg.CookieSecure, h.cfg.CookieHTTPOnly)
+	c.SetCookie(h.cfg.SessionCookie, s.Id, s.TTL, "", "", h.cfg.CookieSecure, h.cfg.CookieHTTPOnly)
 	c.Status(http.StatusOK)
 }
 
 func (h *authHandler) logout(c *gin.Context) {
-	sid, err := sessionID(c)
+	sid, err := sessionId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - logout - sessionID: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -117,7 +118,7 @@ func (h *authHandler) token(c *gin.Context) {
 		return
 	}
 
-	aid, err := accountID(c)
+	aid, err := accountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - token - accountID: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)

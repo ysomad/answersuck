@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/ilyakaznacheev/cleanenv"
 
 	"github.com/quizlyfun/quizly-backend/internal/app"
@@ -17,7 +18,6 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
 	"github.com/quizlyfun/quizly-backend/pkg/httpserver"
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
-	"github.com/quizlyfun/quizly-backend/pkg/mongodb"
 	"github.com/quizlyfun/quizly-backend/pkg/postgres"
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
@@ -45,23 +45,14 @@ func run(cfg *app.Config) {
 	}
 	defer pg.Close()
 
-	// MongoDB
-	mcli, err := mongodb.NewClient(cfg.MongoURI, cfg.MongoUsername, cfg.MongoPassword)
-	if err != nil {
-		l.Fatal(fmt.Errorf("main - run - mongodb.NewClient: %w", err))
-	}
-	mdb := mcli.Database(cfg.MongoDatabase)
-
-	/*
-		rdb := redis.NewClient(&redis.Options{
-			Addr:     cfg.Redis.Addr,
-			Password: cfg.Redis.Password,
-			DB:       0,
-		})
-	*/
+	sessionRdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddr,
+		Password: cfg.RedisPassword,
+		DB:       cfg.SessionDB,
+	})
 
 	// Service
-	sessionRepo := repository.NewSessionRepository(mdb)
+	sessionRepo := repository.NewSessionRepository(sessionRdb)
 	sessionService := service.NewSessionService(cfg, sessionRepo)
 
 	emailService := service.NewEmailService(cfg)

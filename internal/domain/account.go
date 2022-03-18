@@ -22,10 +22,11 @@ var (
 	ErrAccountPasswordNotGenerated = errors.New("password hash generation error")
 	ErrAccountNotArchived          = errors.New("account cannot be archived")
 	ErrAccountContextNotFound      = errors.New("account not found in context")
+	ErrAccountContextMismatch      = errors.New("account id from context is not the same as account id from url parameter")
 )
 
 type Account struct {
-	ID           string    `json:"id"`
+	Id           string    `json:"id"`
 	Email        string    `json:"email"`
 	Username     string    `json:"username"`
 	Password     string    `json:"-"`

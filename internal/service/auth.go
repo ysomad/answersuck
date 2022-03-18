@@ -51,7 +51,7 @@ func (s *authService) Login(ctx context.Context, login, password string, d domai
 		return domain.Session{}, fmt.Errorf("authService - Login - a.CompareHashAndPassword: %w", err)
 	}
 
-	sess, err := s.session.Create(ctx, a.ID, d)
+	sess, err := s.session.Create(ctx, a.Id, d)
 	if err != nil {
 		return domain.Session{}, fmt.Errorf("authService - Login - s.session.Create: %w", err)
 	}

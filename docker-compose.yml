@@ -17,21 +17,6 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
 
-  mongodb:
-    container_name: mongodb
-    image: mongo
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-      - MONGODB_DATABASE=authService
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=secret
-    volumes:
-      - /home/ysomad/mongodb/db:/data/db
-
   redis:
     container_name: redis
     image: redis:alpine
@@ -51,5 +36,4 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
-      - mongodb
       - redis

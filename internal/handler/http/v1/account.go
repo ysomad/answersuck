@@ -15,6 +15,10 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
 
+const (
+	accountParam = "accountId"
+)
+
 type accountHandler struct {
 	validation.ErrorTranslator
 	cfg     *app.Config
@@ -34,12 +38,11 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	{
 		authenticated := accounts.Group("", sessionMiddleware(d.Logger, d.Config, d.SessionService))
 		{
-			secure := authenticated.Group("", tokenMiddleware(d.Logger, d.AuthService))
+			withAccountId := authenticated.Group(urlParam(accountParam), accountParamMiddleware(d.Logger))
 			{
-				secure.DELETE("", h.archive)
+				withAccountId.GET("", h.get)
+				withAccountId.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
 			}
-
-			authenticated.GET("", h.get)
 		}
 
 		accounts.POST("", h.create)
@@ -84,16 +87,16 @@ func (h *accountHandler) create(c *gin.Context) {
 }
 
 func (h *accountHandler) archive(c *gin.Context) {
-	aid, err := accountID(c)
+	aid, err := accountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountID: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	sid, err := sessionID(c)
+	sid, err := sessionId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - sessionID: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - sessionId: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -109,9 +112,9 @@ func (h *accountHandler) archive(c *gin.Context) {
 }
 
 func (h *accountHandler) get(c *gin.Context) {
-	aid, err := accountID(c)
+	aid, err := accountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountID: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

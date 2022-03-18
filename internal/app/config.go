@@ -10,13 +10,11 @@ type (
 		HTTP        `yaml:"http"`
 		Log         `yaml:"logger"`
 		PG          `yaml:"postgres"`
-		MongoDB     `yaml:"mongodb"`
 		Cookie      `yaml:"cookie"`
 		Cache       `yaml:"cache"`
 		Redis       `yaml:"redis"`
 		AccessToken `yaml:"access_token"`
 		Session     `yaml:"session"`
-		OAuth       `yaml:"oauth"`
 		Email       `yaml:"email"`
 		SMTP        `yaml:"smtp"`
 	}
@@ -39,13 +37,6 @@ type (
 		PostgresURL     string `env-required:"true" env:"PG_URL"`
 	}
 
-	MongoDB struct {
-		MongoURI      string `env-required:"true" env:"MONGO_URI"`
-		MongoUsername string `env-required:"true" env:"MONGO_USER"`
-		MongoPassword string `env-required:"true" env:"MONGO_PASS"`
-		MongoDatabase string `env-required:"true" yaml:"database" env:"MONGO_DATABASE"`
-	}
-
 	Cache struct {
 		CacheTTL time.Duration `env-required:"true" yaml:"ttl" env:"CACHE_TTL"`
 	}
@@ -60,23 +51,10 @@ type (
 		CookieHTTPOnly bool `yaml:"httponly" env:"COOKIE_HTTP_ONLY"`
 	}
 
-	OAuth struct {
-		GitHubClientID     string `yaml:"github_client_id" env-required:"true" env:"GH_CLIENT_ID"`
-		GitHubClientSecret string `env-required:"true" env:"GH_CLIENT_SECRET"`
-		GitHubScope        string `yaml:"github_scope" env-required:"true" env:"GH_SCOPE"`
-
-		GoogleClientID     string `yaml:"google_client_id" env-required:"true" env:"GOOGLE_CLIENT_ID"`
-		GoogleClientSecret string `env-required:"true" env:"GOOGLE_CLIENT_SECRET"`
-		GoogleScope        string `yaml:"google_scope" env-required:"true" env:"GOOGLE_SCOPE"`
-
-		DiscordClientID     string `yaml:"discord_client_id" env-required:"true" env:"DISCORD_CLIENT_ID"`
-		DiscordClientSecret string `env-required:"true" env:"DISCORD_CLIENT_SECRET"`
-		DiscordScope        string `yaml:"discord_scope" env-required:"true" env:"DISCORD_SCOPE"`
-	}
-
 	Session struct {
 		SessionTTL    time.Duration `env-required:"true" yaml:"ttl" env:"SESSION_TTL"`
 		SessionCookie string        `env-required:"true" yaml:"cookie_key" env:"SESSION_COOKIE"`
+		SessionDB     int           `yaml:"db" env:"SESSION_DB"`
 	}
 
 	AccessToken struct {

@@ -36,7 +36,7 @@ func (r *accountRepository) Create(ctx context.Context, acc domain.Account) (dom
 		return domain.Account{}, fmt.Errorf("r.Builder.Insert: %w", err)
 	}
 
-	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(&acc.ID); err != nil {
+	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(&acc.Id); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
@@ -62,7 +62,7 @@ func (r *accountRepository) FindByID(ctx context.Context, aid string) (domain.Ac
 		return domain.Account{}, fmt.Errorf("r.Builder.Select: %w", err)
 	}
 
-	acc := domain.Account{ID: aid}
+	acc := domain.Account{Id: aid}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
 		&acc.Username,
@@ -95,7 +95,7 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (doma
 	a := domain.Account{Email: email}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
-		&a.ID,
+		&a.Id,
 		&a.Username,
 		&a.PasswordHash,
 		&a.CreatedAt,
@@ -125,7 +125,7 @@ func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (d
 	a := domain.Account{Username: uname}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
-		&a.ID,
+		&a.Id,
 		&a.Email,
 		&a.PasswordHash,
 		&a.CreatedAt,

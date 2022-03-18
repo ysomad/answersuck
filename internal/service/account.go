@@ -41,9 +41,9 @@ func (s *accountService) Create(ctx context.Context, acc domain.Account) (domain
 		return domain.Account{}, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
 	}
 
-	if err = s.email.SendAccountVerificationEmail(ctx, a.Email); err != nil {
-		return domain.Account{}, fmt.Errorf("accountService - Create - s.email.SendVerification: %w", err)
-	}
+	//if err = s.email.SendAccountVerificationEmail(ctx, a.Email); err != nil {
+	//	return domain.Account{}, fmt.Errorf("accountService - Create - s.email.SendVerification: %w", err)
+	//}
 
 	return a, nil
 }
@@ -80,7 +80,7 @@ func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 		return fmt.Errorf("accountService - Archive - s.repo.Archive: %w", err)
 	}
 
-	if err := s.session.TerminateAll(ctx, aid, sid); err != nil {
+	if err := s.session.Terminate(ctx, sid); err != nil {
 		return fmt.Errorf("accountService - Archive - s.session.TerminateAll: %w", err)
 	}
 

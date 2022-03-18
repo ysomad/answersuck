@@ -1,14 +1,20 @@
 package v1
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 
-// accountID returns account id from context
-func accountID(c *gin.Context) (string, error) {
+var (
+	ErrAudienceContextNotFound = errors.New("audience not found in context")
+)
+
+// accountId returns account id from context
+func accountId(c *gin.Context) (string, error) {
 	aid := c.GetString("aid")
 
 	_, err := uuid.Parse(aid)
@@ -19,8 +25,8 @@ func accountID(c *gin.Context) (string, error) {
 	return aid, nil
 }
 
-// sessionID return session id from context
-func sessionID(c *gin.Context) (string, error) {
+// sessionId returns session id from context
+func sessionId(c *gin.Context) (string, error) {
 	sid := c.GetString("sid")
 
 	if sid == "" {
@@ -28,4 +34,15 @@ func sessionID(c *gin.Context) (string, error) {
 	}
 
 	return sid, nil
+}
+
+// audience returns current audience from context
+func audience(c *gin.Context) (string, error) {
+	aud := c.GetString("aud")
+
+	if aud == "" {
+		return "", ErrAudienceContextNotFound
+	}
+
+	return aud, nil
 }

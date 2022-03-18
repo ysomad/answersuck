@@ -12,12 +12,12 @@ var (
 
 type errorResponse struct {
 	Error  string `json:"error"`
-	Detail string `json:"details"`
+	Detail string `json:"detail"`
 }
 
 type validationErrorResponse struct {
 	Error  string            `json:"error"`
-	Detail map[string]string `json:"details"`
+	Detail map[string]string `json:"detail"`
 }
 
 func abortWithError(c *gin.Context, code int, err error, detail string) {

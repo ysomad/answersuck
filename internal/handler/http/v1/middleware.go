@@ -14,6 +14,7 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
 )
 
+// sessionMiddleware looking for a cookie with session id, sets account id and session id to context
 func sessionMiddleware(l logging.Logger, cfg *app.Config, session service.Session) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sid, err := c.Cookie(cfg.SessionCookie)
@@ -36,17 +37,18 @@ func sessionMiddleware(l logging.Logger, cfg *app.Config, session service.Sessio
 			return
 		}
 
-		c.Set("sid", s.ID)
-		c.Set("aid", s.AccountID)
+		c.Set("sid", s.Id)
+		c.Set("aid", s.AccountId)
 		c.Next()
 	}
 }
 
+// tokenMiddleware parses and validates access token
 func tokenMiddleware(l logging.Logger, auth service.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		aid, err := accountID(c)
+		aid, err := accountId(c)
 		if err != nil {
-			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware - accountID: %w", err))
+			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware - accountId: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -59,7 +61,6 @@ func tokenMiddleware(l logging.Logger, auth service.Auth) gin.HandlerFunc {
 		}
 
 		currAud := strings.ToLower(c.Request.Host + c.FullPath())
-		l.Debug(currAud)
 
 		sub, err := auth.ParseAccessToken(c.Request.Context(), t, currAud)
 		if err != nil {
@@ -71,6 +72,28 @@ func tokenMiddleware(l logging.Logger, auth service.Auth) gin.HandlerFunc {
 		if sub != aid {
 			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware: %w", err))
 			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
+		c.Set("aud", currAud)
+		c.Next()
+	}
+}
+
+// accountParamMiddleware checks account id from context and account id from url parameter
+// if they're not the same return error
+func accountParamMiddleware(l logging.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		aid, err := accountId(c)
+		if err != nil {
+			l.Error(fmt.Errorf("http - v1 - middleware - accountParamMiddleware - accountId: %w", err))
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		if aid != c.Param(accountParam) {
+			l.Error(fmt.Errorf("http - v1 - middleware - accountParamMiddleware: %w", domain.ErrAccountContextMismatch))
+			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
 

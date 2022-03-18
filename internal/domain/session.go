@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -9,6 +10,10 @@ import (
 )
 
 var (
+	// Client errors
+	ErrSessionAlreadyLoggedIn = errors.New("already logged in, please logout before logging in")
+
+	// System errors
 	ErrSessionNotFound        = errors.New("session not found")
 	ErrSessionExpired         = errors.New("session expired")
 	ErrSessionNotCreated      = errors.New("error occured during session creation")
@@ -18,20 +23,20 @@ var (
 )
 
 type Session struct {
-	ID        string    `json:"id" bson:"_id"`
-	AccountID string    `json:"accountId" bson:"accountId"`
-	Device    Device    `json:"device" bson:"device"`
-	TTL       int       `json:"ttl" bson:"ttl"`
-	ExpiresAt int64     `json:"expiresAt" bson:"expiresAt"`
-	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
+	Id         string        `json:"id"`
+	AccountId  string        `json:"accountId"`
+	Device     Device        `json:"device"`
+	TTL        int           `json:"ttl"`
+	Expiration time.Duration `json:"expiration"`
+	ExpiresAt  int64         `json:"expiresAt"`
+	CreatedAt  time.Time     `json:"createdAt"`
 }
 
-type Device struct {
-	UserAgent string
-	IP        string
-}
+func NewSession(accountId string, d Device, expiration time.Duration) (Session, error) {
+	if err := d.Validate(); err != nil {
+		return Session{}, fmt.Errorf("d.Validate: %w", err)
+	}
 
-func NewSession(accountID string, d Device, ttl time.Duration) (Session, error) {
 	id, err := utils.UniqueString(32)
 	if err != nil {
 		return Session{}, fmt.Errorf("utils.UniqueString: %w", ErrSessionNotCreated)
@@ -40,11 +45,20 @@ func NewSession(accountID string, d Device, ttl time.Duration) (Session, error) 
 	now := time.Now()
 
 	return Session{
-		ID:        id,
-		AccountID: accountID,
-		Device:    d,
-		TTL:       int(ttl.Seconds()),
-		ExpiresAt: now.Add(ttl).Unix(),
-		CreatedAt: now,
+		Id:         id,
+		AccountId:  accountId,
+		Device:     d,
+		TTL:        int(expiration.Seconds()),
+		Expiration: expiration,
+		ExpiresAt:  now.Add(expiration).Unix(),
+		CreatedAt:  now,
 	}, nil
+}
+
+func (s Session) MarshalBinary() ([]byte, error) {
+	return json.Marshal(s)
+}
+
+func (s *Session) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, s)
 }
