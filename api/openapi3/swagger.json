@@ -114,6 +114,9 @@
           "401": {
             "description": "Unauthorized or expired session."
           },
+          "404": {
+            "description": "Account not found."
+          },
           "500": {
             "description": "Internal Server Error."
           }
@@ -173,7 +176,10 @@
             "description": "Unauthorized."
           },
           "403": {
-            "description": "Invalid or expired access token."
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Account not found."
           },
           "500": {
             "description": "Internal Server Error."
@@ -184,6 +190,122 @@
             "cookieAuth": []
           }
         ]
+      }
+    },
+    "/accounts/{accountId}/verify": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Request email verification link",
+        "description": "To request link to verify email, email address should be provided. Email with token will be sent on success.",
+        "operationId": "accountRequestVerification",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "String ID of the account",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Email with link sent."
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or expired session."
+          },
+          "404": {
+            "description": "Account not found."
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Verify email callback",
+        "description": "To verify email, access token should be provided",
+        "operationId": "accountVerifyEmail",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Short live access token",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "String ID of the account",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "New password set."
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or expired session."
+          },
+          "403": {
+            "description": "Invalid or expired access token."
+          },
+          "404": {
+            "description": "Account not found."
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        }
       }
     },
     "/accounts/reset-password": {
@@ -222,9 +344,7 @@
             "description": "Internal Server Error."
           }
         }
-      }
-    },
-    "/accounts/reset-password/callback": {
+      },
       "patch": {
         "tags": [
           "account"
