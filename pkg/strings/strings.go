@@ -1,4 +1,4 @@
-package utils
+package strings
 
 import (
 	cryptoRand "crypto/rand"
@@ -10,9 +10,9 @@ const (
 	special = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 )
 
-// UniqueString generates random string using
-// Cryptographically Secure Pseudorandom number.
-func UniqueString(length int) (string, error) {
+// NewUnique generates random string using
+// Cryptographically Secure Pseudorandom number
+func NewUnique(length int) (string, error) {
 	bytes := make([]byte, length)
 	if _, err := cryptoRand.Read(bytes); err != nil {
 		return "", err
@@ -25,8 +25,8 @@ func UniqueString(length int) (string, error) {
 	return string(bytes), nil
 }
 
-// RandomString generates random URL safe string.
-func RandomString(length int) string {
+// NewRandom generates random URL safe string
+func NewRandom(length int) string {
 	bytes := make([]byte, length)
 
 	for i := range bytes {
@@ -36,7 +36,8 @@ func RandomString(length int) string {
 	return string(bytes)
 }
 
-func RandomSpecialString(length int) string {
+// NewSpecialRandom generates random string with special characters
+func NewSpecialRandom(length int) string {
 	bytes := make([]byte, length)
 
 	c := chars + special
