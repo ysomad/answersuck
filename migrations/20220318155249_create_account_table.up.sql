@@ -15,7 +15,7 @@ create table if not exists account_verification(
     account_id uuid unique not null references account (id)
 );
 
-create table if not exists account_image(
+create table if not exists account_avatar(
     id serial not null primary key,
     url varchar(2048) not null
     account_id uuid unique not null references account (id),

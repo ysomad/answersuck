@@ -35,7 +35,7 @@ type Account struct {
 	Verified         bool      `json:"verified"`
 	VerificationCode string    `json:"-"`
 	Archived         bool      `json:"archived"`
-	ImageURL         string    `json:"imageUrl"`
+	AvatarURL        string    `json:"avatarUrl"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
