@@ -10,26 +10,14 @@ var (
 	ErrInvalidRequestBody = errors.New("invalid request body")
 )
 
-type errorResponse struct {
+type errorResponse[T string | map[string]string] struct {
 	Error  string `json:"error"`
-	Detail string `json:"detail"`
+	Detail T      `json:"detail"`
 }
 
-type validationErrorResponse struct {
-	Error  string            `json:"error"`
-	Detail map[string]string `json:"detail"`
-}
-
-func abortWithError(c *gin.Context, code int, err error, detail string) {
-	c.AbortWithStatusJSON(code, errorResponse{
+func abortWithError[T string | map[string]string](c *gin.Context, code int, err error, detail T) {
+	c.AbortWithStatusJSON(code, errorResponse[T]{
 		Error:  err.Error(),
 		Detail: detail,
-	})
-}
-
-func abortWithValidationError(c *gin.Context, code int, err error, errs map[string]string) {
-	c.AbortWithStatusJSON(code, validationErrorResponse{
-		Error:  err.Error(),
-		Detail: errs,
 	})
 }
