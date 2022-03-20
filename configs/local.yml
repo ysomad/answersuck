@@ -31,7 +31,10 @@ access_token:
 smtp:
   host: "smtp.gmail.com"
   port: 587
-  from: "followkacsa@gmail.com"
 
 email:
-  verification_template: "./templates/verification_email_%s.html"
+  verification_template: "./web/verification_email.html"
+  verification_subject: "Спасибо что Вы с нами, %s"
+  verification_link: "https://%s/verification?code=%s"
+
+

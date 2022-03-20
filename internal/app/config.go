@@ -64,12 +64,14 @@ type (
 
 	Email struct {
 		EmailVerificationTemplate string `env-required:"true" yaml:"verification_template" env:"EMAIL_VERIFICATION_TEMPLATE"`
+		EmailVerificationSubject  string `env-required:"true" yaml:"verification_subject" env:"EMAIL_VERIFICATION_SUBJECT"`
+		EmailVerificationLink     string `env-required:"true" yaml:"verification_link" env:"EMAIL_VERIFICATION_LINK"`
 	}
 
 	SMTP struct {
 		SMTPHost string `env-required:"true" yaml:"host" env:"SMTP_HOST"`
 		SMTPPort int    `env-required:"true" yaml:"port" env:"SMTP_PORT"`
-		SMTPFrom string `env-required:"true" yaml:"from" env:"SMTP_FROM"`
+		SMTPFrom string `env-required:"true" env:"SMTP_FROM"`
 		SMTPPass string `env-required:"true" env:"SMTP_PASSWORD"`
 	}
 )
