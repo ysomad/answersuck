@@ -5,31 +5,37 @@ import (
 	"fmt"
 
 	"github.com/quizlyfun/quizly-backend/internal/app"
+
 	"github.com/quizlyfun/quizly-backend/pkg/email"
 )
 
 type emailService struct {
-	cfg *app.Config
+	cfg    *app.Config
+	sender email.Sender
 }
 
-func NewEmailService(cfg *app.Config) *emailService {
+func NewEmailService(cfg *app.Config, s email.Sender) *emailService {
 	return &emailService{
-		cfg: cfg,
+		cfg:    cfg,
+		sender: s,
 	}
 }
 
-func (s *emailService) SendAccountVerificationEmail(ctx context.Context, to string) error {
-	_ = email.Letter{
+func (s *emailService) SendEmailVerificationLetter(ctx context.Context, to, username, code string) error {
+	l := email.Letter{
 		To:      to,
-		Subject: "",
+		Subject: fmt.Sprintf(s.cfg.EmailVerificationSubject, username),
 	}
 
-	_, err := email.NewClient(s.cfg.SMTPFrom, s.cfg.SMTPPass, s.cfg.SMTPHost, s.cfg.SMTPPort)
-	if err != nil {
-		return fmt.Errorf("emailService - SendAccountVerification - s.repo.Create: %w", err)
+	verifLink := fmt.Sprintf(s.cfg.EmailVerificationLink, code)
+
+	if err := l.SetBodyFromTemplate(s.cfg.EmailVerificationTemplate, verifLink); err != nil {
+		return fmt.Errorf("emailService - SendEmailVerificationLetter - l.SetBodyFromTemplate: %w", err)
 	}
 
-	panic("implement")
+	if err := s.sender.Send(l); err != nil {
+		return fmt.Errorf("emailService - SendEmailVerificationLetter - s.sender.Send: %w", err)
+	}
 
 	return nil
 }

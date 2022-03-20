@@ -13,9 +13,11 @@ import (
 
 	"github.com/quizlyfun/quizly-backend/internal/app"
 	v1 "github.com/quizlyfun/quizly-backend/internal/handler/http/v1"
-	"github.com/quizlyfun/quizly-backend/internal/repository"
 	"github.com/quizlyfun/quizly-backend/internal/service"
+	"github.com/quizlyfun/quizly-backend/internal/service/repository"
+
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
+	"github.com/quizlyfun/quizly-backend/pkg/email"
 	"github.com/quizlyfun/quizly-backend/pkg/httpserver"
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
 	"github.com/quizlyfun/quizly-backend/pkg/postgres"
@@ -55,7 +57,12 @@ func run(cfg *app.Config) {
 	sessionRepo := repository.NewSessionRepository(sessionRdb)
 	sessionService := service.NewSessionService(cfg, sessionRepo)
 
-	emailService := service.NewEmailService(cfg)
+	emailClient, err := email.NewClient(cfg.SMTPFrom, cfg.SMTPPass, cfg.SMTPHost, cfg.SMTPPort)
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
+	}
+
+	emailService := service.NewEmailService(cfg, emailClient)
 
 	tokenManager, err := auth.NewTokenManager(cfg.AccessTokenSigningKey)
 	if err != nil {

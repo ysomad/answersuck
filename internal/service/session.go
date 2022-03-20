@@ -20,23 +20,23 @@ func NewSessionService(cfg *app.Config, s SessionRepo) *sessionService {
 	}
 }
 
-func (s *sessionService) Create(ctx context.Context, aid string, d domain.Device) (domain.Session, error) {
+func (s *sessionService) Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error) {
 	sess, err := domain.NewSession(aid, d, s.cfg.SessionTTL)
 	if err != nil {
-		return domain.Session{}, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
+		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
 	}
 
 	if err = s.repo.Create(ctx, sess); err != nil {
-		return domain.Session{}, fmt.Errorf("sessionService - Create - s.repo.Create: %w", err)
+		return nil, fmt.Errorf("sessionService - Create - s.repo.Create: %w", err)
 	}
 
 	return sess, nil
 }
 
-func (s *sessionService) GetByID(ctx context.Context, sid string) (domain.Session, error) {
+func (s *sessionService) GetByID(ctx context.Context, sid string) (*domain.Session, error) {
 	sess, err := s.repo.FindByID(ctx, sid)
 	if err != nil {
-		return domain.Session{}, fmt.Errorf("sessionService - Get - s.repo.FindByID: %w", err)
+		return nil, fmt.Errorf("sessionService - Get - s.repo.FindByID: %w", err)
 	}
 
 	return sess, nil

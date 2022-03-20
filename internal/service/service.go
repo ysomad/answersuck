@@ -9,16 +9,16 @@ import (
 type (
 	Account interface {
 		// Create creates new account
-		Create(ctx context.Context, acc domain.Account) (domain.Account, error)
+		Create(ctx context.Context, acc *domain.Account) (*domain.Account, error)
 
 		// GetByID account
-		GetByID(ctx context.Context, aid string) (domain.Account, error)
+		GetByID(ctx context.Context, aid string) (*domain.Account, error)
 
 		// GetByEmail account
-		GetByEmail(ctx context.Context, email string) (domain.Account, error)
+		GetByEmail(ctx context.Context, email string) (*domain.Account, error)
 
 		// GetByUsername account
-		GetByUsername(ctx context.Context, uname string) (domain.Account, error)
+		GetByUsername(ctx context.Context, uname string) (*domain.Account, error)
 
 		// Delete sets account IsArchive state to true
 		Delete(ctx context.Context, aid, sid string) error
@@ -28,17 +28,17 @@ type (
 	}
 
 	AccountRepo interface {
-		// Create account with given credentials, returns id of created account
-		Create(ctx context.Context, acc domain.Account) (domain.Account, error)
+		// Create account
+		Create(ctx context.Context, acc *domain.Account) (*domain.Account, error)
 
 		// FindByID account in DB
-		FindByID(ctx context.Context, aid string) (domain.Account, error)
+		FindByID(ctx context.Context, aid string) (*domain.Account, error)
 
 		// FindByEmail account in DB
-		FindByEmail(ctx context.Context, email string) (domain.Account, error)
+		FindByEmail(ctx context.Context, email string) (*domain.Account, error)
 
 		// FindByUsername account in DB
-		FindByUsername(ctx context.Context, uname string) (domain.Account, error)
+		FindByUsername(ctx context.Context, uname string) (*domain.Account, error)
 
 		// Archive sets entity.Account.IsArchive state to provided value
 		Archive(ctx context.Context, aid string, archive bool) error
@@ -46,7 +46,7 @@ type (
 
 	Auth interface {
 		// Login creates new session using provided account email or username as login and password
-		Login(ctx context.Context, login, password string, d domain.Device) (domain.Session, error)
+		Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error)
 
 		// Logout logs out session by id
 		Logout(ctx context.Context, sid string) error
@@ -59,16 +59,16 @@ type (
 	}
 
 	Email interface {
-		// SendAccountVerificationEmail sends email with verification link to given email.
-		SendAccountVerificationEmail(ctx context.Context, to string) error
+		// SendEmailVerificationLetter sends email with verification link to given email.
+		SendEmailVerificationLetter(ctx context.Context, to, username, code string) error
 	}
 
 	Session interface {
 		// Create new session for account with id and device of given provider
-		Create(ctx context.Context, aid string, d domain.Device) (domain.Session, error)
+		Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error)
 
 		// GetByID session
-		GetByID(ctx context.Context, sid string) (domain.Session, error)
+		GetByID(ctx context.Context, sid string) (*domain.Session, error)
 
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
@@ -76,10 +76,10 @@ type (
 
 	SessionRepo interface {
 		// Create new session in DB
-		Create(ctx context.Context, s domain.Session) error
+		Create(ctx context.Context, s *domain.Session) error
 
 		// FindByID session
-		FindByID(ctx context.Context, sid string) (domain.Session, error)
+		FindByID(ctx context.Context, sid string) (*domain.Session, error)
 
 		// Delete session by id
 		Delete(ctx context.Context, sid string) error

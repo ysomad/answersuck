@@ -53,7 +53,7 @@ func (h *authHandler) login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithValidationError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
 		return
 	}
 
@@ -114,7 +114,7 @@ func (h *authHandler) token(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithValidationError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
 		return
 	}
 

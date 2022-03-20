@@ -91,7 +91,7 @@ func accountParamMiddleware(l logging.Logger) gin.HandlerFunc {
 			return
 		}
 
-		if aid != c.Param(accountParam) {
+		if aid != c.Param("id") {
 			l.Error(fmt.Errorf("http - v1 - middleware - accountParamMiddleware: %w", domain.ErrAccountContextMismatch))
 			c.AbortWithStatus(http.StatusNotFound)
 			return

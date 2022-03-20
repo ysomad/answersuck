@@ -27,33 +27,33 @@ func NewAuthService(cfg *app.Config, t auth.TokenManager, a Account, s Session) 
 	}
 }
 
-func (s *authService) Login(ctx context.Context, login, password string, d domain.Device) (domain.Session, error) {
-	var a domain.Account
+func (s *authService) Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error) {
+	a := &domain.Account{}
 
 	_, err := mail.ParseAddress(login)
 	if err != nil {
 		// login is not email
 		a, err = s.account.GetByUsername(ctx, login)
 		if err != nil {
-			return domain.Session{}, fmt.Errorf("authService - Login - s.account.GetByUsername: %w", err)
+			return nil, fmt.Errorf("authService - Login - s.account.GetByUsername: %w", err)
 		}
 	} else {
 		// login is email
 		a, err = s.account.GetByEmail(ctx, login)
 		if err != nil {
-			return domain.Session{}, fmt.Errorf("authService - Login - s.account.GetByEmail: %w", err)
+			return nil, fmt.Errorf("authService - Login - s.account.GetByEmail: %w", err)
 		}
 	}
 
 	a.Password = password
 
 	if err := a.CompareHashAndPassword(); err != nil {
-		return domain.Session{}, fmt.Errorf("authService - Login - a.CompareHashAndPassword: %w", err)
+		return nil, fmt.Errorf("authService - Login - a.CompareHashAndPassword: %w", err)
 	}
 
 	sess, err := s.session.Create(ctx, a.Id, d)
 	if err != nil {
-		return domain.Session{}, fmt.Errorf("authService - Login - s.session.Create: %w", err)
+		return nil, fmt.Errorf("authService - Login - s.session.Create: %w", err)
 	}
 
 	return sess, nil

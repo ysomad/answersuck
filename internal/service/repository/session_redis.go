@@ -16,7 +16,7 @@ func NewSessionRepository(r *redis.Client) *SessionRepository {
 	return &SessionRepository{r}
 }
 
-func (r *SessionRepository) Create(ctx context.Context, s domain.Session) error {
+func (r *SessionRepository) Create(ctx context.Context, s *domain.Session) error {
 	b, err := s.MarshalBinary()
 	if err != nil {
 		return err
@@ -29,14 +29,14 @@ func (r *SessionRepository) Create(ctx context.Context, s domain.Session) error 
 	return nil
 }
 
-func (r *SessionRepository) FindByID(ctx context.Context, sid string) (domain.Session, error) {
+func (r *SessionRepository) FindByID(ctx context.Context, sid string) (*domain.Session, error) {
 	var s domain.Session
 
 	if err := r.Get(ctx, sid).Scan(&s); err != nil {
-		return domain.Session{}, fmt.Errorf("r.Get.Scan: %w", err)
+		return nil, fmt.Errorf("r.Get.Scan: %w", err)
 	}
 
-	return s, nil
+	return &s, nil
 }
 
 func (r *SessionRepository) Delete(ctx context.Context, sid string) error {

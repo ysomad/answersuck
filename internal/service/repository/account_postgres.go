@@ -15,7 +15,9 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/postgres"
 )
 
-const accountTable = "account"
+const (
+	accountTable = "account"
+)
 
 type accountRepository struct {
 	*postgres.Postgres
@@ -25,7 +27,7 @@ func NewAccountRepository(pg *postgres.Postgres) *accountRepository {
 	return &accountRepository{pg}
 }
 
-func (r *accountRepository) Create(ctx context.Context, acc domain.Account) (domain.Account, error) {
+func (r *accountRepository) Create(ctx context.Context, acc *domain.Account) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Insert(accountTable).
 		Columns("username, email, password, is_verified").
@@ -33,7 +35,7 @@ func (r *accountRepository) Create(ctx context.Context, acc domain.Account) (dom
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
-		return domain.Account{}, fmt.Errorf("r.Builder.Insert: %w", err)
+		return nil, fmt.Errorf("r.Builder.Insert: %w", err)
 	}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(&acc.Id); err != nil {
@@ -42,54 +44,54 @@ func (r *accountRepository) Create(ctx context.Context, acc domain.Account) (dom
 		if errors.As(err, &pgErr) {
 
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return domain.Account{}, fmt.Errorf("r.Pool.Exec: %w", domain.ErrAccountAlreadyExist)
+				return nil, fmt.Errorf("r.Pool.Exec: %w", domain.ErrAccountAlreadyExist)
 			}
 		}
 
-		return domain.Account{}, fmt.Errorf("r.Pool.Exec: %w", err)
+		return nil, fmt.Errorf("r.Pool.Exec: %w", err)
 	}
 
 	return acc, nil
 }
 
-func (r *accountRepository) FindByID(ctx context.Context, aid string) (domain.Account, error) {
+func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select("username, email, password, created_at, updated_at, is_verified").
 		From(accountTable).
 		Where(sq.Eq{"id": aid, "is_archived": false}).
 		ToSql()
 	if err != nil {
-		return domain.Account{}, fmt.Errorf("r.Builder.Select: %w", err)
+		return nil, fmt.Errorf("r.Builder.Select: %w", err)
 	}
 
-	acc := domain.Account{Id: aid}
+	a := domain.Account{Id: aid}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
-		&acc.Username,
-		&acc.Email,
-		&acc.PasswordHash,
-		&acc.CreatedAt,
-		&acc.UpdatedAt,
-		&acc.Verified,
+		&a.Username,
+		&a.Email,
+		&a.PasswordHash,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+		&a.Verified,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
 		}
 
-		return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return acc, nil
+	return &a, nil
 }
 
-func (r *accountRepository) FindByEmail(ctx context.Context, email string) (domain.Account, error) {
+func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select("id, username, password, created_at, updated_at, is_verified").
 		From(accountTable).
 		Where(sq.Eq{"email": email, "is_archived": false}).
 		ToSql()
 	if err != nil {
-		return domain.Account{}, fmt.Errorf("r.Builder.Select: %w", err)
+		return nil, fmt.Errorf("r.Builder.Select: %w", err)
 	}
 
 	a := domain.Account{Email: email}
@@ -103,23 +105,23 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (doma
 		&a.Verified,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
 		}
 
-		return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return a, nil
+	return &a, nil
 }
 
-func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (domain.Account, error) {
+func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select("id, email, password, created_at, updated_at, is_verified").
 		From(accountTable).
 		Where(sq.Eq{"username": uname, "is_archived": false}).
 		ToSql()
 	if err != nil {
-		return domain.Account{}, fmt.Errorf("r.Builder.Select: %w", err)
+		return nil, fmt.Errorf("r.Builder.Select: %w", err)
 	}
 
 	a := domain.Account{Username: uname}
@@ -133,13 +135,13 @@ func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (d
 		&a.Verified,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
 		}
 
-		return domain.Account{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return a, nil
+	return &a, nil
 }
 
 func (r *accountRepository) Archive(ctx context.Context, aid string, archive bool) error {

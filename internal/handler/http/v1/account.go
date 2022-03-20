@@ -15,10 +15,6 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
 
-const (
-	accountParam = "accountId"
-)
-
 type accountHandler struct {
 	validation.ErrorTranslator
 	cfg     *app.Config
@@ -38,10 +34,10 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	{
 		authenticated := accounts.Group("", sessionMiddleware(d.Logger, d.Config, d.SessionService))
 		{
-			withAccountId := authenticated.Group(urlParam(accountParam), accountParamMiddleware(d.Logger))
+			withAccountId := authenticated.Group("", accountParamMiddleware(d.Logger))
 			{
-				withAccountId.GET("", h.get)
-				withAccountId.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
+				withAccountId.GET(":id", h.get)
+				withAccountId.DELETE(":id", tokenMiddleware(d.Logger, d.AuthService), h.archive)
 			}
 		}
 
@@ -59,13 +55,13 @@ func (h *accountHandler) create(c *gin.Context) {
 	var r accountCreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithValidationError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
 		return
 	}
 
 	_, err := h.account.Create(
 		c.Request.Context(),
-		domain.Account{
+		&domain.Account{
 			Email:    r.Email,
 			Username: r.Username,
 			Password: r.Password,
