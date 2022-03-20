@@ -36,7 +36,7 @@ func main() {
 	run(&cfg)
 }
 
-// run creates objects via constructors.
+// Run creates objects via constructors.
 func run(cfg *app.Config) {
 	l := logging.NewLogger(cfg.LogLevel)
 
@@ -66,7 +66,7 @@ func run(cfg *app.Config) {
 
 	tokenManager, err := auth.NewTokenManager(cfg.AccessTokenSigningKey)
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - auth.NewJWTManager: %w", err))
+		l.Fatal(fmt.Errorf("app - Run - auth.NewTokenManager: %w", err))
 	}
 
 	accountRepo := repository.NewAccountRepository(pg)
