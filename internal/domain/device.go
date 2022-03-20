@@ -3,7 +3,7 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 )
 
 var (
@@ -17,7 +17,7 @@ type Device struct {
 }
 
 func (d Device) validateIP() error {
-	if net.ParseIP(d.IP) == nil {
+	if _, err := netip.ParseAddr(d.IP); err != nil {
 		return ErrDeviceInvalidIP
 	}
 

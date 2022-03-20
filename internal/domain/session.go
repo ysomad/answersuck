@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/quizlyfun/quizly-backend/pkg/utils"
+	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
 var (
@@ -32,19 +32,19 @@ type Session struct {
 	CreatedAt  time.Time     `json:"createdAt"`
 }
 
-func NewSession(accountId string, d Device, expiration time.Duration) (Session, error) {
+func NewSession(accountId string, d Device, expiration time.Duration) (*Session, error) {
 	if err := d.Validate(); err != nil {
-		return Session{}, fmt.Errorf("d.Validate: %w", err)
+		return nil, fmt.Errorf("d.Validate: %w", err)
 	}
 
-	id, err := utils.UniqueString(32)
+	id, err := strings.NewUnique(32)
 	if err != nil {
-		return Session{}, fmt.Errorf("utils.UniqueString: %w", ErrSessionNotCreated)
+		return nil, fmt.Errorf("utils.UniqueString: %w", ErrSessionNotCreated)
 	}
 
 	now := time.Now()
 
-	return Session{
+	return &Session{
 		Id:         id,
 		AccountId:  accountId,
 		Device:     d,
@@ -55,7 +55,7 @@ func NewSession(accountId string, d Device, expiration time.Duration) (Session, 
 	}, nil
 }
 
-func (s Session) MarshalBinary() ([]byte, error) {
+func (s *Session) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
 
