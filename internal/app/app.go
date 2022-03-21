@@ -2,12 +2,16 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	v1 "github.com/quizlyfun/quizly-backend/internal/handler/http/v1"
@@ -19,10 +23,18 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/httpserver"
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
 	"github.com/quizlyfun/quizly-backend/pkg/postgres"
+	"github.com/quizlyfun/quizly-backend/pkg/storage"
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
 
-func Run(cfg *config.Aggregate) {
+func Run(configPath string) {
+	var cfg config.Aggregate
+
+	err := cleanenv.ReadConfig(configPath, &cfg)
+	if err != nil {
+		log.Fatalf("Config error: %s", err)
+	}
+
 	l := logging.NewLogger(cfg.Log.Level)
 
 	l.Info(fmt.Sprintf("%+v\n", cfg))
@@ -49,17 +61,27 @@ func Run(cfg *config.Aggregate) {
 		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
 	}
 
-	emailService := service.NewEmailService(cfg, emailClient)
+	emailService := service.NewEmailService(&cfg, emailClient)
 
 	tokenManager, err := auth.NewTokenManager(cfg.AccessToken.Sign)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - auth.NewTokenManager: %w", err))
 	}
 
-	accountRepo := repository.NewAccountRepository(pg)
-	accountService := service.NewAccountService(cfg, accountRepo, sessionService, tokenManager, emailService)
+	minioClient, err := minio.New(cfg.FileStorage.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.FileStorage.AccessKey, cfg.FileStorage.SecretKey, ""),
+		Secure: true,
+	})
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - minio.New: %w", err))
+	}
 
-	authService := service.NewAuthService(cfg, tokenManager, accountService, sessionService)
+	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
+
+	accountRepo := repository.NewAccountRepository(pg)
+	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager, emailService)
+
+	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 
 	ginTranslator, err := validation.NewGinTranslator()
 	if err != nil {
@@ -71,7 +93,7 @@ func Run(cfg *config.Aggregate) {
 	v1.SetupHandlers(
 		engine,
 		&v1.Deps{
-			Config:          cfg,
+			Config:          &cfg,
 			Logger:          l,
 			ErrorTranslator: ginTranslator,
 			TokenManager:    tokenManager,
