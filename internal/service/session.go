@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 )
 
 type sessionService struct {
-	cfg  *app.Config
+	cfg  *config.Session
 	repo SessionRepo
 }
 
-func NewSessionService(cfg *app.Config, s SessionRepo) *sessionService {
+func NewSessionService(cfg *config.Session, s SessionRepo) *sessionService {
 	return &sessionService{
 		cfg:  cfg,
 		repo: s,
@@ -21,7 +21,7 @@ func NewSessionService(cfg *app.Config, s SessionRepo) *sessionService {
 }
 
 func (s *sessionService) Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error) {
-	sess, err := domain.NewSession(aid, d, s.cfg.SessionTTL)
+	sess, err := domain.NewSession(aid, d, s.cfg.Expiration)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
 	}

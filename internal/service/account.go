@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
@@ -12,14 +12,14 @@ import (
 )
 
 type accountService struct {
-	cfg     *app.Config
+	cfg     *config.Aggregate
 	repo    AccountRepo
 	token   auth.TokenManager
 	session Session
 	email   Email
 }
 
-func NewAccountService(cfg *app.Config, r AccountRepo, s Session, t auth.TokenManager, e Email) *accountService {
+func NewAccountService(cfg *config.Aggregate, r AccountRepo, s Session, t auth.TokenManager, e Email) *accountService {
 	return &accountService{
 		cfg:     cfg,
 		repo:    r,

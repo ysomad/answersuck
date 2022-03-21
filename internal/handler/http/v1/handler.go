@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/quizlyfun/quizly-backend/internal/app"
+
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/service"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
@@ -16,7 +17,7 @@ import (
 const route = "/api/v1"
 
 type Deps struct {
-	Config          *app.Config
+	Config          *config.Aggregate
 	Logger          logging.Logger
 	ErrorTranslator validation.ErrorTranslator
 	TokenManager    auth.TokenManager
@@ -30,18 +31,18 @@ func urlParam(param string) string {
 	return fmt.Sprintf(":%s", param)
 }
 
-func SetupHandlers(handler *gin.Engine, d *Deps) {
+func SetupHandlers(e *gin.Engine, d *Deps) {
 	// Options
-	handler.Use(gin.Logger())
-	handler.Use(gin.Recovery())
+	e.Use(gin.Logger())
+	e.Use(gin.Recovery())
 
 	// Swagger UI
-	handler.Static(fmt.Sprintf("%s/swagger/", route), "third_party/swaggerui")
+	e.Static(fmt.Sprintf("%s/swagger/", route), "third_party/swaggerui")
 
-	handler.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
+	e.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	// Resource handlers
-	h := handler.Group(route)
+	h := e.Group(route)
 	{
 		newAccountHandler(h, d)
 		newAuthHandler(h, d)

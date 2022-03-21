@@ -18,7 +18,7 @@ var (
 
 type TokenManager interface {
 	// New creates new jwt token with subject and audience claims
-	New(subject, audience string, ttl time.Duration) (string, error)
+	New(subject, audience string, expiration time.Duration) (string, error)
 
 	// Parse parses jwt token and returns subject id from payload
 	Parse(token, audience string) (string, error)
@@ -38,7 +38,7 @@ func NewTokenManager(sign string) (tokenManager, error) {
 	}, nil
 }
 
-func (tm tokenManager) New(subject, audience string, ttl time.Duration) (string, error) {
+func (tm tokenManager) New(subject, audience string, expiration time.Duration) (string, error) {
 	_, err := url.Parse(audience)
 	if err != nil {
 		return "", ErrInvalidAudience
@@ -47,7 +47,7 @@ func (tm tokenManager) New(subject, audience string, ttl time.Duration) (string,
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Subject:   subject,
 		Audience:  audience,
-		ExpiresAt: time.Now().Add(ttl).Unix(),
+		ExpiresAt: time.Now().Add(expiration).Unix(),
 	})
 
 	return token.SignedString([]byte(tm.sign))

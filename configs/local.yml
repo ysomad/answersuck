@@ -1,40 +1,46 @@
 app:
   name: "quizly-backend"
-  version: "1.0"
+  version: "0.1"
+
+web:
+  url: "http://localhost:8000"
 
 http:
   port: "8080"
 
 logger:
-  log_level: "debug"
-  rollbar_env: "quizly"
+  logLevel: "debug"
 
 postgres:
-  pool_max: 2
+  poolMax: 2
 
 cache:
-  ttl: 1m
+  expiration: 1m
+  db: 1
 
 cookie:
   secure: false
-  httponly: true
+  httpOnly: true
 
 session:
-  ttl: 60m
-  cookie_key: "id"
+  expiration: 60m
+  cookieKey: "id"
   db: 0
 
-access_token:
-  ttl: 1m
-  signing_key: "secret"
+accessToken:
+  expiration: 1m
+  signingKey: "secret"
 
 smtp:
   host: "smtp.gmail.com"
   port: 587
 
+fileStorage:
+  endpoint: "s3.storage.selcloud.ru"
+  bucket: "quizly"
+
 email:
-  verification_template: "./web/verification_email.html"
-  verification_subject: "Спасибо что Вы с нами, %s"
-  verification_link: "https://%s/verification?code=%s"
-
-
+  templates:
+    accountVerification: "./web/account_verification.html"
+  subjects:
+    accountVerification: "Спасибо что присоединился к нам, %s!"

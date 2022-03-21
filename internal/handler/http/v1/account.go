@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 	"github.com/quizlyfun/quizly-backend/internal/service"
 
@@ -20,23 +20,23 @@ const (
 )
 
 type accountHandler struct {
-	validation.ErrorTranslator
-	cfg     *app.Config
+	t       validation.ErrorTranslator
+	cfg     *config.Aggregate
 	log     logging.Logger
 	account service.Account
 }
 
 func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &accountHandler{
-		d.ErrorTranslator,
-		d.Config,
-		d.Logger,
-		d.AccountService,
+		t:       d.ErrorTranslator,
+		cfg:     d.Config,
+		log:     d.Logger,
+		account: d.AccountService,
 	}
 
 	accounts := handler.Group("accounts")
 	{
-		authenticated := accounts.Group("", sessionMiddleware(d.Logger, d.Config, d.SessionService))
+		authenticated := accounts.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 		{
 			withAccountId := authenticated.Group("", accountParamMiddleware(d.Logger))
 			{
@@ -60,7 +60,7 @@ func (h *accountHandler) create(c *gin.Context) {
 	var r accountCreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
@@ -108,7 +108,7 @@ func (h *accountHandler) archive(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(h.cfg.SessionCookie, "", -1, "", "", h.cfg.CookieSecure, h.cfg.CookieHTTPOnly)
+	c.SetCookie(h.cfg.Session.CookieKey, "", -1, "", "", h.cfg.Cookie.Secure, h.cfg.Cookie.HTTPOnly)
 	c.Status(http.StatusNoContent)
 }
 

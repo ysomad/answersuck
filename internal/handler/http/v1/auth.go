@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 	"github.com/quizlyfun/quizly-backend/internal/service"
 
@@ -17,23 +17,23 @@ import (
 )
 
 type authHandler struct {
-	validation.ErrorTranslator
-	cfg  *app.Config
+	t    validation.ErrorTranslator
+	cfg  *config.Aggregate
 	log  logging.Logger
 	auth service.Auth
 }
 
 func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &authHandler{
-		d.ErrorTranslator,
-		d.Config,
-		d.Logger,
-		d.AuthService,
+		t:    d.ErrorTranslator,
+		cfg:  d.Config,
+		log:  d.Logger,
+		auth: d.AuthService,
 	}
 
 	g := handler.Group("auth")
 	{
-		authenticated := g.Group("", sessionMiddleware(d.Logger, d.Config, d.SessionService))
+		authenticated := g.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 		{
 			authenticated.POST("logout", h.logout)
 			authenticated.POST("token", h.token)
@@ -53,7 +53,7 @@ func (h *authHandler) login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
@@ -78,7 +78,7 @@ func (h *authHandler) login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(h.cfg.SessionCookie, s.Id, s.TTL, "", "", h.cfg.CookieSecure, h.cfg.CookieHTTPOnly)
+	c.SetCookie(h.cfg.Session.CookieKey, s.Id, s.MaxAge, "", "", h.cfg.Cookie.Secure, h.cfg.Cookie.HTTPOnly)
 	c.Status(http.StatusOK)
 }
 
@@ -96,7 +96,7 @@ func (h *authHandler) logout(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(h.cfg.SessionCookie, "", -1, "", "", h.cfg.CookieSecure, h.cfg.CookieHTTPOnly)
+	c.SetCookie(h.cfg.Session.CookieKey, "", -1, "", "", h.cfg.Cookie.Secure, h.cfg.Cookie.HTTPOnly)
 	c.Status(http.StatusNoContent)
 }
 
@@ -114,7 +114,7 @@ func (h *authHandler) token(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 

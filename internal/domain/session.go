@@ -26,7 +26,7 @@ type Session struct {
 	Id         string        `json:"id"`
 	AccountId  string        `json:"accountId"`
 	Device     Device        `json:"device"`
-	TTL        int           `json:"ttl"`
+	MaxAge     int           `json:"maxAge"`
 	Expiration time.Duration `json:"expiration"`
 	ExpiresAt  int64         `json:"expiresAt"`
 	CreatedAt  time.Time     `json:"createdAt"`
@@ -48,7 +48,7 @@ func NewSession(accountId string, d Device, expiration time.Duration) (*Session,
 		Id:         id,
 		AccountId:  accountId,
 		Device:     d,
-		TTL:        int(expiration.Seconds()),
+		MaxAge:     int(expiration.Seconds()),
 		Expiration: expiration,
 		ExpiresAt:  now.Add(expiration).Unix(),
 		CreatedAt:  now,

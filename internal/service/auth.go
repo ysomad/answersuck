@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
 )
 
 type authService struct {
-	cfg     *app.Config
+	cfg     *config.Aggregate
 	token   auth.TokenManager
 	account Account
 	session Session
 }
 
-func NewAuthService(cfg *app.Config, t auth.TokenManager, a Account, s Session) *authService {
+func NewAuthService(cfg *config.Aggregate, t auth.TokenManager, a Account, s Session) *authService {
 	return &authService{
 		cfg:     cfg,
 		token:   t,
@@ -79,7 +79,7 @@ func (s *authService) NewAccessToken(ctx context.Context, aid, password, audienc
 		return "", fmt.Errorf("authService - NewAccessToken - a.CompareHashAndPassword: %w", err)
 	}
 
-	t, err := s.token.New(aid, audience, s.cfg.AccessTokenTTL)
+	t, err := s.token.New(aid, audience, s.cfg.AccessToken.Expiration)
 	if err != nil {
 		return "", fmt.Errorf("authService - NewAccessToken - s.token.New: %w", err)
 	}

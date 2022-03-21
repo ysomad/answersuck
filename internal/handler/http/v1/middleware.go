@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/quizlyfun/quizly-backend/internal/app"
+	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 	"github.com/quizlyfun/quizly-backend/internal/service"
 
@@ -15,9 +15,9 @@ import (
 )
 
 // sessionMiddleware looking for a cookie with session id, sets account id and session id to context
-func sessionMiddleware(l logging.Logger, cfg *app.Config, session service.Session) gin.HandlerFunc {
+func sessionMiddleware(l logging.Logger, cfg *config.Session, session service.Session) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sid, err := c.Cookie(cfg.SessionCookie)
+		sid, err := c.Cookie(cfg.CookieKey)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware - c.Cookie: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)
