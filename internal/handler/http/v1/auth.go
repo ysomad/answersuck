@@ -86,7 +86,7 @@ func (h *authHandler) login(c *gin.Context) {
 func (h *authHandler) logout(c *gin.Context) {
 	sid, err := sessionId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - logout - sessionID: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - logout - sessionId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -121,7 +121,7 @@ func (h *authHandler) token(c *gin.Context) {
 
 	aid, err := accountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token - accountID: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - token - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
