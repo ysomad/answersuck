@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/google/uuid"
 	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
@@ -19,11 +20,11 @@ var (
 	// System errors
 	ErrAccountNotFound              = errors.New("account not found")
 	ErrAccountIncorrectPassword     = errors.New("incorrect password")
-	ErrAccountPasswordNotGenerated  = errors.New("password hash generation error")
 	ErrAccountNotArchived           = errors.New("account cannot be archived")
 	ErrAccountContextNotFound       = errors.New("account not found in context")
 	ErrAccountContextMismatch       = errors.New("account id from context is not the same as account id from url parameter")
 	ErrAccountEmptyVerificationCode = errors.New("empty account verification code")
+	ErrAccountEmptyPassword         = errors.New("empty password")
 )
 
 type Account struct {
@@ -44,7 +45,7 @@ type Account struct {
 func (a *Account) GeneratePasswordHash() error {
 	b, err := bcrypt.GenerateFromPassword([]byte(a.Password), 11)
 	if err != nil {
-		return fmt.Errorf("bcrypt.GenerateFromPassword: %w", ErrAccountPasswordNotGenerated)
+		return fmt.Errorf("bcrypt.GenerateFromPassword: %w", err)
 	}
 
 	a.PasswordHash = string(b)
@@ -62,4 +63,15 @@ func (a *Account) CompareHashAndPassword() error {
 
 func (a *Account) RandomPassword() {
 	a.Password = strings.NewSpecialRandom(16)
+}
+
+func (a *Account) GenerateId() error {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return fmt.Errorf("uuid.NewRandom: %w", err)
+	}
+
+	a.Id = id.String()
+
+	return nil
 }

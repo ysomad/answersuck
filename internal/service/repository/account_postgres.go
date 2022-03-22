@@ -2,13 +2,10 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 
 	"github.com/quizlyfun/quizly-backend/internal/domain"
@@ -27,31 +24,26 @@ func NewAccountRepository(pg *postgres.Postgres) *accountRepository {
 	return &accountRepository{pg}
 }
 
-func (r *accountRepository) Create(ctx context.Context, acc *domain.Account) (*domain.Account, error) {
+func (r *accountRepository) Create(ctx context.Context, a *domain.Account) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Insert(accountTable).
-		Columns("username, email, password, is_verified").
-		Values(acc.Username, acc.Email, acc.PasswordHash, acc.Verified).
-		Suffix("RETURNING id").
+		Columns("id, username, email, password, is_verified").
+		Values(a.Id, a.Username, a.Email, a.PasswordHash, a.Verified).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("r.Builder.Insert: %w", err)
 	}
 
-	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(&acc.Id); err != nil {
-		var pgErr *pgconn.PgError
+	if _, err = r.Pool.Exec(ctx, sql, args...); err != nil {
 
-		if errors.As(err, &pgErr) {
-
-			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("r.Pool.Exec: %w", domain.ErrAccountAlreadyExist)
-			}
+		if err := isUniqueViolation(err); err != nil {
+			return nil, fmt.Errorf("r.Pool.Exec: %w", err)
 		}
 
 		return nil, fmt.Errorf("r.Pool.Exec: %w", err)
 	}
 
-	return acc, nil
+	return a, nil
 }
 
 func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.Account, error) {
@@ -74,8 +66,9 @@ func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.A
 		&a.UpdatedAt,
 		&a.Verified,
 	); err != nil {
+
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
 		}
 
 		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
@@ -104,8 +97,9 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*dom
 		&a.UpdatedAt,
 		&a.Verified,
 	); err != nil {
+
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
 		}
 
 		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
@@ -114,17 +108,17 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*dom
 	return &a, nil
 }
 
-func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (*domain.Account, error) {
+func (r *accountRepository) FindByUsername(ctx context.Context, u string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select("id, email, password, created_at, updated_at, is_verified").
 		From(accountTable).
-		Where(sq.Eq{"username": uname, "is_archived": false}).
+		Where(sq.Eq{"username": u, "is_archived": false}).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("r.Builder.Select: %w", err)
 	}
 
-	a := domain.Account{Username: uname}
+	a := domain.Account{Username: u}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
 		&a.Id,
@@ -134,8 +128,9 @@ func (r *accountRepository) FindByUsername(ctx context.Context, uname string) (*
 		&a.UpdatedAt,
 		&a.Verified,
 	); err != nil {
+
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
 		}
 
 		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
@@ -161,7 +156,7 @@ func (r *accountRepository) Archive(ctx context.Context, aid string, archive boo
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", domain.ErrAccountNotFound)
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNotFound)
 	}
 
 	return nil

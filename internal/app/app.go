@@ -79,7 +79,7 @@ func Run(configPath string) {
 	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
 
 	accountRepo := repository.NewAccountRepository(pg)
-	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager, emailService)
+	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager, emailService, fileStorage)
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 

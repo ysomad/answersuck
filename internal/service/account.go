@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
+	"github.com/quizlyfun/quizly-backend/pkg/storage"
 	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
@@ -17,20 +20,23 @@ type accountService struct {
 	token   auth.TokenManager
 	session Session
 	email   Email
+	storage storage.Uploader
 }
 
-func NewAccountService(cfg *config.Aggregate, r AccountRepo, s Session, t auth.TokenManager, e Email) *accountService {
+func NewAccountService(cfg *config.Aggregate, r AccountRepo, s Session,
+	t auth.TokenManager, e Email, u storage.Uploader) *accountService {
 	return &accountService{
 		cfg:     cfg,
 		repo:    r,
 		token:   t,
 		session: s,
 		email:   e,
+		storage: u,
 	}
 }
 
-func (s *accountService) Create(ctx context.Context, acc *domain.Account) (*domain.Account, error) {
-	if err := acc.GeneratePasswordHash(); err != nil {
+func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain.Account, error) {
+	if err := a.GeneratePasswordHash(); err != nil {
 		return nil, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
 	}
 
@@ -39,13 +45,14 @@ func (s *accountService) Create(ctx context.Context, acc *domain.Account) (*doma
 		return nil, fmt.Errorf("accountService - Create - utils.UniqueString: %w", err)
 	}
 
-	acc.VerificationCode = code
+	a.Id = uuid.NewString()
+	a.VerificationCode = code
 
 	// TODO: get random avatar from DiceBear API
 	// TODO: upload random avatar to selectel data store
 	// TODO: get url of uploaded avatar
 
-	acc, err = s.repo.Create(ctx, acc)
+	a, err = s.repo.Create(ctx, a)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
 	}
@@ -54,7 +61,7 @@ func (s *accountService) Create(ctx context.Context, acc *domain.Account) (*doma
 	//	return domain.Account{}, fmt.Errorf("accountService - Create - s.email.SendVerification: %w", err)
 	//}
 
-	return acc, nil
+	return a, nil
 }
 
 func (s *accountService) GetByID(ctx context.Context, aid string) (*domain.Account, error) {
@@ -75,8 +82,8 @@ func (s *accountService) GetByEmail(ctx context.Context, email string) (*domain.
 	return acc, nil
 }
 
-func (s *accountService) GetByUsername(ctx context.Context, uname string) (*domain.Account, error) {
-	acc, err := s.repo.FindByUsername(ctx, uname)
+func (s *accountService) GetByUsername(ctx context.Context, u string) (*domain.Account, error) {
+	acc, err := s.repo.FindByUsername(ctx, u)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByUsername - s.repo.FindByUsername: %w", err)
 	}

@@ -18,7 +18,7 @@ type (
 		GetByEmail(ctx context.Context, email string) (*domain.Account, error)
 
 		// GetByUsername account
-		GetByUsername(ctx context.Context, uname string) (*domain.Account, error)
+		GetByUsername(ctx context.Context, u string) (*domain.Account, error)
 
 		// Delete sets account IsArchive state to true
 		Delete(ctx context.Context, aid, sid string) error
@@ -29,7 +29,7 @@ type (
 
 	AccountRepo interface {
 		// Create account
-		Create(ctx context.Context, acc *domain.Account) (*domain.Account, error)
+		Create(ctx context.Context, a *domain.Account) (*domain.Account, error)
 
 		// FindByID account in DB
 		FindByID(ctx context.Context, aid string) (*domain.Account, error)

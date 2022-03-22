@@ -10,6 +10,7 @@ import (
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 	"github.com/quizlyfun/quizly-backend/internal/service"
+	"github.com/quizlyfun/quizly-backend/internal/service/repository"
 
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
@@ -75,7 +76,7 @@ func (h *accountHandler) create(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - create: %w", err))
 
-		if errors.Is(err, domain.ErrAccountAlreadyExist) {
+		if errors.Is(err, repository.ErrUniqueViolation) {
 			abortWithError(c, http.StatusConflict, domain.ErrAccountAlreadyExist, "")
 			return
 		}
@@ -103,7 +104,13 @@ func (h *accountHandler) archive(c *gin.Context) {
 	}
 
 	if err := h.account.Delete(c.Request.Context(), aid, sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.accountService.Delete: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.account.Delete: %w", err))
+
+		if errors.Is(err, repository.ErrNotFound) {
+			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -123,6 +130,12 @@ func (h *accountHandler) get(c *gin.Context) {
 	acc, err := h.account.GetByID(c.Request.Context(), aid)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - get: %w", err))
+
+		if errors.Is(err, repository.ErrNotFound) {
+			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
