@@ -257,9 +257,9 @@
         "operationId": "accountVerifyEmail",
         "parameters": [
           {
-            "name": "token",
+            "name": "code",
             "in": "query",
-            "description": "Short live access token",
+            "description": "Verification code",
             "required": true,
             "style": "form",
             "explode": true,
@@ -597,6 +597,10 @@
           "verified": {
             "type": "boolean",
             "description": "false by default, true for social auth"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "format": "url"
           }
         }
       },
