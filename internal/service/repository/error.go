@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrUniqueViolation = errors.New("unique violation error")
+	ErrUniqueViolation = errors.New("duplicate key value violates unique constraint")
 	ErrNotFound        = errors.New("requested entity not found in database")
 )
 
