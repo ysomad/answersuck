@@ -11,6 +11,7 @@ import (
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 	"github.com/quizlyfun/quizly-backend/internal/service"
+	"github.com/quizlyfun/quizly-backend/internal/service/repository"
 
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
@@ -69,7 +70,7 @@ func (h *authHandler) login(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - login: %w", err))
 
-		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, domain.ErrAccountNotFound) {
+		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, repository.ErrNotFound) {
 			abortWithError(c, http.StatusUnauthorized, domain.ErrAccountIncorrectCredentials, "")
 			return
 		}
