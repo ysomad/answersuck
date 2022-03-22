@@ -77,8 +77,8 @@ func (s *accountService) GetByEmail(ctx context.Context, email string) (*domain.
 	return acc, nil
 }
 
-func (s *accountService) GetByUsername(ctx context.Context, u string) (*domain.Account, error) {
-	acc, err := s.repo.FindByUsername(ctx, u)
+func (s *accountService) GetByUsername(ctx context.Context, username string) (*domain.Account, error) {
+	acc, err := s.repo.FindByUsername(ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByUsername - s.repo.FindByUsername: %w", err)
 	}

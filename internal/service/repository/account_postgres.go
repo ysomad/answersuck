@@ -126,9 +126,18 @@ func (r *accountRepository) Create(ctx context.Context, a *domain.Account) (*dom
 
 func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
-		Select("username, email, password, created_at, updated_at, is_verified").
-		From(accountTable).
-		Where(sq.Eq{"id": aid, "is_archived": false}).
+		Select(
+			"a.username",
+			"a.email",
+			"a.password",
+			"a.created_at",
+			"a.updated_at",
+			"a.is_verified",
+			"av.url as avatar_url",
+		).
+		From(fmt.Sprintf("%s as a", accountTable)).
+		LeftJoin(fmt.Sprintf("%s as av on av.account_id = a.id", accountAvatarTable)).
+		Where(sq.Eq{"a.id": aid, "a.is_archived": false}).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("r.Builder.Select: %w", err)
@@ -143,6 +152,7 @@ func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.A
 		&a.CreatedAt,
 		&a.UpdatedAt,
 		&a.Verified,
+		&a.AvatarURL,
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
@@ -157,9 +167,18 @@ func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.A
 
 func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
-		Select("id, username, password, created_at, updated_at, is_verified").
-		From(accountTable).
-		Where(sq.Eq{"email": email, "is_archived": false}).
+		Select(
+			"a.id",
+			"a.username",
+			"a.password",
+			"a.created_at",
+			"a.updated_at",
+			"a.is_verified",
+			"av.url as avatar_url",
+		).
+		From(fmt.Sprintf("%s as a", accountTable)).
+		LeftJoin(fmt.Sprintf("%s as av on av.account_id = a.id", accountAvatarTable)).
+		Where(sq.Eq{"a.email": email, "a.is_archived": false}).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("r.Builder.Select: %w", err)
@@ -174,6 +193,7 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*dom
 		&a.CreatedAt,
 		&a.UpdatedAt,
 		&a.Verified,
+		&a.AvatarURL,
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
@@ -186,17 +206,26 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*dom
 	return &a, nil
 }
 
-func (r *accountRepository) FindByUsername(ctx context.Context, u string) (*domain.Account, error) {
+func (r *accountRepository) FindByUsername(ctx context.Context, username string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
-		Select("id, email, password, created_at, updated_at, is_verified").
-		From(accountTable).
-		Where(sq.Eq{"username": u, "is_archived": false}).
+		Select(
+			"a.id",
+			"a.email",
+			"a.password",
+			"a.created_at",
+			"a.updated_at",
+			"a.is_verified",
+			"av.url as avatar_url",
+		).
+		From(fmt.Sprintf("%s as a", accountTable)).
+		LeftJoin(fmt.Sprintf("%s as av on av.account_id = a.id", accountAvatarTable)).
+		Where(sq.Eq{"a.username": username, "a.is_archived": false}).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("r.Builder.Select: %w", err)
 	}
 
-	a := domain.Account{Username: u}
+	a := domain.Account{Username: username}
 
 	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
 		&a.Id,
@@ -205,6 +234,7 @@ func (r *accountRepository) FindByUsername(ctx context.Context, u string) (*doma
 		&a.CreatedAt,
 		&a.UpdatedAt,
 		&a.Verified,
+		&a.AvatarURL,
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
