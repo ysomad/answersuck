@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
+	"github.com/quizlyfun/quizly-backend/pkg/dicebear"
 	"github.com/quizlyfun/quizly-backend/pkg/storage"
 	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
@@ -45,12 +44,8 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 		return nil, fmt.Errorf("accountService - Create - utils.UniqueString: %w", err)
 	}
 
-	a.Id = uuid.NewString()
+	a.AvatarURL = dicebear.URL(a.Username)
 	a.VerificationCode = code
-
-	// TODO: get random avatar from DiceBear API
-	// TODO: upload random avatar to selectel data store
-	// TODO: get url of uploaded avatar
 
 	a, err = s.repo.Create(ctx, a)
 	if err != nil {

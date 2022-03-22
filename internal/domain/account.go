@@ -7,7 +7,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/google/uuid"
 	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
@@ -63,15 +62,4 @@ func (a *Account) CompareHashAndPassword() error {
 
 func (a *Account) RandomPassword() {
 	a.Password = strings.NewSpecialRandom(16)
-}
-
-func (a *Account) GenerateId() error {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return fmt.Errorf("uuid.NewRandom: %w", err)
-	}
-
-	a.Id = id.String()
-
-	return nil
 }

@@ -65,7 +65,7 @@ func (h *accountHandler) create(c *gin.Context) {
 		return
 	}
 
-	_, err := h.account.Create(
+	a, err := h.account.Create(
 		c.Request.Context(),
 		&domain.Account{
 			Email:    r.Email,
@@ -84,6 +84,8 @@ func (h *accountHandler) create(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	h.log.Info(fmt.Sprintf("%+v\n", a))
 
 	c.Status(http.StatusCreated)
 }
