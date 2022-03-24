@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v4"
 
 	"github.com/quizlyfun/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/dto"
 	"github.com/quizlyfun/quizly-backend/pkg/postgres"
 )
 
@@ -19,10 +20,10 @@ const (
 )
 
 type accountRepository struct {
-	*postgres.Postgres
+	*postgres.Client
 }
 
-func NewAccountRepository(pg *postgres.Postgres) *accountRepository {
+func NewAccountRepository(pg *postgres.Client) *accountRepository {
 	return &accountRepository{pg}
 }
 
@@ -124,7 +125,7 @@ func (r *accountRepository) Create(ctx context.Context, a *domain.Account) (*dom
 	return a, nil
 }
 
-func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.Account, error) {
+func (r *accountRepository) FindById(ctx context.Context, aid string) (*domain.Account, error) {
 	sql, args, err := r.Builder.
 		Select(
 			"a.username",
@@ -135,8 +136,8 @@ func (r *accountRepository) FindByID(ctx context.Context, aid string) (*domain.A
 			"a.is_verified",
 			"av.url as avatar_url",
 		).
-		From(fmt.Sprintf("%s as a", accountTable)).
-		LeftJoin(fmt.Sprintf("%s as av on av.account_id = a.id", accountAvatarTable)).
+		From(fmt.Sprintf("%s a", accountTable)).
+		LeftJoin(fmt.Sprintf("%s av ON av.account_id = a.id", accountAvatarTable)).
 		Where(sq.Eq{"a.id": aid, "a.is_archived": false}).
 		ToSql()
 	if err != nil {
@@ -176,8 +177,8 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*dom
 			"a.is_verified",
 			"av.url as avatar_url",
 		).
-		From(fmt.Sprintf("%s as a", accountTable)).
-		LeftJoin(fmt.Sprintf("%s as av on av.account_id = a.id", accountAvatarTable)).
+		From(fmt.Sprintf("%s a", accountTable)).
+		LeftJoin(fmt.Sprintf("%s av ON av.account_id = a.id", accountAvatarTable)).
 		Where(sq.Eq{"a.email": email, "a.is_archived": false}).
 		ToSql()
 	if err != nil {
@@ -217,8 +218,8 @@ func (r *accountRepository) FindByUsername(ctx context.Context, username string)
 			"a.is_verified",
 			"av.url as avatar_url",
 		).
-		From(fmt.Sprintf("%s as a", accountTable)).
-		LeftJoin(fmt.Sprintf("%s as av on av.account_id = a.id", accountAvatarTable)).
+		From(fmt.Sprintf("%s a", accountTable)).
+		LeftJoin(fmt.Sprintf("%s av ON av.account_id = a.id", accountAvatarTable)).
 		Where(sq.Eq{"a.username": username, "a.is_archived": false}).
 		ToSql()
 	if err != nil {
@@ -264,7 +265,32 @@ func (r *accountRepository) Archive(ctx context.Context, aid string, archive boo
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNotFound)
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+	}
+
+	return nil
+}
+
+func (r *accountRepository) Verify(ctx context.Context, a dto.AccountVerification) error {
+	sql := `
+		UPDATE account a
+		SET 
+			is_verified = $1,
+			updated_at = $2
+		FROM account_verification av
+		WHERE
+			a.is_verified = $3
+			AND av.account_id = $4
+			AND av.code = $5
+	`
+
+	ct, err := r.Pool.Exec(ctx, sql, a.Verified, a.UpdatedAt, !a.Verified, a.AccountId, a.Code)
+	if err != nil {
+		return fmt.Errorf("r.Pool.Exec: %w", err)
+	}
+
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
 	}
 
 	return nil

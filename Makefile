@@ -14,12 +14,6 @@ run:
 	GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate ./cmd/app
 .PHONY: run
 
-run18:
-	go1.18 mod tidy && go1.18 mod download && \
-	GIN_MODE=debug CGO_ENABLED=0 go1.18 run -tags migrate ./cmd/app
-.PHONY: run
-
-
 migrate-create:
 	migrate create -ext sql -dir migrations $(name)
 .PHONY: migrate-create
@@ -31,3 +25,7 @@ migrate-up:
 migrate-down:
 	migrate -path migrations -database '$(PG_URL)?sslmode=disable' down
 .PHONY: migrate-down
+
+jet-gen:
+	jet -dsn='$(PG_URL)?sslmode=disable' -path=./internal/service/repository/gen
+.PHONY: jet-gen

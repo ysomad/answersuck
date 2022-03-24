@@ -40,9 +40,9 @@ func Run(configPath string) {
 	l.Info(fmt.Sprintf("%+v\n", cfg))
 
 	// DB
-	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
+	pg, err := postgres.NewClient(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
 	if err != nil {
-		l.Fatal(fmt.Errorf("main - run - postgres.New: %w", err))
+		l.Fatal(fmt.Errorf("main - run - postgres.NewClient: %w", err))
 	}
 	defer pg.Close()
 

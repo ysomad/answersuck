@@ -68,7 +68,7 @@ func (s *authService) Logout(ctx context.Context, sid string) error {
 }
 
 func (s *authService) NewAccessToken(ctx context.Context, aid, password, audience string) (string, error) {
-	a, err := s.account.GetByID(ctx, aid)
+	a, err := s.account.GetById(ctx, aid)
 	if err != nil {
 		return "", fmt.Errorf("authService - NewAccessToken - s.account.GetByID: %w", err)
 	}

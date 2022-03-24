@@ -10,15 +10,14 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
+// Client errors
 var (
-	// Client errors
 	ErrSessionAlreadyLoggedIn = errors.New("already logged in, please logout before logging in")
+)
 
-	// System errors
-	ErrSessionNotFound        = errors.New("session not found")
-	ErrSessionExpired         = errors.New("session expired")
-	ErrSessionNotCreated      = errors.New("error occured during session creation")
-	ErrSessionNotTerminated   = errors.New("current session cannot be terminated, use logout instead")
+// System errors
+var (
+	ErrSessionNotCreated      = errors.New("error occurred during session creation")
 	ErrSessionContextNotFound = errors.New("session not found in context")
 	ErrSessionDeviceMismatch  = errors.New("device doesn't match with device of current session")
 )

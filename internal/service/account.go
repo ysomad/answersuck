@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/dto"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
 	"github.com/quizlyfun/quizly-backend/pkg/dicebear"
@@ -59,8 +61,8 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 	return a, nil
 }
 
-func (s *accountService) GetByID(ctx context.Context, aid string) (*domain.Account, error) {
-	acc, err := s.repo.FindByID(ctx, aid)
+func (s *accountService) GetById(ctx context.Context, aid string) (*domain.Account, error) {
+	acc, err := s.repo.FindById(ctx, aid)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByID - s.repo.FindByID: %w", err)
 	}
@@ -98,8 +100,15 @@ func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 	return nil
 }
 
-func (s *accountService) Verify(ctx context.Context, aid, code string) error {
-	panic("implement")
+func (s *accountService) Verify(ctx context.Context, aid, code string, verified bool) error {
+	if err := s.repo.Verify(ctx, dto.AccountVerification{
+		AccountId: aid,
+		Code:      code,
+		Verified:  verified,
+		UpdatedAt: time.Now(),
+	}); err != nil {
+		return fmt.Errorf("accountService - Verify - s.repo.Verify: %w", err)
+	}
 
 	return nil
 }

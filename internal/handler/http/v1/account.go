@@ -16,10 +16,6 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )
 
-const (
-	accountParam = "accountId"
-)
-
 type accountHandler struct {
 	t       validation.ErrorTranslator
 	cfg     *config.Aggregate
@@ -39,12 +35,10 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	{
 		authenticated := accounts.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 		{
-			withAccountId := authenticated.Group("", accountParamMiddleware(d.Logger))
-			{
-				param := urlParam(accountParam)
-				withAccountId.GET(param, h.get)
-				withAccountId.DELETE(param, tokenMiddleware(d.Logger, d.AuthService), h.archive)
-			}
+			authenticated.GET("", h.get)
+			authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
+			authenticated.POST("verify", h.requestVerification)
+			authenticated.PATCH("verify", h.verificationCallback)
 		}
 
 		accounts.POST("", h.create)
@@ -108,7 +102,7 @@ func (h *accountHandler) archive(c *gin.Context) {
 	if err := h.account.Delete(c.Request.Context(), aid, sid); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.account.Delete: %w", err))
 
-		if errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, repository.ErrNoAffectedRows) {
 			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
 			return
 		}
@@ -129,9 +123,9 @@ func (h *accountHandler) get(c *gin.Context) {
 		return
 	}
 
-	acc, err := h.account.GetByID(c.Request.Context(), aid)
+	acc, err := h.account.GetById(c.Request.Context(), aid)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - get: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - get - h.account.GetById: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) {
 			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
@@ -143,4 +137,37 @@ func (h *accountHandler) get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, acc)
+}
+
+func (h *accountHandler) requestVerification(c *gin.Context) {
+
+}
+
+func (h *accountHandler) verificationCallback(c *gin.Context) {
+	code, found := c.GetQuery("code")
+	if !found || code == "" {
+		abortWithError(c, http.StatusBadRequest, domain.ErrAccountEmptyVerificationCode, "")
+		return
+	}
+
+	aid, err := accountId(c)
+	if err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - verificationCallback - accountId: %w", err))
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	if err = h.account.Verify(c.Request.Context(), aid, code, true); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - verificationCallback - h.account.Verify: %w", err))
+
+		if errors.Is(err, repository.ErrNoAffectedRows) {
+			abortWithError(c, http.StatusBadRequest, domain.ErrAccountAlreadyVerified, "")
+			return
+		}
+
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

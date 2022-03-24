@@ -29,7 +29,7 @@ func (r *SessionRepository) Create(ctx context.Context, s *domain.Session) error
 	return nil
 }
 
-func (r *SessionRepository) FindByID(ctx context.Context, sid string) (*domain.Session, error) {
+func (r *SessionRepository) FindById(ctx context.Context, sid string) (*domain.Session, error) {
 	var s domain.Session
 
 	if err := r.Get(ctx, sid).Scan(&s); err != nil {

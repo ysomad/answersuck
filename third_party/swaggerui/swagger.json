@@ -33,6 +33,39 @@
   ],
   "paths": {
     "/accounts": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Get account",
+        "operationId": "accountGet",
+        "responses": {
+          "200": {
+            "description": "Successful operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or expired session."
+          },
+          "404": {
+            "description": "Account not found."
+          },
+          "500": {
+            "description": "Internal Server Error."
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
       "post": {
         "tags": [
           "account"
@@ -78,54 +111,6 @@
             "description": "Internal Server Error."
           }
         }
-      }
-    },
-    "/accounts/{accountId}": {
-      "get": {
-        "tags": [
-          "account"
-        ],
-        "summary": "Get account",
-        "operationId": "accountGet",
-        "parameters": [
-          {
-            "name": "accountId",
-            "in": "path",
-            "description": "String ID of the account",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Account"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized or expired session."
-          },
-          "404": {
-            "description": "Account not found."
-          },
-          "500": {
-            "description": "Internal Server Error."
-          }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
       },
       "delete": {
         "tags": [
@@ -142,17 +127,6 @@
             "required": true,
             "style": "form",
             "explode": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "accountId",
-            "in": "path",
-            "description": "String ID of the account",
-            "required": true,
-            "style": "simple",
-            "explode": false,
             "schema": {
               "type": "string"
             }
@@ -192,50 +166,17 @@
         ]
       }
     },
-    "/accounts/{accountId}/verify": {
+    "/accounts/verify": {
       "post": {
         "tags": [
           "account"
         ],
         "summary": "Request email verification link",
-        "description": "To request link to verify email, email address should be provided. Email with token will be sent on success.",
+        "description": "Send email verification to email address linked to the account.",
         "operationId": "accountRequestVerification",
-        "parameters": [
-          {
-            "name": "accountId",
-            "in": "path",
-            "description": "String ID of the account",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccountResetPasswordRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "202": {
-            "description": "Email with link sent."
-          },
-          "400": {
-            "description": "Invalid request body.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            }
+            "description": "Email verification link sent."
           },
           "401": {
             "description": "Unauthorized or expired session."
@@ -246,14 +187,19 @@
           "500": {
             "description": "Internal Server Error."
           }
-        }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": [
           "account"
         ],
         "summary": "Verify email callback",
-        "description": "To verify email, access token should be provided",
+        "description": "To verify email, code as query parameter should be provided",
         "operationId": "accountVerifyEmail",
         "parameters": [
           {
@@ -266,29 +212,18 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "accountId",
-            "in": "path",
-            "description": "String ID of the account",
-            "required": true,
-            "style": "simple",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
-          "201": {
-            "description": "New password set."
+          "204": {
+            "description": "Email has been verified."
           },
           "400": {
-            "description": "Invalid request body.",
+            "description": "Bad request.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -305,7 +240,12 @@
           "500": {
             "description": "Internal Server Error."
           }
-        }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
       }
     },
     "/accounts/reset-password": {

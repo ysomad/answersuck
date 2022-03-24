@@ -26,11 +26,6 @@ type Deps struct {
 	AuthService     service.Auth
 }
 
-// urlParam returns url parameter as a string for gin handler
-func urlParam(param string) string {
-	return fmt.Sprintf(":%s", param)
-}
-
 func SetupHandlers(e *gin.Engine, d *Deps) {
 	// Options
 	e.Use(gin.Logger())

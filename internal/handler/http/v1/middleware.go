@@ -24,7 +24,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session service.Se
 			return
 		}
 
-		s, err := session.GetByID(c.Request.Context(), sid)
+		s, err := session.GetById(c.Request.Context(), sid)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware - s.Get: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -76,27 +76,6 @@ func tokenMiddleware(l logging.Logger, auth service.Auth) gin.HandlerFunc {
 		}
 
 		c.Set("aud", currAud)
-		c.Next()
-	}
-}
-
-// accountParamMiddleware checks account id from context and account id from url parameter
-// if they're not the same return error
-func accountParamMiddleware(l logging.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		aid, err := accountId(c)
-		if err != nil {
-			l.Error(fmt.Errorf("http - v1 - middleware - accountParamMiddleware - accountId: %w", err))
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		if aid != c.Param(accountParam) {
-			l.Error(fmt.Errorf("http - v1 - middleware - accountParamMiddleware: %w", domain.ErrAccountContextMismatch))
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
 		c.Next()
 	}
 }

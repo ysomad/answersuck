@@ -10,6 +10,7 @@ import (
 var (
 	ErrUniqueViolation = errors.New("duplicate key value violates unique constraint")
 	ErrNotFound        = errors.New("requested entity not found in database")
+	ErrNoAffectedRows  = errors.New("zero rows affected")
 )
 
 func isUniqueViolation(err error) error {

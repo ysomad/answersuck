@@ -10,20 +10,19 @@ import (
 	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
+// Client errors
 var (
-	// Client errors
 	ErrAccountAlreadyExist         = errors.New("account with given email or username already exist")
-	ErrAccountIncorrectCredentials = errors.New("provided credentials are not correct")
-	ErrAccountEmptyEmailOrUsername = errors.New("email or username should be provided")
+	ErrAccountIncorrectCredentials = errors.New("incorrect login or password")
+	ErrAccountAlreadyVerified      = errors.New("current email already verified")
+)
 
-	// System errors
+// System errors
+var (
 	ErrAccountNotFound              = errors.New("account not found")
 	ErrAccountIncorrectPassword     = errors.New("incorrect password")
-	ErrAccountNotArchived           = errors.New("account cannot be archived")
 	ErrAccountContextNotFound       = errors.New("account not found in context")
-	ErrAccountContextMismatch       = errors.New("account id from context is not the same as account id from url parameter")
 	ErrAccountEmptyVerificationCode = errors.New("empty account verification code")
-	ErrAccountEmptyPassword         = errors.New("empty password")
 )
 
 type Account struct {

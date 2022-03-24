@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/quizlyfun/quizly-backend/internal/domain"
+	"github.com/quizlyfun/quizly-backend/internal/dto"
 )
 
 type (
@@ -11,8 +12,8 @@ type (
 		// Create creates new account
 		Create(ctx context.Context, acc *domain.Account) (*domain.Account, error)
 
-		// GetByID account
-		GetByID(ctx context.Context, aid string) (*domain.Account, error)
+		// GetById account
+		GetById(ctx context.Context, aid string) (*domain.Account, error)
 
 		// GetByEmail account
 		GetByEmail(ctx context.Context, email string) (*domain.Account, error)
@@ -24,15 +25,15 @@ type (
 		Delete(ctx context.Context, aid, sid string) error
 
 		// Verify verifies account using provided token
-		Verify(ctx context.Context, aid, code string) error
+		Verify(ctx context.Context, aid, code string, verified bool) error
 	}
 
 	AccountRepo interface {
 		// Create account
 		Create(ctx context.Context, a *domain.Account) (*domain.Account, error)
 
-		// FindByID account in DB
-		FindByID(ctx context.Context, aid string) (*domain.Account, error)
+		// FindById account in DB
+		FindById(ctx context.Context, aid string) (*domain.Account, error)
 
 		// FindByEmail account in DB
 		FindByEmail(ctx context.Context, email string) (*domain.Account, error)
@@ -42,6 +43,9 @@ type (
 
 		// Archive sets entity.Account.IsArchive state to provided value
 		Archive(ctx context.Context, aid string, archive bool) error
+
+		// Verify sets verified to account with code in account_verification entity
+		Verify(ctx context.Context, a dto.AccountVerification) error
 	}
 
 	Auth interface {
@@ -67,8 +71,8 @@ type (
 		// Create new session for account with id and device of given provider
 		Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error)
 
-		// GetByID session
-		GetByID(ctx context.Context, sid string) (*domain.Session, error)
+		// GetById session
+		GetById(ctx context.Context, sid string) (*domain.Session, error)
 
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
@@ -78,8 +82,8 @@ type (
 		// Create new session in DB
 		Create(ctx context.Context, s *domain.Session) error
 
-		// FindByID session
-		FindByID(ctx context.Context, sid string) (*domain.Session, error)
+		// FindById session
+		FindById(ctx context.Context, sid string) (*domain.Session, error)
 
 		// Delete session by id
 		Delete(ctx context.Context, sid string) error

@@ -1,3 +1,3 @@
-drop table if exists account_verification;
-drop table if exists account_image;
-drop table if exists account;
+drop table if exists account_verification cascade;
+drop table if exists account_image cascade;
+drop table if exists account cascade;

@@ -23,7 +23,7 @@ cookie:
   httpOnly: true
 
 session:
-  expiration: 60m
+  expiration: 24h
   cookieKey: "id"
   db: 0
 

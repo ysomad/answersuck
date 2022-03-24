@@ -33,8 +33,8 @@ func (s *sessionService) Create(ctx context.Context, aid string, d domain.Device
 	return sess, nil
 }
 
-func (s *sessionService) GetByID(ctx context.Context, sid string) (*domain.Session, error) {
-	sess, err := s.repo.FindByID(ctx, sid)
+func (s *sessionService) GetById(ctx context.Context, sid string) (*domain.Session, error) {
+	sess, err := s.repo.FindById(ctx, sid)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - Get - s.repo.FindByID: %w", err)
 	}
