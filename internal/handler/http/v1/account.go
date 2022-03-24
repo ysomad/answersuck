@@ -75,6 +75,11 @@ func (h *accountHandler) create(c *gin.Context) {
 			return
 		}
 
+		if errors.Is(err, domain.ErrAccountForbiddenUsername) {
+			abortWithError(c, http.StatusBadRequest, domain.ErrAccountForbiddenUsername, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

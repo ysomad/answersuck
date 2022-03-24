@@ -34,7 +34,7 @@ func (gt *ginTranslator) register() error {
 	return enTranslations.RegisterDefaultTranslations(gt.validate, gt.trans)
 }
 
-// Translate returns translated validation errors received from gin.c.ShouldBindJSON err
+// TranslateError returns translated validation errors received from gin.c.ShouldBindJSON err
 func (gt *ginTranslator) TranslateError(err error) map[string]string {
 	_ = gt.register()
 

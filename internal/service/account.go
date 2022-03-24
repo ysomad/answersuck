@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/quizlyfun/quizly-backend/pkg/blocklist"
 	"time"
 
 	"github.com/quizlyfun/quizly-backend/internal/config"
@@ -14,27 +15,35 @@ import (
 )
 
 type accountService struct {
-	cfg     *config.Aggregate
+	cfg *config.Aggregate
+
 	repo    AccountRepo
-	token   auth.TokenManager
 	session Session
 	email   Email
-	storage storage.Uploader
+
+	token     auth.TokenManager
+	storage   storage.Uploader
+	blockList blocklist.Finder
 }
 
 func NewAccountService(cfg *config.Aggregate, r AccountRepo, s Session,
-	t auth.TokenManager, e Email, u storage.Uploader) *accountService {
+	t auth.TokenManager, e Email, u storage.Uploader, b blocklist.Finder) *accountService {
 	return &accountService{
-		cfg:     cfg,
-		repo:    r,
-		token:   t,
-		session: s,
-		email:   e,
-		storage: u,
+		cfg:       cfg,
+		repo:      r,
+		token:     t,
+		session:   s,
+		email:     e,
+		storage:   u,
+		blockList: b,
 	}
 }
 
 func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain.Account, error) {
+	if s.blockList.Find(a.Username) {
+		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", domain.ErrAccountForbiddenUsername)
+	}
+
 	if err := a.GeneratePasswordHash(); err != nil {
 		return nil, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
 	}

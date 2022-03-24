@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/quizlyfun/quizly-backend/pkg/blocklist"
 	"log"
 	"os"
 	"os/signal"
@@ -77,9 +78,11 @@ func Run(configPath string) {
 	}
 
 	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
+	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
 	accountRepo := repository.NewAccountRepository(pg)
-	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager, emailService, fileStorage)
+	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager,
+		emailService, fileStorage, usernameBlockList)
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 

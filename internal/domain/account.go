@@ -16,6 +16,7 @@ var (
 	ErrAccountAlreadyExist         = errors.New("account with given email or username already exist")
 	ErrAccountIncorrectCredentials = errors.New("incorrect login or password")
 	ErrAccountAlreadyVerified      = errors.New("current email already verified or verification code is expired")
+	ErrAccountForbiddenUsername    = errors.New("username contains forbidden words")
 )
 
 // System errors
