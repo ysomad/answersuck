@@ -1,9 +1,10 @@
 package blocklist
 
 import (
-	"github.com/go-playground/assert/v2"
 	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNew(t *testing.T) {
