@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"github.com/quizlyfun/quizly-backend/pkg/dicebear"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -14,7 +15,7 @@ import (
 var (
 	ErrAccountAlreadyExist         = errors.New("account with given email or username already exist")
 	ErrAccountIncorrectCredentials = errors.New("incorrect login or password")
-	ErrAccountAlreadyVerified      = errors.New("current email already verified")
+	ErrAccountAlreadyVerified      = errors.New("current email already verified or verification code is expired")
 )
 
 // System errors
@@ -61,4 +62,20 @@ func (a *Account) CompareHashAndPassword() error {
 
 func (a *Account) RandomPassword() {
 	a.Password = strings.NewSpecialRandom(16)
+}
+
+// DiceBearAvatar sets dicebear identicon url from username to account AvatarURL
+func (a *Account) DiceBearAvatar() {
+	a.AvatarURL = dicebear.URL(a.Username)
+}
+
+func (a *Account) GenerateVerificationCode() error {
+	code, err := strings.NewUnique(32)
+	if err != nil {
+		return fmt.Errorf("strings.NewUnique: %w", err)
+	}
+
+	a.VerificationCode = code
+
+	return nil
 }

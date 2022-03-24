@@ -10,9 +10,7 @@ import (
 	"github.com/quizlyfun/quizly-backend/internal/dto"
 
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
-	"github.com/quizlyfun/quizly-backend/pkg/dicebear"
 	"github.com/quizlyfun/quizly-backend/pkg/storage"
-	"github.com/quizlyfun/quizly-backend/pkg/strings"
 )
 
 type accountService struct {
@@ -41,15 +39,13 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 		return nil, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
 	}
 
-	code, err := strings.NewUnique(32)
-	if err != nil {
-		return nil, fmt.Errorf("accountService - Create - utils.UniqueString: %w", err)
+	a.DiceBearAvatar()
+
+	if err := a.GenerateVerificationCode(); err != nil {
+		return nil, fmt.Errorf("accountService - Create - a.GenerateVerificationCode: %w", err)
 	}
 
-	a.AvatarURL = dicebear.URL(a.Username)
-	a.VerificationCode = code
-
-	a, err = s.repo.Create(ctx, a)
+	a, err := s.repo.Create(ctx, a)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
 	}
@@ -89,7 +85,11 @@ func (s *accountService) GetByUsername(ctx context.Context, username string) (*d
 }
 
 func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
-	if err := s.repo.Archive(ctx, aid, true); err != nil {
+	if err := s.repo.Archive(ctx, dto.AccountArchive{
+		AccountId: aid,
+		Archived:  true,
+		UpdatedAt: time.Now(),
+	}); err != nil {
 		return fmt.Errorf("accountService - Archive - s.repo.Archive: %w", err)
 	}
 
@@ -101,7 +101,7 @@ func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 }
 
 func (s *accountService) Verify(ctx context.Context, aid, code string, verified bool) error {
-	if err := s.repo.Verify(ctx, dto.AccountVerification{
+	if err := s.repo.Verify(ctx, dto.AccountVerify{
 		AccountId: aid,
 		Code:      code,
 		Verified:  verified,

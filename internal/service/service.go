@@ -42,10 +42,10 @@ type (
 		FindByUsername(ctx context.Context, username string) (*domain.Account, error)
 
 		// Archive sets entity.Account.IsArchive state to provided value
-		Archive(ctx context.Context, aid string, archive bool) error
+		Archive(ctx context.Context, a dto.AccountArchive) error
 
 		// Verify sets verified to account with code in account_verification entity
-		Verify(ctx context.Context, a dto.AccountVerification) error
+		Verify(ctx context.Context, a dto.AccountVerify) error
 	}
 
 	Auth interface {

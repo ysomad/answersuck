@@ -7,7 +7,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -22,8 +21,7 @@ type Client struct {
 	connAttempts int
 	connTimeout  time.Duration
 
-	Builder squirrel.StatementBuilderType
-	Pool    *pgxpool.Pool
+	Pool *pgxpool.Pool
 }
 
 func NewClient(uri string, opts ...Option) (*Client, error) {
@@ -37,8 +35,6 @@ func NewClient(uri string, opts ...Option) (*Client, error) {
 	for _, opt := range opts {
 		opt(pg)
 	}
-
-	pg.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 	poolConfig, err := pgxpool.ParseConfig(uri)
 	if err != nil {
