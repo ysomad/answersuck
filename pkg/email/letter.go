@@ -10,27 +10,27 @@ import (
 var (
 	ErrEmailEmptyTo      = errors.New("to cannot be empty")
 	ErrEmailEmptySubject = errors.New("subject cannot be empty")
-	ErrEmailEmptyBody    = errors.New("body cannot be empty")
+	ErrEmailEmptyMessage = errors.New("message cannot be empty")
 )
 
 type Letter struct {
 	To      string
 	Subject string
-	body    string
+	Message string
 }
 
-func (l *Letter) SetBodyFromTemplate(filename string, data interface{}) error {
+func (l *Letter) SetMsgFromTemplate(filename string, data interface{}) error {
 	t, err := template.ParseFiles(filename)
 	if err != nil {
 		return err
 	}
 
 	buf := new(bytes.Buffer)
-	if err = t.Execute(buf, data); err != nil {
+	if err = t.Execute(buf, &data); err != nil {
 		return err
 	}
 
-	l.body = buf.String()
+	l.Message = buf.String()
 
 	return nil
 }
@@ -49,8 +49,8 @@ func (l *Letter) Validate() error {
 		return ErrEmailEmptySubject
 	}
 
-	if l.body == "" {
-		return ErrEmailEmptyBody
+	if l.Message == "" {
+		return ErrEmailEmptyMessage
 	}
 
 	return nil

@@ -10,13 +10,13 @@ create table if not exists account(
 );
 
 create table if not exists account_verification(
-    id serial not null primary key,
+    id bigserial not null primary key,
     code char(32) unique not null,
     account_id uuid unique not null references account (id)
 );
 
 create table if not exists account_avatar(
-    id serial not null primary key,
+    id bigserial not null primary key,
     url varchar(2048) not null,
     account_id uuid unique not null references account (id)
 );

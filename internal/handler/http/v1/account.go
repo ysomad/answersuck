@@ -3,6 +3,7 @@ package v1
 import (
 	"errors"
 	"fmt"
+	"github.com/quizlyfun/quizly-backend/internal/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,8 +11,6 @@ import (
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	"github.com/quizlyfun/quizly-backend/internal/domain"
 	"github.com/quizlyfun/quizly-backend/internal/service"
-	"github.com/quizlyfun/quizly-backend/internal/service/repository"
-
 	"github.com/quizlyfun/quizly-backend/pkg/logging"
 	"github.com/quizlyfun/quizly-backend/pkg/validation"
 )

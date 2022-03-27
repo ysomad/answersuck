@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	repository2 "github.com/quizlyfun/quizly-backend/internal/repository"
 	"github.com/quizlyfun/quizly-backend/pkg/blocklist"
 	"log"
 	"os"
@@ -17,8 +18,6 @@ import (
 	"github.com/quizlyfun/quizly-backend/internal/config"
 	v1 "github.com/quizlyfun/quizly-backend/internal/handler/http/v1"
 	"github.com/quizlyfun/quizly-backend/internal/service"
-	"github.com/quizlyfun/quizly-backend/internal/service/repository"
-
 	"github.com/quizlyfun/quizly-backend/pkg/auth"
 	"github.com/quizlyfun/quizly-backend/pkg/email"
 	"github.com/quizlyfun/quizly-backend/pkg/httpserver"
@@ -54,7 +53,7 @@ func Run(configPath string) {
 	})
 
 	// Service
-	sessionRepo := repository.NewSessionRepository(sessionRdb)
+	sessionRepo := repository2.NewSessionRepository(sessionRdb)
 	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
 
 	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
@@ -80,7 +79,7 @@ func Run(configPath string) {
 	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository.NewAccountRepository(pg)
+	accountRepo := repository2.NewAccountRepository(pg)
 	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager,
 		emailService, fileStorage, usernameBlockList)
 

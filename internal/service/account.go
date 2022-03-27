@@ -59,9 +59,7 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 		return nil, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
 	}
 
-	//if err = s.email.SendEmailVerificationLetter(ctx, acc.Email, acc.Username); err != nil {
-	//	return domain.Account{}, fmt.Errorf("accountService - Create - s.email.SendVerification: %w", err)
-	//}
+	go func() { _ = s.email.SendAccountVerification(ctx, a.Email, a.Username, a.VerificationCode) }()
 
 	return a, nil
 }

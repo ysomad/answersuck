@@ -63,8 +63,8 @@ type (
 	}
 
 	Email interface {
-		// SendAccountVerificationEmail sends email with verification link to given email as to.
-		SendAccountVerificationEmail(ctx context.Context, to, username, code string) error
+		// SendAccountVerification sends email with verification link to given email as to.
+		SendAccountVerification(ctx context.Context, to, username, code string) error
 	}
 
 	Session interface {

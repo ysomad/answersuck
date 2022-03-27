@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-
 	app.Run("./configs/local.yml")
 }
