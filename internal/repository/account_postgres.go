@@ -47,7 +47,7 @@ func (r *accountRepository) Create(ctx context.Context, a *domain.Account) (*dom
 	if err := r.Pool.QueryRow(ctx, sql,
 		a.Username,
 		a.Email,
-		a.Password,
+		a.PasswordHash,
 		a.Verified,
 		a.VerificationCode,
 		a.AvatarURL,
