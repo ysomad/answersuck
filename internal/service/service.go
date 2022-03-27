@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/answersuck/answersuck-backend/internal/domain"
-	"github.com/answersuck/answersuck-backend/internal/dto"
 )
 
 type (
@@ -24,8 +24,11 @@ type (
 		// Delete sets account IsArchive state to true
 		Delete(ctx context.Context, aid, sid string) error
 
-		// Verify verifies account using provided token
-		Verify(ctx context.Context, aid, code string, verified bool) error
+		// RequestVerification sends account verification link to account email
+		RequestVerification(ctx context.Context, aid string) error
+
+		// Verify sets is_verified to account corresponding to the code
+		Verify(ctx context.Context, code string, verified bool) error
 	}
 
 	AccountRepo interface {
@@ -42,10 +45,10 @@ type (
 		FindByUsername(ctx context.Context, username string) (*domain.Account, error)
 
 		// Archive sets entity.Account.IsArchive state to provided value
-		Archive(ctx context.Context, a dto.AccountArchive) error
+		Archive(ctx context.Context, aid string, archived bool, updatedAt time.Time) error
 
 		// Verify sets verified to account with code in account_verification entity
-		Verify(ctx context.Context, a dto.AccountVerify) error
+		Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error
 	}
 
 	Auth interface {

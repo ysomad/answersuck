@@ -3,12 +3,11 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/answersuck-backend/internal/domain"
-	"github.com/answersuck/answersuck-backend/internal/dto"
-
 	"github.com/answersuck/answersuck-backend/pkg/postgres"
 )
 
@@ -182,7 +181,7 @@ func (r *accountRepository) FindByUsername(ctx context.Context, username string)
 	return &a, nil
 }
 
-func (r *accountRepository) Archive(ctx context.Context, a dto.AccountArchive) error {
+func (r *accountRepository) Archive(ctx context.Context, aid string, archived bool, updatedAt time.Time) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s
 		SET
@@ -193,7 +192,7 @@ func (r *accountRepository) Archive(ctx context.Context, a dto.AccountArchive) e
 			AND is_archived = $4
 	`, accountTable)
 
-	ct, err := r.Pool.Exec(ctx, sql, a.Archived, a.UpdatedAt, a.AccountId, !a.Archived)
+	ct, err := r.Pool.Exec(ctx, sql, archived, updatedAt, aid, !archived)
 	if err != nil {
 		return fmt.Errorf("r.Pool.Exec: %w", err)
 	}
@@ -205,7 +204,7 @@ func (r *accountRepository) Archive(ctx context.Context, a dto.AccountArchive) e
 	return nil
 }
 
-func (r *accountRepository) Verify(ctx context.Context, a dto.AccountVerify) error {
+func (r *accountRepository) Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s AS a
 		SET
@@ -214,11 +213,10 @@ func (r *accountRepository) Verify(ctx context.Context, a dto.AccountVerify) err
 		FROM %s AS av
 		WHERE
 			a.is_verified = $3
-			AND av.account_id = $4
-			AND av.code = $5
+			AND av.code = $4
 	`, accountTable, accountVerificationTable)
 
-	ct, err := r.Pool.Exec(ctx, sql, a.Verified, a.UpdatedAt, !a.Verified, a.AccountId, a.Code)
+	ct, err := r.Pool.Exec(ctx, sql, verified, updatedAt, !verified, code)
 	if err != nil {
 		return fmt.Errorf("r.Pool.Exec: %w", err)
 	}

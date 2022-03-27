@@ -17,11 +17,11 @@ var (
 	ErrAccountIncorrectCredentials = errors.New("incorrect login or password")
 	ErrAccountAlreadyVerified      = errors.New("current email already verified or verification code is expired")
 	ErrAccountForbiddenUsername    = errors.New("username contains forbidden words")
+	ErrAccountNotFound             = errors.New("account not found")
 )
 
 // System errors
 var (
-	ErrAccountNotFound              = errors.New("account not found")
 	ErrAccountIncorrectPassword     = errors.New("incorrect password")
 	ErrAccountContextNotFound       = errors.New("account not found in context")
 	ErrAccountEmptyVerificationCode = errors.New("empty account verification code")
@@ -71,7 +71,7 @@ func (a *Account) DiceBearAvatar() {
 }
 
 func (a *Account) GenerateVerificationCode() error {
-	code, err := strings.NewUnique(32)
+	code, err := strings.NewUnique(64)
 	if err != nil {
 		return fmt.Errorf("strings.NewUnique: %w", err)
 	}

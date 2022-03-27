@@ -7,8 +7,6 @@ import (
 
 	"github.com/answersuck/answersuck-backend/internal/config"
 	"github.com/answersuck/answersuck-backend/internal/domain"
-	"github.com/answersuck/answersuck-backend/internal/dto"
-
 	"github.com/answersuck/answersuck-backend/pkg/auth"
 	"github.com/answersuck/answersuck-backend/pkg/blocklist"
 	"github.com/answersuck/answersuck-backend/pkg/storage"
@@ -92,11 +90,7 @@ func (s *accountService) GetByUsername(ctx context.Context, username string) (*d
 }
 
 func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
-	if err := s.repo.Archive(ctx, dto.AccountArchive{
-		AccountId: aid,
-		Archived:  true,
-		UpdatedAt: time.Now(),
-	}); err != nil {
+	if err := s.repo.Archive(ctx, aid, true, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Archive - s.repo.Archive: %w", err)
 	}
 
@@ -107,13 +101,21 @@ func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 	return nil
 }
 
-func (s *accountService) Verify(ctx context.Context, aid, code string, verified bool) error {
-	if err := s.repo.Verify(ctx, dto.AccountVerify{
-		AccountId: aid,
-		Code:      code,
-		Verified:  verified,
-		UpdatedAt: time.Now(),
-	}); err != nil {
+func (s *accountService) RequestVerification(ctx context.Context, aid string) error {
+	a, err := s.repo.FindById(ctx, aid)
+	if err != nil {
+		return fmt.Errorf("accountService - RequestVerification - s.repo.FindById: %w", err)
+	}
+
+	if err = s.email.SendAccountVerification(ctx, a.Email, a.Username, a.VerificationCode); err != nil {
+		return fmt.Errorf("accountService - RequestVerification - s.email.SendAccountVerification: %w", err)
+	}
+
+	return nil
+}
+
+func (s *accountService) Verify(ctx context.Context, code string, verified bool) error {
+	if err := s.repo.Verify(ctx, code, verified, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Verify - s.repo.Verify: %w", err)
 	}
 

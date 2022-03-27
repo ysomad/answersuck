@@ -11,7 +11,7 @@ create table if not exists account(
 
 create table if not exists account_verification(
     id bigserial not null primary key,
-    code char(32) unique not null,
+    code char(64) unique not null,
     account_id uuid unique not null references account (id)
 );
 

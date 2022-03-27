@@ -37,9 +37,9 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 		{
 			authenticated.GET("", h.get)
 			authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
+			authenticated.POST("verify", h.requestVerification)
 		}
 
-		authenticated.POST("verify", h.requestVerification)
 		authenticated.PATCH("verify", h.verificationCallback)
 		accounts.POST("", h.create)
 	}
@@ -104,7 +104,7 @@ func (h *accountHandler) archive(c *gin.Context) {
 		return
 	}
 
-	if err := h.account.Delete(c.Request.Context(), aid, sid); err != nil {
+	if err = h.account.Delete(c.Request.Context(), aid, sid); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.account.Delete: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, repository.ErrNoAffectedRows) {
@@ -145,7 +145,26 @@ func (h *accountHandler) get(c *gin.Context) {
 }
 
 func (h *accountHandler) requestVerification(c *gin.Context) {
+	aid, err := accountId(c)
+	if err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
+	if err = h.account.RequestVerification(c.Request.Context(), aid); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - requestVerification - h.account.RequestVerification: %w", err))
+
+		if errors.Is(err, repository.ErrNotFound) {
+			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
+			return
+		}
+
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusAccepted)
 }
 
 func (h *accountHandler) verificationCallback(c *gin.Context) {
@@ -155,14 +174,7 @@ func (h *accountHandler) verificationCallback(c *gin.Context) {
 		return
 	}
 
-	aid, err := accountId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - verificationCallback - accountId: %w", err))
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	if err = h.account.Verify(c.Request.Context(), aid, code, true); err != nil {
+	if err := h.account.Verify(c.Request.Context(), code, true); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - verificationCallback - h.account.Verify: %w", err))
 
 		if errors.Is(err, repository.ErrNoAffectedRows) {
