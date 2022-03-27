@@ -3,11 +3,13 @@ package repository
 import (
 	"context"
 	"fmt"
+
 	"github.com/jackc/pgx/v4"
 
-	"github.com/quizlyfun/quizly-backend/internal/domain"
-	"github.com/quizlyfun/quizly-backend/internal/dto"
-	"github.com/quizlyfun/quizly-backend/pkg/postgres"
+	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/answersuck-backend/internal/dto"
+
+	"github.com/answersuck/answersuck-backend/pkg/postgres"
 )
 
 const (
@@ -183,7 +185,7 @@ func (r *accountRepository) FindByUsername(ctx context.Context, username string)
 func (r *accountRepository) Archive(ctx context.Context, a dto.AccountArchive) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s
-		SET 
+		SET
 			is_archived = $1,
 			updated_at = $2
 		WHERE
@@ -206,7 +208,7 @@ func (r *accountRepository) Archive(ctx context.Context, a dto.AccountArchive) e
 func (r *accountRepository) Verify(ctx context.Context, a dto.AccountVerify) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s AS a
-		SET 
+		SET
 			is_verified = $1,
 			updated_at = $2
 		FROM %s AS av

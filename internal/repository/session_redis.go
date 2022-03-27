@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/quizlyfun/quizly-backend/internal/domain"
+
+	"github.com/answersuck/answersuck-backend/internal/domain"
 )
 
 type SessionRepository struct {

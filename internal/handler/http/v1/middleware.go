@@ -7,11 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/quizlyfun/quizly-backend/internal/config"
-	"github.com/quizlyfun/quizly-backend/internal/domain"
-	"github.com/quizlyfun/quizly-backend/internal/service"
+	"github.com/answersuck/answersuck-backend/internal/config"
+	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/answersuck-backend/internal/service"
 
-	"github.com/quizlyfun/quizly-backend/pkg/logging"
+	"github.com/answersuck/answersuck-backend/pkg/logging"
 )
 
 // sessionMiddleware looking for a cookie with session id, sets account id and session id to context

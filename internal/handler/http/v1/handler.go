@@ -6,12 +6,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/quizlyfun/quizly-backend/internal/config"
-	"github.com/quizlyfun/quizly-backend/internal/service"
+	"github.com/answersuck/answersuck-backend/internal/config"
+	"github.com/answersuck/answersuck-backend/internal/service"
 
-	"github.com/quizlyfun/quizly-backend/pkg/auth"
-	"github.com/quizlyfun/quizly-backend/pkg/logging"
-	"github.com/quizlyfun/quizly-backend/pkg/validation"
+	"github.com/answersuck/answersuck-backend/pkg/auth"
+	"github.com/answersuck/answersuck-backend/pkg/logging"
+	"github.com/answersuck/answersuck-backend/pkg/validation"
 )
 
 const route = "/api/v1"

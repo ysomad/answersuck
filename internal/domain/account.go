@@ -3,12 +3,12 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"github.com/quizlyfun/quizly-backend/pkg/dicebear"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/quizlyfun/quizly-backend/pkg/strings"
+	"github.com/answersuck/answersuck-backend/pkg/dicebear"
+	"github.com/answersuck/answersuck-backend/pkg/strings"
 )
 
 // Client errors

@@ -3,17 +3,18 @@ package v1
 import (
 	"errors"
 	"fmt"
-	"github.com/quizlyfun/quizly-backend/internal/repository"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/quizlyfun/quizly-backend/internal/config"
-	"github.com/quizlyfun/quizly-backend/internal/domain"
-	"github.com/quizlyfun/quizly-backend/internal/service"
-	"github.com/quizlyfun/quizly-backend/pkg/logging"
-	"github.com/quizlyfun/quizly-backend/pkg/validation"
+	"github.com/answersuck/answersuck-backend/internal/config"
+	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/answersuck-backend/internal/repository"
+	"github.com/answersuck/answersuck-backend/internal/service"
+
+	"github.com/answersuck/answersuck-backend/pkg/logging"
+	"github.com/answersuck/answersuck-backend/pkg/validation"
 )
 
 type authHandler struct {

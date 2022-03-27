@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/quizlyfun/quizly-backend/internal/config"
-	"github.com/quizlyfun/quizly-backend/internal/domain"
+	"github.com/answersuck/answersuck-backend/internal/config"
+	"github.com/answersuck/answersuck-backend/internal/domain"
 
-	"github.com/quizlyfun/quizly-backend/pkg/auth"
+	"github.com/answersuck/answersuck-backend/pkg/auth"
 )
 
 type authService struct {

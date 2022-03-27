@@ -3,15 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/quizlyfun/quizly-backend/pkg/blocklist"
 	"time"
 
-	"github.com/quizlyfun/quizly-backend/internal/config"
-	"github.com/quizlyfun/quizly-backend/internal/domain"
-	"github.com/quizlyfun/quizly-backend/internal/dto"
+	"github.com/answersuck/answersuck-backend/internal/config"
+	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/answersuck-backend/internal/dto"
 
-	"github.com/quizlyfun/quizly-backend/pkg/auth"
-	"github.com/quizlyfun/quizly-backend/pkg/storage"
+	"github.com/answersuck/answersuck-backend/pkg/auth"
+	"github.com/answersuck/answersuck-backend/pkg/blocklist"
+	"github.com/answersuck/answersuck-backend/pkg/storage"
 )
 
 type accountService struct {

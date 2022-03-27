@@ -2,8 +2,6 @@ package app
 
 import (
 	"fmt"
-	repository2 "github.com/quizlyfun/quizly-backend/internal/repository"
-	"github.com/quizlyfun/quizly-backend/pkg/blocklist"
 	"log"
 	"os"
 	"os/signal"
@@ -15,16 +13,19 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
-	"github.com/quizlyfun/quizly-backend/internal/config"
-	v1 "github.com/quizlyfun/quizly-backend/internal/handler/http/v1"
-	"github.com/quizlyfun/quizly-backend/internal/service"
-	"github.com/quizlyfun/quizly-backend/pkg/auth"
-	"github.com/quizlyfun/quizly-backend/pkg/email"
-	"github.com/quizlyfun/quizly-backend/pkg/httpserver"
-	"github.com/quizlyfun/quizly-backend/pkg/logging"
-	"github.com/quizlyfun/quizly-backend/pkg/postgres"
-	"github.com/quizlyfun/quizly-backend/pkg/storage"
-	"github.com/quizlyfun/quizly-backend/pkg/validation"
+	"github.com/answersuck/answersuck-backend/internal/config"
+	v1 "github.com/answersuck/answersuck-backend/internal/handler/http/v1"
+	"github.com/answersuck/answersuck-backend/internal/repository"
+	"github.com/answersuck/answersuck-backend/internal/service"
+
+	"github.com/answersuck/answersuck-backend/pkg/auth"
+	"github.com/answersuck/answersuck-backend/pkg/blocklist"
+	"github.com/answersuck/answersuck-backend/pkg/email"
+	"github.com/answersuck/answersuck-backend/pkg/httpserver"
+	"github.com/answersuck/answersuck-backend/pkg/logging"
+	"github.com/answersuck/answersuck-backend/pkg/postgres"
+	"github.com/answersuck/answersuck-backend/pkg/storage"
+	"github.com/answersuck/answersuck-backend/pkg/validation"
 )
 
 func Run(configPath string) {
@@ -53,7 +54,7 @@ func Run(configPath string) {
 	})
 
 	// Service
-	sessionRepo := repository2.NewSessionRepository(sessionRdb)
+	sessionRepo := repository.NewSessionRepository(sessionRdb)
 	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
 
 	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
@@ -79,7 +80,7 @@ func Run(configPath string) {
 	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository2.NewAccountRepository(pg)
+	accountRepo := repository.NewAccountRepository(pg)
 	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager,
 		emailService, fileStorage, usernameBlockList)
 

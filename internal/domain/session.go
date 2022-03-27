@@ -7,7 +7,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/quizlyfun/quizly-backend/pkg/strings"
+	"github.com/answersuck/answersuck-backend/pkg/strings"
 )
 
 // Client errors

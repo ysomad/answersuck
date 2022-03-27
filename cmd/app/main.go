@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/quizlyfun/quizly-backend/internal/app"
-)
+import "github.com/answersuck/answersuck-backend/internal/app"
 
 func main() {
 	app.Run("./configs/local.yml")

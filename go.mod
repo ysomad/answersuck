@@ -1,4 +1,4 @@
-module github.com/quizlyfun/quizly-backend
+module github.com/answersuck/answersuck-backend
 
 go 1.18
 
