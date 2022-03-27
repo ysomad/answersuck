@@ -37,10 +37,10 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 		{
 			authenticated.GET("", h.get)
 			authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
-			authenticated.POST("verify", h.requestVerification)
-			authenticated.PATCH("verify", h.verificationCallback)
 		}
 
+		authenticated.POST("verify", h.requestVerification)
+		authenticated.PATCH("verify", h.verificationCallback)
 		accounts.POST("", h.create)
 	}
 }

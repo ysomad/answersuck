@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Quizly backend API",
+    "title": "Answersuck backend API",
     "contact": {
-      "email": "malykhsey@gmail.com"
+      "email": "contact@answersuck.com"
     },
     "version": "1.0.0"
   },
@@ -187,12 +187,7 @@
           "500": {
             "description": "Internal Server Error."
           }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
+        }
       },
       "patch": {
         "tags": [
@@ -240,12 +235,7 @@
           "500": {
             "description": "Internal Server Error."
           }
-        },
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ]
+        }
       }
     },
     "/accounts/reset-password": {

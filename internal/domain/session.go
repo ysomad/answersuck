@@ -37,7 +37,7 @@ func NewSession(accountId string, d Device, expiration time.Duration) (*Session,
 		return nil, fmt.Errorf("d.Validate: %w", err)
 	}
 
-	id, err := strings.NewUnique(32)
+	id, err := strings.NewUnique(64)
 	if err != nil {
 		return nil, fmt.Errorf("utils.UniqueString: %w", ErrSessionNotCreated)
 	}
