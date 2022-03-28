@@ -1,4 +1,4 @@
-# Golang authentication service
+# Answersuck backend API application
 
 ## Local development
 1. Configure `env` file
@@ -12,6 +12,3 @@ $ make run
 ```
 
 Make sure Makefile includes correct `env` file.
-
-## Links
-- [Evrone Go clean template](https://github.com/evrone/go-clean-template)
