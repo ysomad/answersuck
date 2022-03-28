@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/answersuck/answersuck-backend/pkg/logging"
+
 	"github.com/answersuck/answersuck-backend/internal/config"
 	"github.com/answersuck/answersuck-backend/internal/domain"
 	"github.com/answersuck/answersuck-backend/pkg/auth"
@@ -14,6 +16,7 @@ import (
 
 type accountService struct {
 	cfg *config.Aggregate
+	log logging.Logger
 
 	repo    AccountRepo
 	session Session
@@ -24,10 +27,11 @@ type accountService struct {
 	blockList blocklist.Finder
 }
 
-func NewAccountService(cfg *config.Aggregate, r AccountRepo, s Session,
+func NewAccountService(cfg *config.Aggregate, l logging.Logger, r AccountRepo, s Session,
 	t auth.TokenManager, e Email, u storage.Uploader, b blocklist.Finder) *accountService {
 	return &accountService{
 		cfg:       cfg,
+		log:       l,
 		repo:      r,
 		token:     t,
 		session:   s,
@@ -46,7 +50,7 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 		return nil, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
 	}
 
-	a.DiceBearAvatar()
+	a.SetDiceBearAvatar()
 
 	if err := a.GenerateVerificationCode(); err != nil {
 		return nil, fmt.Errorf("accountService - Create - a.GenerateVerificationCode: %w", err)
@@ -57,7 +61,9 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 		return nil, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
 	}
 
-	go func() { _ = s.email.SendAccountVerification(ctx, a.Email, a.Username, a.VerificationCode) }()
+	go func() {
+		_ = s.email.SendAccountVerification(ctx, a.Email, a.Username, a.VerificationCode)
+	}()
 
 	return a, nil
 }

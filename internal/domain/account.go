@@ -65,8 +65,8 @@ func (a *Account) RandomPassword() {
 	a.Password = strings.NewSpecialRandom(16)
 }
 
-// DiceBearAvatar sets dicebear identicon url from username to account AvatarURL
-func (a *Account) DiceBearAvatar() {
+// SetDiceBearAvatar sets dicebear identicon url from username to account AvatarURL
+func (a *Account) SetDiceBearAvatar() {
 	a.AvatarURL = dicebear.URL(a.Username)
 }
 

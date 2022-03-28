@@ -1,16 +1,16 @@
 package email
 
 import (
-	"fmt"
 	"net/mail"
-	"net/smtp"
+	"time"
+
+	smail "github.com/xhit/go-simple-mail/v2"
 )
 
 type client struct {
+	server *smail.SMTPServer
+
 	from string
-	host string
-	port int
-	auth smtp.Auth
 }
 
 func NewClient(from, pwd, host string, port int) (*client, error) {
@@ -19,13 +19,21 @@ func NewClient(from, pwd, host string, port int) (*client, error) {
 		return &client{}, err
 	}
 
-	a := smtp.PlainAuth("", from, pwd, host)
+	s := smail.NewSMTPClient()
+
+	s.Host = host
+	s.Port = port
+	s.Username = from
+	s.Password = pwd
+	s.Encryption = smail.EncryptionSSLTLS
+
+	s.KeepAlive = false
+	s.ConnectTimeout = 10 * time.Second
+	s.SendTimeout = 10 * time.Second
 
 	return &client{
-		from: from,
-		auth: a,
-		host: host,
-		port: port,
+		server: s,
+		from:   from,
 	}, nil
 }
 
@@ -34,13 +42,16 @@ func (c *client) Send(l Letter) error {
 		return err
 	}
 
-	if err := smtp.SendMail(
-		fmt.Sprintf("%s:%d", c.host, c.port),
-		c.auth,
-		c.from,
-		[]string{l.To},
-		[]byte(l.Message),
-	); err != nil {
+	msg := smail.NewMSG()
+	msg.SetFrom(c.from).AddTo(l.To).SetSubject(l.Subject)
+	msg.SetBody(smail.TextHTML, l.Message)
+
+	cli, err := c.server.Connect()
+	if err != nil {
+		return err
+	}
+
+	if err = msg.Send(cli); err != nil {
 		return err
 	}
 

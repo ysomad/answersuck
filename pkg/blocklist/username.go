@@ -1,6 +1,6 @@
 package blocklist
 
-var Usernames = []string{
+var usernames = []string{
 	"abuse",
 	"admin",
 	"administrator",

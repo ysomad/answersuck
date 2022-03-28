@@ -32,12 +32,12 @@ accessToken:
   signingKey: "secret"
 
 smtp:
-  host: "smtp.gmail.com"
-  port: 587
+  host: "smtp.yandex.ru"
+  port: 465
 
 fileStorage:
   endpoint: "s3.storage.selcloud.ru"
-  bucket: "quizly"
+  bucket: "answersuck"
 
 email:
   templates:

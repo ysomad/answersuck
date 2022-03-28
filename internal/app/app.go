@@ -81,7 +81,7 @@ func Run(configPath string) {
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
 	accountRepo := repository.NewAccountRepository(pg)
-	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager,
+	accountService := service.NewAccountService(&cfg, l, accountRepo, sessionService, tokenManager,
 		emailService, fileStorage, usernameBlockList)
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
