@@ -160,6 +160,11 @@ func (h *accountHandler) requestVerification(c *gin.Context) {
 			return
 		}
 
+		if errors.Is(err, domain.ErrAccountAlreadyVerified) {
+			abortWithError(c, http.StatusBadRequest, domain.ErrAccountAlreadyVerified, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

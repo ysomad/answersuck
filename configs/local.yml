@@ -43,4 +43,4 @@ email:
   templates:
     accountVerification: "./web/account_verification.html"
   subjects:
-    accountVerification: "Спасибо что присоединился к нам, %s!"
+    accountVerification: "Подтверждение аккаунта AnswerSuck"

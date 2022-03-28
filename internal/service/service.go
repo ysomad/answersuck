@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/answersuck/answersuck-backend/internal/dto"
 	"time"
 
 	"github.com/answersuck/answersuck-backend/internal/domain"
@@ -49,6 +50,9 @@ type (
 
 		// Verify sets verified to account with code in account_verification entity
 		Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error
+
+		// FindVerification returns object with data required for account verification request
+		FindVerification(ctx context.Context, aid string) (dto.AccountVerification, error)
 	}
 
 	Auth interface {
@@ -67,7 +71,7 @@ type (
 
 	Email interface {
 		// SendAccountVerification sends email with verification link to given email as to.
-		SendAccountVerification(ctx context.Context, to, username, code string) error
+		SendAccountVerification(ctx context.Context, to, code string) error
 	}
 
 	Session interface {

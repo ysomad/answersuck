@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-
 	"github.com/answersuck/answersuck-backend/internal/config"
 
 	"github.com/answersuck/answersuck-backend/pkg/email"
@@ -29,10 +28,10 @@ func NewEmailService(cfg *config.Aggregate, s email.Sender) *emailService {
 	}
 }
 
-func (s *emailService) SendAccountVerification(ctx context.Context, to, username, code string) error {
+func (s *emailService) SendAccountVerification(ctx context.Context, to, code string) error {
 	l := email.Letter{
 		To:      to,
-		Subject: fmt.Sprintf(s.cfg.Email.Subject.AccountVerification, username),
+		Subject: s.cfg.Email.Subject.AccountVerification,
 	}
 
 	if err := l.SetMsgFromTemplate(

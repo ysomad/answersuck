@@ -25,10 +25,6 @@
     {
       "name": "auth",
       "description": "Authentication operations"
-    },
-    {
-      "name": "session",
-      "description": "Session operations"
     }
   ],
   "paths": {
@@ -116,9 +112,9 @@
         "tags": [
           "account"
         ],
-        "summary": "Archive account",
-        "description": "Only account with state set to `isArchive=false` can be archived. Access token should be provided at query param, request it at `/auth/token/`.",
-        "operationId": "accountArchive",
+        "summary": "Delete account",
+        "description": "Only account with state set to `isArchive=false` can be deleted. Access token should be provided at query param, request it at `/auth/token/`.",
+        "operationId": "accountDelete",
         "parameters": [
           {
             "name": "token",
@@ -178,6 +174,16 @@
           "202": {
             "description": "Email verification link sent."
           },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized or expired session."
           },
@@ -187,7 +193,12 @@
           "500": {
             "description": "Internal Server Error."
           }
-        }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -245,7 +256,7 @@
         ],
         "summary": "Request reset password link",
         "description": "To request link to reset password, email should be provided. Email with token will be sent on success.",
-        "operationId": "accountForgotPassword",
+        "operationId": "accountResetPassword",
         "requestBody": {
           "content": {
             "application/json": {
@@ -270,6 +281,9 @@
               }
             }
           },
+          "404": {
+            "description": "Account not found."
+          },
           "500": {
             "description": "Internal Server Error."
           }
@@ -280,8 +294,8 @@
           "account"
         ],
         "summary": "Reset password callback",
-        "description": "To set new password, access token should be provided",
-        "operationId": "accountUpdatePassword",
+        "description": "To set new password, access token should be provided along side with email and new password",
+        "operationId": "accountResetPasswordCallback",
         "parameters": [
           {
             "name": "token",
@@ -574,10 +588,15 @@
       },
       "AccountResetPasswordCallbackRequest": {
         "required": [
+          "email",
           "password"
         ],
         "type": "object",
         "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
           "password": {
             "maxLength": 64,
             "minLength": 4,

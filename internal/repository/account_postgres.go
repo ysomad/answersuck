@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/answersuck/answersuck-backend/internal/dto"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -70,10 +71,10 @@ func (r *accountRepository) FindById(ctx context.Context, aid string) (*domain.A
 			a.created_at,
 			a.updated_at,
 			a.is_verified,
-			av.url AS avatar_url
+			aa.url AS avatar_url
 		FROM %s AS a
-		LEFT JOIN %s AS av
-		ON av.account_id = a.id
+		LEFT JOIN %s AS aa
+		ON aa.account_id = a.id
 		WHERE
 			a.id = $1
 			AND a.is_archived = $2
@@ -110,10 +111,10 @@ func (r *accountRepository) FindByEmail(ctx context.Context, email string) (*dom
 			a.created_at,
 			a.updated_at,
 			a.is_verified,
-			av.url AS avatar_url
+			aa.url AS avatar_url
 		FROM %s AS a
-		LEFT JOIN %s AS av
-		ON av.account_id = a.id
+		LEFT JOIN %s AS aa
+		ON aa.account_id = a.id
 		WHERE
 			a.email = $1
 			AND a.is_archived = $2
@@ -150,10 +151,10 @@ func (r *accountRepository) FindByUsername(ctx context.Context, username string)
 			a.created_at,
 			a.updated_at,
 			a.is_verified,
-			av.url AS avatar_url
+			aa.url AS avatar_url
 		FROM %s AS a
-		LEFT JOIN %s AS av
-		ON av.account_id = a.id
+		LEFT JOIN %s AS aa
+		ON aa.account_id = a.id
 		WHERE
 			a.username = $1
 			AND a.is_archived = $2
@@ -226,4 +227,26 @@ func (r *accountRepository) Verify(ctx context.Context, code string, verified bo
 	}
 
 	return nil
+}
+
+func (r *accountRepository) FindVerification(ctx context.Context, aid string) (dto.AccountVerification, error) {
+	sql := fmt.Sprintf(`
+		SELECT a.email, a.is_verified, av.code AS verification_code
+		FROM %s AS a
+		LEFT JOIN %s AS av
+		ON av.account_id = a.id
+		WHERE a.id = $1
+	`, accountTable, accountVerificationTable)
+
+	var a dto.AccountVerification
+
+	if err := r.Pool.QueryRow(ctx, sql, aid).Scan(&a.Email, &a.Verified, &a.Code); err != nil {
+		if err == pgx.ErrNoRows {
+			return dto.AccountVerification{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+		}
+
+		return dto.AccountVerification{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return a, nil
 }

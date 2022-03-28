@@ -62,7 +62,7 @@ func (s *accountService) Create(ctx context.Context, a *domain.Account) (*domain
 	}
 
 	go func() {
-		_ = s.email.SendAccountVerification(ctx, a.Email, a.Username, a.VerificationCode)
+		_ = s.email.SendAccountVerification(ctx, a.Email, a.VerificationCode)
 	}()
 
 	return a, nil
@@ -108,14 +108,18 @@ func (s *accountService) Delete(ctx context.Context, aid, sid string) error {
 }
 
 func (s *accountService) RequestVerification(ctx context.Context, aid string) error {
-	a, err := s.repo.FindById(ctx, aid)
+	a, err := s.repo.FindVerification(ctx, aid)
 	if err != nil {
 		return fmt.Errorf("accountService - RequestVerification - s.repo.FindById: %w", err)
 	}
 
-	if err = s.email.SendAccountVerification(ctx, a.Email, a.Username, a.VerificationCode); err != nil {
-		return fmt.Errorf("accountService - RequestVerification - s.email.SendAccountVerification: %w", err)
+	if a.Verified {
+		return fmt.Errorf("accountService: %w", domain.ErrAccountAlreadyVerified)
 	}
+
+	go func() {
+		_ = s.email.SendAccountVerification(ctx, a.Email, a.Code)
+	}()
 
 	return nil
 }
