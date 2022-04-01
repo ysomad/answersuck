@@ -73,7 +73,7 @@ type (
 
 	Auth interface {
 		// Login creates new session using provided account email or username as login and password
-		Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error)
+		Login(ctx context.Context, login, password string, d dto.Device) (*domain.Session, error)
 
 		// Logout logs out session by id
 		Logout(ctx context.Context, sid string) error
@@ -95,7 +95,7 @@ type (
 
 	Session interface {
 		// Create new session for account with id and device of given provider
-		Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error)
+		Create(ctx context.Context, aid string, d dto.Device) (*domain.Session, error)
 
 		// GetById session
 		GetById(ctx context.Context, sid string) (*domain.Session, error)
