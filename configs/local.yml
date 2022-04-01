@@ -1,0 +1,51 @@
+app:
+  name: "quizly-backend"
+  version: "0.1"
+
+web:
+  url: "http://localhost:8000"
+
+http:
+  port: "8080"
+
+logger:
+  logLevel: "debug"
+
+postgres:
+  poolMax: 2
+
+cache:
+  expiration: 1m
+  db: 1
+
+cookie:
+  secure: false
+  httpOnly: true
+
+session:
+  expiration: 24h
+  cookieKey: "id"
+  db: 0
+
+accessToken:
+  expiration: 1m
+  signingKey: "secret"
+
+password:
+  resetTokenExpiration: 5m
+
+smtp:
+  host: "smtp.yandex.ru"
+  port: 465
+
+fileStorage:
+  endpoint: "s3.storage.selcloud.ru"
+  bucket: "answersuck"
+
+email:
+  templates:
+    accountVerification: "./web/account_verification.html"
+    accountPasswordReset: "./web/account_password_reset.html"
+  subjects:
+    accountVerification: "Подтверждение аккаунта"
+    accountPasswordReset: "Сброс пароля"
