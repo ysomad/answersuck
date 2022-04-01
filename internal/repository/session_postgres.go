@@ -23,12 +23,13 @@ func NewSessionRepository(pg *postgres.Client) *sessionRepository {
 
 func (r *sessionRepository) Create(ctx context.Context, s *domain.Session) (*domain.Session, error) {
 	sql := fmt.Sprintf(`
-		INSERT INTO %s (account_id, max_age, user_agent, ip, expires_at, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO %s (id, account_id, max_age, user_agent, ip, expires_at, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id
 	`, sessionTable)
 
 	if err := r.Pool.QueryRow(ctx, sql,
+		s.Id,
 		s.AccountId,
 		s.MaxAge,
 		s.UserAgent,

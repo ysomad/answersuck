@@ -1,5 +1,5 @@
 create table if not exists session(
-    id uuid not null primary key default gen_random_uuid(),
+    id char(64) not null primary key,
     account_id uuid not null references account (id),
     max_age int not null,
     user_agent text not null,

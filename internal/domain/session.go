@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/answersuck/vault/pkg/strings"
 	"net/netip"
 	"time"
 )
@@ -31,9 +32,15 @@ func NewSession(aid, ua, ip string, expiration time.Duration) (*Session, error) 
 		return nil, fmt.Errorf("netip.ParseAddr: %w", err)
 	}
 
+	sid, err := strings.NewUnique(64)
+	if err != nil {
+		return nil, err
+	}
+
 	now := time.Now()
 
 	return &Session{
+		Id:        sid,
 		AccountId: aid,
 		UserAgent: ua,
 		IP:        ip,
