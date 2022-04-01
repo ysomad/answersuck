@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"github.com/answersuck/answersuck-backend/internal/dto"
 	"time"
 
-	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/dto"
 )
 
 type (

@@ -7,7 +7,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/answersuck/answersuck-backend/pkg/strings"
+	"github.com/answersuck/vault/pkg/strings"
 )
 
 // Client errors

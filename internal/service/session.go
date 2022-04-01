@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/answersuck-backend/internal/config"
-	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain"
 )
 
 type sessionService struct {

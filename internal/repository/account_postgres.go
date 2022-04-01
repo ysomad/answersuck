@@ -3,13 +3,14 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/answersuck/answersuck-backend/internal/dto"
 	"time"
 
 	"github.com/jackc/pgx/v4"
 
-	"github.com/answersuck/answersuck-backend/internal/domain"
-	"github.com/answersuck/answersuck-backend/pkg/postgres"
+	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/dto"
+
+	"github.com/answersuck/vault/pkg/postgres"
 )
 
 const (
@@ -300,7 +301,7 @@ func (r *accountRepository) UpdatePasswordWithToken(ctx context.Context, dto dto
 			WHERE id = $3
 		)
 		DELETE FROM %s
-		WHERE 
+		WHERE
 			account_id = $4
 			AND token = $5
 	`, accountTable, accountPasswordResetTokenTable)

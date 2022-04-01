@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/answersuck/answersuck-backend/internal/config"
-	"github.com/answersuck/answersuck-backend/internal/domain"
-
-	"github.com/answersuck/answersuck-backend/pkg/auth"
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/pkg/auth"
 )
 
 type authService struct {

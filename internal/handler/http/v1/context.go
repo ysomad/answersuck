@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/vault/internal/domain"
 )
 
 var (

@@ -7,11 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/answersuck-backend/internal/config"
-	"github.com/answersuck/answersuck-backend/internal/domain"
-	"github.com/answersuck/answersuck-backend/internal/service"
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/service"
 
-	"github.com/answersuck/answersuck-backend/pkg/logging"
+	"github.com/answersuck/vault/pkg/logging"
 )
 
 // sessionMiddleware looking for a cookie with session id, sets account id and session id to context

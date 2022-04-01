@@ -7,13 +7,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/answersuck-backend/internal/config"
-	"github.com/answersuck/answersuck-backend/internal/domain"
-	"github.com/answersuck/answersuck-backend/internal/repository"
-	"github.com/answersuck/answersuck-backend/internal/service"
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/repository"
+	"github.com/answersuck/vault/internal/service"
 
-	"github.com/answersuck/answersuck-backend/pkg/logging"
-	"github.com/answersuck/answersuck-backend/pkg/validation"
+	"github.com/answersuck/vault/pkg/logging"
+	"github.com/answersuck/vault/pkg/validation"
 )
 
 type accountHandler struct {

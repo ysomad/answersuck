@@ -13,19 +13,19 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
-	"github.com/answersuck/answersuck-backend/internal/config"
-	v1 "github.com/answersuck/answersuck-backend/internal/handler/http/v1"
-	"github.com/answersuck/answersuck-backend/internal/repository"
-	"github.com/answersuck/answersuck-backend/internal/service"
+	"github.com/answersuck/vault/internal/config"
+	v1 "github.com/answersuck/vault/internal/handler/http/v1"
+	"github.com/answersuck/vault/internal/repository"
+	"github.com/answersuck/vault/internal/service"
 
-	"github.com/answersuck/answersuck-backend/pkg/auth"
-	"github.com/answersuck/answersuck-backend/pkg/blocklist"
-	"github.com/answersuck/answersuck-backend/pkg/email"
-	"github.com/answersuck/answersuck-backend/pkg/httpserver"
-	"github.com/answersuck/answersuck-backend/pkg/logging"
-	"github.com/answersuck/answersuck-backend/pkg/postgres"
-	"github.com/answersuck/answersuck-backend/pkg/storage"
-	"github.com/answersuck/answersuck-backend/pkg/validation"
+	"github.com/answersuck/vault/pkg/auth"
+	"github.com/answersuck/vault/pkg/blocklist"
+	"github.com/answersuck/vault/pkg/email"
+	"github.com/answersuck/vault/pkg/httpserver"
+	"github.com/answersuck/vault/pkg/logging"
+	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/pkg/storage"
+	"github.com/answersuck/vault/pkg/validation"
 )
 
 func Run(configPath string) {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/answersuck/answersuck-backend/internal/domain"
+	"github.com/answersuck/vault/internal/domain"
 )
 
 type SessionRepository struct {

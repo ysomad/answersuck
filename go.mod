@@ -1,4 +1,4 @@
-module github.com/answersuck/answersuck-backend
+module github.com/answersuck/vault
 
 go 1.18
 

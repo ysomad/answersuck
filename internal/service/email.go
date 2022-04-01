@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/answersuck/answersuck-backend/internal/config"
 
-	"github.com/answersuck/answersuck-backend/pkg/email"
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/pkg/email"
 )
 
 const (

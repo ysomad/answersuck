@@ -7,8 +7,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/answersuck/answersuck-backend/pkg/dicebear"
-	"github.com/answersuck/answersuck-backend/pkg/strings"
+	"github.com/answersuck/vault/pkg/dicebear"
+	"github.com/answersuck/vault/pkg/strings"
 )
 
 // Client errors

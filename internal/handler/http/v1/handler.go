@@ -6,12 +6,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/answersuck-backend/internal/config"
-	"github.com/answersuck/answersuck-backend/internal/service"
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/service"
 
-	"github.com/answersuck/answersuck-backend/pkg/auth"
-	"github.com/answersuck/answersuck-backend/pkg/logging"
-	"github.com/answersuck/answersuck-backend/pkg/validation"
+	"github.com/answersuck/vault/pkg/auth"
+	"github.com/answersuck/vault/pkg/logging"
+	"github.com/answersuck/vault/pkg/validation"
 )
 
 const route = "/api/v1"
