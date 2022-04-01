@@ -42,10 +42,22 @@ func (s *sessionService) GetById(ctx context.Context, sid string) (*domain.Sessi
 	return sess, nil
 }
 
+func (s *sessionService) GetAll(ctx context.Context, aid string) ([]*domain.Session, error) {
+	panic("implement")
+
+	return nil, nil
+}
+
 func (s *sessionService) Terminate(ctx context.Context, sid string) error {
 	if err := s.repo.Delete(ctx, sid); err != nil {
 		return fmt.Errorf("sessionService - Terminate - s.repo.Delete: %w", err)
 	}
+
+	return nil
+}
+
+func (s *sessionService) TerminateAll(ctx context.Context, aid, sid string) error {
+	panic("implement")
 
 	return nil
 }

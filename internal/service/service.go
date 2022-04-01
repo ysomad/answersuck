@@ -100,8 +100,14 @@ type (
 		// GetById session
 		GetById(ctx context.Context, sid string) (*domain.Session, error)
 
+		// GetAll account sessions using provided account id
+		GetAll(ctx context.Context, aid string) ([]*domain.Session, error)
+
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
+
+		// TerminateAll account sessions excluding current session with id as sid
+		TerminateAll(ctx context.Context, aid, sid string) error
 	}
 
 	SessionRepo interface {
@@ -111,7 +117,13 @@ type (
 		// FindById session
 		FindById(ctx context.Context, sid string) (*domain.Session, error)
 
+		// FindAll account sessions by provided account id
+		FindAll(ctx context.Context, aid string) ([]*domain.Session, error)
+
 		// Delete session by id
 		Delete(ctx context.Context, sid string) error
+
+		// DeleteAll account sessions by provided account id excluding current session with id as sid
+		DeleteAll(ctx context.Context, aid, sid string) error
 	}
 )

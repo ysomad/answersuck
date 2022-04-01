@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -47,14 +46,8 @@ func Run(configPath string) {
 	}
 	defer pg.Close()
 
-	sessionRdb := redis.NewClient(&redis.Options{
-		Addr:     cfg.Redis.Addr,
-		Password: cfg.Redis.Password,
-		DB:       cfg.Session.DB,
-	})
-
 	// Service
-	sessionRepo := repository.NewSessionRepository(sessionRdb)
+	sessionRepo := repository.NewSessionRepository(pg)
 	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
 
 	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
