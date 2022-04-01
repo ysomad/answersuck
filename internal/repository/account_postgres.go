@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	accountTable             = "account"
-	accountAvatarTable       = "account_avatar"
-	accountVerificationTable = "account_verification"
+	accountTable                   = "account"
+	accountAvatarTable             = "account_avatar"
+	accountVerificationCodeTable   = "account_verification_code"
+	accountPasswordResetTokenTable = "account_password_reset_token"
 )
 
 type accountRepository struct {
@@ -42,7 +43,7 @@ func (r *accountRepository) Create(ctx context.Context, a *domain.Account) (*dom
 			VALUES($6, (SELECT account_id FROM a) )
 		)
 		SELECT account_id FROM a
-	`, accountTable, accountVerificationTable, accountAvatarTable)
+	`, accountTable, accountVerificationCodeTable, accountAvatarTable)
 
 	if err := r.Pool.QueryRow(ctx, sql,
 		a.Username,
@@ -53,10 +54,10 @@ func (r *accountRepository) Create(ctx context.Context, a *domain.Account) (*dom
 		a.AvatarURL,
 	).Scan(&a.Id); err != nil {
 		if err = isUniqueViolation(err); err != nil {
-			return nil, fmt.Errorf("r.QueryRow.Exec: %w", err)
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
 		}
 
-		return nil, fmt.Errorf("r.QueryRow.Exec: %w", err)
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return a, nil
@@ -215,7 +216,7 @@ func (r *accountRepository) Verify(ctx context.Context, code string, verified bo
 		WHERE
 			a.is_verified = $3
 			AND av.code = $4
-	`, accountTable, accountVerificationTable)
+	`, accountTable, accountVerificationCodeTable)
 
 	ct, err := r.Pool.Exec(ctx, sql, verified, updatedAt, !verified, code)
 	if err != nil {
@@ -236,7 +237,7 @@ func (r *accountRepository) FindVerification(ctx context.Context, aid string) (d
 		LEFT JOIN %s AS av
 		ON av.account_id = a.id
 		WHERE a.id = $1
-	`, accountTable, accountVerificationTable)
+	`, accountTable, accountVerificationCodeTable)
 
 	var a dto.AccountVerification
 
@@ -249,4 +250,72 @@ func (r *accountRepository) FindVerification(ctx context.Context, aid string) (d
 	}
 
 	return a, nil
+}
+
+func (r *accountRepository) InsertPasswordResetToken(ctx context.Context, email, token string) error {
+	sql := fmt.Sprintf(`
+		INSERT INTO %s (token, account_id)
+		VALUES($1, (SELECT id AS account_id FROM %s WHERE email = $2))
+	`, accountPasswordResetTokenTable, accountTable)
+
+	if _, err := r.Pool.Exec(ctx, sql, token, email); err != nil {
+
+		if err = isUniqueViolation(err); err != nil {
+			return fmt.Errorf("r.Pool.Exec: %w", err)
+		}
+
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNotFound)
+	}
+
+	return nil
+}
+
+func (r *accountRepository) FindPasswordResetToken(ctx context.Context, token string) (*dto.AccountPasswordResetToken, error) {
+	sql := fmt.Sprintf(`
+		SELECT t.token, t.created_at, a.id
+		FROM %s AS t
+		INNER JOIN %s AS a
+		ON a.id = t.account_id
+		WHERE t.token = $1
+	`, accountPasswordResetTokenTable, accountTable)
+
+	var a dto.AccountPasswordResetToken
+
+	if err := r.Pool.QueryRow(ctx, sql, token).Scan(&a.Token, &a.CreatedAt, &a.AccountId); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+		}
+
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return &a, nil
+}
+
+func (r *accountRepository) UpdatePasswordWithToken(ctx context.Context, dto dto.AccountUpdatePassword) error {
+	sql := fmt.Sprintf(`
+		WITH a AS (
+			UPDATE %s
+			SET password = $1, updated_at = $2
+			WHERE id = $3
+		)
+		DELETE FROM %s
+		WHERE 
+			account_id = $4
+			AND token = $5
+	`, accountTable, accountPasswordResetTokenTable)
+
+	if _, err := r.Pool.Exec(
+		ctx,
+		sql,
+		dto.PasswordHash,
+		dto.UpdatedAt,
+		dto.AccountId,
+		dto.AccountId,
+		dto.Token,
+	); err != nil {
+		return fmt.Errorf("r.Pool.Exec: %w", err)
+	}
+
+	return nil
 }

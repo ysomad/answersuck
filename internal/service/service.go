@@ -30,6 +30,12 @@ type (
 
 		// Verify sets is_verified to account corresponding to the code
 		Verify(ctx context.Context, code string, verified bool) error
+
+		// RequestPasswordReset sends account password reset mail to account email. Login might be username or email
+		RequestPasswordReset(ctx context.Context, login string) error
+
+		// PasswordReset sets new password to account associated with token
+		PasswordReset(ctx context.Context, token, password string) error
 	}
 
 	AccountRepo interface {
@@ -53,6 +59,16 @@ type (
 
 		// FindVerification returns object with data required for account verification request
 		FindVerification(ctx context.Context, aid string) (dto.AccountVerification, error)
+
+		// InsertPasswordResetToken creates new record in db for user with given email
+		InsertPasswordResetToken(ctx context.Context, email, token string) error
+
+		// FindPasswordResetToken returns account password reset token and account associated with the token
+		FindPasswordResetToken(ctx context.Context, token string) (*dto.AccountPasswordResetToken, error)
+
+		// UpdatePasswordWithToken sets new password to account with associated account id and
+		// deletes token record
+		UpdatePasswordWithToken(ctx context.Context, dto dto.AccountUpdatePassword) error
 	}
 
 	Auth interface {
@@ -70,8 +86,11 @@ type (
 	}
 
 	Email interface {
-		// SendAccountVerification sends email with verification link to given email as to.
-		SendAccountVerification(ctx context.Context, to, code string) error
+		// SendAccountVerificationMail sends email with verification link to given email as to
+		SendAccountVerificationMail(ctx context.Context, to, code string) error
+
+		// SendAccountPasswordResetMail send email with password reset link to given email as to
+		SendAccountPasswordResetMail(ctx context.Context, to, token string) error
 	}
 
 	Session interface {
