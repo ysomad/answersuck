@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/answersuck/vault/pkg/strings"
@@ -48,12 +47,4 @@ func NewSession(aid, ua, ip string, expiration time.Duration) (*Session, error) 
 		ExpiresAt: now.Add(expiration).Unix(),
 		CreatedAt: now,
 	}, nil
-}
-
-func (s *Session) MarshalBinary() ([]byte, error) {
-	return json.Marshal(s)
-}
-
-func (s *Session) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, s)
 }
