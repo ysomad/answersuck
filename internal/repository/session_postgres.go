@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/pkg/postgres"
@@ -46,9 +47,37 @@ func (r *sessionRepository) Create(ctx context.Context, s *domain.Session) (*dom
 }
 
 func (r *sessionRepository) FindById(ctx context.Context, sid string) (*domain.Session, error) {
-	panic("implement")
+	sql := fmt.Sprintf(`
+		SELECT 
+			accound_id,
+			user_agent,
+			ip,
+			max_age,
+			expires_at,
+			created_at
+		FROM %s
+		WHERE id = $1
+	`, sessionTable)
 
-	return nil, nil
+	s := domain.Session{Id: sid}
+
+	if err := r.Pool.QueryRow(ctx, sql, sid).Scan(
+		&s.AccountId,
+		&s.UserAgent,
+		&s.IP,
+		&s.MaxAge,
+		&s.ExpiresAt,
+		&s.CreatedAt,
+	); err != nil {
+
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+		}
+
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return &s, nil
 }
 
 func (r *sessionRepository) FindAll(ctx context.Context, aid string) ([]*domain.Session, error) {
