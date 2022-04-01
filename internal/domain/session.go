@@ -8,11 +8,6 @@ import (
 	"time"
 )
 
-// Client errors
-var (
-	ErrSessionAlreadyLoggedIn = errors.New("already logged in, please logout before logging in")
-)
-
 // System errors
 var (
 	ErrSessionContextNotFound = errors.New("session not found in context")

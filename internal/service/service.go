@@ -112,7 +112,7 @@ type (
 
 	SessionRepo interface {
 		// Create new session in DB
-		Create(ctx context.Context, s *domain.Session) error
+		Create(ctx context.Context, s *domain.Session) (*domain.Session, error)
 
 		// FindById session
 		FindById(ctx context.Context, sid string) (*domain.Session, error)

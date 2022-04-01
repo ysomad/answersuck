@@ -27,7 +27,8 @@ func (s *sessionService) Create(ctx context.Context, aid string, d dto.Device) (
 		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
 	}
 
-	if err = s.repo.Create(ctx, sess); err != nil {
+	sess, err = s.repo.Create(ctx, sess)
+	if err != nil {
 		return nil, fmt.Errorf("sessionService - Create - s.repo.Create: %w", err)
 	}
 

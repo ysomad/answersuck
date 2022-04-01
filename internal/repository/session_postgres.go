@@ -2,9 +2,14 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/pkg/postgres"
+)
+
+const (
+	sessionTable = "session"
 )
 
 type sessionRepository struct {
@@ -15,10 +20,29 @@ func NewSessionRepository(pg *postgres.Client) *sessionRepository {
 	return &sessionRepository{pg}
 }
 
-func (r *sessionRepository) Create(ctx context.Context, s *domain.Session) error {
-	panic("implement")
+func (r *sessionRepository) Create(ctx context.Context, s *domain.Session) (*domain.Session, error) {
+	sql := fmt.Sprintf(`
+		INSERT INTO %s (account_id, max_age, user_agent, ip, expires_at, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id
+	`, sessionTable)
 
-	return nil
+	if err := r.Pool.QueryRow(ctx, sql,
+		s.AccountId,
+		s.MaxAge,
+		s.UserAgent,
+		s.IP,
+		s.ExpiresAt,
+		s.CreatedAt,
+	).Scan(&s.Id); err != nil {
+		if err = isUniqueViolation(err); err != nil {
+			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		}
+
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return s, nil
 }
 
 func (r *sessionRepository) FindById(ctx context.Context, sid string) (*domain.Session, error) {
