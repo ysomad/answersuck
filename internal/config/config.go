@@ -19,6 +19,7 @@ type (
 		FileStorage FileStorage `yaml:"fileStorage"`
 		Email       Email       `yaml:"email"`
 		SMTP        SMTP        `yaml:"smtp"`
+		Password    Password    `yaml:"password"`
 	}
 
 	Web struct {
@@ -84,11 +85,13 @@ type (
 	}
 
 	EmailTemplate struct {
-		AccountVerification string `env-required:"true" yaml:"accountVerification"`
+		AccountVerification  string `env-required:"true" yaml:"accountVerification"`
+		AccountPasswordReset string `env-required:"true" yaml:"accountPasswordReset"`
 	}
 
 	EmailSubject struct {
-		AccountVerification string `env-required:"true" yaml:"accountVerification"`
+		AccountVerification  string `env-required:"true" yaml:"accountVerification"`
+		AccountPasswordReset string `env-required:"true" yaml:"accountPasswordReset"`
 	}
 
 	SMTP struct {
@@ -96,5 +99,9 @@ type (
 		Port     int    `env-required:"true" yaml:"port" env:"SMTP_PORT"`
 		From     string `env-required:"true" env:"SMTP_FROM"`
 		Password string `env-required:"true" env:"SMTP_PASSWORD"`
+	}
+
+	Password struct {
+		ResetTokenExp time.Duration `env-required:"true" yaml:"resetTokenExpiration"`
 	}
 )

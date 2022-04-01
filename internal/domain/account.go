@@ -13,18 +13,20 @@ import (
 
 // Client errors
 var (
-	ErrAccountAlreadyExist         = errors.New("account with given email or username already exist")
-	ErrAccountIncorrectCredentials = errors.New("incorrect login or password")
-	ErrAccountAlreadyVerified      = errors.New("current email already verified or verification code is expired")
-	ErrAccountForbiddenUsername    = errors.New("username contains forbidden words")
-	ErrAccountNotFound             = errors.New("account not found")
+	ErrAccountAlreadyExist            = errors.New("account with given email or username already exist")
+	ErrAccountIncorrectCredentials    = errors.New("incorrect login or password")
+	ErrAccountAlreadyVerified         = errors.New("current email already verified or verification code is expired")
+	ErrAccountForbiddenUsername       = errors.New("username contains forbidden words")
+	ErrAccountNotFound                = errors.New("account not found")
+	ErrAccountEmptyVerificationCode   = errors.New("empty account verification code")
+	ErrAccountEmptyResetPasswordToken = errors.New("empty reset password token")
 )
 
 // System errors
 var (
-	ErrAccountIncorrectPassword     = errors.New("incorrect password")
-	ErrAccountContextNotFound       = errors.New("account not found in context")
-	ErrAccountEmptyVerificationCode = errors.New("empty account verification code")
+	ErrAccountIncorrectPassword         = errors.New("incorrect password")
+	ErrAccountContextNotFound           = errors.New("account not found in context")
+	ErrAccountResetPasswordTokenExpired = errors.New("password reset token is expired")
 )
 
 type Account struct {
@@ -61,17 +63,13 @@ func (a *Account) CompareHashAndPassword() error {
 	return nil
 }
 
-func (a *Account) RandomPassword() {
-	a.Password = strings.NewSpecialRandom(16)
-}
-
 // SetDiceBearAvatar sets dicebear identicon url from username to account AvatarURL
 func (a *Account) SetDiceBearAvatar() {
 	a.AvatarURL = dicebear.URL(a.Username)
 }
 
-func (a *Account) GenerateVerificationCode() error {
-	code, err := strings.NewUnique(64)
+func (a *Account) GenerateVerificationCode(length int) error {
+	code, err := strings.NewUnique(length)
 	if err != nil {
 		return fmt.Errorf("strings.NewUnique: %w", err)
 	}

@@ -31,6 +31,9 @@ accessToken:
   expiration: 1m
   signingKey: "secret"
 
+password:
+  resetTokenExpiration: 5m
+
 smtp:
   host: "smtp.yandex.ru"
   port: 465
@@ -42,5 +45,7 @@ fileStorage:
 email:
   templates:
     accountVerification: "./web/account_verification.html"
+    accountPasswordReset: "./web/account_password_reset.html"
   subjects:
-    accountVerification: "Подтверждение аккаунта AnswerSuck"
+    accountVerification: "Подтверждение аккаунта"
+    accountPasswordReset: "Сброс пароля"

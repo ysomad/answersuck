@@ -47,7 +47,7 @@ func (s *authService) Login(ctx context.Context, login, password string, d domai
 
 	a.Password = password
 
-	if err := a.CompareHashAndPassword(); err != nil {
+	if err = a.CompareHashAndPassword(); err != nil {
 		return nil, fmt.Errorf("authService - Login - a.CompareHashAndPassword: %w", err)
 	}
 
@@ -75,7 +75,7 @@ func (s *authService) NewAccessToken(ctx context.Context, aid, password, audienc
 
 	a.Password = password
 
-	if err := a.CompareHashAndPassword(); err != nil {
+	if err = a.CompareHashAndPassword(); err != nil {
 		return "", fmt.Errorf("authService - NewAccessToken - a.CompareHashAndPassword: %w", err)
 	}
 

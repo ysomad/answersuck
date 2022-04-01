@@ -249,19 +249,19 @@
         }
       }
     },
-    "/accounts/reset-password": {
+    "/accounts/password/forgot": {
       "post": {
         "tags": [
           "account"
         ],
         "summary": "Request reset password link",
-        "description": "To request link to reset password, email should be provided. Email with token will be sent on success.",
-        "operationId": "accountResetPassword",
+        "description": "To request link to password reset, email or username should be provided. Email with code will be sent on success.",
+        "operationId": "accountForgotPassword",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountResetPasswordRequest"
+                "$ref": "#/components/schemas/AccountForgotPasswordRequest"
               }
             }
           },
@@ -288,14 +288,16 @@
             "description": "Internal Server Error."
           }
         }
-      },
+      }
+    },
+    "/accounts/password/reset": {
       "patch": {
         "tags": [
           "account"
         ],
-        "summary": "Reset password callback",
+        "summary": "Reset password",
         "description": "To set new password, access token should be provided along side with email and new password",
-        "operationId": "accountResetPasswordCallback",
+        "operationId": "accountResetPassword",
         "parameters": [
           {
             "name": "token",
@@ -313,14 +315,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountResetPasswordCallbackRequest"
+                "$ref": "#/components/schemas/AccountResetPasswordRequest"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": "New password set."
           },
           "400": {
@@ -574,29 +576,24 @@
           }
         }
       },
-      "AccountResetPasswordRequest": {
+      "AccountForgotPasswordRequest": {
         "required": [
-          "email"
+          "login"
         ],
         "type": "object",
         "properties": {
-          "email": {
+          "login": {
             "type": "string",
-            "format": "email"
+            "format": "email or username"
           }
         }
       },
-      "AccountResetPasswordCallbackRequest": {
+      "AccountResetPasswordRequest": {
         "required": [
-          "email",
           "password"
         ],
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
           "password": {
             "maxLength": 64,
             "minLength": 4,
@@ -614,7 +611,7 @@
         "properties": {
           "login": {
             "type": "string",
-            "format": "email or string"
+            "format": "email or username"
           },
           "password": {
             "type": "string",
