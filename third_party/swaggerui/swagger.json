@@ -5,7 +5,7 @@
     "contact": {
       "email": "contact@answersuck.com"
     },
-    "version": "1.0.0"
+    "version": "0.0.1"
   },
   "servers": [
     {
@@ -665,6 +665,16 @@
           },
           "403": {
             "description": "Invalid or expired access token."
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error."

@@ -134,7 +134,16 @@ func (r *sessionRepository) FindAll(ctx context.Context, aid string) ([]*domain.
 }
 
 func (r *sessionRepository) Delete(ctx context.Context, sid string) error {
-	panic("implement")
+	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = $1`, sessionTable)
+
+	ct, err := r.Pool.Exec(ctx, sql, sid)
+	if err != nil {
+		return fmt.Errorf("r.Pool.Exec: %w", err)
+	}
+
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+	}
 
 	return nil
 }

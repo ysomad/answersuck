@@ -1,12 +1,15 @@
 package v1
 
 import (
+	"errors"
 	"fmt"
-	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/repository"
 	"github.com/answersuck/vault/internal/service"
 
 	"github.com/answersuck/vault/pkg/logging"
@@ -65,10 +68,26 @@ func (h *sessionHandler) get(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminate(c *gin.Context) {
-	if err := h.session.Terminate(c.Request.Context(), c.Param("sessionID")); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - sessionService - terminate - h.sessionService.Terminate: %w", err))
+	currSid, err := sessionId(c)
+	if err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - session - terminate - sessionId"))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
-		// TODO: handle specific errors
+	sid := c.Param("sessionId")
+	if currSid == sid {
+		abortWithError(c, http.StatusBadRequest, domain.ErrSessionCannotBeTerminated, "")
+		return
+	}
+
+	if err = h.session.Terminate(c.Request.Context(), sid); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.session.Terminate: %w", err))
+
+		if errors.Is(err, repository.ErrNoAffectedRows) {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return

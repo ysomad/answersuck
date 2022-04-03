@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+// Client errors
+var (
+	ErrSessionCannotBeTerminated = errors.New("current session cannot be terminated, use logout instead")
+)
+
 // System errors
 var (
 	ErrSessionContextNotFound = errors.New("session not found in context")
