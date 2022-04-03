@@ -10,6 +10,7 @@ import (
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/dto"
 	"github.com/answersuck/vault/internal/repository"
 	"github.com/answersuck/vault/internal/service"
 
@@ -62,7 +63,7 @@ func (h *authHandler) login(c *gin.Context) {
 		c.Request.Context(),
 		r.Login,
 		r.Password,
-		domain.Device{
+		dto.Device{
 			IP:        c.ClientIP(),
 			UserAgent: c.GetHeader("User-Agent"),
 		},

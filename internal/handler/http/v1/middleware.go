@@ -31,7 +31,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session service.Se
 			return
 		}
 
-		if s.Device.IP != c.ClientIP() || s.Device.UserAgent != c.GetHeader("User-Agent") {
+		if s.IP != c.ClientIP() || s.UserAgent != c.GetHeader("User-Agent") {
 			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware: %w", domain.ErrSessionDeviceMismatch))
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
