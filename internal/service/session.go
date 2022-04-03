@@ -38,16 +38,19 @@ func (s *sessionService) Create(ctx context.Context, aid string, d dto.Device) (
 func (s *sessionService) GetById(ctx context.Context, sid string) (*domain.Session, error) {
 	sess, err := s.repo.FindById(ctx, sid)
 	if err != nil {
-		return nil, fmt.Errorf("sessionService - Get - s.repo.FindByID: %w", err)
+		return nil, fmt.Errorf("sessionService - GetById - s.repo.FindByID: %w", err)
 	}
 
 	return sess, nil
 }
 
 func (s *sessionService) GetAll(ctx context.Context, aid string) ([]*domain.Session, error) {
-	panic("implement")
+	sessions, err := s.repo.FindAll(ctx, aid)
+	if err != nil {
+		return nil, fmt.Errorf("sessionService - GetAll - s.repo.FindAll: %w", err)
+	}
 
-	return nil, nil
+	return sessions, nil
 }
 
 func (s *sessionService) Terminate(ctx context.Context, sid string) error {

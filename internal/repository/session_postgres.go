@@ -50,7 +50,7 @@ func (r *sessionRepository) Create(ctx context.Context, s *domain.Session) (*dom
 func (r *sessionRepository) FindById(ctx context.Context, sid string) (*domain.Session, error) {
 	sql := fmt.Sprintf(`
 		SELECT 
-			accound_id,
+			account_id,
 			user_agent,
 			ip,
 			max_age,
@@ -82,9 +82,55 @@ func (r *sessionRepository) FindById(ctx context.Context, sid string) (*domain.S
 }
 
 func (r *sessionRepository) FindAll(ctx context.Context, aid string) ([]*domain.Session, error) {
-	panic("implement")
+	sql := fmt.Sprintf(`
+		SELECT 
+			id,
+			account_id,
+			max_age,
+			user_agent,
+   			ip,
+   			expires_at,
+			created_at
+		FROM %s 
+		WHERE account_id = $1
+	`, sessionTable)
 
-	return nil, nil
+	rows, err := r.Pool.Query(ctx, sql, aid)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)
+		}
+
+		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	defer rows.Close()
+
+	var sessions []*domain.Session
+
+	for rows.Next() {
+		var s domain.Session
+
+		if err = rows.Scan(
+			&s.Id,
+			&s.AccountId,
+			&s.MaxAge,
+			&s.UserAgent,
+			&s.IP,
+			&s.ExpiresAt,
+			&s.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("rows.Scan: %w", ErrNotFound)
+		}
+
+		sessions = append(sessions, &s)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("rows.Err: %w", err)
+	}
+
+	return sessions, nil
 }
 
 func (r *sessionRepository) Delete(ctx context.Context, sid string) error {
