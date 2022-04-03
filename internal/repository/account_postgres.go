@@ -306,7 +306,7 @@ func (r *accountRepository) UpdatePasswordWithToken(ctx context.Context, dto dto
 			AND token = $5
 	`, accountTable, accountPasswordResetTokenTable)
 
-	if _, err := r.Pool.Exec(
+	ct, err := r.Pool.Exec(
 		ctx,
 		sql,
 		dto.PasswordHash,
@@ -314,8 +314,13 @@ func (r *accountRepository) UpdatePasswordWithToken(ctx context.Context, dto dto
 		dto.AccountId,
 		dto.AccountId,
 		dto.Token,
-	); err != nil {
+	)
+	if err != nil {
 		return fmt.Errorf("r.Pool.Exec: %w", err)
+	}
+
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
 	}
 
 	return nil

@@ -39,6 +39,7 @@ func SetupHandlers(e *gin.Engine, d *Deps) {
 	// Resource handlers
 	h := e.Group(route)
 	{
+		newSessionHandler(h, d)
 		newAccountHandler(h, d)
 		newAuthHandler(h, d)
 	}

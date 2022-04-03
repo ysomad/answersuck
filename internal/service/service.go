@@ -73,7 +73,7 @@ type (
 
 	Auth interface {
 		// Login creates new session using provided account email or username as login and password
-		Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error)
+		Login(ctx context.Context, login, password string, d dto.Device) (*domain.Session, error)
 
 		// Logout logs out session by id
 		Logout(ctx context.Context, sid string) error
@@ -95,23 +95,35 @@ type (
 
 	Session interface {
 		// Create new session for account with id and device of given provider
-		Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error)
+		Create(ctx context.Context, aid string, d dto.Device) (*domain.Session, error)
 
 		// GetById session
 		GetById(ctx context.Context, sid string) (*domain.Session, error)
 
+		// GetAll account sessions using provided account id
+		GetAll(ctx context.Context, aid string) ([]*domain.Session, error)
+
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
+
+		// TerminateWithExcept terminates all account sessions except session with provided id
+		TerminateWithExcept(ctx context.Context, aid, sid string) error
 	}
 
 	SessionRepo interface {
 		// Create new session in DB
-		Create(ctx context.Context, s *domain.Session) error
+		Create(ctx context.Context, s *domain.Session) (*domain.Session, error)
 
 		// FindById session
 		FindById(ctx context.Context, sid string) (*domain.Session, error)
 
+		// FindAll account sessions by provided account id
+		FindAll(ctx context.Context, aid string) ([]*domain.Session, error)
+
 		// Delete session by id
 		Delete(ctx context.Context, sid string) error
+
+		// DeleteWithExcept deletes account sessions from db except session with provided id
+		DeleteWithExcept(ctx context.Context, aid, sid string) error
 	}
 )

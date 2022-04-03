@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/answersuck/vault/internal/dto"
 	"net/mail"
 
 	"github.com/answersuck/vault/internal/config"
@@ -26,7 +27,7 @@ func NewAuthService(cfg *config.Aggregate, t auth.TokenManager, a Account, s Ses
 	}
 }
 
-func (s *authService) Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error) {
+func (s *authService) Login(ctx context.Context, login, password string, d dto.Device) (*domain.Session, error) {
 	a := &domain.Account{}
 
 	_, err := mail.ParseAddress(login)
