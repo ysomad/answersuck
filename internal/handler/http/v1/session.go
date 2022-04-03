@@ -97,25 +97,28 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminateAll(c *gin.Context) {
-	sid, err := sessionId(c)
+	currSid, err := sessionId(c)
 	if err != nil {
-		h.log.Error("http - v1 - sessionService - terminateAll - sessionId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - sessionId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	aid, err := accountId(c)
 	if err != nil {
-		h.log.Error("http - v1 - sessionService - terminateAll - accountId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - accountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 
 	}
 
-	if err = h.session.TerminateAll(c.Request.Context(), aid, sid); err != nil {
-		h.log.Error("http - v1 - sessionService - terminateAll - h.session.TerminateAll: %w", err)
+	if err = h.session.TerminateWithExcept(c.Request.Context(), aid, currSid); err != nil {
+		h.log.Error("http - v1 - session - terminateAll - h.session.TerminateAll: %w", err)
 
-		// TODO: handle specific errors
+		if errors.Is(err, repository.ErrNoAffectedRows) {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
 
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return

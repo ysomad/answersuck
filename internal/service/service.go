@@ -106,8 +106,8 @@ type (
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
 
-		// TerminateAll account sessions excluding current session with id as sid
-		TerminateAll(ctx context.Context, aid, sid string) error
+		// TerminateWithExcept terminates all account sessions except session with provided id
+		TerminateWithExcept(ctx context.Context, aid, sid string) error
 	}
 
 	SessionRepo interface {
@@ -123,7 +123,7 @@ type (
 		// Delete session by id
 		Delete(ctx context.Context, sid string) error
 
-		// DeleteAll account sessions by provided account id excluding current session with id as sid
-		DeleteAll(ctx context.Context, aid, sid string) error
+		// DeleteWithExcept deletes account sessions from db except session with provided id
+		DeleteWithExcept(ctx context.Context, aid, sid string) error
 	}
 )
