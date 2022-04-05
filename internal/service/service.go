@@ -30,12 +30,14 @@ type (
 
 		// Verify sets is_verified to account corresponding to the code
 		Verify(ctx context.Context, code string, verified bool) error
+	}
 
-		// RequestPasswordReset sends account password reset mail to account email. Login might be username or email
-		RequestPasswordReset(ctx context.Context, login string) error
+	AccountPassword interface {
+		// RequestReset sends account password reset mail to account email. Login might be username or email
+		RequestReset(ctx context.Context, login string) error
 
-		// PasswordReset sets new password to account associated with token
-		PasswordReset(ctx context.Context, token, password string) error
+		// Reset sets new password to account associated with token
+		Reset(ctx context.Context, token, password string) error
 	}
 
 	AccountRepo interface {

@@ -76,6 +76,7 @@ func Run(configPath string) {
 	accountRepo := repository.NewAccountRepository(pg)
 	accountService := service.NewAccountService(&cfg, l, accountRepo, sessionService, tokenManager,
 		emailService, fileStorage, usernameBlockList)
+	accountPasswordService := service.NewAccountPasswordService(&cfg, accountRepo, accountService, sessionService, emailService)
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 
@@ -89,13 +90,14 @@ func Run(configPath string) {
 	v1.SetupHandlers(
 		engine,
 		&v1.Deps{
-			Config:          &cfg,
-			Logger:          l,
-			ErrorTranslator: ginTranslator,
-			TokenManager:    tokenManager,
-			AccountService:  accountService,
-			SessionService:  sessionService,
-			AuthService:     authService,
+			Config:                 &cfg,
+			Logger:                 l,
+			ErrorTranslator:        ginTranslator,
+			TokenManager:           tokenManager,
+			AccountService:         accountService,
+			AccountPasswordService: accountPasswordService,
+			SessionService:         sessionService,
+			AuthService:            authService,
 		},
 	)
 
