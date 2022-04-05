@@ -3,6 +3,7 @@ package v1
 import (
 	"errors"
 	"fmt"
+	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
 	"strings"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/dto"
-	"github.com/answersuck/vault/internal/repository"
 	"github.com/answersuck/vault/internal/service"
 
 	"github.com/answersuck/vault/pkg/logging"

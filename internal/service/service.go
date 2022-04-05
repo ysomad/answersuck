@@ -32,6 +32,7 @@ type (
 		Verify(ctx context.Context, code string, verified bool) error
 	}
 
+	// AccountPassword service provides functionality for working with account passwords
 	AccountPassword interface {
 		// RequestReset sends account password reset mail to account email. Login might be username or email
 		RequestReset(ctx context.Context, login string) error
@@ -61,16 +62,18 @@ type (
 
 		// FindVerification returns object with data required for account verification request
 		FindVerification(ctx context.Context, aid string) (dto.AccountVerification, error)
+	}
 
-		// InsertPasswordResetToken creates new record in db for user with given email
-		InsertPasswordResetToken(ctx context.Context, email, token string) error
+	AccountPasswordRepo interface {
+		// InsertResetToken creates new record in db for user with given email
+		InsertResetToken(ctx context.Context, email, token string) error
 
-		// FindPasswordResetToken returns account password reset token and account associated with the token
-		FindPasswordResetToken(ctx context.Context, token string) (*dto.AccountPasswordResetToken, error)
+		// FindResetToken returns account password reset token and account id associated with the token
+		FindResetToken(ctx context.Context, token string) (*dto.AccountPasswordResetToken, error)
 
-		// UpdatePasswordWithToken sets new password to account with associated account id and
+		// UpdateWithToken sets new password to account with associated account id and
 		// deletes token record
-		UpdatePasswordWithToken(ctx context.Context, dto dto.AccountUpdatePassword) error
+		UpdateWithToken(ctx context.Context, a dto.AccountUpdatePassword) error
 	}
 
 	Auth interface {
