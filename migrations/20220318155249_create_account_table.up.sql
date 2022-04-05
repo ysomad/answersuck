@@ -18,7 +18,7 @@ create table if not exists account_verification_code(
 create table if not exists account_avatar(
     id bigserial not null primary key,
     url varchar(2048) not null,
-    account_id uuid unique not null references account (id)
+    account_id uuid not null references account (id)
 );
 
 create table if not exists account_password_reset_token(
