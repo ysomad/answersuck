@@ -162,3 +162,18 @@ func (r *sessionRepository) DeleteWithExcept(ctx context.Context, aid, sid strin
 
 	return nil
 }
+
+func (r *sessionRepository) DeleteAll(ctx context.Context, aid string) error {
+	sql := fmt.Sprintf(`DELETE FROM %s WHERE account_id = $1`, sessionTable)
+
+	ct, err := r.Pool.Exec(ctx, sql, aid)
+	if err != nil {
+		return fmt.Errorf("r.Pool.Exec: %w", err)
+	}
+
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+	}
+
+	return nil
+}

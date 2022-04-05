@@ -14,8 +14,8 @@ import (
 
 	"github.com/answersuck/vault/internal/config"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
-	"github.com/answersuck/vault/internal/repository"
 	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/blocklist"

@@ -3,18 +3,22 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/answersuck/vault/internal/dto"
+	"github.com/answersuck/vault/pkg/strings"
 	"net/mail"
 	"time"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/dto"
-
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/blocklist"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/storage"
-	"github.com/answersuck/vault/pkg/strings"
+)
+
+const (
+	verificationCodeLength   = 64
+	passwordResetTokenLength = 64
 )
 
 type accountService struct {
@@ -29,11 +33,6 @@ type accountService struct {
 	storage   storage.Uploader
 	blockList blocklist.Finder
 }
-
-const (
-	verificationCodeLength   = 64
-	passwordResetTokenLength = 64
-)
 
 func NewAccountService(cfg *config.Aggregate, l logging.Logger, r AccountRepo, s Session,
 	t auth.TokenManager, e Email, u storage.Uploader, b blocklist.Finder) *accountService {

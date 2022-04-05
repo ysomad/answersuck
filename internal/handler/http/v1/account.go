@@ -3,13 +3,13 @@ package v1
 import (
 	"errors"
 	"fmt"
+	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/repository"
 	"github.com/answersuck/vault/internal/service"
 
 	"github.com/answersuck/vault/pkg/logging"
@@ -17,9 +17,10 @@ import (
 )
 
 type accountHandler struct {
-	t       validation.ErrorTranslator
-	cfg     *config.Aggregate
-	log     logging.Logger
+	t   validation.ErrorTranslator
+	cfg *config.Aggregate
+	log logging.Logger
+
 	account service.Account
 }
 
@@ -246,12 +247,7 @@ func (h *accountHandler) passwordReset(c *gin.Context) {
 	if err := h.account.PasswordReset(c.Request.Context(), t, r.Password); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - passwordReset - h.account.PasswordReset: %w", err))
 
-		if errors.Is(err, repository.ErrNotFound) {
-			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
-			return
-		}
-
-		if errors.Is(err, domain.ErrAccountResetPasswordTokenExpired) {
+		if errors.Is(err, domain.ErrAccountResetPasswordTokenExpired) || errors.Is(err, repository.ErrNotFound) {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}

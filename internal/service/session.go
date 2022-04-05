@@ -68,3 +68,11 @@ func (s *sessionService) TerminateWithExcept(ctx context.Context, aid, sid strin
 
 	return nil
 }
+
+func (s *sessionService) TerminateAll(ctx context.Context, aid string) error {
+	if err := s.repo.Delete(ctx, aid); err != nil {
+		return fmt.Errorf("sessionService - TerminateAll - s.repo.DeleteAll: %w", err)
+	}
+
+	return nil
+}
