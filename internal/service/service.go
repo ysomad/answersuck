@@ -106,6 +106,9 @@ type (
 		// Terminate session by id
 		Terminate(ctx context.Context, sid string) error
 
+		// TerminateAll terminates all account sessions
+		TerminateAll(ctx context.Context, aid string) error
+
 		// TerminateWithExcept terminates all account sessions except session with provided id
 		TerminateWithExcept(ctx context.Context, aid, sid string) error
 	}
@@ -122,6 +125,9 @@ type (
 
 		// Delete session by id
 		Delete(ctx context.Context, sid string) error
+
+		// DeleteAll deletes all account sessions from db associated with account id
+		DeleteAll(ctx context.Context, aid string) error
 
 		// DeleteWithExcept deletes account sessions from db except session with provided id
 		DeleteWithExcept(ctx context.Context, aid, sid string) error
