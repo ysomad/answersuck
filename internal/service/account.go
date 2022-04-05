@@ -3,18 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
-	"net/mail"
 	"time"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/dto"
-
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/blocklist"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/storage"
-	"github.com/answersuck/vault/pkg/strings"
 )
 
 type accountService struct {
@@ -31,8 +27,7 @@ type accountService struct {
 }
 
 const (
-	verificationCodeLength   = 64
-	passwordResetTokenLength = 64
+	verificationCodeLength = 64
 )
 
 func NewAccountService(cfg *config.Aggregate, l logging.Logger, r AccountRepo, s Session,
@@ -135,63 +130,6 @@ func (s *accountService) RequestVerification(ctx context.Context, aid string) er
 func (s *accountService) Verify(ctx context.Context, code string, verified bool) error {
 	if err := s.repo.Verify(ctx, code, verified, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Verify - s.repo.Verify: %w", err)
-	}
-
-	return nil
-}
-
-func (s *accountService) RequestPasswordReset(ctx context.Context, login string) error {
-	email := login
-
-	if _, err := mail.ParseAddress(login); err != nil {
-
-		a, err := s.GetByUsername(ctx, login)
-		if err != nil {
-			return fmt.Errorf("accountService - RequestPasswordReset - s.GetByUsername: %w", err)
-		}
-
-		email = a.Email
-	}
-
-	t, err := strings.NewUnique(passwordResetTokenLength)
-	if err != nil {
-		return fmt.Errorf("accountService - RequestPasswordReset - strings.NewUnique: %w", err)
-	}
-
-	if err = s.repo.InsertPasswordResetToken(ctx, email, t); err != nil {
-		return fmt.Errorf("accountService - RequestPasswordReset - s.repo.InsertPasswordResetToken: %w", err)
-	}
-
-	if err = s.email.SendAccountPasswordResetMail(ctx, email, t); err != nil {
-		return fmt.Errorf("accountService - RequestPasswordReset - s.email.SendAccountPasswordResetMail: %w", err)
-	}
-
-	return nil
-}
-
-func (s *accountService) PasswordReset(ctx context.Context, token, password string) error {
-	t, err := s.repo.FindPasswordResetToken(ctx, token)
-	if err != nil {
-		return fmt.Errorf("accountService - PasswordReset - s.repo.FindPasswordResetToken: %w", err)
-	}
-
-	d := t.CreatedAt.Add(s.cfg.Password.ResetTokenExp)
-	if time.Now().After(d) {
-		return fmt.Errorf("accountService - PasswordReset: %w", domain.ErrAccountResetPasswordTokenExpired)
-	}
-
-	a := domain.Account{Password: password}
-	if err = a.GeneratePasswordHash(); err != nil {
-		return fmt.Errorf("accountService - PasswordReset - a.GeneratePassword: %w", err)
-	}
-
-	if err = s.repo.UpdatePasswordWithToken(ctx, dto.AccountUpdatePassword{
-		Token:        t.Token,
-		AccountId:    t.AccountId,
-		PasswordHash: a.PasswordHash,
-		UpdatedAt:    time.Now(),
-	}); err != nil {
-		return fmt.Errorf("accountService - PasswordReset - s.repo.UpdatePasswordWithToken: %w", err)
 	}
 
 	return nil
