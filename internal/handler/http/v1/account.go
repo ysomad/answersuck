@@ -21,17 +21,15 @@ type accountHandler struct {
 	cfg *config.Aggregate
 	log logging.Logger
 
-	account  service.Account
-	password service.AccountPassword
+	account service.Account
 }
 
 func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &accountHandler{
-		t:        d.ErrorTranslator,
-		cfg:      d.Config,
-		log:      d.Logger,
-		account:  d.AccountService,
-		password: d.AccountPasswordService,
+		t:       d.ErrorTranslator,
+		cfg:     d.Config,
+		log:     d.Logger,
+		account: d.AccountService,
 	}
 
 	accounts := handler.Group("accounts")
@@ -213,7 +211,7 @@ func (h *accountHandler) passwordForgot(c *gin.Context) {
 		return
 	}
 
-	if err := h.password.RequestReset(c.Request.Context(), r.Login); err != nil {
+	if err := h.account.RequestPasswordReset(c.Request.Context(), r.Login); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - passwordForgot - h.account.RequestPasswordReset: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) {
@@ -246,7 +244,7 @@ func (h *accountHandler) passwordReset(c *gin.Context) {
 		return
 	}
 
-	if err := h.password.Reset(c.Request.Context(), t, r.Password); err != nil {
+	if err := h.account.PasswordReset(c.Request.Context(), t, r.Password); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - passwordReset - h.account.PasswordReset: %w", err))
 
 		if errors.Is(err, domain.ErrAccountResetPasswordTokenExpired) || errors.Is(err, repository.ErrNotFound) {

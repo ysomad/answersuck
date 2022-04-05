@@ -22,7 +22,6 @@ type Deps struct {
 	ErrorTranslator validation.ErrorTranslator
 	TokenManager    auth.TokenManager
 	AccountService  service.Account
-	AccountPasswordService service.AccountPassword
 	SessionService  service.Session
 	AuthService     service.Auth
 }

@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	repository2 "github.com/answersuck/vault/internal/service/repository"
 	"log"
 	"os"
 	"os/signal"
@@ -16,6 +15,7 @@ import (
 	"github.com/answersuck/vault/internal/config"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/blocklist"
@@ -47,7 +47,7 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
-	sessionRepo := repository2.NewSessionRepository(pg)
+	sessionRepo := repository.NewSessionRepository(pg)
 	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
 
 	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
@@ -73,13 +73,9 @@ func Run(configPath string) {
 	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository2.NewAccountRepository(pg)
+	accountRepo := repository.NewAccountRepository(pg)
 	accountService := service.NewAccountService(&cfg, l, accountRepo, sessionService, tokenManager,
 		emailService, fileStorage, usernameBlockList)
-
-	accountPasswordRepo := repository2.NewAccountPasswordRepository(pg)
-	accountPasswordService := service.NewAccountPasswordService(&cfg, accountPasswordRepo, accountService,
-		sessionService, emailService)
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 
@@ -93,14 +89,13 @@ func Run(configPath string) {
 	v1.SetupHandlers(
 		engine,
 		&v1.Deps{
-			Config:                 &cfg,
-			Logger:                 l,
-			ErrorTranslator:        ginTranslator,
-			TokenManager:           tokenManager,
-			AccountService:         accountService,
-			AccountPasswordService: accountPasswordService,
-			SessionService:         sessionService,
-			AuthService:            authService,
+			Config:          &cfg,
+			Logger:          l,
+			ErrorTranslator: ginTranslator,
+			TokenManager:    tokenManager,
+			AccountService:  accountService,
+			SessionService:  sessionService,
+			AuthService:     authService,
 		},
 	)
 
