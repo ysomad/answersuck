@@ -38,16 +38,20 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 		{
 			authenticated.GET("", h.get)
 			authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
-			authenticated.POST("verify", h.requestVerification)
 		}
 
-		password := accounts.Group("password")
+		passwordReset := accounts.Group("password/reset")
 		{
-			password.POST("forgot", h.passwordForgot)
-			password.PATCH("reset", h.passwordReset)
+			passwordReset.POST("", h.requestPasswordReset)
+			passwordReset.PUT("", h.passwordReset)
 		}
 
-		accounts.PATCH("verify", h.verify)
+		verification := accounts.Group("verification")
+		{
+			verification.POST("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService), h.requestVerification)
+			verification.PUT("", h.verify)
+		}
+
 		accounts.POST("", h.create)
 	}
 }
@@ -199,12 +203,12 @@ func (h *accountHandler) verify(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-type accountPasswordForgotRequest struct {
+type accountRequestPasswordResetRequest struct {
 	Login string `json:"login" binding:"required,email|alphanum"`
 }
 
-func (h *accountHandler) passwordForgot(c *gin.Context) {
-	var r accountPasswordForgotRequest
+func (h *accountHandler) requestPasswordReset(c *gin.Context) {
+	var r accountRequestPasswordResetRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))

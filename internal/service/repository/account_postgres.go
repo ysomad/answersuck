@@ -210,16 +210,22 @@ func (r *accountRepository) Archive(ctx context.Context, aid string, archived bo
 func (r *accountRepository) Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s AS a
-		SET
+		SET 
 			is_verified = $1,
 			updated_at = $2
-		FROM %s AS av
+		FROM (
+			SELECT av.code, a.id AS account_id
+			FROM %s AS av
+			INNER JOIN %s AS a
+			ON av.account_id = a.id
+			WHERE av.code = $3
+		) AS sq
 		WHERE
-			a.is_verified = $3
-			AND av.code = $4
-	`, accountTable, accountVerificationCodeTable)
+			a.is_verified = $4 
+			AND a.id = sq.account_id;
+	`, accountTable, accountVerificationCodeTable, accountTable)
 
-	ct, err := r.Pool.Exec(ctx, sql, verified, updatedAt, !verified, code)
+	ct, err := r.Pool.Exec(ctx, sql, verified, updatedAt, code, !verified)
 	if err != nil {
 		return fmt.Errorf("r.Pool.Exec: %w", err)
 	}
