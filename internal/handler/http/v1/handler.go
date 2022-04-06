@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,9 +29,6 @@ func SetupHandlers(e *gin.Engine, d *Deps) {
 	// Options
 	e.Use(gin.Logger())
 	e.Use(gin.Recovery())
-
-	// Swagger UI
-	e.Static(fmt.Sprintf("%s/swagger/", route), "third_party/swaggerui")
 
 	e.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
 

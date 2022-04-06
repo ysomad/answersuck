@@ -99,6 +99,9 @@ func Run(configPath string) {
 		},
 	)
 
+	// Swagger UI
+	engine.Static("docs", "third_party/swaggerui")
+
 	httpServer := httpserver.New(engine, httpserver.Port(cfg.HTTP.Port))
 
 	// Graceful shutdown
