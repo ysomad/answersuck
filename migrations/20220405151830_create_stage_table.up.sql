@@ -1,12 +1,8 @@
-create table if not exists stage(
-    id bigserial not null primary key,
-    title varchar(24),
-    is_final bool not null,
-    "order" int not null,
-    package_id bigint not null references package (id)
-);
-
-create table if not exists stage_topic(
-    stage_id bigint not null references stage (id),
-    topic_id bigint not null references topic (id)
+CREATE TABLE IF NOT EXISTS stage
+(
+    id         serial             NOT NULL PRIMARY KEY,
+    name       varchar(24),
+    is_final   bool DEFAULT FALSE NOT NULL,
+    "order"    int                NOT NULL,
+    package_id int                NOT NULL REFERENCES package (id)
 );

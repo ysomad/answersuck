@@ -1,1 +1,1 @@
-drop table if exists session cascade;
+DROP TABLE IF EXISTS session CASCADE;
