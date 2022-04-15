@@ -2,9 +2,6 @@ DELETE
 FROM package_tag;
 
 DELETE
-FROM package_cover;
-
-DELETE
 FROM stage_topic_question;
 
 DELETE
@@ -15,3 +12,6 @@ FROM stage;
 
 DELETE
 FROM package;
+
+DELETE
+FROM package_cover;

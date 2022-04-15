@@ -1,10 +1,18 @@
-INSERT INTO package (name, account_id, is_published, language_id)
-VALUES ('Русский пакет 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1),
-       ('Русский пакет 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1),
-       ('Русский пакет 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 1),
-       ('English package 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2),
-       ('English package 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2),
-       ('English package 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 2);
+INSERT INTO package_cover (url)
+VALUES ('https://avatars.dicebear.com/api/identicon/rutest1.svg'),
+       ('https://avatars.dicebear.com/api/identicon/rutest2.svg'),
+       ('https://avatars.dicebear.com/api/identicon/rutest3.svg'),
+       ('https://avatars.dicebear.com/api/identicon/entest1.svg'),
+       ('https://avatars.dicebear.com/api/identicon/entest2.svg'),
+       ('https://avatars.dicebear.com/api/identicon/entest3.svg');
+
+INSERT INTO package (name, account_id, is_published, language_id, package_cover_id)
+VALUES ('Русский пакет 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, 1),
+       ('Русский пакет 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, 2),
+       ('Русский пакет 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 1, 3),
+       ('English package 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, 4),
+       ('English package 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, 5),
+       ('English package 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 2, 6);
 
 INSERT INTO package_tag (package_id, tag_id)
 VALUES (1, 1),
@@ -30,14 +38,6 @@ VALUES (1, 1),
        (6, 22),
        (6, 23),
        (6, 24);
-
-INSERT INTO package_cover (url, package_id)
-VALUES ('https://avatars.dicebear.com/api/identicon/rutest1.svg', 1),
-       ('https://avatars.dicebear.com/api/identicon/rutest2.svg', 2),
-       ('https://avatars.dicebear.com/api/identicon/rutest3.svg', 3),
-       ('https://avatars.dicebear.com/api/identicon/entest1.svg', 4),
-       ('https://avatars.dicebear.com/api/identicon/entest2.svg', 5),
-       ('https://avatars.dicebear.com/api/identicon/entest3.svg', 6);
 
 INSERT INTO stage (name, is_final, "order", package_id)
 VALUES ('Этап 1', FALSE, 0, 1),
