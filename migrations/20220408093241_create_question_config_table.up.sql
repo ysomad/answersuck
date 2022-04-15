@@ -10,6 +10,6 @@ CREATE TABLE IF NOT EXISTS question_config
 
     secret_topic varchar(64),
     secret_cost  int,
-    is_keepable  bool,
-    is_visible   bool
+    is_keepable  boolean,
+    is_visible   boolean
 );

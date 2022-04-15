@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS answer_image
 CREATE TABLE IF NOT EXISTS answer
 (
     id              serial       NOT NULL PRIMARY KEY,
-    answer          varchar(255) NOT NULL,
+    answer          varchar(128) NOT NULL,
     answer_image_id int REFERENCES answer_image (id)
 );
