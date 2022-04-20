@@ -85,6 +85,9 @@ func Run(configPath string) {
 	tagRepo := repository.NewTagRepository(pg)
 	tagService := service.NewTagService(tagRepo)
 
+	topicRepo := repository.NewTopicRepository(pg)
+	topicService := service.NewTopicService(topicRepo)
+
 	ginTranslator, err := validation.NewGinTranslator()
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - validation.NewGinTranslator: %w", err))
@@ -104,6 +107,7 @@ func Run(configPath string) {
 			AuthService:     authService,
 			LanguageService: languageService,
 			TagService:      tagService,
+			TopicService:    topicService,
 		},
 	)
 

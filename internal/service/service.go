@@ -148,4 +148,12 @@ type (
 	TagRepo interface {
 		FindAll(ctx context.Context) ([]*domain.Tag, error)
 	}
+
+	Topic interface {
+		GetAll(ctx context.Context) ([]*domain.Topic, error)
+	}
+
+	TopicRepo interface {
+		FindAll(ctx context.Context) ([]*domain.Topic, error)
+	}
 )
