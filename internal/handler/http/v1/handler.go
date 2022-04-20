@@ -26,6 +26,7 @@ type Deps struct {
 	LanguageService service.Language
 	TagService      service.Tag
 	TopicService    service.Topic
+	QuestionService service.Question
 }
 
 func SetupHandlers(e *gin.Engine, d *Deps) {
@@ -44,5 +45,6 @@ func SetupHandlers(e *gin.Engine, d *Deps) {
 		newLanguageHandler(h, d)
 		newTagHandler(h, d)
 		newTopicHandler(h, d)
+		newQuestionHandler(h, d)
 	}
 }

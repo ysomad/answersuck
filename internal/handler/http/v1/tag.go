@@ -2,10 +2,12 @@ package v1
 
 import (
 	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
 	"github.com/answersuck/vault/internal/service"
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type tagHandler struct {
@@ -30,6 +32,7 @@ func (h *tagHandler) getAll(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - tag - getAll - h.tag.GetAll: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	c.JSON(http.StatusOK, tags)

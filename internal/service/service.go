@@ -156,4 +156,12 @@ type (
 	TopicRepo interface {
 		FindAll(ctx context.Context) ([]*domain.Topic, error)
 	}
+
+	Question interface {
+		GetAll(ctx context.Context) ([]*domain.Question, error)
+	}
+
+	QuestionRepo interface {
+		FindAll(ctx context.Context) ([]*domain.Question, error)
+	}
 )

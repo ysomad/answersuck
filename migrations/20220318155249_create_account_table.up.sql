@@ -12,21 +12,21 @@ CREATE TABLE IF NOT EXISTS account
 
 CREATE TABLE IF NOT EXISTS account_verification_code
 (
-    id         bigserial       NOT NULL PRIMARY KEY,
+    id         serial          NOT NULL PRIMARY KEY,
     code       char(64) UNIQUE NOT NULL,
     account_id uuid UNIQUE     NOT NULL REFERENCES account (id)
 );
 
 CREATE TABLE IF NOT EXISTS account_avatar
 (
-    id         bigserial     NOT NULL PRIMARY KEY,
+    id         serial        NOT NULL PRIMARY KEY,
     url        varchar(2048) NOT NULL,
     account_id uuid          NOT NULL REFERENCES account (id)
 );
 
 CREATE TABLE IF NOT EXISTS account_password_reset_token
 (
-    id         bigserial                                          NOT NULL PRIMARY KEY,
+    id         serial                                             NOT NULL PRIMARY KEY,
     token      char(64) UNIQUE                                    NOT NULL,
     account_id uuid                                               NOT NULL REFERENCES account (id),
     created_at timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL
