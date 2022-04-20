@@ -132,4 +132,12 @@ type (
 		// DeleteWithExcept deletes account sessions from db except session with provided id
 		DeleteWithExcept(ctx context.Context, aid, sid string) error
 	}
+
+	Tag interface {
+		GetAll(ctx context.Context) ([]*domain.Tag, error)
+	}
+
+	TagRepo interface {
+		FindAll(ctx context.Context) ([]*domain.Tag, error)
+	}
 )

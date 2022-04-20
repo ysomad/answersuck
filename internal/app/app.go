@@ -79,6 +79,9 @@ func Run(configPath string) {
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 
+	tagRepo := repository.NewTagRepository(pg)
+	tagService := service.NewTagService(tagRepo)
+
 	ginTranslator, err := validation.NewGinTranslator()
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - validation.NewGinTranslator: %w", err))
@@ -96,6 +99,7 @@ func Run(configPath string) {
 			AccountService:  accountService,
 			SessionService:  sessionService,
 			AuthService:     authService,
+			TagService:      tagService,
 		},
 	)
 

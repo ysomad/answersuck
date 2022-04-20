@@ -23,6 +23,7 @@ type Deps struct {
 	AccountService  service.Account
 	SessionService  service.Session
 	AuthService     service.Auth
+	TagService      service.Tag
 }
 
 func SetupHandlers(e *gin.Engine, d *Deps) {
@@ -38,5 +39,6 @@ func SetupHandlers(e *gin.Engine, d *Deps) {
 		newSessionHandler(h, d)
 		newAccountHandler(h, d)
 		newAuthHandler(h, d)
+		newTagHandler(h, d)
 	}
 }
