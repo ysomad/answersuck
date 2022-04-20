@@ -1,5 +1,5 @@
 ---
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   title: Answersuck backend API
   contact:
@@ -15,6 +15,16 @@ tags:
   description: Authentication operations
 - name: session
   description: Session operations
+- name: tag
+  description: Tag operations
+- name: language
+  description: Language operations
+- name: topic
+  description: topic operations
+- name: question
+  description: Question operations
+- name: package
+  description: Package operations
 paths:
   /accounts:
     get:
@@ -423,6 +433,176 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
+  /tags:
+    get:
+      tags:
+      - tag
+      summary: Get tags
+      operationId: tagGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagArray'
+  /languages:
+    get:
+      tags:
+      - language
+      summary: Get languages
+      operationId: languageGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageArray'
+  /questions:
+    get:
+      tags:
+      - question
+      summary: Get questions
+      operationId: questionGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionArray'
+    post:
+      tags:
+      - question
+      summary: Create question
+      operationId: questionCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionCreateRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionCreateResponse'
+      security:
+      - cookieAuth: []
+  /questions/media:
+    post:
+      tags:
+      - question
+      summary: Upload question media
+      operationId: questionMediaUpload
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionMedia'
+      security:
+      - cookieAuth: []
+  /questions/answer/image:
+    post:
+      tags:
+      - question
+      summary: Upload answer image
+      operationId: answerImageUpload
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerImage'
+      security:
+      - cookieAuth: []
+  /topics:
+    get:
+      tags:
+      - topic
+      summary: Get topics
+      operationId: topicGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicArray'
+    post:
+      tags:
+      - topic
+      summary: Create topic
+      operationId: topicCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicCreateRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+      security:
+      - cookieAuth: []
+  /packages:
+    get:
+      tags:
+      - package
+      summary: Get packages
+      operationId: packageGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageArray'
+    post:
+      tags:
+      - package
+      summary: Create package
+      operationId: packageCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageCreateRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageCreateResponse'
+      security:
+      - cookieAuth: []
+  /packages/cover:
+    post:
+      tags:
+      - package
+      summary: Upload package cover
+      operationId: packagesCoverUpload
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageCover'
+      security:
+      - cookieAuth: []
 components:
   schemas:
     Account:
@@ -530,6 +710,7 @@ components:
           type: string
         detail:
           type: string
+          example: ""
     ValidationErrorResponse:
       type: object
       properties:
@@ -559,6 +740,313 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Session'
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        languageId:
+          type: integer
+    TagArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Tag'
+    Language:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    LanguageArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Language'
+    Topic:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        languageId:
+          type: integer
+    TopicArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Topic'
+    TopicCreateRequest:
+      required:
+      - languageId
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+        languageId:
+          type: integer
+    QuestionType:
+      type: string
+      enum:
+      - DEFAULT
+      - BET
+      - SECRET
+      - SUPERSECRET
+      - SAFE
+    MediaType:
+      type: string
+      enum:
+      - AUDIO
+      - IMG
+      - VIDEO
+    QuestionMedia:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        type:
+          $ref: '#/components/schemas/MediaType'
+    AnswerImage:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+    Answer:
+      type: object
+      properties:
+        id:
+          type: integer
+        answer:
+          type: string
+        image:
+          $ref: '#/components/schemas/AnswerImage'
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          $ref: '#/components/schemas/Answer'
+        media:
+          $ref: '#/components/schemas/QuestionMedia'
+        languageId:
+          type: integer
+    QuestionArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Question'
+    QuestionCreateRequest:
+      required:
+      - answer
+      - languageId
+      - question
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          maximum: 128
+          minimum: 6
+          type: string
+        answerImageId:
+          type: integer
+        languageId:
+          type: integer
+        mediaId:
+          type: integer
+    QuestionCreateResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+    Stage:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        final:
+          type: boolean
+          description: indicates that stage is final or not
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageContent'
+    StageNested:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        final:
+          type: boolean
+          description: indicates that stage is final or not
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageContentNested'
+    StageContentNested:
+      type: object
+      properties:
+        topic:
+          $ref: '#/components/schemas/Topic'
+        question:
+          $ref: '#/components/schemas/Question'
+        answer:
+          $ref: '#/components/schemas/Answer'
+    StageContent:
+      type: object
+      properties:
+        topicId:
+          type: integer
+        questionId:
+          type: integer
+        answerId:
+          type: integer
+    StageArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Stage'
+    StageNestedArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/StageNested'
+    StageCreateRequest:
+      required:
+      - final
+      - name
+      - topics
+      type: object
+      properties:
+        name:
+          maximum: 32
+          minimum: 6
+          type: string
+        final:
+          type: boolean
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageContentCreateRequest'
+    StageContentCreateRequest:
+      required:
+      - cost
+      - interval
+      - questionId
+      - topicId
+      - type
+      type: object
+      properties:
+        topicId:
+          type: integer
+        questionId:
+          type: integer
+        type:
+          $ref: '#/components/schemas/QuestionType'
+        cost:
+          type: integer
+        interval:
+          type: integer
+        comment:
+          type: string
+        secretTopic:
+          type: string
+          description: topic for SECRET or SUPERSECRET question
+        secretCost:
+          type: integer
+          description: cost for SECRET or SUPERSECRET question
+        keepable:
+          type: boolean
+          description: indicator of whether you can leave q to yourself
+        visible:
+          type: boolean
+          description: indicator that topic and cost are visible to players or not
+    Package:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        languageId:
+          type: integer
+        coverUrl:
+          type: string
+          format: uri
+        published:
+          type: boolean
+        stages:
+          $ref: '#/components/schemas/StageNestedArray'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PackageArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Package'
+    PackageCreateRequest:
+      required:
+      - languageId
+      - name
+      - stages
+      type: object
+      properties:
+        name:
+          type: string
+        languageId:
+          type: integer
+        coverId:
+          type: integer
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageCreateRequest'
+    PackageCreateResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        languageId:
+          type: integer
+        coverUrl:
+          type: string
+          format: uri
+        published:
+          type: boolean
+        stages:
+          $ref: '#/components/schemas/StageArray'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PackageCover:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        url:
+          type: string
+          format: uri
   securitySchemes:
     cookieAuth:
       type: apiKey
