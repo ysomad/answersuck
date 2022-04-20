@@ -2,10 +2,7 @@ DELETE
 FROM package_tag;
 
 DELETE
-FROM stage_topic_question;
-
-DELETE
-FROM question_config;
+FROM stage_content;
 
 DELETE
 FROM stage;

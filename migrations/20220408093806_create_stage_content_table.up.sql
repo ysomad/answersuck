@@ -1,8 +1,10 @@
-CREATE TYPE question_type AS enum ('DEFAULT', 'BET', 'SECRET', 'SUPERSECRET', 'SAFE');
-
-CREATE TABLE IF NOT EXISTS question_config
+CREATE TABLE IF NOT EXISTS stage_content
 (
     id           serial        NOT NULL PRIMARY KEY,
+    stage_id     int           NOT NULL REFERENCES stage (id),
+    topic_id     int           NOT NULL REFERENCES topic (id),
+    question_id  int           NOT NULL REFERENCES question (id),
+
     type         question_type NOT NULL DEFAULT 'DEFAULT',
     cost         int           NOT NULL,
     interval     int           NOT NULL,
