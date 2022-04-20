@@ -20,7 +20,7 @@ func NewTagService(r TagRepo) *tagService {
 func (s *tagService) GetAll(ctx context.Context) ([]*domain.Tag, error) {
 	tags, err := s.repo.FindAll(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("tagService - GetAll - s.repoFindAll: %w", err)
+		return nil, fmt.Errorf("tagService - GetAll - s.repo.FindAll: %w", err)
 	}
 
 	return tags, nil

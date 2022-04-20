@@ -133,6 +133,14 @@ type (
 		DeleteWithExcept(ctx context.Context, aid, sid string) error
 	}
 
+	Language interface {
+		GetAll(ctx context.Context) ([]*domain.Language, error)
+	}
+
+	LanguageRepo interface {
+		FindAll(ctx context.Context) ([]*domain.Language, error)
+	}
+
 	Tag interface {
 		GetAll(ctx context.Context) ([]*domain.Tag, error)
 	}

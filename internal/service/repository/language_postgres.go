@@ -11,19 +11,19 @@ import (
 )
 
 const (
-	tagTable = "tag"
+	languageTable = "language"
 )
 
-type tagRepository struct {
+type languageRepository struct {
 	*postgres.Client
 }
 
-func NewTagRepository(pg *postgres.Client) *tagRepository {
-	return &tagRepository{pg}
+func NewLanguageRepository(pg *postgres.Client) *languageRepository {
+	return &languageRepository{pg}
 }
 
-func (r *tagRepository) FindAll(ctx context.Context) ([]*domain.Tag, error) {
-	sql := fmt.Sprintf(`SELECT id, name, language_id FROM %s`, tagTable)
+func (r *languageRepository) FindAll(ctx context.Context) ([]*domain.Language, error) {
+	sql := fmt.Sprintf(`SELECT id, name FROM %s`, languageTable)
 
 	rows, err := r.Pool.Query(ctx, sql)
 	if err != nil {
@@ -36,21 +36,21 @@ func (r *tagRepository) FindAll(ctx context.Context) ([]*domain.Tag, error) {
 
 	defer rows.Close()
 
-	var tags []*domain.Tag
+	var languages []*domain.Language
 
 	for rows.Next() {
-		var t domain.Tag
+		var l domain.Language
 
-		if err = rows.Scan(&t.Id, &t.Name, &t.LanguageId); err != nil {
+		if err = rows.Scan(&l.Id, &l.Name); err != nil {
 			return nil, fmt.Errorf("rows.Scan: %w", ErrNotFound)
 		}
 
-		tags = append(tags, &t)
+		languages = append(languages, &l)
 	}
 
 	if rows.Err() != nil {
 		return nil, fmt.Errorf("rows.Err: %w", err)
 	}
 
-	return tags, nil
+	return languages, nil
 }
