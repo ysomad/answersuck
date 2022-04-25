@@ -7,4 +7,5 @@ type Topic struct {
 	Name       string    `json:"name"`
 	LanguageId int       `json:"languageId"`
 	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
 }

@@ -12,4 +12,5 @@ type Question struct {
 	Author      string    `json:"author"`
 	LanguageId  int       `json:"languageId"`
 	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
