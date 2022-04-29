@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain"
@@ -25,6 +24,33 @@ func NewTopic(l logging.Logger, c *postgres.Client) *topic {
 	}
 }
 
+func (r *topic) Create(ctx context.Context, t domain.Topic) (int, error) {
+	sql := fmt.Sprintf(`
+		INSERT INTO %s(name, language_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id
+	`, topicTable)
+
+	r.log.Info("psql - topic - Create: %s", sql)
+
+	var topicId int
+
+	if err := r.client.Pool.QueryRow(ctx, sql,
+		t.Name,
+		t.LanguageId,
+		t.CreatedAt,
+		t.UpdatedAt,
+	).Scan(&topicId); err != nil {
+		if err = unwrapError(err); err != nil {
+			return 0, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+		}
+
+		return 0, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return topicId, nil
+}
+
 func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
 	sql := fmt.Sprintf(`
 		SELECT 
@@ -41,10 +67,10 @@ func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
 	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)
+			return nil, fmt.Errorf("r.client.Pool.Query: %w", ErrNotFound)
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	defer rows.Close()

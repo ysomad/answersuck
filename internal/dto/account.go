@@ -11,10 +11,6 @@ type (
 		Password string `json:"password" binding:"required,gte=8,lte=64"`
 	}
 
-	AccountCreateResponse struct {
-		Id string `json:"id"`
-	}
-
 	AccountPasswordForgotRequest struct {
 		Login string `json:"login" binding:"required,email|alphanum"`
 	}

@@ -26,7 +26,7 @@ type authService interface {
 }
 
 type authHandler struct {
-	t       ErrorTranslator
+	t       errorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
 	service authService
@@ -57,7 +57,7 @@ func (h *authHandler) login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
@@ -108,7 +108,7 @@ func (h *authHandler) tokenCreate(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 

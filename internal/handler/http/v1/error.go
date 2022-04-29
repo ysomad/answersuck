@@ -6,11 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	ErrInvalidRequestBody = errors.New("invalid request body")
-)
+var errInvalidRequestBody = errors.New("invalid request body")
 
-type ErrorTranslator interface {
+type errorTranslator interface {
 	TranslateError(err error) map[string]string
 }
 

@@ -27,7 +27,7 @@ type accountService interface {
 }
 
 type accountHandler struct {
-	t   ErrorTranslator
+	t   errorTranslator
 	cfg *config.Aggregate
 	log logging.Logger
 
@@ -72,7 +72,7 @@ func (h *accountHandler) create(c *gin.Context) {
 	var r dto.AccountCreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
@@ -199,7 +199,7 @@ func (h *accountHandler) passwordForgot(c *gin.Context) {
 	var r dto.AccountPasswordForgotRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
@@ -222,7 +222,7 @@ func (h *accountHandler) passwordReset(c *gin.Context) {
 	var r dto.AccountPasswordResetRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 

@@ -23,7 +23,7 @@ type sessionService interface {
 }
 
 type sessionHandler struct {
-	t       ErrorTranslator
+	t       errorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
 	service sessionService
