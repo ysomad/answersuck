@@ -3,9 +3,10 @@ package v1
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/service/repository"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -47,7 +48,7 @@ func newSessionHandler(handler *gin.RouterGroup, d *Deps) {
 }
 
 func (h *sessionHandler) get(c *gin.Context) {
-	aid, err := accountId(c)
+	aid, err := GetAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - session - get - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -68,12 +69,7 @@ func (h *sessionHandler) get(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminate(c *gin.Context) {
-	currSid, err := sessionId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - terminate - sessionId"))
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	currSid := GetSessionId(c)
 
 	sid := c.Param("sessionId")
 	if currSid == sid {
@@ -81,7 +77,7 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 		return
 	}
 
-	if err = h.session.Terminate(c.Request.Context(), sid); err != nil {
+	if err := h.session.Terminate(c.Request.Context(), sid); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.session.Terminate: %w", err))
 
 		if errors.Is(err, repository.ErrNoAffectedRows) {
@@ -97,20 +93,15 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminateAll(c *gin.Context) {
-	currSid, err := sessionId(c)
-	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - sessionId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	aid, err := accountId(c)
+	aid, err := GetAccountId(c)
 	if err != nil {
 		h.log.Error("http - v1 - session - terminateAll - accountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 
 	}
+
+	currSid := GetSessionId(c)
 
 	if err = h.session.TerminateWithExcept(c.Request.Context(), aid, currSid); err != nil {
 		h.log.Error("http - v1 - session - terminateAll - h.session.TerminateAll: %w", err)

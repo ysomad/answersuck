@@ -46,7 +46,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session service.Se
 // tokenMiddleware parses and validates access token
 func tokenMiddleware(l logging.Logger, auth service.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		aid, err := accountId(c)
+		aid, err := GetAccountId(c)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware - accountId: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)

@@ -7,6 +7,8 @@ import (
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain"
+
+	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
@@ -15,15 +17,21 @@ const (
 )
 
 type languageRepository struct {
+	log logging.Logger
 	*postgres.Client
 }
 
-func NewLanguageRepository(pg *postgres.Client) *languageRepository {
-	return &languageRepository{pg}
+func NewLanguageRepository(l logging.Logger, pg *postgres.Client) *languageRepository {
+	return &languageRepository{l, pg}
 }
 
 func (r *languageRepository) FindAll(ctx context.Context) ([]*domain.Language, error) {
-	sql := fmt.Sprintf(`SELECT id, name FROM %s`, languageTable)
+	sql := fmt.Sprintf(`
+		SELECT id, name 
+		FROM %s
+	`, languageTable)
+
+	r.log.Info("db: " + sql)
 
 	rows, err := r.Pool.Query(ctx, sql)
 	if err != nil {

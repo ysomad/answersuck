@@ -9,13 +9,22 @@ import (
 	"github.com/answersuck/vault/internal/domain"
 )
 
-var (
-	ErrAudienceContextNotFound = errors.New("audience not found in context")
+const (
+	accountIdKey     = "id"
+	sessionIdKey     = "sid"
+	audienceKey      = "audience"
+	lastIdKey        = "last_id"
+	lastCreatedAtKey = "last_created_at"
+	limitKey         = "limit"
 )
 
-// accountId returns account id from context
-func accountId(c *gin.Context) (string, error) {
-	aid := c.GetString("aid")
+var (
+	ErrInvalidLastCreatedAt = errors.New("last created at must be a valid RFC3339 timestamp")
+)
+
+// GetAccountId returns account id from context
+func GetAccountId(c *gin.Context) (string, error) {
+	aid := c.GetString(accountIdKey)
 
 	_, err := uuid.Parse(aid)
 	if err != nil {
@@ -25,24 +34,8 @@ func accountId(c *gin.Context) (string, error) {
 	return aid, nil
 }
 
-// sessionId returns session id from context
-func sessionId(c *gin.Context) (string, error) {
-	sid := c.GetString("sid")
+// GetSessionId returns session id from context
+func GetSessionId(c *gin.Context) string { return c.GetString(sessionIdKey) }
 
-	if sid == "" {
-		return "", domain.ErrSessionContextNotFound
-	}
-
-	return sid, nil
-}
-
-// audience returns current audience from context
-func audience(c *gin.Context) (string, error) {
-	aud := c.GetString("aud")
-
-	if aud == "" {
-		return "", ErrAudienceContextNotFound
-	}
-
-	return aud, nil
-}
+// GetAudience returns current GetAudience from context
+func GetAudience(c *gin.Context) string { return c.GetString(audienceKey) }

@@ -3,8 +3,9 @@ package v1
 import (
 	"errors"
 	"fmt"
-	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
+
+	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/gin-gonic/gin"
 
@@ -99,19 +100,14 @@ func (h *accountHandler) create(c *gin.Context) {
 }
 
 func (h *accountHandler) archive(c *gin.Context) {
-	aid, err := accountId(c)
+	aid, err := GetAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	sid, err := sessionId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - sessionId: %w", err))
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	sid := GetSessionId(c)
 
 	if err = h.account.Delete(c.Request.Context(), aid, sid); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.account.Delete: %w", err))
@@ -130,7 +126,7 @@ func (h *accountHandler) archive(c *gin.Context) {
 }
 
 func (h *accountHandler) get(c *gin.Context) {
-	aid, err := accountId(c)
+	aid, err := GetAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -154,7 +150,7 @@ func (h *accountHandler) get(c *gin.Context) {
 }
 
 func (h *accountHandler) requestVerification(c *gin.Context) {
-	aid, err := accountId(c)
+	aid, err := GetAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)

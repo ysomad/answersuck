@@ -79,7 +79,7 @@ func Run(configPath string) {
 
 	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 
-	languageRepo := repository.NewLanguageRepository(pg)
+	languageRepo := repository.NewLanguageRepository(l, pg)
 	languageService := service.NewLanguageService(languageRepo)
 
 	tagRepo := repository.NewTagRepository(pg)

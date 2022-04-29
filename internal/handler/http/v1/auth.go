@@ -3,9 +3,10 @@ package v1
 import (
 	"errors"
 	"fmt"
-	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
 	"strings"
+
+	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/gin-gonic/gin"
 
@@ -85,12 +86,7 @@ func (h *authHandler) login(c *gin.Context) {
 }
 
 func (h *authHandler) logout(c *gin.Context) {
-	sid, err := sessionId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - logout - sessionId: %w", err))
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	sid := GetSessionId(c)
 
 	if err := h.auth.Logout(c.Request.Context(), sid); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - logout: %w", err))
@@ -120,7 +116,7 @@ func (h *authHandler) token(c *gin.Context) {
 		return
 	}
 
-	aid, err := accountId(c)
+	aid, err := GetAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - token - accountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
