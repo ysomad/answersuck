@@ -45,7 +45,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountCreateResponse'
+                $ref: '#/components/schemas/Account'
         "400":
           description: Invalid request body.
           content:

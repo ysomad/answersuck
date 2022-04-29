@@ -59,8 +59,9 @@ func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 		}
 
 		accounts.POST(":accountId/verification",
+			sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
 			accountParamMiddleware(d.Logger),
-			sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService), h.requestVerification)
+			h.requestVerification)
 		accounts.PUT("verification", h.verify)
 
 		accounts.POST("", h.create)
@@ -93,7 +94,7 @@ func (h *accountHandler) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.AccountCreateResponse{Id: a.Id})
+	c.JSON(http.StatusOK, a)
 }
 
 func (h *accountHandler) archive(c *gin.Context) {
