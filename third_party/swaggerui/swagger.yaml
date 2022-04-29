@@ -27,26 +27,6 @@ tags:
   description: Package operations
 paths:
   /accounts:
-    get:
-      tags:
-      - account
-      summary: Get account
-      operationId: accountGet
-      responses:
-        "200":
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
-        "401":
-          description: Unauthorized or expired session.
-        "404":
-          description: Account not found.
-        "500":
-          description: Internal Server Error.
-      security:
-      - cookieAuth: []
     post:
       tags:
       - account
@@ -60,8 +40,12 @@ paths:
               $ref: '#/components/schemas/AccountCreateRequest'
         required: true
       responses:
-        "201":
+        "200":
           description: Account created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCreateResponse'
         "400":
           description: Invalid request body.
           content:
@@ -76,6 +60,38 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         "500":
           description: Internal Server Error.
+  /accounts/{accountId}:
+    get:
+      tags:
+      - account
+      summary: Get account
+      operationId: accountGet
+      parameters:
+      - name: accountId
+        in: path
+        description: String ID of the account
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        "401":
+          description: Unauthorized or expired session.
+        "403":
+          description: Access denied.
+        "404":
+          description: Account not found.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
     delete:
       tags:
       - account
@@ -89,6 +105,14 @@ paths:
         required: true
         style: form
         explode: true
+        schema:
+          type: string
+      - name: accountId
+        in: path
+        description: String ID of the account
+        required: true
+        style: simple
+        explode: false
         schema:
           type: string
       responses:
@@ -105,6 +129,39 @@ paths:
           description: Unauthorized.
         "403":
           description: Forbidden.
+        "404":
+          description: Account not found.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /accounts/{accountId}/verification:
+    post:
+      tags:
+      - account
+      summary: Send verification email
+      description: Send email verification to email address linked to the account
+      operationId: accountRequestVerification
+      parameters:
+      - name: accountId
+        in: path
+        description: String ID of the account
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Email verification link sent.
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "401":
+          description: Unauthorized or expired session.
         "404":
           description: Account not found.
         "500":
@@ -148,29 +205,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         "500":
           description: Internal Server Error.
-    post:
-      tags:
-      - account
-      summary: Send verification email
-      description: Send email verification to email address linked to the account
-      operationId: accountRequestVerification
-      responses:
-        "202":
-          description: Email verification link sent.
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "401":
-          description: Unauthorized or expired session.
-        "404":
-          description: Account not found.
-        "500":
-          description: Internal Server Error.
-      security:
-      - cookieAuth: []
   /accounts/password/reset:
     put:
       tags:
@@ -439,23 +473,6 @@ paths:
       - tag
       summary: Get tags
       operationId: tagGetAll
-      parameters:
-      - name: last_id
-        in: query
-        description: Id of last tag object
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-      - name: limit
-        in: query
-        description: Pagination limit, 50 by default
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
       responses:
         "200":
           description: Successful operation.
@@ -469,23 +486,6 @@ paths:
       - language
       summary: Get languages
       operationId: languageGetAll
-      parameters:
-      - name: last_id
-        in: query
-        description: Id of last object
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
-      - name: limit
-        in: query
-        description: Pagination limit, 50 by default
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: integer
       responses:
         "200":
           description: Successful operation.
@@ -689,6 +689,12 @@ components:
           minLength: 8
           type: string
           format: password
+    AccountCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
     AccountForgotPasswordRequest:
       required:
       - login

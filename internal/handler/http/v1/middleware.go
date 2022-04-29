@@ -36,8 +36,31 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session sessionSer
 			return
 		}
 
+		l.Info(s.AccountId)
+
 		c.Set("sid", s.Id)
 		c.Set("aid", s.AccountId)
+		c.Next()
+	}
+}
+
+const accountParam = "accountId"
+
+// accountParamMiddleware checks if account id from context and query param are the same
+func accountParamMiddleware(l logging.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		aid, err := getAccountId(c)
+		if err != nil {
+			l.Error(fmt.Errorf("http - v1 - middleware - accountParamMiddleware - getAccountId: %w", err))
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		if aid != c.Param(accountParam) {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
 		c.Next()
 	}
 }
@@ -45,7 +68,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session sessionSer
 // tokenMiddleware parses and validates access token
 func tokenMiddleware(l logging.Logger, auth authService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		aid, err := GetAccountId(c)
+		aid, err := getAccountId(c)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware - accountId: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -61,7 +84,7 @@ func tokenMiddleware(l logging.Logger, auth authService) gin.HandlerFunc {
 
 		currAud := strings.ToLower(c.Request.Host + c.FullPath())
 
-		sub, err := auth.ParseAccessToken(c.Request.Context(), t, currAud)
+		sub, err := auth.ParseToken(c.Request.Context(), t, currAud)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware - auth.ParseAccessToken: %w", err))
 			c.AbortWithStatus(http.StatusForbidden)
@@ -75,6 +98,20 @@ func tokenMiddleware(l logging.Logger, auth authService) gin.HandlerFunc {
 		}
 
 		c.Set("aud", currAud)
+		c.Next()
+	}
+}
+
+const uaHeader = "User-Agent"
+
+func deviceMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		d := domain.Device{
+			IP:        c.ClientIP(),
+			UserAgent: c.GetHeader(uaHeader),
+		}
+
+		c.Set(deviceKey, d)
 		c.Next()
 	}
 }

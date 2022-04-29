@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -8,13 +10,16 @@ import (
 )
 
 const (
-	accountIdKey = "id"
+	accountIdKey = "aid"
 	sessionIdKey = "sid"
 	audienceKey  = "audience"
+	deviceKey    = "device"
 )
 
-// GetAccountId returns account id from context
-func GetAccountId(c *gin.Context) (string, error) {
+var errDeviceNotFound = errors.New("device not found in context")
+
+// getAccountId returns account id from context
+func getAccountId(c *gin.Context) (string, error) {
 	aid := c.GetString(accountIdKey)
 
 	_, err := uuid.Parse(aid)
@@ -25,8 +30,17 @@ func GetAccountId(c *gin.Context) (string, error) {
 	return aid, nil
 }
 
-// GetSessionId returns session id from context
-func GetSessionId(c *gin.Context) string { return c.GetString(sessionIdKey) }
+// getSessionId returns session id from context
+func getSessionId(c *gin.Context) string { return c.GetString(sessionIdKey) }
 
-// GetAudience returns current GetAudience from context
-func GetAudience(c *gin.Context) string { return c.GetString(audienceKey) }
+// getAudience returns current getAudience from context
+func getAudience(c *gin.Context) string { return c.GetString(audienceKey) }
+
+func getDevice(c *gin.Context) (domain.Device, error) {
+	d, exists := c.Get(deviceKey)
+	if !exists {
+		return domain.Device{}, errDeviceNotFound
+	}
+
+	return d.(domain.Device), nil
+}

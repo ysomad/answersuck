@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/dto"
-
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
 )
@@ -31,7 +29,7 @@ func NewSession(cfg *config.Session, s sessionRepository) *session {
 	}
 }
 
-func (s *session) Create(ctx context.Context, aid string, d dto.Device) (*domain.Session, error) {
+func (s *session) Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error) {
 	sess, err := domain.NewSession(aid, d.UserAgent, d.IP, s.cfg.Expiration)
 	if err != nil {
 		return nil, fmt.Errorf("session - Create - domain.NewSession: %w", err)

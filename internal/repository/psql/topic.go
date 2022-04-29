@@ -26,7 +26,15 @@ func NewTopic(l logging.Logger, c *postgres.Client) *topic {
 }
 
 func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
-	sql := fmt.Sprintf(`SELECT id, name, language_id, created_at FROM %s`, topicTable)
+	sql := fmt.Sprintf(`
+		SELECT 
+			id, 
+			name, 
+			language_id, 
+			created_at, 
+			updated_at 
+		FROM %s
+	`, topicTable)
 
 	r.log.Info("psql - topic - FindAll: %s", sql)
 
@@ -46,7 +54,7 @@ func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
 	for rows.Next() {
 		var t domain.Topic
 
-		if err = rows.Scan(&t.Id, &t.Name, &t.LanguageId, &t.CreatedAt); err != nil {
+		if err = rows.Scan(&t.Id, &t.Name, &t.LanguageId, &t.CreatedAt, &t.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("rows.Scan: %w", ErrNotFound)
 		}
 

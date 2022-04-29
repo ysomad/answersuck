@@ -53,7 +53,7 @@ func newSessionHandler(handler *gin.RouterGroup, d *Deps) {
 }
 
 func (h *sessionHandler) get(c *gin.Context) {
-	aid, err := GetAccountId(c)
+	aid, err := getAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - session - get - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -71,7 +71,7 @@ func (h *sessionHandler) get(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminate(c *gin.Context) {
-	currSid := GetSessionId(c)
+	currSid := getSessionId(c)
 
 	sid := c.Param("sessionId")
 	if currSid == sid {
@@ -95,7 +95,7 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminateAll(c *gin.Context) {
-	aid, err := GetAccountId(c)
+	aid, err := getAccountId(c)
 	if err != nil {
 		h.log.Error("http - v1 - session - terminateAll - GetAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -103,7 +103,7 @@ func (h *sessionHandler) terminateAll(c *gin.Context) {
 
 	}
 
-	if err = h.service.TerminateWithExcept(c.Request.Context(), aid, GetSessionId(c)); err != nil {
+	if err = h.service.TerminateWithExcept(c.Request.Context(), aid, getSessionId(c)); err != nil {
 		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
 
 		if errors.Is(err, repository.ErrNoAffectedRows) {

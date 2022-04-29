@@ -67,7 +67,13 @@ func NewAccount(c *config.Aggregate, r accountRepository, s sessionService,
 	}
 }
 
-func (s *account) Create(ctx context.Context, a *domain.Account) (*domain.Account, error) {
+func (s *account) Create(ctx context.Context, req dto.AccountCreateRequest) (*domain.Account, error) {
+	a := &domain.Account{
+		Username: req.Username,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
 	if s.blockList.Find(a.Username) {
 		return nil, fmt.Errorf("account - Create - s.blockList.Find: %w", domain.ErrAccountForbiddenUsername)
 	}
@@ -126,7 +132,7 @@ func (s *account) Delete(ctx context.Context, aid, sid string) error {
 		return fmt.Errorf("account - Archive - s.repo.Archive: %w", err)
 	}
 
-	if err := s.session.TerminateAll(ctx, sid); err != nil {
+	if err := s.session.TerminateAll(ctx, aid); err != nil {
 		return fmt.Errorf("account - Archive - s.session.TerminateAll: %w", err)
 	}
 
@@ -159,7 +165,7 @@ func (s *account) Verify(ctx context.Context, code string, verified bool) error 
 }
 
 func (s *account) RequestPasswordReset(ctx context.Context, login string) error {
-	email := login
+	accountEmail := login
 
 	if _, err := mail.ParseAddress(login); err != nil {
 
@@ -168,7 +174,7 @@ func (s *account) RequestPasswordReset(ctx context.Context, login string) error 
 			return fmt.Errorf("account - RequestPasswordReset - s.GetByUsername: %w", err)
 		}
 
-		email = a.Email
+		accountEmail = a.Email
 	}
 
 	t, err := strings.NewUnique(passwordResetTokenLength)
@@ -176,11 +182,11 @@ func (s *account) RequestPasswordReset(ctx context.Context, login string) error 
 		return fmt.Errorf("account - RequestPasswordReset - strings.NewUnique: %w", err)
 	}
 
-	if err = s.repo.InsertPasswordResetToken(ctx, email, t); err != nil {
+	if err = s.repo.InsertPasswordResetToken(ctx, accountEmail, t); err != nil {
 		return fmt.Errorf("account - RequestPasswordReset - s.repo.InsertPasswordResetToken: %w", err)
 	}
 
-	if err = s.email.SendAccountPasswordResetMail(ctx, email, t); err != nil {
+	if err = s.email.SendAccountPasswordResetMail(ctx, accountEmail, t); err != nil {
 		return fmt.Errorf("account - RequestPasswordReset - s.email.SendAccountPasswordResetMail: %w", err)
 	}
 
