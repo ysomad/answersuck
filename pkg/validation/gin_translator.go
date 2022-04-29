@@ -11,12 +11,12 @@ import (
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
 
-type ginTranslator struct {
+type GinTranslator struct {
 	validate *validator.Validate
 	trans    ut.Translator
 }
 
-func NewGinTranslator() (*ginTranslator, error) {
+func NewGinTranslator() (*GinTranslator, error) {
 	eng := en.New()
 	uni := ut.New(eng, eng)
 	trans, found := uni.GetTranslator("en")
@@ -24,18 +24,18 @@ func NewGinTranslator() (*ginTranslator, error) {
 		return nil, errors.New("validation translator not found")
 	}
 
-	return &ginTranslator{
+	return &GinTranslator{
 		validate: binding.Validator.Engine().(*validator.Validate),
 		trans:    trans,
 	}, nil
 }
 
-func (gt *ginTranslator) register() error {
+func (gt *GinTranslator) register() error {
 	return enTranslations.RegisterDefaultTranslations(gt.validate, gt.trans)
 }
 
 // TranslateError returns translated validation errors received from gin.c.ShouldBindJSON err
-func (gt *ginTranslator) TranslateError(err error) map[string]string {
+func (gt *GinTranslator) TranslateError(err error) map[string]string {
 	_ = gt.register()
 
 	errs := make(map[string]string)

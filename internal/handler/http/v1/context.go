@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"errors"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -10,16 +8,9 @@ import (
 )
 
 const (
-	accountIdKey     = "id"
-	sessionIdKey     = "sid"
-	audienceKey      = "audience"
-	lastIdKey        = "last_id"
-	lastCreatedAtKey = "last_created_at"
-	limitKey         = "limit"
-)
-
-var (
-	ErrInvalidLastCreatedAt = errors.New("last created at must be a valid RFC3339 timestamp")
+	accountIdKey = "id"
+	sessionIdKey = "sid"
+	audienceKey  = "audience"
 )
 
 // GetAccountId returns account id from context

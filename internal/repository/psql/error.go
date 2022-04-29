@@ -13,7 +13,7 @@ var (
 	ErrNoAffectedRows  = errors.New("zero rows affected")
 )
 
-func isUniqueViolation(err error) error {
+func unwrapError(err error) error {
 	var pgErr *pgconn.PgError
 
 	if errors.As(err, &pgErr) {

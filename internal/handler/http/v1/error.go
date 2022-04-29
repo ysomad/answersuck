@@ -10,6 +10,10 @@ var (
 	ErrInvalidRequestBody = errors.New("invalid request body")
 )
 
+type ErrorTranslator interface {
+	TranslateError(err error) map[string]string
+}
+
 type errorResponse[T string | map[string]string] struct {
 	Error  string `json:"error"`
 	Detail T      `json:"detail"`

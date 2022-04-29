@@ -7,25 +7,31 @@ import (
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain"
+
+	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
-const (
-	tagTable = "tag"
-)
+const tagTable = "tag"
 
-type tagRepository struct {
-	*postgres.Client
+type tag struct {
+	log    logging.Logger
+	client *postgres.Client
 }
 
-func NewTagRepository(pg *postgres.Client) *tagRepository {
-	return &tagRepository{pg}
+func NewTag(l logging.Logger, c *postgres.Client) *tag {
+	return &tag{
+		log:    l,
+		client: c,
+	}
 }
 
-func (r *tagRepository) FindAll(ctx context.Context) ([]*domain.Tag, error) {
+func (r *tag) FindAll(ctx context.Context) ([]*domain.Tag, error) {
 	sql := fmt.Sprintf(`SELECT id, name, language_id FROM %s`, tagTable)
 
-	rows, err := r.Pool.Query(ctx, sql)
+	r.log.Info("psql - tag - FindAll: %s", sql)
+
+	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)

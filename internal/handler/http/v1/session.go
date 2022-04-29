@@ -1,35 +1,40 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/service/repository"
-
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/domain"
+	repository "github.com/answersuck/vault/internal/repository/psql"
 
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
+type sessionService interface {
+	GetById(ctx context.Context, sid string) (*domain.Session, error)
+	GetAll(ctx context.Context, aid string) ([]*domain.Session, error)
+	Terminate(ctx context.Context, sid string) error
+	TerminateWithExcept(ctx context.Context, aid, sid string) error
+}
+
 type sessionHandler struct {
-	t       validation.ErrorTranslator
+	t       ErrorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
-	session service.Session
+	service sessionService
 }
 
 func newSessionHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &sessionHandler{
-		t:       d.ErrorTranslator,
+		t:       d.GinTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
-		session: d.SessionService,
+		service: d.SessionService,
 	}
 
 	g := handler.Group("sessions")
@@ -50,17 +55,14 @@ func newSessionHandler(handler *gin.RouterGroup, d *Deps) {
 func (h *sessionHandler) get(c *gin.Context) {
 	aid, err := GetAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - get - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - session - get - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	sessions, err := h.session.GetAll(c.Request.Context(), aid)
+	sessions, err := h.service.GetAll(c.Request.Context(), aid)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - get - h.session.GetAll: %w", err))
-
-		// TODO: handle specific errors
-
+		h.log.Error(fmt.Errorf("http - v1 - session - get - h.service.GetAll: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -77,8 +79,8 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 		return
 	}
 
-	if err := h.session.Terminate(c.Request.Context(), sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.session.Terminate: %w", err))
+	if err := h.service.Terminate(c.Request.Context(), sid); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.service.Terminate: %w", err))
 
 		if errors.Is(err, repository.ErrNoAffectedRows) {
 			c.AbortWithStatus(http.StatusNotFound)
@@ -95,16 +97,14 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 func (h *sessionHandler) terminateAll(c *gin.Context) {
 	aid, err := GetAccountId(c)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - accountId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - GetAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 
 	}
 
-	currSid := GetSessionId(c)
-
-	if err = h.session.TerminateWithExcept(c.Request.Context(), aid, currSid); err != nil {
-		h.log.Error("http - v1 - session - terminateAll - h.session.TerminateAll: %w", err)
+	if err = h.service.TerminateWithExcept(c.Request.Context(), aid, GetSessionId(c)); err != nil {
+		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
 
 		if errors.Is(err, repository.ErrNoAffectedRows) {
 			c.AbortWithStatus(http.StatusNotFound)

@@ -1,37 +1,43 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/dto"
-	"github.com/answersuck/vault/internal/service"
+	repository "github.com/answersuck/vault/internal/repository/psql"
 
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
+type authService interface {
+	Login(ctx context.Context, login, password string, d dto.Device) (*domain.Session, error)
+	Logout(ctx context.Context, sid string) error
+
+	NewAccessToken(ctx context.Context, aid, password, audience string) (string, error)
+	ParseAccessToken(ctx context.Context, token, audience string) (string, error)
+}
+
 type authHandler struct {
-	t    validation.ErrorTranslator
-	cfg  *config.Aggregate
-	log  logging.Logger
-	auth service.Auth
+	t       ErrorTranslator
+	cfg     *config.Aggregate
+	log     logging.Logger
+	service authService
 }
 
 func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &authHandler{
-		t:    d.ErrorTranslator,
-		cfg:  d.Config,
-		log:  d.Logger,
-		auth: d.AuthService,
+		t:       d.GinTranslator,
+		cfg:     d.Config,
+		log:     d.Logger,
+		service: d.AuthService,
 	}
 
 	g := handler.Group("auth")
@@ -60,7 +66,7 @@ func (h *authHandler) login(c *gin.Context) {
 		return
 	}
 
-	s, err := h.auth.Login(
+	s, err := h.service.Login(
 		c.Request.Context(),
 		r.Login,
 		r.Password,
@@ -70,7 +76,7 @@ func (h *authHandler) login(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - login: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - login - h.service.Login: %w", err))
 
 		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, repository.ErrNotFound) {
 			abortWithError(c, http.StatusUnauthorized, domain.ErrAccountIncorrectCredentials, "")
@@ -88,8 +94,8 @@ func (h *authHandler) login(c *gin.Context) {
 func (h *authHandler) logout(c *gin.Context) {
 	sid := GetSessionId(c)
 
-	if err := h.auth.Logout(c.Request.Context(), sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - logout: %w", err))
+	if err := h.service.Logout(c.Request.Context(), sid); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - auth - logout - h.service.Logout: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -118,19 +124,19 @@ func (h *authHandler) token(c *gin.Context) {
 
 	aid, err := GetAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - token - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	t, err := h.auth.NewAccessToken(
+	t, err := h.service.NewAccessToken(
 		c.Request.Context(),
 		aid,
 		r.Password,
 		strings.ToLower(r.Audience),
 	)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - token - h.service.NewAccessToken: %w", err))
 
 		if errors.Is(err, domain.ErrAccountIncorrectPassword) {
 			c.AbortWithStatus(http.StatusForbidden)

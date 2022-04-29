@@ -3,9 +3,13 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/pkg/postgres"
+
 	"github.com/jackc/pgx/v4"
+
+	"github.com/answersuck/vault/internal/domain"
+
+	"github.com/answersuck/vault/pkg/logging"
+	"github.com/answersuck/vault/pkg/postgres"
 )
 
 const (
@@ -15,15 +19,19 @@ const (
 	answerImageTable   = "answer_image"
 )
 
-type questionRepository struct {
-	*postgres.Client
+type question struct {
+	log    logging.Logger
+	client *postgres.Client
 }
 
-func NewQuestionRepository(pg *postgres.Client) *questionRepository {
-	return &questionRepository{pg}
+func NewQuestion(l logging.Logger, c *postgres.Client) *question {
+	return &question{
+		log:    l,
+		client: c,
+	}
 }
 
-func (r *questionRepository) FindAll(ctx context.Context) ([]*domain.Question, error) {
+func (r *question) FindAll(ctx context.Context) ([]*domain.Question, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			q.id,
@@ -42,7 +50,9 @@ func (r *questionRepository) FindAll(ctx context.Context) ([]*domain.Question, e
 		LEFT JOIN %s qm ON qm.id = q.media_id
 	`, questionTable, answerTable, answerImageTable, accountTable, questionMediaTable)
 
-	rows, err := r.Pool.Query(ctx, sql)
+	r.log.Info("psql - question - FindAll: %s", sql)
+
+	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)
