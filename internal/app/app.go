@@ -9,13 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"github.com/answersuck/vault/internal/config"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
+	repository "github.com/answersuck/vault/internal/repository/psql"
 	"github.com/answersuck/vault/internal/service"
-	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/blocklist"
@@ -23,7 +21,6 @@ import (
 	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
-	"github.com/answersuck/vault/pkg/storage"
 	"github.com/answersuck/vault/pkg/validation"
 )
 
@@ -47,49 +44,40 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
-	sessionRepo := repository.NewSessionRepository(pg)
-	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
+	sessionRepo := repository.NewSession(l, pg)
+	sessionService := service.NewSession(&cfg.Session, sessionRepo)
 
 	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
 	}
 
-	emailService := service.NewEmailService(&cfg, emailClient)
+	emailService := service.NewEmail(&cfg, emailClient)
 
 	tokenManager, err := auth.NewTokenManager(cfg.AccessToken.Sign)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - auth.NewTokenManager: %w", err))
 	}
 
-	minioClient, err := minio.New(cfg.FileStorage.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.FileStorage.AccessKey, cfg.FileStorage.SecretKey, ""),
-		Secure: true,
-	})
-	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - minio.New: %w", err))
-	}
-
-	fileStorage := storage.NewFileStorage(minioClient, cfg.FileStorage.Bucket, cfg.FileStorage.Endpoint)
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository.NewAccountRepository(pg)
-	accountService := service.NewAccountService(&cfg, l, accountRepo, sessionService, tokenManager,
-		emailService, fileStorage, usernameBlockList)
+	accountRepo := repository.NewAccount(l, pg)
+	accountService := service.NewAccount(&cfg, accountRepo, sessionService, tokenManager,
+		emailService, usernameBlockList)
 
-	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
+	authService := service.NewAuth(&cfg, tokenManager, accountService, sessionService)
 
-	languageRepo := repository.NewLanguageRepository(l, pg)
-	languageService := service.NewLanguageService(languageRepo)
+	languageRepo := repository.NewLanguage(l, pg)
+	languageService := service.NewLanguage(languageRepo)
 
-	tagRepo := repository.NewTagRepository(pg)
-	tagService := service.NewTagService(tagRepo)
+	tagRepo := repository.NewTag(l, pg)
+	tagService := service.NewTag(tagRepo)
 
-	topicRepo := repository.NewTopicRepository(pg)
-	topicService := service.NewTopicService(topicRepo)
+	topicRepo := repository.NewTopic(l, pg)
+	topicService := service.NewTopic(topicRepo)
 
-	questionRepo := repository.NewQuestionRepository(pg)
-	questionService := service.NewQuestionService(questionRepo)
+	questionRepo := repository.NewQuestion(l, pg)
+	questionService := service.NewQuestion(questionRepo)
 
 	ginTranslator, err := validation.NewGinTranslator()
 	if err != nil {
@@ -103,7 +91,7 @@ func Run(configPath string) {
 		&v1.Deps{
 			Config:          &cfg,
 			Logger:          l,
-			ErrorTranslator: ginTranslator,
+			GinTranslator:   ginTranslator,
 			TokenManager:    tokenManager,
 			AccountService:  accountService,
 			SessionService:  sessionService,

@@ -9,13 +9,12 @@ import (
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/service"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 // sessionMiddleware looking for a cookie with session id, sets account id and session id to context
-func sessionMiddleware(l logging.Logger, cfg *config.Session, session service.Session) gin.HandlerFunc {
+func sessionMiddleware(l logging.Logger, cfg *config.Session, session sessionService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sid, err := c.Cookie(cfg.CookieKey)
 		if err != nil {
@@ -44,7 +43,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session service.Se
 }
 
 // tokenMiddleware parses and validates access token
-func tokenMiddleware(l logging.Logger, auth service.Auth) gin.HandlerFunc {
+func tokenMiddleware(l logging.Logger, auth authService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		aid, err := GetAccountId(c)
 		if err != nil {

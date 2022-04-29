@@ -16,29 +16,21 @@ var (
 	ErrAudienceMismatch     = errors.New("audience does not match the audience in the token")
 )
 
-type TokenManager interface {
-	// New creates new jwt token with subject and audience claims
-	New(subject, audience string, expiration time.Duration) (string, error)
-
-	// Parse parses jwt token and returns subject id from payload
-	Parse(token, audience string) (string, error)
-}
-
-type tokenManager struct {
+type TokenManager struct {
 	sign string
 }
 
-func NewTokenManager(sign string) (tokenManager, error) {
+func NewTokenManager(sign string) (TokenManager, error) {
 	if sign == "" {
-		return tokenManager{}, ErrEmptySign
+		return TokenManager{}, ErrEmptySign
 	}
 
-	return tokenManager{
+	return TokenManager{
 		sign: sign,
 	}, nil
 }
 
-func (tm tokenManager) New(subject, audience string, expiration time.Duration) (string, error) {
+func (tm TokenManager) New(subject, audience string, expiration time.Duration) (string, error) {
 	_, err := url.Parse(audience)
 	if err != nil {
 		return "", ErrInvalidAudience
@@ -53,7 +45,7 @@ func (tm tokenManager) New(subject, audience string, expiration time.Duration) (
 	return token.SignedString([]byte(tm.sign))
 }
 
-func (tm tokenManager) Parse(token, audience string) (string, error) {
+func (tm TokenManager) Parse(token, audience string) (string, error) {
 	_, err := url.Parse(audience)
 	if err != nil {
 		return "", ErrInvalidAudience

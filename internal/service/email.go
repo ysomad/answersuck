@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/pkg/email"
+
+	emailPkg "github.com/answersuck/vault/pkg/email"
 )
 
 const (
@@ -13,55 +14,59 @@ const (
 	passwordResetFormat = "%s/reset?token=%s"
 )
 
-type emailService struct {
+type emailSender interface {
+	Send(l emailPkg.Letter) error
+}
+
+type email struct {
 	cfg   *config.Aggregate
-	email email.Sender
+	email emailSender
 }
 
 type withURL struct {
 	URL string
 }
 
-func NewEmailService(cfg *config.Aggregate, s email.Sender) *emailService {
-	return &emailService{
+func NewEmail(cfg *config.Aggregate, s emailSender) *email {
+	return &email{
 		cfg:   cfg,
 		email: s,
 	}
 }
 
-func (s *emailService) SendAccountVerificationMail(ctx context.Context, to, code string) error {
+func (s *email) SendAccountVerificationMail(ctx context.Context, to, code string) error {
 	if err := s.send(
 		ctx,
-		email.Letter{
+		emailPkg.Letter{
 			To:      to,
 			Subject: s.cfg.Email.Subject.AccountVerification,
 		},
 		s.cfg.Email.Template.AccountVerification,
 		withURL{fmt.Sprintf(verificationFormat, s.cfg.Web.URL, code)},
 	); err != nil {
-		return fmt.Errorf("emailService - SendAccountVerificationMail - s.send: %w", err)
+		return fmt.Errorf("email - SendAccountVerificationMail - s.send: %w", err)
 	}
 
 	return nil
 }
 
-func (s *emailService) SendAccountPasswordResetMail(ctx context.Context, to, token string) error {
+func (s *email) SendAccountPasswordResetMail(ctx context.Context, to, token string) error {
 	if err := s.send(
 		ctx,
-		email.Letter{
+		emailPkg.Letter{
 			To:      to,
 			Subject: s.cfg.Email.Subject.AccountPasswordReset,
 		},
 		s.cfg.Email.Template.AccountPasswordReset,
 		withURL{fmt.Sprintf(passwordResetFormat, s.cfg.Web.URL, token)},
 	); err != nil {
-		return fmt.Errorf("emailService - SendAccountVerificationMail - s.send: %w", err)
+		return fmt.Errorf("email - SendAccountVerificationMail - s.send: %w", err)
 	}
 
 	return nil
 }
 
-func (s *emailService) send(ctx context.Context, l email.Letter, tmplPath string, data interface{}) error {
+func (s *email) send(ctx context.Context, l emailPkg.Letter, tmplPath string, data interface{}) error {
 	if err := l.SetMsgFromTemplate(tmplPath, data); err != nil {
 		return fmt.Errorf("l.SetMsgFromTemplate: %w", err)
 	}

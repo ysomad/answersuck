@@ -7,20 +7,24 @@ import (
 	"github.com/answersuck/vault/internal/domain"
 )
 
-type questionService struct {
-	repo QuestionRepo
+type questionRepository interface {
+	FindAll(ctx context.Context) ([]*domain.Question, error)
 }
 
-func NewQuestionService(r QuestionRepo) *questionService {
-	return &questionService{
+type question struct {
+	repo questionRepository
+}
+
+func NewQuestion(r questionRepository) *question {
+	return &question{
 		repo: r,
 	}
 }
 
-func (s *questionService) GetAll(ctx context.Context) ([]*domain.Question, error) {
+func (s *question) GetAll(ctx context.Context) ([]*domain.Question, error) {
 	q, err := s.repo.FindAll(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("questionService - GetAll - s.repo.FindAll: %w", err)
+		return nil, fmt.Errorf("question - GetAll - s.repo.FindAll: %w", err)
 	}
 
 	return q, nil

@@ -1,24 +1,30 @@
 package v1
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/domain"
+
 	"github.com/answersuck/vault/pkg/logging"
 )
 
+type tagService interface {
+	GetAll(ctx context.Context) ([]*domain.Tag, error)
+}
+
 type tagHandler struct {
-	log logging.Logger
-	tag service.Tag
+	log     logging.Logger
+	service tagService
 }
 
 func newTagHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &tagHandler{
-		log: d.Logger,
-		tag: d.TagService,
+		log:     d.Logger,
+		service: d.TagService,
 	}
 
 	g := handler.Group("tags")
@@ -28,12 +34,12 @@ func newTagHandler(handler *gin.RouterGroup, d *Deps) {
 }
 
 func (h *tagHandler) getAll(c *gin.Context) {
-	tags, err := h.tag.GetAll(c.Request.Context())
+	t, err := h.service.GetAll(c.Request.Context())
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - tag - getAll - h.tag.GetAll: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - tag - getAll - h.service.GetAll: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, tags)
+	c.JSON(http.StatusOK, t)
 }

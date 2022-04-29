@@ -1,36 +1,44 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
-
-	"github.com/answersuck/vault/internal/service/repository"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/service"
+	repository "github.com/answersuck/vault/internal/repository/psql"
 
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
+type accountService interface {
+	Create(ctx context.Context, a *domain.Account) (*domain.Account, error)
+	GetById(ctx context.Context, aid string) (*domain.Account, error)
+	Delete(ctx context.Context, aid, sid string) error
+	RequestVerification(ctx context.Context, aid string) error
+	Verify(ctx context.Context, code string, verified bool) error
+	RequestPasswordReset(ctx context.Context, login string) error
+	PasswordReset(ctx context.Context, token, password string) error
+}
+
 type accountHandler struct {
-	t   validation.ErrorTranslator
+	t   ErrorTranslator
 	cfg *config.Aggregate
 	log logging.Logger
 
-	account service.Account
+	service accountService
 }
 
 func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &accountHandler{
-		t:       d.ErrorTranslator,
+		t:       d.GinTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
-		account: d.AccountService,
+		service: d.AccountService,
 	}
 
 	accounts := handler.Group("accounts")
@@ -71,7 +79,7 @@ func (h *accountHandler) create(c *gin.Context) {
 		return
 	}
 
-	_, err := h.account.Create(
+	_, err := h.service.Create(
 		c.Request.Context(),
 		&domain.Account{
 			Email:    r.Email,
@@ -80,7 +88,7 @@ func (h *accountHandler) create(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - create: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - create - h.service.Create: %w", err))
 
 		if errors.Is(err, repository.ErrUniqueViolation) {
 			abortWithError(c, http.StatusConflict, domain.ErrAccountAlreadyExist, "")
@@ -102,15 +110,13 @@ func (h *accountHandler) create(c *gin.Context) {
 func (h *accountHandler) archive(c *gin.Context) {
 	aid, err := GetAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	sid := GetSessionId(c)
-
-	if err = h.account.Delete(c.Request.Context(), aid, sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.account.Delete: %w", err))
+	if err = h.service.Delete(c.Request.Context(), aid, GetSessionId(c)); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.service.Delete: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, repository.ErrNoAffectedRows) {
 			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
@@ -128,14 +134,14 @@ func (h *accountHandler) archive(c *gin.Context) {
 func (h *accountHandler) get(c *gin.Context) {
 	aid, err := GetAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	acc, err := h.account.GetById(c.Request.Context(), aid)
+	acc, err := h.service.GetById(c.Request.Context(), aid)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - get - h.account.GetById: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - get - h.service.GetById: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) {
 			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
@@ -152,13 +158,13 @@ func (h *accountHandler) get(c *gin.Context) {
 func (h *accountHandler) requestVerification(c *gin.Context) {
 	aid, err := GetAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	if err = h.account.RequestVerification(c.Request.Context(), aid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - requestVerification - h.account.RequestVerification: %w", err))
+	if err = h.service.RequestVerification(c.Request.Context(), aid); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - requestVerification - h.service.RequestVerification: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) {
 			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
@@ -179,13 +185,13 @@ func (h *accountHandler) requestVerification(c *gin.Context) {
 
 func (h *accountHandler) verify(c *gin.Context) {
 	code, found := c.GetQuery("code")
-	if !found || code == "" {
+	if !found {
 		abortWithError(c, http.StatusBadRequest, domain.ErrAccountEmptyVerificationCode, "")
 		return
 	}
 
-	if err := h.account.Verify(c.Request.Context(), code, true); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - verify - h.account.Verify: %w", err))
+	if err := h.service.Verify(c.Request.Context(), code, true); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - verify - h.service.Verify: %w", err))
 
 		if errors.Is(err, repository.ErrNoAffectedRows) {
 			abortWithError(c, http.StatusBadRequest, domain.ErrAccountAlreadyVerified, "")
@@ -211,8 +217,8 @@ func (h *accountHandler) requestPasswordReset(c *gin.Context) {
 		return
 	}
 
-	if err := h.account.RequestPasswordReset(c.Request.Context(), r.Login); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - passwordForgot - h.account.RequestPasswordReset: %w", err))
+	if err := h.service.RequestPasswordReset(c.Request.Context(), r.Login); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - passwordForgot - h.service.RequestPasswordReset: %w", err))
 
 		if errors.Is(err, repository.ErrNotFound) {
 			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
@@ -244,8 +250,8 @@ func (h *accountHandler) passwordReset(c *gin.Context) {
 		return
 	}
 
-	if err := h.account.PasswordReset(c.Request.Context(), t, r.Password); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - passwordReset - h.account.PasswordReset: %w", err))
+	if err := h.service.PasswordReset(c.Request.Context(), t, r.Password); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - passwordReset - h.service.PasswordReset: %w", err))
 
 		if errors.Is(err, domain.ErrAccountResetPasswordTokenExpired) || errors.Is(err, repository.ErrNotFound) {
 			c.AbortWithStatus(http.StatusForbidden)

@@ -12,28 +12,29 @@ import (
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
-const (
-	languageTable = "language"
-)
+const languageTable = "language"
 
-type languageRepository struct {
-	log logging.Logger
-	*postgres.Client
+type language struct {
+	log    logging.Logger
+	client *postgres.Client
 }
 
-func NewLanguageRepository(l logging.Logger, pg *postgres.Client) *languageRepository {
-	return &languageRepository{l, pg}
+func NewLanguage(l logging.Logger, c *postgres.Client) *language {
+	return &language{
+		log:    l,
+		client: c,
+	}
 }
 
-func (r *languageRepository) FindAll(ctx context.Context) ([]*domain.Language, error) {
+func (r *language) FindAll(ctx context.Context) ([]*domain.Language, error) {
 	sql := fmt.Sprintf(`
 		SELECT id, name 
 		FROM %s
 	`, languageTable)
 
-	r.log.Info("db: " + sql)
+	r.log.Info("psql - language - FindAll: %s", sql)
 
-	rows, err := r.Pool.Query(ctx, sql)
+	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)

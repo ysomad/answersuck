@@ -6,11 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/service"
 
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
 const route = "/api/v1"
@@ -18,15 +16,15 @@ const route = "/api/v1"
 type Deps struct {
 	Config          *config.Aggregate
 	Logger          logging.Logger
-	ErrorTranslator validation.ErrorTranslator
-	TokenManager    auth.TokenManager
-	AccountService  service.Account
-	SessionService  service.Session
-	AuthService     service.Auth
-	LanguageService service.Language
-	TagService      service.Tag
-	TopicService    service.Topic
-	QuestionService service.Question
+	GinTranslator   ErrorTranslator
+	TokenManager    auth.TokenManager // TODO: fix
+	AccountService  accountService
+	SessionService  sessionService
+	AuthService     authService
+	LanguageService languageService
+	QuestionService questionService
+	TagService      tagService
+	TopicService    topicService
 }
 
 func SetupHandlers(e *gin.Engine, d *Deps) {

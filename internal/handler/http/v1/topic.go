@@ -1,24 +1,30 @@
 package v1
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/domain"
+
 	"github.com/answersuck/vault/pkg/logging"
 )
 
+type topicService interface {
+	GetAll(ctx context.Context) ([]*domain.Topic, error)
+}
+
 type topicHandler struct {
-	log   logging.Logger
-	topic service.Topic
+	log     logging.Logger
+	service topicService
 }
 
 func newTopicHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &topicHandler{
-		log:   d.Logger,
-		topic: d.TopicService,
+		log:     d.Logger,
+		service: d.TopicService,
 	}
 
 	g := handler.Group("topics")
@@ -28,9 +34,9 @@ func newTopicHandler(handler *gin.RouterGroup, d *Deps) {
 }
 
 func (h *topicHandler) getAll(c *gin.Context) {
-	t, err := h.topic.GetAll(c.Request.Context())
+	t, err := h.service.GetAll(c.Request.Context())
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - topic - getAll - h.topic.GetAll: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - topic - getAll - h.service.GetAll: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
