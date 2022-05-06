@@ -34,7 +34,7 @@ type authHandler struct {
 
 func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &authHandler{
-		t:       d.GinTranslator,
+		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
 		service: d.AuthService,

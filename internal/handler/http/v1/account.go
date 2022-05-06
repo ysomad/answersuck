@@ -36,7 +36,7 @@ type accountHandler struct {
 
 func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &accountHandler{
-		t:       d.GinTranslator,
+		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
 		service: d.AccountService,

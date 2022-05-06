@@ -31,7 +31,7 @@ type sessionHandler struct {
 
 func newSessionHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &sessionHandler{
-		t:       d.GinTranslator,
+		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
 		service: d.SessionService,

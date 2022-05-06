@@ -91,7 +91,7 @@ func Run(configPath string) {
 		&v1.Deps{
 			Config:          &cfg,
 			Logger:          l,
-			GinTranslator:   ginTranslator,
+			ErrorTranslator: ginTranslator,
 			TokenManager:    tokenManager,
 			AccountService:  accountService,
 			SessionService:  sessionService,

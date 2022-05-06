@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/answersuck/vault/internal/dto"
 
 	"github.com/jackc/pgx/v4"
 
@@ -29,6 +30,16 @@ func NewQuestion(l logging.Logger, c *postgres.Client) *question {
 		log:    l,
 		client: c,
 	}
+}
+
+func (r *question) Create(ctx context.Context, q *dto.QuestionCreate) (*domain.Question, error) {
+	sql := fmt.Sprintf(`
+		INSERT INTO %s(question, media_id, answer, language_id, account_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id
+	`, questionTable)
+
+	return nil, nil
 }
 
 func (r *question) FindAll(ctx context.Context) ([]*domain.Question, error) {
@@ -72,9 +83,9 @@ func (r *question) FindAll(ctx context.Context) ([]*domain.Question, error) {
 			&q.Id,
 			&q.Q,
 			&q.Answer,
-			&q.AnswerImage,
+			&q.AnswerImageURL,
 			&q.Author,
-			&q.Media,
+			&q.MediaURL,
 			&q.MediaType,
 			&q.LanguageId,
 			&q.CreatedAt,

@@ -28,7 +28,7 @@ type topicHandler struct {
 
 func newTopicHandler(handler *gin.RouterGroup, d *Deps) {
 	h := &topicHandler{
-		t:       d.GinTranslator,
+		t:       d.ErrorTranslator,
 		log:     d.Logger,
 		service: d.TopicService,
 	}

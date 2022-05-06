@@ -16,7 +16,7 @@ const route = "/api/v1"
 type Deps struct {
 	Config          *config.Aggregate
 	Logger          logging.Logger
-	GinTranslator   errorTranslator
+	ErrorTranslator errorTranslator
 	TokenManager    auth.TokenManager // TODO: fix
 	AccountService  accountService
 	SessionService  sessionService
