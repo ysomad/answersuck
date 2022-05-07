@@ -3,17 +3,18 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/answersuck/vault/internal/dto"
-	"github.com/answersuck/vault/pkg/strings"
 	"net/mail"
 	"time"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/dto"
+
 	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/blocklist"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/storage"
+	"github.com/answersuck/vault/pkg/strings"
 )
 
 const (

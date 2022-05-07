@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/answersuck/vault/internal/dto"
 	"net/mail"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/dto"
 	"github.com/answersuck/vault/pkg/auth"
 )
 
