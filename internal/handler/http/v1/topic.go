@@ -10,7 +10,6 @@ import (
 
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/dto"
-	repository "github.com/answersuck/vault/internal/repository/psql"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
@@ -26,14 +25,14 @@ type topicHandler struct {
 	service topicService
 }
 
-func newTopicHandler(handler *gin.RouterGroup, d *Deps) {
+func newTopicHandler(r *gin.RouterGroup, d *Deps) {
 	h := &topicHandler{
 		t:       d.ErrorTranslator,
 		log:     d.Logger,
 		service: d.TopicService,
 	}
 
-	topics := handler.Group("topics")
+	topics := r.Group("topics")
 	{
 		topics.GET("", h.getAll)
 	}
@@ -56,7 +55,7 @@ func (h *topicHandler) create(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - topic - create - h.service.Create: %w", err))
 
-		if errors.Is(err, repository.ErrForeignKeyViolation) {
+		if errors.Is(err, domain.ErrLanguageNotFound) {
 			abortWithError(c, http.StatusBadRequest, domain.ErrLanguageNotFound, "")
 			return
 		}

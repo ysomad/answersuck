@@ -18,24 +18,24 @@ type Deps struct {
 	Logger          logging.Logger
 	ErrorTranslator errorTranslator
 	TokenManager    auth.TokenManager // TODO: fix
-	AccountService  accountService
-	SessionService  sessionService
-	AuthService     authService
-	LanguageService languageService
-	QuestionService questionService
-	TagService      tagService
+	AccountService  AccountService
+	SessionService  SessionService
+	AuthService     AuthService
+	LanguageService LanguageService
+	QuestionService QuestionService
+	TagService      TagService
 	TopicService    topicService
 }
 
-func SetupHandlers(e *gin.Engine, d *Deps) {
+func SetupHandlers(r *gin.Engine, d *Deps) {
 	// Options
-	e.Use(gin.Logger())
-	e.Use(gin.Recovery())
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 
-	e.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
+	r.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	// Resource handlers
-	h := e.Group(route)
+	h := r.Group(route)
 	{
 		newSessionHandler(h, d)
 		newAccountHandler(h, d)

@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,32 +9,36 @@ import (
 
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/dto"
-	repository "github.com/answersuck/vault/internal/repository/psql"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type questionService interface {
-	Create(ctx context.Context, dto *dto.QuestionCreate) (*domain.Question, error)
+type QuestionService interface {
+	Create(ctx context.Context, qc *dto.QuestionCreate) (*domain.Question, error)
 	GetAll(ctx context.Context) ([]*domain.Question, error)
 }
 
 type questionHandler struct {
 	t       errorTranslator
 	log     logging.Logger
-	service questionService
+	service QuestionService
 }
 
-func newQuestionHandler(handler *gin.RouterGroup, d *Deps) {
+func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
 	h := &questionHandler{
 		t:       d.ErrorTranslator,
 		log:     d.Logger,
 		service: d.QuestionService,
 	}
 
-	g := handler.Group("questions")
+	questions := r.Group("questions")
 	{
-		g.GET("", h.getAll)
+		questions.GET("", h.getAll)
+	}
+
+	authenticated := questions.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	{
+		authenticated.POST("", h.create)
 	}
 }
 
@@ -47,7 +50,7 @@ func (h *questionHandler) create(c *gin.Context) {
 		return
 	}
 
-	aid, err := getAccountId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - question - create - getAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -60,16 +63,10 @@ func (h *questionHandler) create(c *gin.Context) {
 		Answer:        r.Answer,
 		AnswerImageId: r.AnswerImageId,
 		LanguageId:    r.LanguageId,
-		AccountId:     aid,
+		AccountId:     accountId,
 	})
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - question - create - h.service.Create :%w", err))
-
-		if errors.Is(err, repository.ErrForeignKeyViolation) {
-			abortWithError(c, http.StatusBadRequest, repository.ErrForeignKeyViolation, "")
-			return
-		}
-
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

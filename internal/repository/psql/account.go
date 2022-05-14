@@ -2,9 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain"
@@ -21,57 +24,67 @@ const (
 	accountPasswordResetTokenTable = "account_password_reset_token"
 )
 
-type account struct {
+type accountRepo struct {
 	log    logging.Logger
 	client *postgres.Client
 }
 
-func NewAccount(l logging.Logger, c *postgres.Client) *account {
-	return &account{
+func NewAccountRepo(l logging.Logger, c *postgres.Client) *accountRepo {
+	return &accountRepo{
 		log:    l,
 		client: c,
 	}
 }
 
-func (r *account) Create(ctx context.Context, a *domain.Account) (*domain.Account, error) {
+func (r *accountRepo) Create(ctx context.Context, a *domain.Account) (*domain.Account, error) {
 	sql := fmt.Sprintf(`
 		WITH a AS (
-			INSERT INTO %s(username, email, password, is_verified)
-			VALUES ($1, $2, $3, $4)
+			INSERT INTO %s(username, email, password, is_verified, updated_at, created_at)
+			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id AS account_id
 		),
 		av AS (
 			INSERT INTO %s(code, account_id)
-			VALUES($5, (SELECT account_id FROM a) )
+			VALUES($7, (SELECT account_id FROM a) )
 		),
 		aa AS (
 			INSERT INTO %s(url, account_id)
-			VALUES($6, (SELECT account_id FROM a) )
+			VALUES($8, (SELECT account_id FROM a) )
 		)
 		SELECT account_id FROM a
 	`, accountTable, accountVerificationCodeTable, accountAvatarTable)
 
 	r.log.Info("psql - account - Create: %s", sql)
 
-	if err := r.client.Pool.QueryRow(ctx, sql,
+	err := r.client.Pool.QueryRow(ctx, sql,
 		a.Username,
 		a.Email,
 		a.PasswordHash,
 		a.Verified,
+		a.UpdatedAt,
+		a.CreatedAt,
 		a.VerificationCode,
 		a.AvatarURL,
-	).Scan(&a.Id); err != nil {
-		if err = unwrapError(err); err != nil {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+	).Scan(&a.Id)
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrAccountAlreadyExist)
+			}
+
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return a, nil
 }
 
-func (r *account) FindById(ctx context.Context, aid string) (*domain.Account, error) {
+func (r *accountRepo) FindById(ctx context.Context, accountId string) (*domain.Account, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			a.username,
@@ -91,9 +104,9 @@ func (r *account) FindById(ctx context.Context, aid string) (*domain.Account, er
 
 	r.log.Info("psql - account - FindById: %s", sql)
 
-	a := domain.Account{Id: aid}
+	a := domain.Account{Id: accountId}
 
-	if err := r.client.Pool.QueryRow(ctx, sql, aid, false).Scan(
+	if err := r.client.Pool.QueryRow(ctx, sql, accountId, false).Scan(
 		&a.Username,
 		&a.Email,
 		&a.PasswordHash,
@@ -104,16 +117,16 @@ func (r *account) FindById(ctx context.Context, aid string) (*domain.Account, er
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return &a, nil
 }
 
-func (r *account) FindByEmail(ctx context.Context, email string) (*domain.Account, error) {
+func (r *accountRepo) FindByEmail(ctx context.Context, email string) (*domain.Account, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			a.id,
@@ -146,16 +159,16 @@ func (r *account) FindByEmail(ctx context.Context, email string) (*domain.Accoun
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return &a, nil
 }
 
-func (r *account) FindByUsername(ctx context.Context, username string) (*domain.Account, error) {
+func (r *accountRepo) FindByUsername(ctx context.Context, username string) (*domain.Account, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			a.id,
@@ -188,16 +201,16 @@ func (r *account) FindByUsername(ctx context.Context, username string) (*domain.
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrAccountNotFound)
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return &a, nil
 }
 
-func (r *account) Archive(ctx context.Context, aid string, archived bool, updatedAt time.Time) error {
+func (r *accountRepo) Archive(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s
 		SET
@@ -210,22 +223,22 @@ func (r *account) Archive(ctx context.Context, aid string, archived bool, update
 
 	r.log.Info("psql - account - Archive: %s", sql)
 
-	ct, err := r.client.Pool.Exec(ctx, sql, archived, updatedAt, aid, !archived)
+	ct, err := r.client.Pool.Exec(ctx, sql, archived, updatedAt, accountId, !archived)
 	if err != nil {
-		return fmt.Errorf("r.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - r.client.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+		return fmt.Errorf("psql - r.client.Pool.Exec: %w", domain.ErrAccountNotArchived)
 	}
 
 	return nil
 }
 
-func (r *account) Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error {
+func (r *accountRepo) Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s AS a
-		SET 
+		SET
 			is_verified = $1,
 			updated_at = $2
 		FROM (
@@ -236,7 +249,7 @@ func (r *account) Verify(ctx context.Context, code string, verified bool, update
 			WHERE av.code = $3
 		) AS sq
 		WHERE
-			a.is_verified = $4 
+			a.is_verified = $4
 			AND a.id = sq.account_id;
 	`, accountTable, accountVerificationCodeTable, accountTable)
 
@@ -244,17 +257,17 @@ func (r *account) Verify(ctx context.Context, code string, verified bool, update
 
 	ct, err := r.client.Pool.Exec(ctx, sql, verified, updatedAt, code, !verified)
 	if err != nil {
-		return fmt.Errorf("r.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - r.client.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+		return fmt.Errorf("psql - r.client.Pool.Exec: %w", domain.ErrAccountAlreadyVerified)
 	}
 
 	return nil
 }
 
-func (r *account) FindVerification(ctx context.Context, aid string) (dto.AccountVerification, error) {
+func (r *accountRepo) FindVerification(ctx context.Context, accountId string) (dto.AccountVerification, error) {
 	sql := fmt.Sprintf(`
 		SELECT a.email, a.is_verified, av.code AS verification_code
 		FROM %s AS a
@@ -265,20 +278,25 @@ func (r *account) FindVerification(ctx context.Context, aid string) (dto.Account
 
 	r.log.Info("psql - account - FindVerification: %s", sql)
 
-	var a dto.AccountVerification
+	var av dto.AccountVerification
 
-	if err := r.client.Pool.QueryRow(ctx, sql, aid).Scan(&a.Email, &a.Verified, &a.Code); err != nil {
+	if err := r.client.Pool.QueryRow(ctx, sql, accountId).Scan(
+		&av.Email,
+		&av.Verified,
+		&av.Code,
+	); err != nil {
+
 		if err == pgx.ErrNoRows {
-			return dto.AccountVerification{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+			return dto.AccountVerification{}, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrAccountVerificationNotFound)
 		}
 
-		return dto.AccountVerification{}, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return dto.AccountVerification{}, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return a, nil
+	return av, nil
 }
 
-func (r *account) InsertPasswordResetToken(ctx context.Context, email, token string) error {
+func (r *accountRepo) InsertPasswordResetToken(ctx context.Context, email, token string) error {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s (token, account_id)
 		VALUES($1, (SELECT id AS account_id FROM %s WHERE email = $2))
@@ -288,17 +306,24 @@ func (r *account) InsertPasswordResetToken(ctx context.Context, email, token str
 
 	if _, err := r.client.Pool.Exec(ctx, sql, token, email); err != nil {
 
-		if err = unwrapError(err); err != nil {
-			return fmt.Errorf("r.Pool.Exec: %w", err)
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return fmt.Errorf("psql - r.client.Pool.Exec: %w", domain.ErrAccountPasswordResetTokenAlreadyExist)
+			case pgerrcode.ForeignKeyViolation:
+				return fmt.Errorf("psql - r.client.Pool.Exec: %w", domain.ErrAccountNotFound)
+			}
 		}
 
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNotFound)
+		return fmt.Errorf("psql - r.Pool.Exec: %w", err)
 	}
 
 	return nil
 }
 
-func (r *account) FindPasswordResetToken(ctx context.Context, token string) (*dto.AccountPasswordResetToken, error) {
+func (r *accountRepo) FindPasswordResetToken(ctx context.Context, token string) (*dto.AccountPasswordResetToken, error) {
 	sql := fmt.Sprintf(`
 		SELECT t.token, t.created_at, a.id
 		FROM %s AS t
@@ -312,17 +337,18 @@ func (r *account) FindPasswordResetToken(ctx context.Context, token string) (*dt
 	var a dto.AccountPasswordResetToken
 
 	if err := r.client.Pool.QueryRow(ctx, sql, token).Scan(&a.Token, &a.CreatedAt, &a.AccountId); err != nil {
+
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrAccountPasswordResetTokenNotFound)
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return &a, nil
 }
 
-func (r *account) UpdatePasswordWithToken(ctx context.Context, dto dto.AccountUpdatePassword) error {
+func (r *accountRepo) UpdatePasswordWithToken(ctx context.Context, a dto.AccountUpdatePassword) error {
 	sql := fmt.Sprintf(`
 		WITH a AS (
 			UPDATE %s
@@ -340,18 +366,18 @@ func (r *account) UpdatePasswordWithToken(ctx context.Context, dto dto.AccountUp
 	ct, err := r.client.Pool.Exec(
 		ctx,
 		sql,
-		dto.PasswordHash,
-		dto.UpdatedAt,
-		dto.AccountId,
-		dto.AccountId,
-		dto.Token,
+		a.PasswordHash,
+		a.UpdatedAt,
+		a.AccountId,
+		a.AccountId,
+		a.Token,
 	)
 	if err != nil {
-		return fmt.Errorf("r.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - r.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+		return fmt.Errorf("psql - r.Pool.Exec: %w", domain.ErrAccountPasswordNotSet)
 	}
 
 	return nil

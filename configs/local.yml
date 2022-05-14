@@ -32,7 +32,7 @@ accessToken:
   signingKey: "secret"
 
 password:
-  resetTokenExpiration: 5m
+  resetTokenExpiration: 1m
 
 smtp:
   host: "smtp.yandex.ru"

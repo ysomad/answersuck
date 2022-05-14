@@ -12,24 +12,24 @@ import (
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type tagService interface {
+type TagService interface {
 	GetAll(ctx context.Context) ([]*domain.Tag, error)
 }
 
 type tagHandler struct {
 	log     logging.Logger
-	service tagService
+	service TagService
 }
 
-func newTagHandler(handler *gin.RouterGroup, d *Deps) {
+func newTagHandler(r *gin.RouterGroup, d *Deps) {
 	h := &tagHandler{
 		log:     d.Logger,
 		service: d.TagService,
 	}
 
-	g := handler.Group("tags")
+	tags := r.Group("tags")
 	{
-		g.GET("", h.getAll)
+		tags.GET("", h.getAll)
 	}
 }
 

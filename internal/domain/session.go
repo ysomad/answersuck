@@ -3,9 +3,10 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"github.com/answersuck/vault/pkg/strings"
 	"net/netip"
 	"time"
+
+	"github.com/answersuck/vault/pkg/strings"
 )
 
 // Client errors
@@ -15,8 +16,12 @@ var (
 
 // System errors
 var (
-	ErrSessionContextNotFound = errors.New("session not found in context")
-	ErrSessionDeviceMismatch  = errors.New("device doesn't match with device of current session")
+	ErrSessionContextNotFound     = errors.New("session not found in context")
+	ErrSessionDeviceMismatch      = errors.New("device doesn't match with device of current session")
+	ErrSessionAlreadyExist        = errors.New("session with given id already exist")
+	ErrSessionForeignKeyViolation = errors.New("session cannot be created, account with given account id is not found")
+	ErrSessionNotFound            = errors.New("session not found")
+	ErrSessionNotDeleted          = errors.New("session has not been deleted")
 )
 
 type Session struct {
@@ -29,7 +34,7 @@ type Session struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-func NewSession(aid, ua, ip string, expiration time.Duration) (*Session, error) {
+func NewSession(accountId, userAgent, ip string, expiration time.Duration) (*Session, error) {
 	// TODO: add useragent validation
 
 	if _, err := netip.ParseAddr(ip); err != nil {
@@ -45,8 +50,8 @@ func NewSession(aid, ua, ip string, expiration time.Duration) (*Session, error) 
 
 	return &Session{
 		Id:        sid,
-		AccountId: aid,
-		UserAgent: ua,
+		AccountId: accountId,
+		UserAgent: userAgent,
 		IP:        ip,
 		MaxAge:    int(expiration.Seconds()),
 		ExpiresAt: now.Add(expiration).Unix(),

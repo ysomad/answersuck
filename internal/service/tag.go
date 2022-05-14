@@ -7,24 +7,24 @@ import (
 	"github.com/answersuck/vault/internal/domain"
 )
 
-type tagRepository interface {
+type TagRepository interface {
 	FindAll(ctx context.Context) ([]*domain.Tag, error)
 }
 
-type tag struct {
-	repo tagRepository
+type tagService struct {
+	repo TagRepository
 }
 
-func NewTag(r tagRepository) *tag {
-	return &tag{
+func NewTagService(r TagRepository) *tagService {
+	return &tagService{
 		repo: r,
 	}
 }
 
-func (s *tag) GetAll(ctx context.Context) ([]*domain.Tag, error) {
+func (s *tagService) GetAll(ctx context.Context) ([]*domain.Tag, error) {
 	t, err := s.repo.FindAll(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("tag - GetAll - s.repo.FindAll: %w", err)
+		return nil, fmt.Errorf("tagService - GetAll - s.repo.FindAll: %w", err)
 	}
 
 	return t, nil

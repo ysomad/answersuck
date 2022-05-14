@@ -44,15 +44,15 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
-	sessionRepo := repository.NewSession(l, pg)
-	sessionService := service.NewSession(&cfg.Session, sessionRepo)
+	sessionRepo := repository.NewSessionRepo(l, pg)
+	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
 
 	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
 	}
 
-	emailService := service.NewEmail(&cfg, emailClient)
+	emailService := service.NewEmailService(&cfg, emailClient)
 
 	tokenManager, err := auth.NewTokenManager(cfg.AccessToken.Sign)
 	if err != nil {
@@ -61,23 +61,23 @@ func Run(configPath string) {
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository.NewAccount(l, pg)
-	accountService := service.NewAccount(&cfg, accountRepo, sessionService, tokenManager,
+	accountRepo := repository.NewAccountRepo(l, pg)
+	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager,
 		emailService, usernameBlockList)
 
-	authService := service.NewAuth(&cfg, tokenManager, accountService, sessionService)
+	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
 
-	languageRepo := repository.NewLanguage(l, pg)
-	languageService := service.NewLanguage(languageRepo)
+	languageRepo := repository.NewLanguageRepo(l, pg)
+	languageService := service.NewLanguageService(languageRepo)
 
-	tagRepo := repository.NewTag(l, pg)
-	tagService := service.NewTag(tagRepo)
+	tagRepo := repository.NewTagRepo(l, pg)
+	tagService := service.NewTagService(tagRepo)
 
-	topicRepo := repository.NewTopic(l, pg)
-	topicService := service.NewTopic(topicRepo)
+	topicRepo := repository.NewTopicRepo(l, pg)
+	topicService := service.NewTopicService(topicRepo)
 
-	questionRepo := repository.NewQuestion(l, pg)
-	questionService := service.NewQuestion(questionRepo)
+	questionRepo := repository.NewQuestionRepo(l, pg)
+	questionService := service.NewQuestionService(questionRepo)
 
 	ginTranslator, err := validation.NewGinTranslator()
 	if err != nil {

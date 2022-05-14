@@ -8,78 +8,78 @@ import (
 	"github.com/answersuck/vault/internal/domain"
 )
 
-type sessionRepository interface {
+type SessionRepository interface {
 	Create(ctx context.Context, s *domain.Session) (*domain.Session, error)
-	FindById(ctx context.Context, sid string) (*domain.Session, error)
-	FindAll(ctx context.Context, aid string) ([]*domain.Session, error)
-	Delete(ctx context.Context, sid string) error
-	DeleteAll(ctx context.Context, aid string) error
-	DeleteWithExcept(ctx context.Context, aid, sid string) error
+	FindById(ctx context.Context, sessionId string) (*domain.Session, error)
+	FindAll(ctx context.Context, accountId string) ([]*domain.Session, error)
+	Delete(ctx context.Context, sessionId string) error
+	DeleteAll(ctx context.Context, accountId string) error
+	DeleteWithExcept(ctx context.Context, accountId, sessionId string) error
 }
 
-type session struct {
+type sessionService struct {
 	cfg  *config.Session
-	repo sessionRepository
+	repo SessionRepository
 }
 
-func NewSession(cfg *config.Session, s sessionRepository) *session {
-	return &session{
+func NewSessionService(cfg *config.Session, s SessionRepository) *sessionService {
+	return &sessionService{
 		cfg:  cfg,
 		repo: s,
 	}
 }
 
-func (s *session) Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error) {
-	sess, err := domain.NewSession(aid, d.UserAgent, d.IP, s.cfg.Expiration)
+func (s *sessionService) Create(ctx context.Context, accountId string, d domain.Device) (*domain.Session, error) {
+	sess, err := domain.NewSession(accountId, d.UserAgent, d.IP, s.cfg.Expiration)
 	if err != nil {
-		return nil, fmt.Errorf("session - Create - domain.NewSession: %w", err)
+		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
 	}
 
 	sess, err = s.repo.Create(ctx, sess)
 	if err != nil {
-		return nil, fmt.Errorf("session - Create - s.repo.Create: %w", err)
+		return nil, fmt.Errorf("sessionService - Create - s.repo.Create: %w", err)
 	}
 
 	return sess, nil
 }
 
-func (s *session) GetById(ctx context.Context, sid string) (*domain.Session, error) {
-	sess, err := s.repo.FindById(ctx, sid)
+func (s *sessionService) GetById(ctx context.Context, sessionId string) (*domain.Session, error) {
+	sess, err := s.repo.FindById(ctx, sessionId)
 	if err != nil {
-		return nil, fmt.Errorf("session - GetById - s.repo.FindByID: %w", err)
+		return nil, fmt.Errorf("sessionService - GetById - s.repo.FindByID: %w", err)
 	}
 
 	return sess, nil
 }
 
-func (s *session) GetAll(ctx context.Context, aid string) ([]*domain.Session, error) {
-	sessions, err := s.repo.FindAll(ctx, aid)
+func (s *sessionService) GetAll(ctx context.Context, accountId string) ([]*domain.Session, error) {
+	sessions, err := s.repo.FindAll(ctx, accountId)
 	if err != nil {
-		return nil, fmt.Errorf("session - GetAll - s.repo.FindAll: %w", err)
+		return nil, fmt.Errorf("sessionService - GetAll - s.repo.FindAll: %w", err)
 	}
 
 	return sessions, nil
 }
 
-func (s *session) Terminate(ctx context.Context, sid string) error {
-	if err := s.repo.Delete(ctx, sid); err != nil {
-		return fmt.Errorf("session - Terminate - s.repo.Delete: %w", err)
+func (s *sessionService) Terminate(ctx context.Context, sessionId string) error {
+	if err := s.repo.Delete(ctx, sessionId); err != nil {
+		return fmt.Errorf("sessionService - Terminate - s.repo.Delete: %w", err)
 	}
 
 	return nil
 }
 
-func (s *session) TerminateWithExcept(ctx context.Context, aid, sid string) error {
-	if err := s.repo.DeleteWithExcept(ctx, aid, sid); err != nil {
-		return fmt.Errorf("session - TerminateWithExcept - s.repo.DeleteWithExcept: %w", err)
+func (s *sessionService) TerminateWithExcept(ctx context.Context, accountId, sessionId string) error {
+	if err := s.repo.DeleteWithExcept(ctx, accountId, sessionId); err != nil {
+		return fmt.Errorf("sessionService - TerminateWithExcept - s.repo.DeleteWithExcept: %w", err)
 	}
 
 	return nil
 }
 
-func (s *session) TerminateAll(ctx context.Context, aid string) error {
-	if err := s.repo.DeleteAll(ctx, aid); err != nil {
-		return fmt.Errorf("session - TerminateAll - s.repo.DeleteAll: %w", err)
+func (s *sessionService) TerminateAll(ctx context.Context, accountId string) error {
+	if err := s.repo.DeleteAll(ctx, accountId); err != nil {
+		return fmt.Errorf("sessionService - TerminateAll - s.repo.DeleteAll: %w", err)
 	}
 
 	return nil

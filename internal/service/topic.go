@@ -3,27 +3,28 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/dto"
-	"time"
 )
 
-type topicRepository interface {
+type TopicRepository interface {
 	Create(ctx context.Context, t domain.Topic) (int, error)
 	FindAll(ctx context.Context) ([]*domain.Topic, error)
 }
 
-type topic struct {
-	repo topicRepository
+type topicService struct {
+	repo TopicRepository
 }
 
-func NewTopic(r topicRepository) *topic {
-	return &topic{
+func NewTopicService(r TopicRepository) *topicService {
+	return &topicService{
 		repo: r,
 	}
 }
 
-func (s *topic) Create(ctx context.Context, req dto.TopicCreateRequest) (domain.Topic, error) {
+func (s *topicService) Create(ctx context.Context, req dto.TopicCreateRequest) (domain.Topic, error) {
 	now := time.Now()
 
 	t := domain.Topic{
@@ -35,7 +36,7 @@ func (s *topic) Create(ctx context.Context, req dto.TopicCreateRequest) (domain.
 
 	topicId, err := s.repo.Create(ctx, t)
 	if err != nil {
-		return domain.Topic{}, fmt.Errorf("topic - Create - s.repo.Create: %w", err)
+		return domain.Topic{}, fmt.Errorf("topicService - Create - s.repo.Create: %w", err)
 	}
 
 	t.Id = topicId
@@ -43,10 +44,10 @@ func (s *topic) Create(ctx context.Context, req dto.TopicCreateRequest) (domain.
 	return t, nil
 }
 
-func (s *topic) GetAll(ctx context.Context) ([]*domain.Topic, error) {
+func (s *topicService) GetAll(ctx context.Context) ([]*domain.Topic, error) {
 	t, err := s.repo.FindAll(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("topic - GetAll - s.repo.FindAll: %w", err)
+		return nil, fmt.Errorf("topicService - GetAll - s.repo.FindAll: %w", err)
 	}
 
 	return t, nil

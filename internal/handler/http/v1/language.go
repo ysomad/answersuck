@@ -12,24 +12,24 @@ import (
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type languageService interface {
+type LanguageService interface {
 	GetAll(ctx context.Context) ([]*domain.Language, error)
 }
 
 type languageHandler struct {
 	log     logging.Logger
-	service languageService
+	service LanguageService
 }
 
-func newLanguageHandler(handler *gin.RouterGroup, d *Deps) {
+func newLanguageHandler(r *gin.RouterGroup, d *Deps) {
 	h := &languageHandler{
 		log:     d.Logger,
 		service: d.LanguageService,
 	}
 
-	g := handler.Group("languages")
+	languages := r.Group("languages")
 	{
-		g.GET("", h.getAll)
+		languages.GET("", h.getAll)
 	}
 }
 

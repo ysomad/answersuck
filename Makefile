@@ -2,7 +2,7 @@ include .env
 export
 
 compose-up:
-	docker compose up --build -d postgres redis && docker-compose logs -f
+	docker compose up --build -d postgres redis && docker compose logs -f
 .PHONY: compose-up
 
 compose-down:

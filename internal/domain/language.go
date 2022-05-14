@@ -2,6 +2,7 @@ package domain
 
 import "errors"
 
+// Client errors
 var ErrLanguageNotFound = errors.New("language with given id not found")
 
 type Language struct {

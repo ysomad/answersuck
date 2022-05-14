@@ -11,11 +11,22 @@ type (
 		Password string `json:"password" binding:"required,gte=8,lte=64"`
 	}
 
-	AccountPasswordForgotRequest struct {
-		Login string `json:"login" binding:"required,email|alphanum"`
+	AccountCreateResponse struct {
+		Id        string    `json:"id"`
+		Email     string    `json:"email"`
+		Username  string    `json:"username"`
+		Verified  bool      `json:"verified"`
+		Archived  bool      `json:"archived"`
+		AvatarURL string    `json:"avatarUrl"`
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
 	}
 
 	AccountPasswordResetRequest struct {
+		Login string `json:"login" binding:"required,email|alphanum"`
+	}
+
+	AccountPasswordSetRequest struct {
 		Password string `json:"password" binding:"required,gte=8,lte=64"`
 	}
 )

@@ -13,20 +13,26 @@ import (
 
 // Client errors
 var (
-	ErrAccountAlreadyExist            = errors.New("account with given email or username already exist")
-	ErrAccountIncorrectCredentials    = errors.New("incorrect login or password")
-	ErrAccountAlreadyVerified         = errors.New("current email already verified or verification code is expired")
-	ErrAccountForbiddenUsername       = errors.New("username contains forbidden words")
-	ErrAccountNotFound                = errors.New("account not found")
-	ErrAccountEmptyVerificationCode   = errors.New("empty account verification code")
-	ErrAccountEmptyResetPasswordToken = errors.New("empty reset password token")
+	ErrAccountAlreadyExist               = errors.New("account with given email or username already exist")
+	ErrAccountNotArchived                = errors.New("account has not been archived")
+	ErrAccountAlreadyArchived            = errors.New("account already archived or not found")
+	ErrAccountIncorrectCredentials       = errors.New("incorrect login or password")
+	ErrAccountAlreadyVerified            = errors.New("current email already verified or verification code is expired")
+	ErrAccountForbiddenUsername          = errors.New("username contains forbidden words")
+	ErrAccountNotFound                   = errors.New("account not found")
+	ErrAccountEmptyVerificationCode      = errors.New("empty account verification code")
+	ErrAccountEmptyResetPasswordToken    = errors.New("empty reset password token")
+	ErrAccountPasswordResetTokenNotFound = errors.New("account password reset token not found or expired")
 )
 
 // System errors
 var (
-	ErrAccountIncorrectPassword         = errors.New("incorrect password")
-	ErrAccountContextNotFound           = errors.New("account not found in context")
-	ErrAccountResetPasswordTokenExpired = errors.New("password reset token is expired")
+	ErrAccountIncorrectPassword              = errors.New("incorrect password")
+	ErrAccountContextNotFound                = errors.New("account not found in context")
+	ErrAccountPasswordResetTokenExpired      = errors.New("password reset token is expired")
+	ErrAccountVerificationNotFound           = errors.New("account verification not found")
+	ErrAccountPasswordNotSet                 = errors.New("account password is not set")
+	ErrAccountPasswordResetTokenAlreadyExist = errors.New("account password reset token already exist")
 )
 
 type Account struct {

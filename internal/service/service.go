@@ -8,16 +8,16 @@ import (
 )
 
 type (
-	sessionService interface {
-		Create(ctx context.Context, aid string, d domain.Device) (*domain.Session, error)
-		GetById(ctx context.Context, sid string) (*domain.Session, error)
-		GetAll(ctx context.Context, aid string) ([]*domain.Session, error)
-		Terminate(ctx context.Context, sid string) error
-		TerminateAll(ctx context.Context, aid string) error
-		TerminateWithExcept(ctx context.Context, aid, sid string) error
+	SessionService interface {
+		Create(ctx context.Context, accountId string, d domain.Device) (*domain.Session, error)
+		GetById(ctx context.Context, sessionId string) (*domain.Session, error)
+		GetAll(ctx context.Context, accountId string) ([]*domain.Session, error)
+		Terminate(ctx context.Context, sessionId string) error
+		TerminateAll(ctx context.Context, accountId string) error
+		TerminateWithExcept(ctx context.Context, accountId, sessionId string) error
 	}
 
-	tokenManager interface {
+	TokenManager interface {
 		New(subject, audience string, expiration time.Duration) (string, error)
 		Parse(token, audience string) (string, error)
 	}

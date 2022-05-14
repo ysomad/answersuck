@@ -12,27 +12,26 @@ import (
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/internal/dto"
-	repository "github.com/answersuck/vault/internal/repository/psql"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type authService interface {
+type AuthService interface {
 	Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error)
-	Logout(ctx context.Context, sid string) error
+	Logout(ctx context.Context, sessionId string) error
 
-	NewToken(ctx context.Context, aid, password, audience string) (string, error)
-	ParseToken(ctx context.Context, token, audience string) (string, error)
+	NewSecurityToken(ctx context.Context, accountId, password, audience string) (string, error)
+	ParseSecurityToken(ctx context.Context, token, audience string) (string, error)
 }
 
 type authHandler struct {
 	t       errorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
-	service authService
+	service AuthService
 }
 
-func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
+func newAuthHandler(r *gin.RouterGroup, d *Deps) {
 	h := &authHandler{
 		t:       d.ErrorTranslator,
 		cfg:     d.Config,
@@ -40,15 +39,16 @@ func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
 		service: d.AuthService,
 	}
 
-	g := handler.Group("auth")
+	auth := r.Group("auth")
 	{
-		authenticated := g.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-		{
-			authenticated.POST("logout", h.logout)
-			authenticated.POST("token", h.tokenCreate)
-		}
 
-		g.POST("login", deviceMiddleware(), h.login)
+		auth.POST("login", deviceMiddleware(), h.login)
+	}
+
+	authenticated := auth.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	{
+		authenticated.POST("logout", h.logout)
+		authenticated.POST("token", h.tokenCreate)
 	}
 }
 
@@ -68,16 +68,11 @@ func (h *authHandler) login(c *gin.Context) {
 		return
 	}
 
-	s, err := h.service.Login(
-		c.Request.Context(),
-		r.Login,
-		r.Password,
-		d,
-	)
+	s, err := h.service.Login(c.Request.Context(), r.Login, r.Password, d)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - login - h.service.Login: %w", err))
 
-		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, domain.ErrAccountNotFound) {
 			abortWithError(c, http.StatusUnauthorized, domain.ErrAccountIncorrectCredentials, "")
 			return
 		}
@@ -91,9 +86,9 @@ func (h *authHandler) login(c *gin.Context) {
 }
 
 func (h *authHandler) logout(c *gin.Context) {
-	sid := getSessionId(c)
+	sessionId := getSessionId(c)
 
-	if err := h.service.Logout(c.Request.Context(), sid); err != nil {
+	if err := h.service.Logout(c.Request.Context(), sessionId); err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - logout - h.service.Logout: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -112,29 +107,24 @@ func (h *authHandler) tokenCreate(c *gin.Context) {
 		return
 	}
 
-	aid, err := getAccountId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - token - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	t, err := h.service.NewToken(
+	t, err := h.service.NewSecurityToken(
 		c.Request.Context(),
-		aid,
+		accountId,
 		r.Password,
 		strings.ToLower(r.Audience),
 	)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - token - h.service.NewToken: %w", err))
 
-		if errors.Is(err, repository.ErrNotFound) {
-			c.AbortWithStatus(http.StatusForbidden)
-			return
-		}
-
 		if errors.Is(err, domain.ErrAccountIncorrectPassword) {
-			abortWithError(c, http.StatusUnauthorized, domain.ErrAccountIncorrectPassword, "")
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 

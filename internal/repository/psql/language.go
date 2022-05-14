@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
-
 	"github.com/answersuck/vault/internal/domain"
 
 	"github.com/answersuck/vault/pkg/logging"
@@ -14,19 +12,19 @@ import (
 
 const languageTable = "language"
 
-type language struct {
+type languageRepo struct {
 	log    logging.Logger
 	client *postgres.Client
 }
 
-func NewLanguage(l logging.Logger, c *postgres.Client) *language {
-	return &language{
+func NewLanguageRepo(l logging.Logger, c *postgres.Client) *languageRepo {
+	return &languageRepo{
 		log:    l,
 		client: c,
 	}
 }
 
-func (r *language) FindAll(ctx context.Context) ([]*domain.Language, error) {
+func (r *languageRepo) FindAll(ctx context.Context) ([]*domain.Language, error) {
 	sql := fmt.Sprintf(`
 		SELECT id, name 
 		FROM %s
@@ -36,11 +34,7 @@ func (r *language) FindAll(ctx context.Context) ([]*domain.Language, error) {
 
 	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)
-		}
-
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	defer rows.Close()
@@ -51,7 +45,7 @@ func (r *language) FindAll(ctx context.Context) ([]*domain.Language, error) {
 		var l domain.Language
 
 		if err = rows.Scan(&l.Id, &l.Name); err != nil {
-			return nil, fmt.Errorf("rows.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("rows.Scan: %w", err)
 		}
 
 		languages = append(languages, &l)

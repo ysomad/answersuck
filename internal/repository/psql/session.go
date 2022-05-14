@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain"
@@ -13,19 +16,19 @@ import (
 
 const sessionTable = "session"
 
-type session struct {
+type sessionRepo struct {
 	log    logging.Logger
 	client *postgres.Client
 }
 
-func NewSession(l logging.Logger, c *postgres.Client) *session {
-	return &session{
+func NewSessionRepo(l logging.Logger, c *postgres.Client) *sessionRepo {
+	return &sessionRepo{
 		log:    l,
 		client: c,
 	}
 }
 
-func (r *session) Create(ctx context.Context, s *domain.Session) (*domain.Session, error) {
+func (r *sessionRepo) Create(ctx context.Context, s *domain.Session) (*domain.Session, error) {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s (id, account_id, max_age, user_agent, ip, expires_at, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -43,19 +46,26 @@ func (r *session) Create(ctx context.Context, s *domain.Session) (*domain.Sessio
 		s.ExpiresAt,
 		s.CreatedAt,
 	).Scan(&s.Id); err != nil {
-		if err = unwrapError(err); err != nil {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrSessionAlreadyExist)
+			case pgerrcode.ForeignKeyViolation:
+				return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrSessionForeignKeyViolation)
+			}
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return s, nil
 }
 
-func (r *session) FindById(ctx context.Context, sid string) (*domain.Session, error) {
+func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*domain.Session, error) {
 	sql := fmt.Sprintf(`
-		SELECT 
+		SELECT
 			account_id,
 			user_agent,
 			ip,
@@ -68,9 +78,9 @@ func (r *session) FindById(ctx context.Context, sid string) (*domain.Session, er
 
 	r.log.Info("psql - session - FindById: %s", sql)
 
-	s := domain.Session{Id: sid}
+	s := domain.Session{Id: sessionId}
 
-	if err := r.client.Pool.QueryRow(ctx, sql, sid).Scan(
+	if err := r.client.Pool.QueryRow(ctx, sql, sessionId).Scan(
 		&s.AccountId,
 		&s.UserAgent,
 		&s.IP,
@@ -78,20 +88,19 @@ func (r *session) FindById(ctx context.Context, sid string) (*domain.Session, er
 		&s.ExpiresAt,
 		&s.CreatedAt,
 	); err != nil {
-
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", domain.ErrSessionNotFound)
 		}
 
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return &s, nil
 }
 
-func (r *session) FindAll(ctx context.Context, aid string) ([]*domain.Session, error) {
+func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*domain.Session, error) {
 	sql := fmt.Sprintf(`
-		SELECT 
+		SELECT
 			id,
 			account_id,
 			max_age,
@@ -99,19 +108,15 @@ func (r *session) FindAll(ctx context.Context, aid string) ([]*domain.Session, e
    			ip,
    			expires_at,
 			created_at
-		FROM %s 
+		FROM %s
 		WHERE account_id = $1
 	`, sessionTable)
 
 	r.log.Info("psql - session - FindAll: %s", sql)
 
-	rows, err := r.client.Pool.Query(ctx, sql, aid)
+	rows, err := r.client.Pool.Query(ctx, sql, accountId)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.Pool.Query: %w", ErrNotFound)
-		}
-
-		return nil, fmt.Errorf("r.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	defer rows.Close()
@@ -130,65 +135,65 @@ func (r *session) FindAll(ctx context.Context, aid string) ([]*domain.Session, e
 			&s.ExpiresAt,
 			&s.CreatedAt,
 		); err != nil {
-			return nil, fmt.Errorf("rows.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("rows.Scan: %w", err)
 		}
 
 		sessions = append(sessions, &s)
 	}
 
-	if rows.Err() != nil {
+	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows.Err: %w", err)
 	}
 
 	return sessions, nil
 }
 
-func (r *session) Delete(ctx context.Context, sid string) error {
+func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = $1`, sessionTable)
 
 	r.log.Info("psql - session - Delete: %s", sql)
 
-	ct, err := r.client.Pool.Exec(ctx, sql, sid)
+	ct, err := r.client.Pool.Exec(ctx, sql, sessionId)
 	if err != nil {
-		return fmt.Errorf("r.Pool.Exec: %w", err)
+		return fmt.Errorf("r.client.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+		return fmt.Errorf("r.client.Pool.Exec: %w", domain.ErrSessionNotDeleted)
 	}
 
 	return nil
 }
 
-func (r *session) DeleteWithExcept(ctx context.Context, aid, sid string) error {
+func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE account_id = $1 AND id != $2`, sessionTable)
 
 	r.log.Info("psql - session - DeleteWithExcept: %s", sql)
 
-	ct, err := r.client.Pool.Exec(ctx, sql, aid, sid)
+	ct, err := r.client.Pool.Exec(ctx, sql, accountId, sessionId)
 	if err != nil {
-		return fmt.Errorf("r.Pool.Exec: %w", err)
+		return fmt.Errorf("r.client.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+		return fmt.Errorf("r.client.Pool.Exec: %w", domain.ErrSessionNotDeleted)
 	}
 
 	return nil
 }
 
-func (r *session) DeleteAll(ctx context.Context, aid string) error {
+func (r *sessionRepo) DeleteAll(ctx context.Context, accountId string) error {
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE account_id = $1`, sessionTable)
 
 	r.log.Info("psql - session - DeleteAll: %s", sql)
 
-	ct, err := r.client.Pool.Exec(ctx, sql, aid)
+	ct, err := r.client.Pool.Exec(ctx, sql, accountId)
 	if err != nil {
-		return fmt.Errorf("r.Pool.Exec: %w", err)
+		return fmt.Errorf("r.client.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("r.Pool.Exec: %w", ErrNoAffectedRows)
+		return fmt.Errorf("r.client.Pool.Exec: %w", domain.ErrSessionNotDeleted)
 	}
 
 	return nil

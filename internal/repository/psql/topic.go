@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v4"
+
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 
 	"github.com/answersuck/vault/internal/domain"
 	"github.com/answersuck/vault/pkg/logging"
@@ -12,19 +15,19 @@ import (
 
 const topicTable = "topic"
 
-type topic struct {
+type topicRepo struct {
 	log    logging.Logger
 	client *postgres.Client
 }
 
-func NewTopic(l logging.Logger, c *postgres.Client) *topic {
-	return &topic{
+func NewTopicRepo(l logging.Logger, c *postgres.Client) *topicRepo {
+	return &topicRepo{
 		log:    l,
 		client: c,
 	}
 }
 
-func (r *topic) Create(ctx context.Context, t domain.Topic) (int, error) {
+func (r *topicRepo) Create(ctx context.Context, t domain.Topic) (int, error) {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s(name, language_id, created_at, updated_at)
 		VALUES ($1, $2, $3, $4)
@@ -41,8 +44,12 @@ func (r *topic) Create(ctx context.Context, t domain.Topic) (int, error) {
 		t.CreatedAt,
 		t.UpdatedAt,
 	).Scan(&topicId); err != nil {
-		if err = unwrapError(err); err != nil {
-			return 0, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.ForeignKeyViolation {
+				return 0, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", domain.ErrLanguageNotFound)
+			}
 		}
 
 		return 0, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
@@ -51,7 +58,7 @@ func (r *topic) Create(ctx context.Context, t domain.Topic) (int, error) {
 	return topicId, nil
 }
 
-func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
+func (r *topicRepo) FindAll(ctx context.Context) ([]*domain.Topic, error) {
 	sql := fmt.Sprintf(`
 		SELECT 
 			id, 
@@ -66,10 +73,6 @@ func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
 
 	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("r.client.Pool.Query: %w", ErrNotFound)
-		}
-
 		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
@@ -81,13 +84,13 @@ func (r *topic) FindAll(ctx context.Context) ([]*domain.Topic, error) {
 		var t domain.Topic
 
 		if err = rows.Scan(&t.Id, &t.Name, &t.LanguageId, &t.CreatedAt, &t.UpdatedAt); err != nil {
-			return nil, fmt.Errorf("rows.Scan: %w", ErrNotFound)
+			return nil, fmt.Errorf("rows.Scan: %w", err)
 		}
 
 		topics = append(topics, &t)
 	}
 
-	if rows.Err() != nil {
+	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows.Err: %w", err)
 	}
 
