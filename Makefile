@@ -6,7 +6,7 @@ compose-up:
 .PHONY: compose-up
 
 compose-down:
-	docker compose down --remove-orphans
+	docker-compose down --remove-orphans
 .PHONY: compose-down
 
 run:
