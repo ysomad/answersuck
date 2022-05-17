@@ -8,20 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 type SessionService interface {
-	GetById(ctx context.Context, sessionId string) (*domain.Session, error)
-	GetAll(ctx context.Context, accountId string) ([]*domain.Session, error)
+	GetById(ctx context.Context, sessionId string) (*session.Session, error)
+	GetAll(ctx context.Context, accountId string) ([]*session.Session, error)
 	Terminate(ctx context.Context, sessionId string) error
 	TerminateWithExcept(ctx context.Context, accountId, sessionId string) error
 }
 
 type sessionHandler struct {
-	t       errorTranslator
+	t       ErrorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
 	service SessionService
@@ -72,7 +72,7 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 
 	sessionId := c.Param("sessionId")
 	if currSessionId == sessionId {
-		abortWithError(c, http.StatusBadRequest, domain.ErrSessionCannotBeTerminated, "")
+		abortWithError(c, http.StatusBadRequest, session.ErrCannotBeTerminated, "")
 		return
 	}
 

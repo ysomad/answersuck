@@ -7,19 +7,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/dto"
+	"github.com/answersuck/vault/internal/domain/question"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 type QuestionService interface {
-	Create(ctx context.Context, qc *dto.QuestionCreate) (*domain.Question, error)
-	GetAll(ctx context.Context) ([]*domain.Question, error)
+	Create(ctx context.Context, dto *question.CreateDTO) (*question.Question, error)
+	GetAll(ctx context.Context) ([]*question.Question, error)
 }
 
 type questionHandler struct {
-	t       errorTranslator
+	t       ErrorTranslator
 	log     logging.Logger
 	service QuestionService
 }
@@ -43,7 +42,7 @@ func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *questionHandler) create(c *gin.Context) {
-	var r dto.QuestionCreateRequest
+	var r question.CreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
@@ -57,7 +56,7 @@ func (h *questionHandler) create(c *gin.Context) {
 		return
 	}
 
-	q, err := h.service.Create(c.Request.Context(), &dto.QuestionCreate{
+	q, err := h.service.Create(c.Request.Context(), &question.CreateDTO{
 		Question:      r.Question,
 		MediaId:       r.MediaId,
 		Answer:        r.Answer,

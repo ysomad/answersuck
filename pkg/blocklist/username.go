@@ -9,7 +9,7 @@ var usernames = []string{
 	"autodiscover",
 	"broadcasthost",
 	"cpanel",
-	"domain",
+	"domain1",
 	"editor",
 	"guest",
 	"host",

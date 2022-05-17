@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain/auth"
 
-	"github.com/answersuck/vault/pkg/auth"
 	"github.com/answersuck/vault/pkg/logging"
 )
 
@@ -16,8 +16,8 @@ const route = "/api/v1"
 type Deps struct {
 	Config          *config.Aggregate
 	Logger          logging.Logger
-	ErrorTranslator errorTranslator
-	TokenManager    auth.TokenManager // TODO: fix
+	ErrorTranslator ErrorTranslator
+	TokenManager    auth.TokenManager
 	AccountService  AccountService
 	SessionService  SessionService
 	AuthService     AuthService
@@ -27,7 +27,7 @@ type Deps struct {
 	TopicService    topicService
 }
 
-func SetupHandlers(r *gin.Engine, d *Deps) {
+func NewHandler(r *gin.Engine, d *Deps) {
 	// Options
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())

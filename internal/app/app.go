@@ -11,16 +11,25 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 
 	"github.com/answersuck/vault/internal/config"
-	v1 "github.com/answersuck/vault/internal/handler/http/v1"
-	repository "github.com/answersuck/vault/internal/repository/psql"
-	"github.com/answersuck/vault/internal/service"
 
-	"github.com/answersuck/vault/pkg/auth"
+	"github.com/answersuck/vault/internal/adapter/repository"
+	v1 "github.com/answersuck/vault/internal/handler/http/v1"
+
+	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/auth"
+	"github.com/answersuck/vault/internal/domain/email"
+	"github.com/answersuck/vault/internal/domain/language"
+	"github.com/answersuck/vault/internal/domain/question"
+	"github.com/answersuck/vault/internal/domain/session"
+	"github.com/answersuck/vault/internal/domain/tag"
+	"github.com/answersuck/vault/internal/domain/topic"
+
 	"github.com/answersuck/vault/pkg/blocklist"
-	"github.com/answersuck/vault/pkg/email"
+	emailPkg "github.com/answersuck/vault/pkg/email"
 	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/pkg/token"
 	"github.com/answersuck/vault/pkg/validation"
 )
 
@@ -44,40 +53,50 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
-	sessionRepo := repository.NewSessionRepo(l, pg)
-	sessionService := service.NewSessionService(&cfg.Session, sessionRepo)
+	sessionRepo := repository.NewSessionPSQL(l, pg)
+	sessionService := session.NewService(&cfg.Session, sessionRepo)
 
-	emailClient, err := email.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
+	emailClient, err := emailPkg.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
 	}
 
-	emailService := service.NewEmailService(&cfg, emailClient)
+	emailService := email.NewService(&cfg, emailClient)
 
-	tokenManager, err := auth.NewTokenManager(cfg.AccessToken.Sign)
+	tokenManager, err := token.NewManager(cfg.AccessToken.Sign)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - auth.NewTokenManager: %w", err))
 	}
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository.NewAccountRepo(l, pg)
-	accountService := service.NewAccountService(&cfg, accountRepo, sessionService, tokenManager,
-		emailService, usernameBlockList)
+	accountRepo := repository.NewAccountPSQL(l, pg)
+	accountService := account.NewService(&account.Deps{
+		Config:            &cfg,
+		AccountRepo:       accountRepo,
+		SessionService:    sessionService,
+		EmailService:      emailService,
+		UsernameBlocklist: usernameBlockList,
+	})
 
-	authService := service.NewAuthService(&cfg, tokenManager, accountService, sessionService)
+	authService := auth.NewService(&auth.Deps{
+		Config:         &cfg,
+		Token:          tokenManager,
+		AccountService: accountService,
+		SessionService: sessionService,
+	})
 
-	languageRepo := repository.NewLanguageRepo(l, pg)
-	languageService := service.NewLanguageService(languageRepo)
+	languageRepo := repository.NewLanguagePSQL(l, pg)
+	languageService := language.NewService(languageRepo)
 
-	tagRepo := repository.NewTagRepo(l, pg)
-	tagService := service.NewTagService(tagRepo)
+	tagRepo := repository.NewTagPSQL(l, pg)
+	tagService := tag.NewService(tagRepo)
 
-	topicRepo := repository.NewTopicRepo(l, pg)
-	topicService := service.NewTopicService(topicRepo)
+	topicRepo := repository.NewTopicPSQL(l, pg)
+	topicService := topic.NewService(topicRepo)
 
-	questionRepo := repository.NewQuestionRepo(l, pg)
-	questionService := service.NewQuestionService(questionRepo)
+	questionRepo := repository.NewQuestionPSQL(l, pg)
+	questionService := question.NewService(questionRepo)
 
 	ginTranslator, err := validation.NewGinTranslator()
 	if err != nil {
@@ -86,7 +105,7 @@ func Run(configPath string) {
 
 	// HTTP Server
 	engine := gin.New()
-	v1.SetupHandlers(
+	v1.NewHandler(
 		engine,
 		&v1.Deps{
 			Config:          &cfg,

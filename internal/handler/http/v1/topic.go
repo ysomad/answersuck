@@ -8,19 +8,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/dto"
-
+	"github.com/answersuck/vault/internal/domain/topic"
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 type topicService interface {
-	Create(ctx context.Context, req dto.TopicCreateRequest) (domain.Topic, error)
-	GetAll(ctx context.Context) ([]*domain.Topic, error)
+	Create(ctx context.Context, req topic.CreateRequest) (topic.Topic, error)
+	GetAll(ctx context.Context) ([]*topic.Topic, error)
 }
 
 type topicHandler struct {
-	t       errorTranslator
+	t       ErrorTranslator
 	log     logging.Logger
 	service topicService
 }
@@ -44,7 +42,7 @@ func newTopicHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *topicHandler) create(c *gin.Context) {
-	var r dto.TopicCreateRequest
+	var r topic.CreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
@@ -55,8 +53,8 @@ func (h *topicHandler) create(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - topic - create - h.service.Create: %w", err))
 
-		if errors.Is(err, domain.ErrLanguageNotFound) {
-			abortWithError(c, http.StatusBadRequest, domain.ErrLanguageNotFound, "")
+		if errors.Is(err, topic.ErrLanguageNotFound) {
+			abortWithError(c, http.StatusBadRequest, topic.ErrLanguageNotFound, "")
 			return
 		}
 

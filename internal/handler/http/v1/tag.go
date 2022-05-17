@@ -7,13 +7,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/domain/tag"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 type TagService interface {
-	GetAll(ctx context.Context) ([]*domain.Tag, error)
+	GetAll(ctx context.Context) ([]*tag.Tag, error)
 }
 
 type tagHandler struct {

@@ -7,13 +7,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/domain/language"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 type LanguageService interface {
-	GetAll(ctx context.Context) ([]*domain.Language, error)
+	GetAll(ctx context.Context) ([]*language.Language, error)
 }
 
 type languageHandler struct {

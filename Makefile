@@ -25,7 +25,3 @@ migrate-up:
 migrate-down:
 	migrate -path migrations -database '$(PG_URL)?sslmode=disable' down
 .PHONY: migrate-down
-
-jet-gen:
-	jet -dsn='$(PG_URL)?sslmode=disable' -path=./internal/repository/gen
-.PHONY: jet-gen

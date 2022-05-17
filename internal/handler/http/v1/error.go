@@ -8,7 +8,7 @@ import (
 
 var errInvalidRequestBody = errors.New("invalid request body")
 
-type errorTranslator interface {
+type ErrorTranslator interface {
 	TranslateError(err error) map[string]string
 }
 

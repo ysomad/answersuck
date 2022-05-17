@@ -10,22 +10,24 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/dto"
+
+	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/auth"
+	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
 type AuthService interface {
-	Login(ctx context.Context, login, password string, d domain.Device) (*domain.Session, error)
+	Login(ctx context.Context, login, password string, d session.Device) (*session.Session, error)
 	Logout(ctx context.Context, sessionId string) error
 
-	NewSecurityToken(ctx context.Context, accountId, password, audience string) (string, error)
-	ParseSecurityToken(ctx context.Context, token, audience string) (string, error)
+	NewToken(ctx context.Context, accountId, password, audience string) (string, error)
+	ParseToken(ctx context.Context, token, audience string) (string, error)
 }
 
 type authHandler struct {
-	t       errorTranslator
+	t       ErrorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
 	service AuthService
@@ -41,19 +43,18 @@ func newAuthHandler(r *gin.RouterGroup, d *Deps) {
 
 	auth := r.Group("auth")
 	{
-
 		auth.POST("login", deviceMiddleware(), h.login)
 	}
 
 	authenticated := auth.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 	{
 		authenticated.POST("logout", h.logout)
-		authenticated.POST("token", h.tokenCreate)
+		authenticated.POST("token", h.createToken)
 	}
 }
 
 func (h *authHandler) login(c *gin.Context) {
-	var r dto.LoginRequest
+	var r auth.LoginRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
@@ -72,8 +73,8 @@ func (h *authHandler) login(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - login - h.service.Login: %w", err))
 
-		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, domain.ErrAccountNotFound) {
-			abortWithError(c, http.StatusUnauthorized, domain.ErrAccountIncorrectCredentials, "")
+		if errors.Is(err, account.ErrIncorrectPassword) || errors.Is(err, account.ErrNotFound) {
+			abortWithError(c, http.StatusUnauthorized, account.ErrIncorrectCredentials, "")
 			return
 		}
 
@@ -98,8 +99,8 @@ func (h *authHandler) logout(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *authHandler) tokenCreate(c *gin.Context) {
-	var r dto.TokenCreateRequest
+func (h *authHandler) createToken(c *gin.Context) {
+	var r auth.TokenCreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
@@ -114,7 +115,7 @@ func (h *authHandler) tokenCreate(c *gin.Context) {
 		return
 	}
 
-	t, err := h.service.NewSecurityToken(
+	t, err := h.service.NewToken(
 		c.Request.Context(),
 		accountId,
 		r.Password,
@@ -123,7 +124,7 @@ func (h *authHandler) tokenCreate(c *gin.Context) {
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - auth - token - h.service.NewToken: %w", err))
 
-		if errors.Is(err, domain.ErrAccountIncorrectPassword) {
+		if errors.Is(err, account.ErrIncorrectPassword) {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
@@ -132,5 +133,5 @@ func (h *authHandler) tokenCreate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.TokenCreateResponse{Token: t})
+	c.JSON(http.StatusOK, auth.TokenCreateResponse{Token: t})
 }

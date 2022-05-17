@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
@@ -16,7 +16,7 @@ import (
 const userAgentHeader = "User-Agent"
 
 // sessionMiddleware looking for a cookie with session id, sets account id and session id to context
-func sessionMiddleware(l logging.Logger, cfg *config.Session, session SessionService) gin.HandlerFunc {
+func sessionMiddleware(l logging.Logger, cfg *config.Session, service SessionService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionId, err := c.Cookie(cfg.CookieKey)
 		if err != nil {
@@ -25,7 +25,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session SessionSer
 			return
 		}
 
-		s, err := session.GetById(c.Request.Context(), sessionId)
+		s, err := service.GetById(c.Request.Context(), sessionId)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware - s.Get: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -33,7 +33,7 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, session SessionSer
 		}
 
 		if s.IP != c.ClientIP() || s.UserAgent != c.GetHeader(userAgentHeader) {
-			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware: %w", domain.ErrSessionDeviceMismatch))
+			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware: %w", session.ErrDeviceMismatch))
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -65,7 +65,7 @@ func tokenMiddleware(l logging.Logger, auth AuthService) gin.HandlerFunc {
 
 		currAud := strings.ToLower(c.Request.Host + c.FullPath())
 
-		sub, err := auth.ParseSecurityToken(c.Request.Context(), t, currAud)
+		sub, err := auth.ParseToken(c.Request.Context(), t, currAud)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - tokenMiddleware - auth.ParseAccessToken: %w", err))
 			c.AbortWithStatus(http.StatusForbidden)
@@ -85,7 +85,7 @@ func tokenMiddleware(l logging.Logger, auth AuthService) gin.HandlerFunc {
 
 func deviceMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		d := domain.Device{
+		d := session.Device{
 			IP:        c.ClientIP(),
 			UserAgent: c.GetHeader(userAgentHeader),
 		}
