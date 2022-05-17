@@ -1,29 +1,33 @@
-create table if not exists account(
-    id uuid not null primary key default gen_random_uuid(),
-    email varchar(255) unique not null,
-    username varchar(16) unique not null,
-    password varchar(255) not null,
-    is_verified boolean default false not null,
-    is_archived boolean default false not null,
-    created_at timestamp with time zone default current_timestamp not null,
-    updated_at timestamp with time zone default current_timestamp not null
+CREATE TABLE IF NOT EXISTS account
+(
+    id          uuid                                               NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+    email       varchar(255) UNIQUE                                NOT NULL,
+    username    varchar(16) UNIQUE                                 NOT NULL,
+    password    varchar(255)                                       NOT NULL,
+    is_verified boolean                  DEFAULT FALSE             NOT NULL,
+    is_archived boolean                  DEFAULT FALSE             NOT NULL,
+    created_at  timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL,
+    updated_at  timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL
 );
 
-create table if not exists account_verification_code(
-    id bigserial not null primary key,
-    code char(64) unique not null,
-    account_id uuid unique not null references account (id)
+CREATE TABLE IF NOT EXISTS account_verification_code
+(
+    id         serial          NOT NULL PRIMARY KEY,
+    code       char(64) UNIQUE NOT NULL,
+    account_id uuid UNIQUE     NOT NULL REFERENCES account (id)
 );
 
-create table if not exists account_avatar(
-    id bigserial not null primary key,
-    url varchar(2048) not null,
-    account_id uuid unique not null references account (id)
+CREATE TABLE IF NOT EXISTS account_avatar
+(
+    id         serial        NOT NULL PRIMARY KEY,
+    url        varchar(2048) NOT NULL,
+    account_id uuid          NOT NULL REFERENCES account (id)
 );
 
-create table if not exists account_password_reset_token(
-   id bigserial not null primary key,
-   token char(64) unique not null,
-   account_id uuid not null references account (id),
-   created_at timestamp with time zone default current_timestamp not null
+CREATE TABLE IF NOT EXISTS account_password_reset_token
+(
+    id         serial                                             NOT NULL PRIMARY KEY,
+    token      char(64) UNIQUE                                    NOT NULL,
+    account_id uuid                                               NOT NULL REFERENCES account (id),
+    created_at timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL
 );

@@ -1,9 +1,10 @@
-create table if not exists session(
-    id char(64) not null primary key,
-    account_id uuid not null references account (id),
-    max_age int not null,
-    user_agent text not null,
-    ip varchar(15) not null,
-    expires_at bigint not null,
-    created_at timestamp with time zone default current_timestamp not null
+CREATE TABLE IF NOT EXISTS session
+(
+    id         char(64)                                           NOT NULL PRIMARY KEY,
+    account_id uuid                                               NOT NULL REFERENCES account (id),
+    max_age    int                                                NOT NULL,
+    user_agent text                                               NOT NULL,
+    ip         varchar(15)                                        NOT NULL,
+    expires_at bigint                                             NOT NULL,
+    created_at timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL
 );

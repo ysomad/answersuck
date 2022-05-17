@@ -1,78 +1,80 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/dto"
-	"github.com/answersuck/vault/internal/service"
+
+	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/auth"
+	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
+type AuthService interface {
+	Login(ctx context.Context, login, password string, d session.Device) (*session.Session, error)
+	Logout(ctx context.Context, sessionId string) error
+
+	NewToken(ctx context.Context, accountId, password, audience string) (string, error)
+	ParseToken(ctx context.Context, token, audience string) (string, error)
+}
+
 type authHandler struct {
-	t    validation.ErrorTranslator
-	cfg  *config.Aggregate
-	log  logging.Logger
-	auth service.Auth
+	t       ErrorTranslator
+	cfg     *config.Aggregate
+	log     logging.Logger
+	service AuthService
 }
 
-func newAuthHandler(handler *gin.RouterGroup, d *Deps) {
+func newAuthHandler(r *gin.RouterGroup, d *Deps) {
 	h := &authHandler{
-		t:    d.ErrorTranslator,
-		cfg:  d.Config,
-		log:  d.Logger,
-		auth: d.AuthService,
+		t:       d.ErrorTranslator,
+		cfg:     d.Config,
+		log:     d.Logger,
+		service: d.AuthService,
 	}
 
-	g := handler.Group("auth")
+	auth := r.Group("auth")
 	{
-		authenticated := g.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-		{
-			authenticated.POST("logout", h.logout)
-			authenticated.POST("token", h.token)
-		}
-
-		g.POST("login", h.login)
+		auth.POST("login", deviceMiddleware(), h.login)
 	}
-}
 
-type loginRequest struct {
-	Login    string `json:"login" binding:"required,email|alphanum"`
-	Password string `json:"password" binding:"required"`
+	authenticated := auth.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	{
+		authenticated.POST("logout", h.logout)
+		authenticated.POST("token", h.createToken)
+	}
 }
 
 func (h *authHandler) login(c *gin.Context) {
-	var r loginRequest
+	var r auth.LoginRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
-	s, err := h.auth.Login(
-		c.Request.Context(),
-		r.Login,
-		r.Password,
-		dto.Device{
-			IP:        c.ClientIP(),
-			UserAgent: c.GetHeader("User-Agent"),
-		},
-	)
+	d, err := getDevice(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - login: %w", err))
+		h.log.Error("http - v1 - auth - login - getDevice: %w", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 
-		if errors.Is(err, domain.ErrAccountIncorrectPassword) || errors.Is(err, repository.ErrNotFound) {
-			abortWithError(c, http.StatusUnauthorized, domain.ErrAccountIncorrectCredentials, "")
+	s, err := h.service.Login(c.Request.Context(), r.Login, r.Password, d)
+	if err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - auth - login - h.service.Login: %w", err))
+
+		if errors.Is(err, account.ErrIncorrectPassword) || errors.Is(err, account.ErrNotFound) {
+			abortWithError(c, http.StatusUnauthorized, account.ErrIncorrectCredentials, "")
 			return
 		}
 
@@ -85,15 +87,10 @@ func (h *authHandler) login(c *gin.Context) {
 }
 
 func (h *authHandler) logout(c *gin.Context) {
-	sid, err := sessionId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - logout - sessionId: %w", err))
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	sessionId := getSessionId(c)
 
-	if err := h.auth.Logout(c.Request.Context(), sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - logout: %w", err))
+	if err := h.service.Logout(c.Request.Context(), sessionId); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - auth - logout - h.service.Logout: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -102,41 +99,32 @@ func (h *authHandler) logout(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-type tokenRequest struct {
-	Audience string `json:"audience" binding:"required,uri"`
-	Password string `json:"password" binding:"required"`
-}
-
-type tokenResponse struct {
-	Token string `json:"token"`
-}
-
-func (h *authHandler) token(c *gin.Context) {
-	var r tokenRequest
+func (h *authHandler) createToken(c *gin.Context) {
+	var r auth.TokenCreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
-	aid, err := accountId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - token - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	t, err := h.auth.NewAccessToken(
+	t, err := h.service.NewToken(
 		c.Request.Context(),
-		aid,
+		accountId,
 		r.Password,
 		strings.ToLower(r.Audience),
 	)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - auth - token - h.service.NewToken: %w", err))
 
-		if errors.Is(err, domain.ErrAccountIncorrectPassword) {
+		if errors.Is(err, account.ErrIncorrectPassword) {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
@@ -145,5 +133,5 @@ func (h *authHandler) token(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, tokenResponse{t})
+	c.JSON(http.StatusOK, auth.TokenCreateResponse{Token: t})
 }

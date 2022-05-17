@@ -1,65 +1,65 @@
 package v1
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
-type sessionHandler struct {
-	t       validation.ErrorTranslator
-	cfg     *config.Aggregate
-	log     logging.Logger
-	session service.Session
+type SessionService interface {
+	GetById(ctx context.Context, sessionId string) (*session.Session, error)
+	GetAll(ctx context.Context, accountId string) ([]*session.Session, error)
+	Terminate(ctx context.Context, sessionId string) error
+	TerminateWithExcept(ctx context.Context, accountId, sessionId string) error
 }
 
-func newSessionHandler(handler *gin.RouterGroup, d *Deps) {
+type sessionHandler struct {
+	t       ErrorTranslator
+	cfg     *config.Aggregate
+	log     logging.Logger
+	service SessionService
+}
+
+func newSessionHandler(r *gin.RouterGroup, d *Deps) {
 	h := &sessionHandler{
 		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
-		session: d.SessionService,
+		service: d.SessionService,
 	}
 
-	g := handler.Group("sessions")
-	{
-		authenticated := g.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-		{
-			secure := authenticated.Group("", tokenMiddleware(d.Logger, d.AuthService))
-			{
-				secure.DELETE(":sessionId", h.terminate)
-				secure.DELETE("", h.terminateAll)
-			}
+	sessions := r.Group("sessions")
 
-			authenticated.GET("", h.get)
-		}
+	authenticated := sessions.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	{
+		authenticated.GET("", h.getAll)
+	}
+
+	secure := authenticated.Group("", tokenMiddleware(d.Logger, d.AuthService))
+	{
+		secure.DELETE(":sessionId", h.terminate)
+		secure.DELETE("", h.terminateAll)
 	}
 }
 
-func (h *sessionHandler) get(c *gin.Context) {
-	aid, err := accountId(c)
+func (h *sessionHandler) getAll(c *gin.Context) {
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - get - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - session - get - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	sessions, err := h.session.GetAll(c.Request.Context(), aid)
+	sessions, err := h.service.GetAll(c.Request.Context(), accountId)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - get - h.session.GetAll: %w", err))
-
-		// TODO: handle specific errors
-
+		h.log.Error(fmt.Errorf("http - v1 - session - get - h.service.GetAll: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -68,27 +68,16 @@ func (h *sessionHandler) get(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminate(c *gin.Context) {
-	currSid, err := sessionId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - terminate - sessionId"))
-		c.AbortWithStatus(http.StatusInternalServerError)
+	currSessionId := getSessionId(c)
+
+	sessionId := c.Param("sessionId")
+	if currSessionId == sessionId {
+		abortWithError(c, http.StatusBadRequest, session.ErrCannotBeTerminated, "")
 		return
 	}
 
-	sid := c.Param("sessionId")
-	if currSid == sid {
-		abortWithError(c, http.StatusBadRequest, domain.ErrSessionCannotBeTerminated, "")
-		return
-	}
-
-	if err = h.session.Terminate(c.Request.Context(), sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.session.Terminate: %w", err))
-
-		if errors.Is(err, repository.ErrNoAffectedRows) {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
+	if err := h.service.Terminate(c.Request.Context(), sessionId); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.service.Terminate: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -97,29 +86,16 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 }
 
 func (h *sessionHandler) terminateAll(c *gin.Context) {
-	currSid, err := sessionId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - sessionId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	aid, err := accountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - accountId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - GetAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 
 	}
 
-	if err = h.session.TerminateWithExcept(c.Request.Context(), aid, currSid); err != nil {
-		h.log.Error("http - v1 - session - terminateAll - h.session.TerminateAll: %w", err)
-
-		if errors.Is(err, repository.ErrNoAffectedRows) {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
+	if err = h.service.TerminateWithExcept(c.Request.Context(), accountId, getSessionId(c)); err != nil {
+		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

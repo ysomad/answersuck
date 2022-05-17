@@ -41,7 +41,6 @@ func (gt *ginTranslator) TranslateError(err error) map[string]string {
 	errs := make(map[string]string)
 
 	for _, err := range err.(validator.ValidationErrors) {
-		//	errs[err.Field()] = err.Translate(gt.trans)
 		errs[err.Field()] = strings.Join(strings.Split(err.Translate(gt.trans), " ")[1:], " ")
 	}
 

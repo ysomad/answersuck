@@ -1,48 +1,45 @@
 package v1
 
 import (
-	"errors"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/answersuck/vault/internal/domain"
+	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/session"
 )
 
-var (
-	ErrAudienceContextNotFound = errors.New("audience not found in context")
+const (
+	accountIdKey = "accountId"
+	sessionIdKey = "sessionId"
+	audienceKey  = "audience"
+	deviceKey    = "device"
 )
 
-// accountId returns account id from context
-func accountId(c *gin.Context) (string, error) {
-	aid := c.GetString("aid")
+// getAccountId returns account id from context
+func getAccountId(c *gin.Context) (string, error) {
+	accountId := c.GetString(accountIdKey)
 
-	_, err := uuid.Parse(aid)
+	_, err := uuid.Parse(accountId)
 	if err != nil {
-		return "", domain.ErrAccountContextNotFound
+		return "", account.ErrContextNotFound
 	}
 
-	return aid, nil
+	return accountId, nil
 }
 
-// sessionId returns session id from context
-func sessionId(c *gin.Context) (string, error) {
-	sid := c.GetString("sid")
+// getSessionId returns session id from context
+func getSessionId(c *gin.Context) string { return c.GetString(sessionIdKey) }
 
-	if sid == "" {
-		return "", domain.ErrSessionContextNotFound
+func getDevice(c *gin.Context) (session.Device, error) {
+	v, exists := c.Get(deviceKey)
+	if !exists {
+		return session.Device{}, session.ErrDeviceContextNotFound
 	}
 
-	return sid, nil
-}
-
-// audience returns current audience from context
-func audience(c *gin.Context) (string, error) {
-	aud := c.GetString("aud")
-
-	if aud == "" {
-		return "", ErrAudienceContextNotFound
+	d, ok := v.(session.Device)
+	if !ok {
+		return session.Device{}, session.ErrDeviceContextNotFound
 	}
 
-	return aud, nil
+	return d, nil
 }

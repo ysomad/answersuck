@@ -2,11 +2,6 @@ package blocklist
 
 import "sort"
 
-type Finder interface {
-	// Find returns true if given string is found in block blockList
-	Find(s string) bool
-}
-
 type blockList struct {
 	values []string
 	len    int

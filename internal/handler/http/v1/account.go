@@ -1,89 +1,87 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/answersuck/vault/internal/service/repository"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain"
-	"github.com/answersuck/vault/internal/service"
+	"github.com/answersuck/vault/internal/domain/account"
 
 	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/validation"
 )
 
+type AccountService interface {
+	Create(ctx context.Context, req account.CreateRequest) (*account.Account, error)
+	GetById(ctx context.Context, accountId string) (*account.Account, error)
+	Delete(ctx context.Context, accountId string) error
+	RequestVerification(ctx context.Context, accountId string) error
+	Verify(ctx context.Context, code string, verified bool) error
+	ResetPassword(ctx context.Context, login string) error
+	SetPassword(ctx context.Context, token, password string) error
+}
+
 type accountHandler struct {
-	t   validation.ErrorTranslator
+	t   ErrorTranslator
 	cfg *config.Aggregate
 	log logging.Logger
 
-	account service.Account
+	service AccountService
 }
 
-func newAccountHandler(handler *gin.RouterGroup, d *Deps) {
+func newAccountHandler(r *gin.RouterGroup, d *Deps) {
 	h := &accountHandler{
 		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
-		account: d.AccountService,
+		service: d.AccountService,
 	}
 
-	accounts := handler.Group("accounts")
+	accounts := r.Group("accounts")
 	{
-		authenticated := accounts.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-		{
-			authenticated.GET("", h.get)
-			authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
-			authenticated.POST("verify", h.requestVerification)
-		}
-
-		password := accounts.Group("password")
-		{
-			password.POST("forgot", h.passwordForgot)
-			password.PATCH("reset", h.passwordReset)
-		}
-
-		accounts.PATCH("verify", h.verify)
 		accounts.POST("", h.create)
 	}
-}
 
-type accountCreateRequest struct {
-	Email    string `json:"email" binding:"required,email,lte=255"`
-	Username string `json:"username" binding:"required,alphanum,gte=4,lte=16"`
-	Password string `json:"password" binding:"required,gte=8,lte=64"`
+	authenticated := accounts.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	{
+		authenticated.GET("", h.get)
+		authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.archive)
+	}
+
+	verification := accounts.Group("verification")
+	{
+		verification.POST("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService), h.requestVerification)
+		verification.PUT("", h.verify)
+	}
+
+	password := accounts.Group("password")
+	{
+		password.POST("", h.resetPassword)
+		password.PUT("", h.setPassword)
+	}
 }
 
 func (h *accountHandler) create(c *gin.Context) {
-	var r accountCreateRequest
+	var r account.CreateRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
-	_, err := h.account.Create(
-		c.Request.Context(),
-		&domain.Account{
-			Email:    r.Email,
-			Username: r.Username,
-			Password: r.Password,
-		},
-	)
+	a, err := h.service.Create(c.Request.Context(), r)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - create: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - create - h.service.Create: %w", err))
 
-		if errors.Is(err, repository.ErrUniqueViolation) {
-			abortWithError(c, http.StatusConflict, domain.ErrAccountAlreadyExist, "")
+		switch {
+		case errors.Is(err, account.ErrAlreadyExist):
+			abortWithError(c, http.StatusConflict, account.ErrAlreadyExist, "")
 			return
-		}
-
-		if errors.Is(err, domain.ErrAccountForbiddenUsername) {
-			abortWithError(c, http.StatusBadRequest, domain.ErrAccountForbiddenUsername, "")
+		case errors.Is(err, account.ErrForbiddenUsername):
+			abortWithError(c, http.StatusBadRequest, account.ErrForbiddenUsername, "")
 			return
 		}
 
@@ -91,29 +89,22 @@ func (h *accountHandler) create(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	c.JSON(http.StatusOK, a)
 }
 
 func (h *accountHandler) archive(c *gin.Context) {
-	aid, err := accountId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	sid, err := sessionId(c)
-	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - sessionId: %w", err))
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	if err = h.service.Delete(c.Request.Context(), accountId); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.service.Delete: %w", err))
 
-	if err = h.account.Delete(c.Request.Context(), aid, sid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - h.account.Delete: %w", err))
-
-		if errors.Is(err, repository.ErrNotFound) || errors.Is(err, repository.ErrNoAffectedRows) {
-			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
+		if errors.Is(err, account.ErrNotArchived) {
+			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyArchived, "")
 			return
 		}
 
@@ -126,47 +117,36 @@ func (h *accountHandler) archive(c *gin.Context) {
 }
 
 func (h *accountHandler) get(c *gin.Context) {
-	aid, err := accountId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - getAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	acc, err := h.account.GetById(c.Request.Context(), aid)
+	a, err := h.service.GetById(c.Request.Context(), accountId)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - get - h.account.GetById: %w", err))
-
-		if errors.Is(err, repository.ErrNotFound) {
-			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
-			return
-		}
-
+		h.log.Error(fmt.Errorf("http - v1 - account - get - h.service.GetById: %w", err))
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, acc)
+	c.JSON(http.StatusOK, a)
 }
 
 func (h *accountHandler) requestVerification(c *gin.Context) {
-	aid, err := accountId(c)
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - archive - accountId: %w", err))
+		h.log.Error(fmt.Errorf("http - v1 - account - archive - GetAccountId: %w", err))
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	if err = h.account.RequestVerification(c.Request.Context(), aid); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - requestVerification - h.account.RequestVerification: %w", err))
+	if err = h.service.RequestVerification(c.Request.Context(), accountId); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - requestVerification - h.service.RequestVerification: %w", err))
 
-		if errors.Is(err, repository.ErrNotFound) {
-			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
-			return
-		}
-
-		if errors.Is(err, domain.ErrAccountAlreadyVerified) {
-			abortWithError(c, http.StatusBadRequest, domain.ErrAccountAlreadyVerified, "")
+		if errors.Is(err, account.ErrAlreadyVerified) {
+			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyVerified, "")
 			return
 		}
 
@@ -179,16 +159,16 @@ func (h *accountHandler) requestVerification(c *gin.Context) {
 
 func (h *accountHandler) verify(c *gin.Context) {
 	code, found := c.GetQuery("code")
-	if !found || code == "" {
-		abortWithError(c, http.StatusBadRequest, domain.ErrAccountEmptyVerificationCode, "")
+	if !found {
+		abortWithError(c, http.StatusBadRequest, account.ErrEmptyVerificationCode, "")
 		return
 	}
 
-	if err := h.account.Verify(c.Request.Context(), code, true); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - verify - h.account.Verify: %w", err))
+	if err := h.service.Verify(c.Request.Context(), code, true); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - verify - h.service.Verify: %w", err))
 
-		if errors.Is(err, repository.ErrNoAffectedRows) {
-			abortWithError(c, http.StatusBadRequest, domain.ErrAccountAlreadyVerified, "")
+		if errors.Is(err, account.ErrAlreadyVerified) {
+			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyVerified, "")
 			return
 		}
 
@@ -199,23 +179,19 @@ func (h *accountHandler) verify(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-type accountPasswordForgotRequest struct {
-	Login string `json:"login" binding:"required,email|alphanum"`
-}
-
-func (h *accountHandler) passwordForgot(c *gin.Context) {
-	var r accountPasswordForgotRequest
+func (h *accountHandler) resetPassword(c *gin.Context) {
+	var r account.ResetPasswordRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
-	if err := h.account.RequestPasswordReset(c.Request.Context(), r.Login); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - passwordForgot - h.account.RequestPasswordReset: %w", err))
+	if err := h.service.ResetPassword(c.Request.Context(), r.Login); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - resetPassword - h.service.RequestPasswordReset: %w", err))
 
-		if errors.Is(err, repository.ErrNotFound) {
-			abortWithError(c, http.StatusNotFound, domain.ErrAccountNotFound, "")
+		if errors.Is(err, account.ErrNotFound) {
+			abortWithError(c, http.StatusNotFound, account.ErrNotFound, "")
 			return
 		}
 
@@ -226,28 +202,26 @@ func (h *accountHandler) passwordForgot(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
-type accountPasswordResetRequest struct {
-	Password string `json:"password" binding:"required,gte=8,lte=64"`
-}
-
-func (h *accountHandler) passwordReset(c *gin.Context) {
-	var r accountPasswordResetRequest
+func (h *accountHandler) setPassword(c *gin.Context) {
+	var r account.SetPasswordRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, ErrInvalidRequestBody, h.t.TranslateError(err))
+		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}
 
 	t, found := c.GetQuery("token")
 	if !found || t == "" {
-		abortWithError(c, http.StatusBadRequest, domain.ErrAccountEmptyResetPasswordToken, "")
+		abortWithError(c, http.StatusBadRequest, account.ErrEmptyPasswordResetToken, "")
 		return
 	}
 
-	if err := h.account.PasswordReset(c.Request.Context(), t, r.Password); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - account - passwordReset - h.account.PasswordReset: %w", err))
+	if err := h.service.SetPassword(c.Request.Context(), t, r.Password); err != nil {
+		h.log.Error(fmt.Errorf("http - v1 - account - setPassword - h.service.PasswordReset: %w", err))
 
-		if errors.Is(err, domain.ErrAccountResetPasswordTokenExpired) || errors.Is(err, repository.ErrNotFound) {
+		if errors.Is(err, account.ErrPasswordResetTokenExpired) ||
+			errors.Is(err, account.ErrPasswordResetTokenNotFound) {
+
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
