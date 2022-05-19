@@ -82,6 +82,7 @@ type (
 	Email struct {
 		Template EmailTemplate `env-required:"true" yaml:"templates"`
 		Subject  EmailSubject  `env-required:"true" yaml:"subjects"`
+		Format   EmailFormat   `env-required:"true" yaml:"formats"`
 	}
 
 	EmailTemplate struct {
@@ -90,6 +91,11 @@ type (
 	}
 
 	EmailSubject struct {
+		AccountVerification  string `env-required:"true" yaml:"accountVerification"`
+		AccountPasswordReset string `env-required:"true" yaml:"accountPasswordReset"`
+	}
+
+	EmailFormat struct {
 		AccountVerification  string `env-required:"true" yaml:"accountVerification"`
 		AccountPasswordReset string `env-required:"true" yaml:"accountPasswordReset"`
 	}

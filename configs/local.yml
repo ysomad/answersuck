@@ -49,3 +49,6 @@ email:
   subjects:
     accountVerification: "Подтверждение аккаунта"
     accountPasswordReset: "Сброс пароля"
+  formats:
+    accountVerification: "%s/verify?code=%s"
+    accountPasswordReset: "%s/reset?token=%s"

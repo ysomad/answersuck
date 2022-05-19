@@ -13,11 +13,13 @@ import (
 	"github.com/answersuck/vault/internal/config"
 
 	"github.com/answersuck/vault/internal/adapter/repository"
+	"github.com/answersuck/vault/internal/adapter/smtp"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
+	"github.com/answersuck/vault/internal/app/auth"
+	"github.com/answersuck/vault/internal/app/email"
+
 	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/auth"
-	"github.com/answersuck/vault/internal/domain/email"
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
@@ -25,7 +27,6 @@ import (
 	"github.com/answersuck/vault/internal/domain/topic"
 
 	"github.com/answersuck/vault/pkg/blocklist"
-	emailPkg "github.com/answersuck/vault/pkg/email"
 	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
@@ -56,7 +57,12 @@ func Run(configPath string) {
 	sessionRepo := repository.NewSessionPSQL(l, pg)
 	sessionService := session.NewService(&cfg.Session, sessionRepo)
 
-	emailClient, err := emailPkg.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
+	emailClient, err := smtp.NewClient(&smtp.ClientConfig{
+		Host:     cfg.SMTP.Host,
+		Port:     cfg.SMTP.Port,
+		From:     cfg.SMTP.From,
+		Password: cfg.SMTP.Password,
+	})
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
 	}
@@ -72,11 +78,11 @@ func Run(configPath string) {
 
 	accountRepo := repository.NewAccountPSQL(l, pg)
 	accountService := account.NewService(&account.Deps{
-		Config:            &cfg,
-		AccountRepo:       accountRepo,
-		SessionService:    sessionService,
-		EmailService:      emailService,
-		UsernameBlocklist: usernameBlockList,
+		Config:         &cfg,
+		AccountRepo:    accountRepo,
+		SessionService: sessionService,
+		EmailService:   emailService,
+		Blocklist:      usernameBlockList,
 	})
 
 	authService := auth.NewService(&auth.Deps{

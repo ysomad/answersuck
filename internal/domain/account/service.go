@@ -37,11 +37,11 @@ type (
 	}
 
 	EmailService interface {
-		SendAccountVerificationMail(ctx context.Context, to, code string) error
-		SendAccountPasswordResetMail(ctx context.Context, to, token string) error
+		SendAccountVerificationEmail(ctx context.Context, to, code string) error
+		SendPasswordResetEmail(ctx context.Context, to, token string) error
 	}
 
-	Finder interface {
+	Blocklist interface {
 		Find(s string) bool
 	}
 )
@@ -53,15 +53,15 @@ type service struct {
 	session SessionService
 	email   EmailService
 
-	blockList Finder
+	blocklist Blocklist
 }
 
 type Deps struct {
-	Config            *config.Aggregate
-	AccountRepo       Repository
-	SessionService    SessionService
-	EmailService      EmailService
-	UsernameBlocklist Finder
+	Config         *config.Aggregate
+	AccountRepo    Repository
+	SessionService SessionService
+	EmailService   EmailService
+	Blocklist      Blocklist
 }
 
 func NewService(d *Deps) *service {
@@ -70,7 +70,7 @@ func NewService(d *Deps) *service {
 		repo:      d.AccountRepo,
 		session:   d.SessionService,
 		email:     d.EmailService,
-		blockList: d.UsernameBlocklist,
+		blocklist: d.Blocklist,
 	}
 }
 
@@ -85,7 +85,7 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (*Account, error)
 		UpdatedAt: now,
 	}
 
-	if s.blockList.Find(a.Username) {
+	if s.blocklist.Find(a.Username) {
 		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenUsername)
 	}
 
@@ -105,7 +105,8 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (*Account, error)
 	}
 
 	go func() {
-		_ = s.email.SendAccountVerificationMail(ctx, a.Email, a.VerificationCode)
+		// TODO: handle error
+		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, a.VerificationCode)
 	}()
 
 	return a, nil
@@ -151,17 +152,18 @@ func (s *service) Delete(ctx context.Context, accountId string) error {
 }
 
 func (s *service) RequestVerification(ctx context.Context, accountId string) error {
-	a, err := s.repo.FindVerification(ctx, accountId)
+	dto, err := s.repo.FindVerification(ctx, accountId)
 	if err != nil {
 		return fmt.Errorf("accountService - RequestVerification - s.repo.FindById: %w", err)
 	}
 
-	if a.Verified {
+	if dto.Verified {
 		return fmt.Errorf("accountService: %w", ErrAlreadyVerified)
 	}
 
 	go func() {
-		_ = s.email.SendAccountVerificationMail(ctx, a.Email, a.Code)
+		// TODO: handle error
+		_ = s.email.SendAccountVerificationEmail(ctx, dto.Email, dto.Code)
 	}()
 
 	return nil
@@ -197,9 +199,10 @@ func (s *service) ResetPassword(ctx context.Context, login string) error {
 		return fmt.Errorf("accountService - ResetPassword - s.repo.InsertPasswordResetToken: %w", err)
 	}
 
-	if err = s.email.SendAccountPasswordResetMail(ctx, email, t); err != nil {
-		return fmt.Errorf("accountService - ResetPassword - s.email.SendAccountPasswordResetMail: %w", err)
-	}
+	go func() {
+		// TODO: handle error
+		_ = s.email.SendPasswordResetEmail(ctx, email, t)
+	}()
 
 	return nil
 }
@@ -228,6 +231,11 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 	}); err != nil {
 		return fmt.Errorf("accountService - SetPassword - s.repo.UpdatePasswordWithToken: %w", err)
 	}
+
+	go func() {
+		// TODO: handle error
+		_ = s.session.TerminateAll(ctx, t.AccountId)
+	}()
 
 	return nil
 }
