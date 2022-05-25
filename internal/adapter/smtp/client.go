@@ -39,7 +39,7 @@ type ClientOptions struct {
 	SendTimeout    time.Duration
 }
 
-func (opt *ClientOptions) Validate() error {
+func (opt *ClientOptions) validate() error {
 	switch {
 	case opt.Host == "":
 		return ErrEmptyHost
@@ -64,7 +64,7 @@ func (opt *ClientOptions) Validate() error {
 }
 
 func NewClient(opt *ClientOptions) (*client, error) {
-	if err := opt.Validate(); err != nil {
+	if err := opt.validate(); err != nil {
 		return nil, fmt.Errorf("c.Validate(): %w", err)
 	}
 
