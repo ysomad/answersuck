@@ -57,10 +57,10 @@ func (p *provider) Upload(ctx context.Context, f media.File) (string, error) {
 
 // Private
 
-func (p *provider) cdnURL(domain, filename string) string {
-	return fmt.Sprintf("https://%s/%s", domain, filename)
+func (p *provider) cdnURL(source, filename string) string {
+	return fmt.Sprintf("https://%s/%s", source, filename)
 }
 
-func (p *provider) storageURL(domain, bucket, filename string) string {
-	return fmt.Sprintf("https://%s/%s/%s", domain, bucket, filename)
+func (p *provider) storageURL(source, bucket, filename string) string {
+	return fmt.Sprintf("https://%s/%s/%s", source, bucket, filename)
 }
