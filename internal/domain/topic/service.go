@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, t Topic) (int, error)
+	Save(ctx context.Context, t Topic) (Topic, error)
 	FindAll(ctx context.Context) ([]*Topic, error)
 }
 
@@ -31,12 +31,10 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (Topic, error) {
 		UpdatedAt:  now,
 	}
 
-	topicId, err := s.repo.Create(ctx, t)
+	t, err := s.repo.Save(ctx, t)
 	if err != nil {
-		return Topic{}, fmt.Errorf("topicService - Create - s.repo.Create: %w", err)
+		return Topic{}, fmt.Errorf("topicService - Create - s.repo.Save: %w", err)
 	}
-
-	t.Id = topicId
 
 	return t, nil
 }

@@ -28,7 +28,7 @@ func NewTopicPSQL(l logging.Logger, c *postgres.Client) *topicPSQL {
 	}
 }
 
-func (r *topicPSQL) Create(ctx context.Context, t topic.Topic) (int, error) {
+func (r *topicPSQL) Save(ctx context.Context, t topic.Topic) (topic.Topic, error) {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s(name, language_id, created_at, updated_at)
 		VALUES ($1, $2, $3, $4)
@@ -37,26 +37,24 @@ func (r *topicPSQL) Create(ctx context.Context, t topic.Topic) (int, error) {
 
 	r.log.Info("psql - topic - Create: %s", sql)
 
-	var topicId int
-
 	if err := r.client.Pool.QueryRow(ctx, sql,
 		t.Name,
 		t.LanguageId,
 		t.CreatedAt,
 		t.UpdatedAt,
-	).Scan(&topicId); err != nil {
+	).Scan(&t.Id); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.ForeignKeyViolation {
-				return 0, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", topic.ErrLanguageNotFound)
+				return topic.Topic{}, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", topic.ErrLanguageNotFound)
 			}
 		}
 
-		return 0, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+		return topic.Topic{}, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return topicId, nil
+	return t, nil
 }
 
 func (r *topicPSQL) FindAll(ctx context.Context) ([]*topic.Topic, error) {

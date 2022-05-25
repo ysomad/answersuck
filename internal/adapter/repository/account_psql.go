@@ -35,7 +35,7 @@ func NewAccountPSQL(l logging.Logger, c *postgres.Client) *accountPSQL {
 	}
 }
 
-func (r *accountPSQL) Create(ctx context.Context, a *account.Account) (*account.Account, error) {
+func (r *accountPSQL) Save(ctx context.Context, a *account.Account) (*account.Account, error) {
 	sql := fmt.Sprintf(`
 		WITH a AS (
 			INSERT INTO %s(username, email, password, is_verified, updated_at, created_at)
@@ -53,7 +53,7 @@ func (r *accountPSQL) Create(ctx context.Context, a *account.Account) (*account.
 		SELECT account_id FROM a
 	`, accountTable, accountVerificationCodeTable, accountAvatarTable)
 
-	r.log.Info("psql - account - Create: %s", sql)
+	r.log.Info("psql - account - Save: %s", sql)
 
 	err := r.client.Pool.QueryRow(ctx, sql,
 		a.Username,
@@ -209,7 +209,7 @@ func (r *accountPSQL) FindByUsername(ctx context.Context, username string) (*acc
 	return &a, nil
 }
 
-func (r *accountPSQL) Archive(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
+func (r *accountPSQL) SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
 	sql := fmt.Sprintf(`
 		UPDATE %s
 		SET
@@ -220,7 +220,7 @@ func (r *accountPSQL) Archive(ctx context.Context, accountId string, archived bo
 			AND is_archived = $4
 	`, accountTable)
 
-	r.log.Info("psql - account - Archive: %s", sql)
+	r.log.Info("psql - account - SetArchived: %s", sql)
 
 	ct, err := r.client.Pool.Exec(ctx, sql, archived, updatedAt, accountId, !archived)
 	if err != nil {
@@ -295,13 +295,13 @@ func (r *accountPSQL) FindVerification(ctx context.Context, accountId string) (a
 	return v, nil
 }
 
-func (r *accountPSQL) InsertPasswordResetToken(ctx context.Context, email, token string) error {
+func (r *accountPSQL) SavePasswordResetToken(ctx context.Context, email, token string) error {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s (token, account_id)
 		VALUES($1, (SELECT id AS account_id FROM %s WHERE email = $2))
 	`, accountPasswordResetTokenTable, accountTable)
 
-	r.log.Info("psql - account - InsertPasswordResetToken: %s", sql)
+	r.log.Info("psql - account - SavePasswordResetToken: %s", sql)
 
 	if _, err := r.client.Pool.Exec(ctx, sql, token, email); err != nil {
 

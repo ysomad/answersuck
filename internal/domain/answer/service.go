@@ -50,7 +50,7 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (Answer, error) {
 
 	a, err = s.repo.Save(ctx, a)
 	if err != nil {
-		return Answer{}, fmt.Errorf("answerService - Create - s.repo.Create: %w", err)
+		return Answer{}, fmt.Errorf("answerService - Create - s.repo.Save: %w", err)
 	}
 
 	return a, nil

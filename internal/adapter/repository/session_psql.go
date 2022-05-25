@@ -29,14 +29,14 @@ func NewSessionPSQL(l logging.Logger, c *postgres.Client) *sessionPSQL {
 	}
 }
 
-func (r *sessionPSQL) Create(ctx context.Context, s *session.Session) (*session.Session, error) {
+func (r *sessionPSQL) Save(ctx context.Context, s *session.Session) (*session.Session, error) {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s (id, account_id, max_age, user_agent, ip, expires_at, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id
 	`, sessionTable)
 
-	r.log.Info("psql - session - Create: %s", sql)
+	r.log.Info("psql - session - Save: %s", sql)
 
 	if err := r.client.Pool.QueryRow(ctx, sql,
 		s.Id,

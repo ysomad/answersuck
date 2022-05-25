@@ -18,16 +18,16 @@ const (
 
 type (
 	Repository interface {
-		Create(ctx context.Context, a *Account) (*Account, error)
+		Save(ctx context.Context, a *Account) (*Account, error)
 		FindById(ctx context.Context, accountId string) (*Account, error)
 		FindByEmail(ctx context.Context, email string) (*Account, error)
 		FindByUsername(ctx context.Context, username string) (*Account, error)
-		Archive(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error
+		SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error
 
 		Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error
 		FindVerification(ctx context.Context, accountId string) (VerificationDTO, error)
 
-		InsertPasswordResetToken(ctx context.Context, email, token string) error
+		SavePasswordResetToken(ctx context.Context, email, token string) error
 		FindPasswordResetToken(ctx context.Context, token string) (PasswordResetToken, error)
 		SetPassword(ctx context.Context, dto SetPasswordDTO) error
 	}
@@ -99,9 +99,9 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (*Account, error)
 		return nil, fmt.Errorf("accountService - Create - a.GenerateVerificationCode: %w", err)
 	}
 
-	a, err := s.repo.Create(ctx, a)
+	a, err := s.repo.Save(ctx, a)
 	if err != nil {
-		return nil, fmt.Errorf("accountService - Create - s.repo.Create: %w", err)
+		return nil, fmt.Errorf("accountService - Create - s.repo.Save: %w", err)
 	}
 
 	go func() {
@@ -140,8 +140,8 @@ func (s *service) GetByUsername(ctx context.Context, username string) (*Account,
 }
 
 func (s *service) Delete(ctx context.Context, accountId string) error {
-	if err := s.repo.Archive(ctx, accountId, true, time.Now()); err != nil {
-		return fmt.Errorf("accountService - Archive - s.repo.Archive: %w", err)
+	if err := s.repo.SetArchived(ctx, accountId, true, time.Now()); err != nil {
+		return fmt.Errorf("accountService - Archive - s.repo.SetArchived: %w", err)
 	}
 
 	if err := s.session.TerminateAll(ctx, accountId); err != nil {
@@ -152,18 +152,18 @@ func (s *service) Delete(ctx context.Context, accountId string) error {
 }
 
 func (s *service) RequestVerification(ctx context.Context, accountId string) error {
-	dto, err := s.repo.FindVerification(ctx, accountId)
+	v, err := s.repo.FindVerification(ctx, accountId)
 	if err != nil {
-		return fmt.Errorf("accountService - RequestVerification - s.repo.FindById: %w", err)
+		return fmt.Errorf("accountService - RequestVerification - s.repo.FindVerification: %w", err)
 	}
 
-	if dto.Verified {
+	if v.Verified {
 		return fmt.Errorf("accountService: %w", ErrAlreadyVerified)
 	}
 
 	go func() {
 		// TODO: handle error
-		_ = s.email.SendAccountVerificationEmail(ctx, dto.Email, dto.Code)
+		_ = s.email.SendAccountVerificationEmail(ctx, v.Email, v.Code)
 	}()
 
 	return nil
@@ -195,8 +195,8 @@ func (s *service) ResetPassword(ctx context.Context, login string) error {
 		return fmt.Errorf("accountService - ResetPassword - strings.NewUnique: %w", err)
 	}
 
-	if err = s.repo.InsertPasswordResetToken(ctx, email, t); err != nil {
-		return fmt.Errorf("accountService - ResetPassword - s.repo.InsertPasswordResetToken: %w", err)
+	if err = s.repo.SavePasswordResetToken(ctx, email, t); err != nil {
+		return fmt.Errorf("accountService - ResetPassword - s.repo.SavePasswordResetToken: %w", err)
 	}
 
 	go func() {
@@ -229,7 +229,7 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 		PasswordHash: a.PasswordHash,
 		UpdatedAt:    time.Now(),
 	}); err != nil {
-		return fmt.Errorf("accountService - SetPassword - s.repo.UpdatePasswordWithToken: %w", err)
+		return fmt.Errorf("accountService - SetPassword - s.repo.SetPassword: %w", err)
 	}
 
 	go func() {

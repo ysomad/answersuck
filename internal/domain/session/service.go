@@ -8,7 +8,7 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, s *Session) (*Session, error)
+	Save(ctx context.Context, s *Session) (*Session, error)
 	FindById(ctx context.Context, sessionId string) (*Session, error)
 	FindAll(ctx context.Context, accountId string) ([]*Session, error)
 	Delete(ctx context.Context, sessionId string) error
@@ -34,7 +34,7 @@ func (s *service) Create(ctx context.Context, accountId string, d Device) (*Sess
 		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
 	}
 
-	sess, err = s.repo.Create(ctx, sess)
+	sess, err = s.repo.Save(ctx, sess)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - Create - s.repo.Create: %w", err)
 	}
