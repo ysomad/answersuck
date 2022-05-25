@@ -41,7 +41,10 @@ fileStorage:
   endpoint: "s3.storage.selcloud.ru"
   bucket: "answersuck"
   ssl: true
-  cdn: false
+
+  # if true FILE_STORAGE_CDN_DOMAIN env must be set, 
+  # otherwise using FILE_STORAGE_DOMAIN env for generating uploaded file url
+  cdn: false 
 
 email:
   templates:
