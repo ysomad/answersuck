@@ -33,7 +33,7 @@ func NewService(r Repository, s Storage) *service {
 func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, error) {
 	t := MimeType(dto.ContentType)
 
-	if !t.Valid() {
+	if !t.valid() {
 		return Media{}, fmt.Errorf("mediaService - UploadAndSave: %w", ErrInvalidMimeType)
 	}
 
@@ -43,18 +43,18 @@ func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, err
 		CreatedAt: time.Now(),
 	}
 
-	if err := m.GenerateId(); err != nil {
+	if err := m.generateId(); err != nil {
 		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.GenerateId: %w", err)
 	}
 
-	filename := m.FilenameFromId(dto.Filename)
+	filename := m.filenameFromId(dto.Filename)
 
-	tmp, err := m.NewTempFile(filename, dto.Buf)
+	tmp, err := m.newTempFile(filename, dto.Buf)
 	if err != nil {
 		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.NewFileFromBuffer: %w", err)
 	}
 
-	defer m.DeleteTempFile(filename)
+	defer m.deleteTempFile(filename)
 	defer tmp.Close()
 
 	f, err := os.Open(filename)

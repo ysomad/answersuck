@@ -18,7 +18,7 @@ type Session struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-func NewSession(accountId, userAgent, ip string, expiration time.Duration) (*Session, error) {
+func newSession(accountId, userAgent, ip string, expiration time.Duration) (*Session, error) {
 	// TODO: add useragent validation
 
 	if _, err := netip.ParseAddr(ip); err != nil {

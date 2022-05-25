@@ -87,10 +87,6 @@ func NewClient(opt *ClientOptions) (*client, error) {
 }
 
 func (c *client) SendEmail(ctx context.Context, e email.Email) error {
-	if err := e.Validate(); err != nil {
-		return fmt.Errorf("e.Validate: %w", err)
-	}
-
 	msg := smail.NewMSG()
 
 	msg.SetFrom(c.from).AddTo(e.To).SetSubject(e.Subject)

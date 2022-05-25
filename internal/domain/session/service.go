@@ -29,7 +29,7 @@ func NewService(cfg *config.Session, s Repository) *service {
 }
 
 func (s *service) Create(ctx context.Context, accountId string, d Device) (*Session, error) {
-	sess, err := NewSession(accountId, d.UserAgent, d.IP, s.cfg.Expiration)
+	sess, err := newSession(accountId, d.UserAgent, d.IP, s.cfg.Expiration)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
 	}

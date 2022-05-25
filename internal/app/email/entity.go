@@ -15,7 +15,7 @@ type Email struct {
 
 func (e *Email) Message() string { return e.message }
 
-func (e *Email) SetMessageFromTemplate(filename string, data interface{}) error {
+func (e *Email) setMessageFromTemplate(filename string, data interface{}) error {
 	t, err := template.ParseFiles(filename)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (e *Email) SetMessageFromTemplate(filename string, data interface{}) error 
 	return nil
 }
 
-func (e *Email) Validate() error {
+func (e *Email) validate() error {
 	if e.To == "" {
 		return ErrEmptyTo
 	}

@@ -24,17 +24,13 @@ const (
 	TypeAudioMPEG = MimeType("audio/mpeg")
 )
 
-func (t MimeType) Valid() bool {
+func (t MimeType) valid() bool {
 	switch t {
 	case TypeImageJPEG, TypeImagePNG, TypeAudioAAC, TypeAudioMP4, TypeAudioMPEG:
 		return true
 	}
 
 	return false
-}
-
-func (t MimeType) String() string {
-	return string(t)
 }
 
 type Media struct {
@@ -45,7 +41,7 @@ type Media struct {
 	CreatedAt time.Time `json:"-"`
 }
 
-func (m *Media) GenerateId() error {
+func (m *Media) generateId() error {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return err
@@ -56,11 +52,11 @@ func (m *Media) GenerateId() error {
 	return nil
 }
 
-func (m *Media) FilenameFromId(fn string) string {
+func (m *Media) filenameFromId(fn string) string {
 	return fmt.Sprintf("%s-%s", m.Id, fn)
 }
 
-func (m *Media) NewTempFile(filename string, buf []byte) (*os.File, error) {
+func (m *Media) newTempFile(filename string, buf []byte) (*os.File, error) {
 	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0o666)
 	if err != nil {
 		return nil, fmt.Errorf("os.OpenFile: %w", err)
@@ -73,6 +69,6 @@ func (m *Media) NewTempFile(filename string, buf []byte) (*os.File, error) {
 	return f, nil
 }
 
-func (m *Media) DeleteTempFile(filename string) error {
+func (m *Media) deleteTempFile(filename string) error {
 	return os.Remove(filename)
 }

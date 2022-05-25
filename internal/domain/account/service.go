@@ -89,13 +89,13 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (*Account, error)
 		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenUsername)
 	}
 
-	if err := a.GeneratePasswordHash(); err != nil {
+	if err := a.generatePasswordHash(); err != nil {
 		return nil, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
 	}
 
-	a.SetDiceBearAvatar()
+	a.setDiceBearAvatar()
 
-	if err := a.GenerateVerificationCode(verificationCodeLength); err != nil {
+	if err := a.generateVerificationCode(verificationCodeLength); err != nil {
 		return nil, fmt.Errorf("accountService - Create - a.GenerateVerificationCode: %w", err)
 	}
 
@@ -213,13 +213,13 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 		return fmt.Errorf("accountService - SetPassword - s.repo.FindPasswordResetToken: %w", err)
 	}
 
-	if err = t.CheckExpiration(s.cfg.Password.ResetTokenExp); err != nil {
+	if err = t.checkExpiration(s.cfg.Password.ResetTokenExp); err != nil {
 		return fmt.Errorf("accountService - SetPassword - t.CheckExpired: %w", err)
 	}
 
 	a := Account{Password: password}
 
-	if err = a.GeneratePasswordHash(); err != nil {
+	if err = a.generatePasswordHash(); err != nil {
 		return fmt.Errorf("accountService - SetPassword - a.GeneratePassword: %w", err)
 	}
 
