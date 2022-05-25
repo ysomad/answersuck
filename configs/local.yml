@@ -15,17 +15,16 @@ postgres:
   poolMax: 2
 
 cache:
-  expiration: 1m
-  db: 1
+  expiration: 1h
+  db: 0
 
 cookie:
   secure: false
   httpOnly: true
 
 session:
-  expiration: 24h
+  expiration: 4h
   cookieKey: "id"
-  db: 0
 
 accessToken:
   expiration: 1m
@@ -41,6 +40,8 @@ smtp:
 fileStorage:
   endpoint: "s3.storage.selcloud.ru"
   bucket: "answersuck"
+  ssl: true
+  cdn: false
 
 email:
   templates:

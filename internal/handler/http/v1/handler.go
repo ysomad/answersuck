@@ -11,7 +11,7 @@ import (
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-const route = "/api/v1"
+const route = "/v1"
 
 type Deps struct {
 	Config          *config.Aggregate
@@ -24,7 +24,8 @@ type Deps struct {
 	LanguageService LanguageService
 	QuestionService QuestionService
 	TagService      TagService
-	TopicService    topicService
+	TopicService    TopicService
+	MediaService    MediaService
 }
 
 func NewHandler(r *gin.Engine, d *Deps) {
@@ -44,5 +45,6 @@ func NewHandler(r *gin.Engine, d *Deps) {
 		newTagHandler(h, d)
 		newTopicHandler(h, d)
 		newQuestionHandler(h, d)
+		newMediaHandler(h, d)
 	}
 }

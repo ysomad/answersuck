@@ -38,8 +38,6 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, service SessionSer
 			return
 		}
 
-		l.Info(s.AccountId)
-
 		c.Set(sessionIdKey, s.Id)
 		c.Set(accountIdKey, s.AccountId)
 		c.Next()

@@ -14,6 +14,7 @@ import (
 
 	"github.com/answersuck/vault/internal/adapter/repository"
 	"github.com/answersuck/vault/internal/adapter/smtp"
+	"github.com/answersuck/vault/internal/adapter/storage"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
 	"github.com/answersuck/vault/internal/app/auth"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/language"
+	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
@@ -57,7 +59,7 @@ func Run(configPath string) {
 	sessionRepo := repository.NewSessionPSQL(l, pg)
 	sessionService := session.NewService(&cfg.Session, sessionRepo)
 
-	emailClient, err := smtp.NewClient(&smtp.ClientConfig{
+	emailClient, err := smtp.NewClient(&smtp.ClientOptions{
 		Host:     cfg.SMTP.Host,
 		Port:     cfg.SMTP.Port,
 		From:     cfg.SMTP.From,
@@ -109,6 +111,14 @@ func Run(configPath string) {
 		l.Fatal(fmt.Errorf("app - Run - validation.NewGinTranslator: %w", err))
 	}
 
+	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - storage.NewProvider: %w", err))
+	}
+
+	mediaRepo := repository.NewMediaPSQL(l, pg)
+	mediaService := media.NewService(mediaRepo, storageProvider)
+
 	// HTTP Server
 	engine := gin.New()
 	v1.NewHandler(
@@ -125,6 +135,7 @@ func Run(configPath string) {
 			TagService:      tagService,
 			TopicService:    topicService,
 			QuestionService: questionService,
+			MediaService:    mediaService,
 		},
 	)
 

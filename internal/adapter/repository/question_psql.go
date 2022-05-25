@@ -74,7 +74,7 @@ func (r *questionPSQL) FindAll(ctx context.Context) ([]*question.Question, error
 
 		if err = rows.Scan(
 			&q.Id,
-			&q.Q,
+			&q.Text,
 			&q.Answer,
 			&q.AnswerImageURL,
 			&q.Author,

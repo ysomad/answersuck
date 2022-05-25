@@ -30,7 +30,7 @@ type (
 )
 
 type service struct {
-	cfg     *config.Aggregate
+	cfg     *config.AccessToken
 	token   TokenManager
 	account AccountService
 	session SessionService
@@ -45,7 +45,7 @@ type Deps struct {
 
 func NewService(d *Deps) *service {
 	return &service{
-		cfg:     d.Config,
+		cfg:     &d.Config.AccessToken,
 		token:   d.Token,
 		account: d.AccountService,
 		session: d.SessionService,
@@ -102,7 +102,7 @@ func (s *service) NewToken(ctx context.Context, accountId, password, audience st
 		return "", fmt.Errorf("authService - NewSecurityToken - a.CompareHashAndPassword: %w", err)
 	}
 
-	t, err := s.token.New(accountId, audience, s.cfg.AccessToken.Expiration)
+	t, err := s.token.New(accountId, audience, s.cfg.Expiration)
 	if err != nil {
 		return "", fmt.Errorf("authService - NewSecurityToken - s.token.New: %w", err)
 	}

@@ -7,18 +7,18 @@ import (
 	"github.com/answersuck/vault/internal/config"
 )
 
-type EmailSender interface {
-	Send(ctx context.Context, e Email) error
+type SMTPClient interface {
+	SendEmail(ctx context.Context, e Email) error
 }
 
 type service struct {
 	cfg    *config.Email
 	webURL string
 
-	client EmailSender
+	client SMTPClient
 }
 
-func NewService(cfg *config.Aggregate, s EmailSender) *service {
+func NewService(cfg *config.Aggregate, s SMTPClient) *service {
 	return &service{
 		cfg:    &cfg.Email,
 		webURL: cfg.Web.URL,
@@ -61,7 +61,7 @@ func (s *service) send(ctx context.Context, dto sendEmailDTO) error {
 		return fmt.Errorf("e.SetMessageFromTemplate: %w", err)
 	}
 
-	if err := s.client.Send(ctx, e); err != nil {
+	if err := s.client.SendEmail(ctx, e); err != nil {
 		return fmt.Errorf("s.email.Send: %w", err)
 	}
 

@@ -29,7 +29,7 @@ type client struct {
 	from string
 }
 
-type ClientConfig struct {
+type ClientOptions struct {
 	Host           string
 	Port           int
 	From           string
@@ -39,23 +39,23 @@ type ClientConfig struct {
 	SendTimeout    time.Duration
 }
 
-func (c *ClientConfig) Validate() error {
+func (opt *ClientOptions) Validate() error {
 	switch {
-	case c.Host == "":
+	case opt.Host == "":
 		return ErrEmptyHost
-	case c.From == "":
+	case opt.From == "":
 		return ErrEmptyFrom
-	case c.Password == "":
+	case opt.Password == "":
 		return ErrEmptyPassword
-	case c.Port == 0:
+	case opt.Port == 0:
 		return ErrInvalidPort
-	case c.ConnectTimeout == 0:
-		c.ConnectTimeout = defaultConnectTimeout
-	case c.SendTimeout == 0:
-		c.SendTimeout = defaultSendTimeout
+	case opt.ConnectTimeout == 0:
+		opt.ConnectTimeout = defaultConnectTimeout
+	case opt.SendTimeout == 0:
+		opt.SendTimeout = defaultSendTimeout
 	}
 
-	_, err := mail.ParseAddress(c.From)
+	_, err := mail.ParseAddress(opt.From)
 	if err != nil {
 		return err
 	}
@@ -63,30 +63,30 @@ func (c *ClientConfig) Validate() error {
 	return nil
 }
 
-func NewClient(cfg *ClientConfig) (*client, error) {
-	if err := cfg.Validate(); err != nil {
+func NewClient(opt *ClientOptions) (*client, error) {
+	if err := opt.Validate(); err != nil {
 		return nil, fmt.Errorf("c.Validate(): %w", err)
 	}
 
 	c := smail.NewSMTPClient()
 
-	c.Host = cfg.Host
-	c.Port = cfg.Port
-	c.Username = cfg.From
-	c.Password = cfg.Password
+	c.Host = opt.Host
+	c.Port = opt.Port
+	c.Username = opt.From
+	c.Password = opt.Password
 	c.Encryption = smail.EncryptionSSLTLS
 
-	c.KeepAlive = cfg.KeepAlive
-	c.ConnectTimeout = cfg.ConnectTimeout
-	c.SendTimeout = cfg.SendTimeout
+	c.KeepAlive = opt.KeepAlive
+	c.ConnectTimeout = opt.ConnectTimeout
+	c.SendTimeout = opt.SendTimeout
 
 	return &client{
 		srv:  c,
-		from: cfg.From,
+		from: opt.From,
 	}, nil
 }
 
-func (c *client) Send(ctx context.Context, e email.Email) error {
+func (c *client) SendEmail(ctx context.Context, e email.Email) error {
 	if err := e.Validate(); err != nil {
 		return fmt.Errorf("e.Validate: %w", err)
 	}

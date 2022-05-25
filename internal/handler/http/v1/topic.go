@@ -12,7 +12,7 @@ import (
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type topicService interface {
+type TopicService interface {
 	Create(ctx context.Context, req topic.CreateRequest) (topic.Topic, error)
 	GetAll(ctx context.Context) ([]*topic.Topic, error)
 }
@@ -20,7 +20,7 @@ type topicService interface {
 type topicHandler struct {
 	t       ErrorTranslator
 	log     logging.Logger
-	service topicService
+	service TopicService
 }
 
 func newTopicHandler(r *gin.RouterGroup, d *Deps) {

@@ -62,9 +62,6 @@ type (
 	Session struct {
 		Expiration time.Duration `env-required:"true" yaml:"expiration"`
 		CookieKey  string        `env-required:"true" yaml:"cookieKey"`
-
-		// DB is number of database inside redis
-		DB int `yaml:"db"`
 	}
 
 	AccessToken struct {
@@ -77,6 +74,10 @@ type (
 		Bucket    string `env-required:"true" yaml:"bucket" env:"FILE_STORAGE_BUCKET"`
 		AccessKey string `env-required:"true" env:"FILE_STORAGE_ACCESS_KEY"`
 		SecretKey string `env-required:"true" env:"FILE_STORAGE_SECRET_KEY"`
+		Source    string `env-required:"true" env:"FILE_STORAGE_SOURCE"`
+		CDNSource string `env-required:"true" env:"FILE_STORAGE_CDN_SOURCE"`
+		CDN       bool   `yaml:"cdn" env:"FILE_STORAGE_CDN"`
+		SSL       bool   `yaml:"ssl" env:"FILE_STORAGE_SSL"`
 	}
 
 	Email struct {
