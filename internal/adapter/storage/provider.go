@@ -14,8 +14,8 @@ import (
 type provider struct {
 	client        *minio.Client
 	bucket        string
-	storageSource string
-	cdnSource     string
+	storageDomain string
+	cdnDomain     string
 	useCDN        bool
 }
 
@@ -31,8 +31,8 @@ func NewProvider(cfg *config.FileStorage) (*provider, error) {
 	return &provider{
 		client:        c,
 		bucket:        cfg.Bucket,
-		cdnSource:     cfg.CDNSource,
-		storageSource: cfg.Source,
+		cdnDomain:     cfg.CDNDomain,
+		storageDomain: cfg.Domain,
 		useCDN:        cfg.CDN,
 	}, nil
 }
@@ -49,18 +49,18 @@ func (p *provider) Upload(ctx context.Context, f media.File) (string, error) {
 	}
 
 	if p.useCDN {
-		return p.cdnURL(p.cdnSource, res.Key), nil
+		return p.cdnURL(p.cdnDomain, res.Key), nil
 	}
 
-	return p.storageURL(p.storageSource, p.bucket, res.Key), nil
+	return p.storageURL(p.storageDomain, p.bucket, res.Key), nil
 }
 
 // Private
 
-func (p *provider) cdnURL(source, filename string) string {
-	return fmt.Sprintf("https://%s/%s", source, filename)
+func (p *provider) cdnURL(domain, filename string) string {
+	return fmt.Sprintf("https://%s/%s", domain, filename)
 }
 
-func (p *provider) storageURL(source, bucket, filename string) string {
-	return fmt.Sprintf("https://%s/%s/%s", source, bucket, filename)
+func (p *provider) storageURL(domain, bucket, filename string) string {
+	return fmt.Sprintf("https://%s/%s/%s", domain, bucket, filename)
 }

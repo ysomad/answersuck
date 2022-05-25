@@ -74,8 +74,8 @@ type (
 		Bucket    string `env-required:"true" yaml:"bucket" env:"FILE_STORAGE_BUCKET"`
 		AccessKey string `env-required:"true" env:"FILE_STORAGE_ACCESS_KEY"`
 		SecretKey string `env-required:"true" env:"FILE_STORAGE_SECRET_KEY"`
-		Source    string `env-required:"true" env:"FILE_STORAGE_SOURCE"`
-		CDNSource string `env-required:"true" env:"FILE_STORAGE_CDN_SOURCE"`
+		Domain    string `env-required:"true" env:"FILE_STORAGE_DOMAIN"`
+		CDNDomain string `env-required:"true" env:"FILE_STORAGE_CDN_DOMAIN"`
 		CDN       bool   `yaml:"cdn" env:"FILE_STORAGE_CDN"`
 		SSL       bool   `yaml:"ssl" env:"FILE_STORAGE_SSL"`
 	}
