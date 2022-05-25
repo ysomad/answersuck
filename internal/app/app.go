@@ -21,6 +21,7 @@ import (
 	"github.com/answersuck/vault/internal/app/email"
 
 	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/question"
@@ -119,6 +120,9 @@ func Run(configPath string) {
 	mediaRepo := repository.NewMediaPSQL(l, pg)
 	mediaService := media.NewService(mediaRepo, storageProvider)
 
+	answerRepo := repository.NewAnswerPSQL(l, pg)
+	answerService := answer.NewService(l, answerRepo, mediaService)
+
 	// HTTP Server
 	engine := gin.New()
 	v1.NewHandler(
@@ -136,6 +140,7 @@ func Run(configPath string) {
 			TopicService:    topicService,
 			QuestionService: questionService,
 			MediaService:    mediaService,
+			AnswerService:   answerService,
 		},
 	)
 

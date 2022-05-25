@@ -10,6 +10,7 @@ import (
 type (
 	Repository interface {
 		Save(ctx context.Context, m Media) (Media, error)
+		FindMimeTypeById(ctx context.Context, mediaId string) (string, error)
 	}
 
 	Storage interface {
@@ -82,4 +83,13 @@ func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, err
 	}
 
 	return m, nil
+}
+
+func (s *service) GetMimeTypeById(ctx context.Context, mediaId string) (string, error) {
+	t, err := s.repo.FindMimeTypeById(ctx, mediaId)
+	if err != nil {
+		return "", fmt.Errorf("mediaService - GetMimeTypeById - s.repo.FindMimeTypeById: %w", err)
+	}
+
+	return t, nil
 }

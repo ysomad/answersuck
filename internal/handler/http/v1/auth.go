@@ -57,7 +57,6 @@ func (h *authHandler) login(c *gin.Context) {
 	var r auth.LoginRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		h.log.Info(err.Error())
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}

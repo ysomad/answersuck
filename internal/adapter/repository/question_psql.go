@@ -13,7 +13,6 @@ import (
 const (
 	questionTable      = "question"
 	questionMediaTable = "question_media"
-	answerTable        = "answer"
 	answerImageTable   = "answer_image"
 )
 

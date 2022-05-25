@@ -8,6 +8,7 @@ import (
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
@@ -63,4 +64,23 @@ func (r *mediaPSQL) Save(ctx context.Context, m media.Media) (media.Media, error
 	}
 
 	return m, nil
+}
+
+func (r *mediaPSQL) FindMimeTypeById(ctx context.Context, mediaId string) (string, error) {
+	sql := fmt.Sprintf(`SELECT mime_type FROM %s WHERE id = $1`, mediaTable)
+
+	r.log.Info("psql - media - FindMimeTypeById: %s", sql)
+
+	var mimeType string
+
+	err := r.client.Pool.QueryRow(ctx, sql, mediaId).Scan(&mimeType)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", media.ErrNotFound)
+		}
+
+		return "", fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return mimeType, nil
 }

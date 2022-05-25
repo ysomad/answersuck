@@ -26,16 +26,15 @@ type Deps struct {
 	TagService      TagService
 	TopicService    TopicService
 	MediaService    MediaService
+	AnswerService   AnswerService
 }
 
 func NewHandler(r *gin.Engine, d *Deps) {
-	// Options
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
 	r.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
 
-	// Resource handlers
 	h := r.Group(route)
 	{
 		newSessionHandler(h, d)
@@ -46,5 +45,6 @@ func NewHandler(r *gin.Engine, d *Deps) {
 		newTopicHandler(h, d)
 		newQuestionHandler(h, d)
 		newMediaHandler(h, d)
+		newAnswerHandler(h, d)
 	}
 }

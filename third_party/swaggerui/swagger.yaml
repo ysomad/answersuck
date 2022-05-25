@@ -929,9 +929,9 @@ components:
           type: integer
         text:
           type: string
-        imageUrl:
+        mediaId:
           type: string
-          format: uri
+          format: uuid
     AnswerCreateRequest:
       required:
       - text
