@@ -38,7 +38,7 @@ func (r *mediaPSQL) Save(ctx context.Context, m media.Media) (media.Media, error
 
 	r.log.Info("psql - media - Save: %s", sql)
 
-	_, err := r.client.Pool.Query(
+	_, err := r.client.Pool.Exec(
 		ctx,
 		sql,
 		m.Id,

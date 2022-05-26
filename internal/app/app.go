@@ -50,7 +50,9 @@ func Run(configPath string) {
 	l.Info(fmt.Sprintf("%+v\n", cfg))
 
 	// DB
-	pg, err := postgres.NewClient(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
+	pg, err := postgres.NewClient(cfg.PG.URL,
+		postgres.MaxPoolSize(cfg.PG.PoolMax),
+		postgres.PreferSimpleProtocol(cfg.PG.SimpleProtocol))
 	if err != nil {
 		l.Fatal(fmt.Errorf("main - run - postgres.NewClient: %w", err))
 	}
@@ -89,6 +91,7 @@ func Run(configPath string) {
 	})
 
 	authService := auth.NewService(&auth.Deps{
+		Logger:         l,
 		Config:         &cfg,
 		Token:          tokenManager,
 		AccountService: accountService,

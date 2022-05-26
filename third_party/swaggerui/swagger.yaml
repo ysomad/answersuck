@@ -538,64 +538,6 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
-  /questions/media:
-    post:
-      tags:
-      - question
-      summary: Upload question media
-      operationId: questionMediaUpload
-      responses:
-        "200":
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QuestionMedia'
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        "403":
-          description: Forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        "500":
-          description: Internal Server Error.
-      security:
-      - cookieAuth: []
-  /questions/answer/image:
-    post:
-      tags:
-      - question
-      summary: Upload answer image
-      operationId: answerImageUpload
-      responses:
-        "200":
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AnswerImage'
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        "403":
-          description: Forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        "500":
-          description: Internal Server Error.
-      security:
-      - cookieAuth: []
   /topics:
     get:
       tags:
@@ -696,21 +638,6 @@ paths:
                 $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
-      security:
-      - cookieAuth: []
-  /packages/cover:
-    post:
-      tags:
-      - package
-      summary: Upload package cover
-      operationId: packagesCoverUpload
-      responses:
-        "200":
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PackageCover'
       security:
       - cookieAuth: []
 components:

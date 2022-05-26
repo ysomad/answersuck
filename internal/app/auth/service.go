@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/pkg/logging"
+
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
 )
@@ -30,6 +32,7 @@ type (
 )
 
 type service struct {
+	log     logging.Logger
 	cfg     *config.AccessToken
 	token   TokenManager
 	account AccountService
@@ -37,6 +40,7 @@ type service struct {
 }
 
 type Deps struct {
+	Logger         logging.Logger
 	Config         *config.Aggregate
 	Token          TokenManager
 	AccountService AccountService
@@ -45,6 +49,7 @@ type Deps struct {
 
 func NewService(d *Deps) *service {
 	return &service{
+		log:     d.Logger,
 		cfg:     &d.Config.AccessToken,
 		token:   d.Token,
 		account: d.AccountService,

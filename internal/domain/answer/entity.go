@@ -8,7 +8,7 @@ var (
 type Answer struct {
 	Id      int    `json:"id"`
 	Text    string `json:"text"`
-	MediaId string `json:"mediaId"`
+	MediaId string `json:"mediaId,omitempty"`
 }
 
 // isMimeTypeAllowed checks if media for answer is in allowed mime type array

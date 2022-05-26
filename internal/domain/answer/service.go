@@ -32,23 +32,23 @@ func NewService(l logging.Logger, r Repository, m MediaService) *service {
 }
 
 func (s *service) Create(ctx context.Context, r CreateRequest) (Answer, error) {
-	mimeType, err := s.media.GetMimeTypeById(ctx, r.MediaId)
-	if err != nil {
-		return Answer{}, fmt.Errorf("answerService - Create - s.media.FindMimeTypeById: %w", err)
-	}
-
-	s.log.Info(mimeType)
-
 	a := Answer{
 		Text:    r.Text,
 		MediaId: r.MediaId,
 	}
 
-	if !a.isMimeTypeAllowed(mimeType) {
-		return Answer{}, fmt.Errorf("answerService - Create - a.IsMimeTypeAllowed: %w", ErrMimeTypeNotAllowed)
+	if a.MediaId != "" {
+		mimeType, err := s.media.GetMimeTypeById(ctx, a.MediaId)
+		if err != nil {
+			return Answer{}, fmt.Errorf("answerService - Create - s.media.FindMimeTypeById: %w", err)
+		}
+
+		if !a.isMimeTypeAllowed(mimeType) {
+			return Answer{}, fmt.Errorf("answerService - Create - a.IsMimeTypeAllowed: %w", ErrMimeTypeNotAllowed)
+		}
 	}
 
-	a, err = s.repo.Save(ctx, a)
+	a, err := s.repo.Save(ctx, a)
 	if err != nil {
 		return Answer{}, fmt.Errorf("answerService - Create - s.repo.Save: %w", err)
 	}

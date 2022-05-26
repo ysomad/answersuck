@@ -29,16 +29,15 @@ func NewSessionPSQL(l logging.Logger, c *postgres.Client) *sessionPSQL {
 	}
 }
 
-func (r *sessionPSQL) Save(ctx context.Context, s *session.Session) (*session.Session, error) {
+func (r *sessionPSQL) Save(ctx context.Context, s *session.Session) error {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s (id, account_id, max_age, user_agent, ip, expires_at, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id
 	`, sessionTable)
 
 	r.log.Info("psql - session - Save: %s", sql)
 
-	if err := r.client.Pool.QueryRow(ctx, sql,
+	_, err := r.client.Pool.Exec(ctx, sql,
 		s.Id,
 		s.AccountId,
 		s.MaxAge,
@@ -46,35 +45,36 @@ func (r *sessionPSQL) Save(ctx context.Context, s *session.Session) (*session.Se
 		s.IP,
 		s.ExpiresAt,
 		s.CreatedAt,
-	).Scan(&s.Id); err != nil {
+	)
+	if err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", session.ErrAlreadyExist)
+				return fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", session.ErrAlreadyExist)
 			case pgerrcode.ForeignKeyViolation:
-				return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", session.ErrAccountNotFound)
+				return fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", session.ErrAccountNotFound)
 			}
 		}
 
-		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
+		return fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return s, nil
+	return nil
 }
 
 func (r *sessionPSQL) FindById(ctx context.Context, sessionId string) (*session.Session, error) {
 	sql := fmt.Sprintf(`
 		SELECT
-			account_id,
-			user_agent,
-			ip,
-			max_age,
-			expires_at,
-			created_at
-		FROM %s
-		WHERE id = $1
+			s.account_id,
+			s.user_agent,
+			s.ip,
+			s.max_age,
+			s.expires_at,
+			s.created_at
+		FROM %s s
+		WHERE s.id = $1
 	`, sessionTable)
 
 	r.log.Info("psql - session - FindById: %s", sql)
@@ -89,6 +89,51 @@ func (r *sessionPSQL) FindById(ctx context.Context, sessionId string) (*session.
 		&s.ExpiresAt,
 		&s.CreatedAt,
 	); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", session.ErrNotFound)
+		}
+
+		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return &s, nil
+}
+
+func (r *sessionPSQL) FindByIdWithVerified(ctx context.Context, sessionId string) (*session.SessionWithVerified, error) {
+	sql := fmt.Sprintf(`
+		SELECT
+			s.account_id,
+			s.user_agent,
+			s.ip,
+			s.max_age,
+			s.expires_at,
+			s.created_at,
+			a.is_verified
+		FROM %s s
+		INNER JOIN %s a
+		ON s.account_id = a.id
+		WHERE s.id = $1
+	`, sessionTable, accountTable)
+
+	r.log.Info("psql - session - FindByIdWithVerified: %s", sql)
+
+	s := session.SessionWithVerified{
+		Session: session.Session{
+			Id: sessionId,
+		},
+	}
+
+	err := r.client.Pool.QueryRow(ctx, sql, sessionId).Scan(
+		&s.Session.AccountId,
+		&s.Session.UserAgent,
+		&s.Session.IP,
+		&s.Session.MaxAge,
+		&s.Session.ExpiresAt,
+		&s.Session.CreatedAt,
+		&s.AccountVerified,
+	)
+	if err != nil {
+
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", session.ErrNotFound)
 		}

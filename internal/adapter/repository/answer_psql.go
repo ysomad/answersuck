@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+
 	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 )
 
 const (
@@ -37,6 +38,7 @@ func (r *answerPSQL) Save(ctx context.Context, a answer.Answer) (answer.Answer, 
 
 	r.log.Info("psql - answer: %s", sql)
 
+	// TODO: сохранять image как NULL
 	if err := r.client.Pool.QueryRow(ctx, sql, a.Text, a.MediaId).Scan(&a.Id); err != nil {
 		var pgErr *pgconn.PgError
 

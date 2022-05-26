@@ -189,7 +189,7 @@ func (r *accountPSQL) FindByUsername(ctx context.Context, username string) (*acc
 
 	a := account.Account{Username: username}
 
-	if err := r.client.Pool.QueryRow(ctx, sql, username, false).Scan(
+	err := r.client.Pool.QueryRow(ctx, sql, username, false).Scan(
 		&a.Id,
 		&a.Email,
 		&a.PasswordHash,
@@ -197,7 +197,8 @@ func (r *accountPSQL) FindByUsername(ctx context.Context, username string) (*acc
 		&a.UpdatedAt,
 		&a.Verified,
 		&a.AvatarURL,
-	); err != nil {
+	)
+	if err != nil {
 
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", account.ErrNotFound)

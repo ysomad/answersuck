@@ -54,6 +54,11 @@ func newAuthHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *authHandler) login(c *gin.Context) {
+	if _, err := c.Cookie(h.cfg.Session.CookieKey); !errors.Is(err, http.ErrNoCookie) {
+		abortWithError(c, http.StatusBadRequest, auth.ErrAlreadyLoggedIn, "")
+		return
+	}
+
 	var r auth.LoginRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {

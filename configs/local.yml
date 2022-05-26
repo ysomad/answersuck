@@ -13,6 +13,7 @@ logger:
 
 postgres:
   poolMax: 2
+  simpleProtocol: true # see pgx.ConnConfig.PreferSimpleProtocol
 
 cache:
   expiration: 1h
@@ -44,7 +45,7 @@ fileStorage:
 
   # if true FILE_STORAGE_CDN_DOMAIN env must be set, 
   # otherwise using FILE_STORAGE_DOMAIN env for generating uploaded file url
-  cdn: false 
+  cdn: false
 
 email:
   templates:

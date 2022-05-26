@@ -10,7 +10,7 @@ import (
 
 type Session struct {
 	Id        string    `json:"id"`
-	AccountId string    `json:"accountId"`
+	AccountId string    `json:"-"`
 	UserAgent string    `json:"userAgent"`
 	IP        string    `json:"ip"`
 	MaxAge    int       `json:"maxAge"`
@@ -18,10 +18,17 @@ type Session struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-func newSession(accountId, userAgent, ip string, expiration time.Duration) (*Session, error) {
+type fields struct {
+	accountId  string
+	userAgent  string
+	ip         string
+	expiration time.Duration
+}
+
+func newSession(f fields) (*Session, error) {
 	// TODO: add useragent validation
 
-	if _, err := netip.ParseAddr(ip); err != nil {
+	if _, err := netip.ParseAddr(f.ip); err != nil {
 		return nil, fmt.Errorf("netip.ParseAddr: %w", err)
 	}
 
@@ -34,11 +41,11 @@ func newSession(accountId, userAgent, ip string, expiration time.Duration) (*Ses
 
 	return &Session{
 		Id:        sid,
-		AccountId: accountId,
-		UserAgent: userAgent,
-		IP:        ip,
-		MaxAge:    int(expiration.Seconds()),
-		ExpiresAt: now.Add(expiration).Unix(),
+		AccountId: f.accountId,
+		UserAgent: f.userAgent,
+		IP:        f.ip,
+		MaxAge:    int(f.expiration.Seconds()),
+		ExpiresAt: now.Add(f.expiration).Unix(),
 		CreatedAt: now,
 	}, nil
 }

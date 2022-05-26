@@ -40,8 +40,9 @@ type (
 	}
 
 	PG struct {
-		PoolMax int    `env-required:"true" yaml:"poolMax"`
-		URL     string `env-required:"true" env:"PG_URL"`
+		PoolMax        int    `env-required:"true" yaml:"poolMax"`
+		URL            string `env-required:"true" env:"PG_URL"`
+		SimpleProtocol bool   `yaml:"simpleProtocol"`
 	}
 
 	Cache struct {

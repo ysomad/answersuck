@@ -33,7 +33,12 @@ func newMediaHandler(r *gin.RouterGroup, d *Deps) {
 
 	media := r.Group("media")
 	{
-		media.POST("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService), h.upload)
+		media.POST(
+			"",
+			sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
+			protectionMiddleware(d.Logger),
+			h.upload,
+		)
 	}
 }
 

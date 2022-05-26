@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
@@ -25,21 +26,36 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, service SessionSer
 			return
 		}
 
-		s, err := service.GetById(c.Request.Context(), sessionId)
+		s, err := service.GetByIdWithVerified(c.Request.Context(), sessionId)
 		if err != nil {
 			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware - s.Get: %w", err))
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		if s.IP != c.ClientIP() || s.UserAgent != c.GetHeader(userAgentHeader) {
+		if s.Session.IP != c.ClientIP() || s.Session.UserAgent != c.GetHeader(userAgentHeader) {
 			l.Error(fmt.Errorf("http - v1 - middleware - sessionMiddleware: %w", session.ErrDeviceMismatch))
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		c.Set(sessionIdKey, s.Id)
-		c.Set(accountIdKey, s.AccountId)
+		c.Set(sessionIdKey, s.Session.Id)
+		c.Set(accountIdKey, s.Session.AccountId)
+		c.Set(accountVerifiedKey, s.AccountVerified)
+		c.Next()
+	}
+}
+
+// protectionMiddleware checks if account is verified from context
+func protectionMiddleware(l logging.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		a, err := getAccountVerified(c)
+		if err != nil || !a {
+			l.Error(fmt.Errorf("http - v1 - middleware - protectionMiddleware - getAccountVerified: %w", err))
+			abortWithError(c, http.StatusForbidden, account.ErrNotEnoughRights, "")
+			return
+		}
+
 		c.Next()
 	}
 }
