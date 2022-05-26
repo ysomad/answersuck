@@ -1,18 +1,15 @@
-INSERT INTO package_cover (url)
-VALUES ('https://avatars.dicebear.com/api/identicon/rutest1.svg'),
-       ('https://avatars.dicebear.com/api/identicon/rutest2.svg'),
-       ('https://avatars.dicebear.com/api/identicon/rutest3.svg'),
-       ('https://avatars.dicebear.com/api/identicon/entest1.svg'),
-       ('https://avatars.dicebear.com/api/identicon/entest2.svg'),
-       ('https://avatars.dicebear.com/api/identicon/entest3.svg');
+INSERT INTO media (id, url, mime_type, account_id)
+VALUES ('7ceefef0-2a3e-4e47-a07d-0709c70d1cfa', 'https://rt-online.ru/wp-content/uploads/2021/02/viktorina.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600'),
+       ('44c78b42-e931-4d8c-8451-cc59383e5af6', 'https://www.mgpu.ru/wp-content/uploads/2019/02/Viktorina.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600'),
+       ('922d0089-ec67-47a7-ad25-dc8e36d7c93d', 'https://gameorg.ru/media/games/viktorina_22.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600');
 
-INSERT INTO package (name, account_id, is_published, language_id, package_cover_id)
-VALUES ('Русский пакет 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, 1),
-       ('Русский пакет 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, 2),
-       ('Русский пакет 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 1, 3),
-       ('English package 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, 4),
-       ('English package 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, 5),
-       ('English package 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 2, 6);
+INSERT INTO package (name, account_id, is_published, language_id, cover)
+VALUES ('Русский пакет 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, '7ceefef0-2a3e-4e47-a07d-0709c70d1cfa'),
+       ('Русский пакет 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, '44c78b42-e931-4d8c-8451-cc59383e5af6'),
+       ('Русский пакет 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 1, '922d0089-ec67-47a7-ad25-dc8e36d7c93d'),
+       ('English package 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, '7ceefef0-2a3e-4e47-a07d-0709c70d1cfa'),
+       ('English package 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, '44c78b42-e931-4d8c-8451-cc59383e5af6'),
+       ('English package 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 2, '922d0089-ec67-47a7-ad25-dc8e36d7c93d');
 
 INSERT INTO package_tag (package_id, tag_id)
 VALUES (1, 1),

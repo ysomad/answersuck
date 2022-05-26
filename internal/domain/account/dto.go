@@ -33,4 +33,12 @@ type (
 		PasswordHash string
 		UpdatedAt    time.Time
 	}
+
+	sendEmailDTO struct {
+		To         string
+		Subject    string
+		Template   string
+		Format     string
+		FormatArgs []any
+	}
 )

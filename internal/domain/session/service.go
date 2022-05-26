@@ -8,8 +8,9 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, s *Session) (*Session, error)
+	Save(ctx context.Context, s *Session) error
 	FindById(ctx context.Context, sessionId string) (*Session, error)
+	FindByIdWithVerified(ctx context.Context, sessionId string) (*SessionWithVerified, error)
 	FindAll(ctx context.Context, accountId string) ([]*Session, error)
 	Delete(ctx context.Context, sessionId string) error
 	DeleteAll(ctx context.Context, accountId string) error
@@ -29,14 +30,18 @@ func NewService(cfg *config.Session, s Repository) *service {
 }
 
 func (s *service) Create(ctx context.Context, accountId string, d Device) (*Session, error) {
-	sess, err := NewSession(accountId, d.UserAgent, d.IP, s.cfg.Expiration)
+	sess, err := newSession(fields{
+		accountId:  accountId,
+		userAgent:  d.UserAgent,
+		ip:         d.IP,
+		expiration: s.cfg.Expiration,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("sessionService - Create - domain.NewSession: %w", err)
+		return nil, fmt.Errorf("sessionService - Create - newSession: %w", err)
 	}
 
-	sess, err = s.repo.Create(ctx, sess)
-	if err != nil {
-		return nil, fmt.Errorf("sessionService - Create - s.repo.Create: %w", err)
+	if err = s.repo.Save(ctx, sess); err != nil {
+		return nil, fmt.Errorf("sessionService - Create - s.repo.Save: %w", err)
 	}
 
 	return sess, nil
@@ -82,4 +87,13 @@ func (s *service) TerminateAll(ctx context.Context, accountId string) error {
 	}
 
 	return nil
+}
+
+func (s *service) GetByIdWithVerified(ctx context.Context, sessionId string) (*SessionWithVerified, error) {
+	sess, err := s.repo.FindByIdWithVerified(ctx, sessionId)
+	if err != nil {
+		return nil, fmt.Errorf("sessionService - GetByIdWithVerified - s.repo.FindByIdWithVerified: %w", err)
+	}
+
+	return sess, nil
 }

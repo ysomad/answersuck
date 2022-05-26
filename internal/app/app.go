@@ -13,19 +13,23 @@ import (
 	"github.com/answersuck/vault/internal/config"
 
 	"github.com/answersuck/vault/internal/adapter/repository"
+	"github.com/answersuck/vault/internal/adapter/smtp"
+	"github.com/answersuck/vault/internal/adapter/storage"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
+	"github.com/answersuck/vault/internal/app/auth"
+	"github.com/answersuck/vault/internal/app/email"
+
 	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/auth"
-	"github.com/answersuck/vault/internal/domain/email"
+	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/language"
+	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
 	"github.com/answersuck/vault/internal/domain/topic"
 
 	"github.com/answersuck/vault/pkg/blocklist"
-	emailPkg "github.com/answersuck/vault/pkg/email"
 	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
@@ -46,7 +50,9 @@ func Run(configPath string) {
 	l.Info(fmt.Sprintf("%+v\n", cfg))
 
 	// DB
-	pg, err := postgres.NewClient(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
+	pg, err := postgres.NewClient(cfg.PG.URL,
+		postgres.MaxPoolSize(cfg.PG.PoolMax),
+		postgres.PreferSimpleProtocol(cfg.PG.SimpleProtocol))
 	if err != nil {
 		l.Fatal(fmt.Errorf("main - run - postgres.NewClient: %w", err))
 	}
@@ -56,7 +62,12 @@ func Run(configPath string) {
 	sessionRepo := repository.NewSessionPSQL(l, pg)
 	sessionService := session.NewService(&cfg.Session, sessionRepo)
 
-	emailClient, err := emailPkg.NewClient(cfg.SMTP.From, cfg.SMTP.Password, cfg.SMTP.Host, cfg.SMTP.Port)
+	emailClient, err := smtp.NewClient(&smtp.ClientOptions{
+		Host:     cfg.SMTP.Host,
+		Port:     cfg.SMTP.Port,
+		From:     cfg.SMTP.From,
+		Password: cfg.SMTP.Password,
+	})
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
 	}
@@ -72,14 +83,15 @@ func Run(configPath string) {
 
 	accountRepo := repository.NewAccountPSQL(l, pg)
 	accountService := account.NewService(&account.Deps{
-		Config:            &cfg,
-		AccountRepo:       accountRepo,
-		SessionService:    sessionService,
-		EmailService:      emailService,
-		UsernameBlocklist: usernameBlockList,
+		Config:         &cfg,
+		AccountRepo:    accountRepo,
+		SessionService: sessionService,
+		EmailService:   emailService,
+		Blocklist:      usernameBlockList,
 	})
 
 	authService := auth.NewService(&auth.Deps{
+		Logger:         l,
 		Config:         &cfg,
 		Token:          tokenManager,
 		AccountService: accountService,
@@ -103,6 +115,17 @@ func Run(configPath string) {
 		l.Fatal(fmt.Errorf("app - Run - validation.NewGinTranslator: %w", err))
 	}
 
+	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - storage.NewProvider: %w", err))
+	}
+
+	mediaRepo := repository.NewMediaPSQL(l, pg)
+	mediaService := media.NewService(mediaRepo, storageProvider)
+
+	answerRepo := repository.NewAnswerPSQL(l, pg)
+	answerService := answer.NewService(l, answerRepo, mediaService)
+
 	// HTTP Server
 	engine := gin.New()
 	v1.NewHandler(
@@ -119,6 +142,8 @@ func Run(configPath string) {
 			TagService:      tagService,
 			TopicService:    topicService,
 			QuestionService: questionService,
+			MediaService:    mediaService,
+			AnswerService:   answerService,
 		},
 	)
 

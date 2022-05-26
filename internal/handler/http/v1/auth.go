@@ -9,10 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/answersuck/vault/internal/app/auth"
 	"github.com/answersuck/vault/internal/config"
 
 	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/logging"
@@ -54,10 +54,14 @@ func newAuthHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *authHandler) login(c *gin.Context) {
+	if _, err := c.Cookie(h.cfg.Session.CookieKey); !errors.Is(err, http.ErrNoCookie) {
+		abortWithError(c, http.StatusBadRequest, auth.ErrAlreadyLoggedIn, "")
+		return
+	}
+
 	var r auth.LoginRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
-		h.log.Info(err.Error())
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
 		return
 	}

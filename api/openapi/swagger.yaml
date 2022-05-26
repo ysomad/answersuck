@@ -2,27 +2,29 @@
 openapi: 3.0.3
 info:
   title: Answersuck backend API
-  contact:
-    email: contact@answersuck.com
-  version: 0.0.1
+  version: 0.1.0
 servers:
-- url: http://localhost:8080/api/v1
+- url: http://localhost:8080/v1
   description: Local server
 tags:
 - name: account
   description: Account operations
-- name: auth
-  description: Authentication operations
 - name: session
   description: Session operations
+- name: auth
+  description: Auth operations
+- name: media
+  description: Media operations
 - name: tag
   description: Tag operations
 - name: language
   description: Language operations
 - name: topic
-  description: topic operations
+  description: Topic operations
 - name: question
   description: Question operations
+- name: answer
+  description: Answer operations
 - name: package
   description: Package operations
 paths:
@@ -40,9 +42,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Account'
         "401":
-          description: Unauthorized or expired session.
-        "404":
-          description: Account not found.
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
         "500":
           description: Internal Server Error.
       security:
@@ -60,32 +62,36 @@ paths:
               $ref: '#/components/schemas/AccountCreateRequest'
         required: true
       responses:
-        "201":
+        "200":
           description: Account created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
         "400":
           description: Invalid request body.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/ValidationError'
         "409":
           description: Account with given email or username already exist.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
     delete:
       tags:
       - account
-      summary: Delete account
-      description: Only account with state set to `isArchive=false` can be deleted. Access token should be provided at query param, request it at `/auth/token/`.
+      summary: Archive account
+      description: Only account with state set to `isArchive=false` can be deleted. Security token should be provided at query param, request it at `/auth/token/`.
       operationId: accountDelete
       parameters:
       - name: token
         in: query
-        description: Short live access token
+        description: Short live security token
         required: true
         style: form
         explode: true
@@ -105,8 +111,6 @@ paths:
           description: Unauthorized.
         "403":
           description: Forbidden.
-        "404":
-          description: Account not found.
         "500":
           description: Internal Server Error.
       security:
@@ -135,23 +139,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized or expired session.
         "403":
-          description: Invalid or expired access token.
-        "404":
-          description: Account not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid or expired security token.
         "500":
           description: Internal Server Error.
     post:
       tags:
       - account
-      summary: Send verification email
+      summary: Request email verification
       description: Send email verification to email address linked to the account
       operationId: accountRequestVerification
       responses:
@@ -162,26 +160,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized or expired session.
-        "404":
-          description: Account not found.
         "500":
           description: Internal Server Error.
       security:
       - cookieAuth: []
-  /accounts/password/reset:
+  /accounts/password:
     put:
       tags:
       - account
-      summary: Reset password
+      summary: Set new password
       description: To set new password, access token should be provided along side with new password
-      operationId: accountResetPassword
+      operationId: accountPasswordSet
       parameters:
       - name: token
         in: query
-        description: Short live access token
+        description: Password reset token
         required: true
         style: form
         explode: true
@@ -191,7 +187,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountResetPasswordRequest'
+              $ref: '#/components/schemas/AccountPasswordSetRequest'
         required: true
       responses:
         "204":
@@ -201,7 +197,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/ValidationError'
         "403":
           description: Invalid or expired access token.
         "404":
@@ -209,20 +205,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
     post:
       tags:
       - account
-      summary: Send reset password link
+      summary: Reset password
       description: To request link to password reset, email or username should be provided. Email with code will be sent on success.
-      operationId: accountForgotPassword
+      operationId: accountPasswordReset
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountForgotPasswordRequest'
+              $ref: '#/components/schemas/AccountPasswordResetRequest'
         required: true
       responses:
         "202":
@@ -232,31 +228,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/ValidationError'
         "404":
           description: Account not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
   /auth/login:
     post:
       tags:
       - auth
-      summary: Login
+      summary: Log in account
       description: Creates new session and sets its id in cookies. Login might be email or username.
-      operationId: authLogin
+      operationId: sessionCreate
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: '#/components/schemas/SessionCreateRequest'
         required: true
       responses:
         "200":
-          description: Logged in.
+          description: Successful operation.
           headers:
             Set-Cookie:
               style: simple
@@ -269,58 +265,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/ValidationError'
         "401":
           description: Incorrect email or password.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Already logged in.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
-  /auth/logout:
-    post:
-      tags:
-      - auth
-      summary: Logout
-      description: Log out from current session
-      operationId: authLogout
-      responses:
-        "204":
-          description: Successful operation.
-          headers:
-            Set-Cookie:
-              style: simple
-              explode: false
-              schema:
-                type: string
-                example: id=; Path=v1; Max-Age=-1; HttpOnly; Secure
-        "401":
-          description: Unauthorized.
-        "403":
-          description: Forbidden.
-        "500":
-          description: Internal Server Error.
-      security:
-      - cookieAuth: []
   /auth/token:
     post:
       tags:
       - auth
-      summary: Request access token
+      summary: Request security token
       description: Request short live token which can be used to perform protected operations. Each token can be accepted by only one resource. Resource URI example - `localhost:8080/api/v1/sessions/:sessionId`
       operationId: authToken
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccessTokenRequest'
+              $ref: '#/components/schemas/SecurityTokenRequest'
         required: true
       responses:
         "200":
@@ -328,13 +293,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccessTokenResponse'
+                $ref: '#/components/schemas/SecurityTokenResponse'
         "400":
           description: Invalid request body.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/ValidationError'
         "401":
           description: Unauthorized.
         "403":
@@ -348,7 +313,7 @@ paths:
       tags:
       - session
       summary: Get sessions
-      operationId: sessionGetAccount
+      operationId: sessionGetAll
       responses:
         "200":
           description: Successful operation.
@@ -366,12 +331,12 @@ paths:
       tags:
       - session
       summary: Terminate all sessions
-      description: To terminate all user sessions, access token should be provided at query param, request it at `/auth/token/`
-      operationId: sessionDelete
+      description: To terminate all account sessions, security token should be provided at query param, request it at `/tokens/security`
+      operationId: sessionDeleteAll
       parameters:
       - name: token
         in: query
-        description: Short live access token
+        description: Short live security token
         required: true
         style: form
         explode: true
@@ -385,9 +350,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "403":
-          description: Invalid or expired access token.
+          description: Invalid or expired security token.
         "500":
           description: Internal Server Error.
       security:
@@ -397,8 +362,7 @@ paths:
       tags:
       - session
       summary: Terminate session
-      description: To terminate user session access token should be provided at query parameters, request it at `/auth/token/`
-      operationId: sessionDeleteUser
+      operationId: sessionDelete
       parameters:
       - name: sessionId
         in: path
@@ -410,7 +374,7 @@ paths:
           type: string
       - name: token
         in: query
-        description: Short live access token
+        description: Short live security token
         required: true
         style: form
         explode: true
@@ -424,11 +388,42 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
-          description: Invalid or expired access token.
+          description: Invalid or expired security token.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /media:
+    post:
+      tags:
+      - media
+      summary: Upload media
+      operationId: mediaUpload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/media_body'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
         "500":
           description: Internal Server Error.
       security:
@@ -446,6 +441,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TagArray'
+        "500":
+          description: Internal Server Error.
   /languages:
     get:
       tags:
@@ -459,6 +456,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LanguageArray'
+        "500":
+          description: Internal Server Error.
+  /answers:
+    post:
+      tags:
+      - answer
+      summary: Create answer
+      operationId: answerCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerCreateRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+        "401":
+          description: Unauthorized.
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
   /questions:
     get:
       tags:
@@ -472,6 +502,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuestionArray'
+        "500":
+          description: Internal Server Error.
     post:
       tags:
       - question
@@ -490,36 +522,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuestionCreateResponse'
-      security:
-      - cookieAuth: []
-  /questions/media:
-    post:
-      tags:
-      - question
-      summary: Upload question media
-      operationId: questionMediaUpload
-      responses:
-        "200":
-          description: Successful operation.
+        "400":
+          description: Invalid request body.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionMedia'
-      security:
-      - cookieAuth: []
-  /questions/answer/image:
-    post:
-      tags:
-      - question
-      summary: Upload answer image
-      operationId: answerImageUpload
-      responses:
-        "200":
-          description: Successful operation.
+                $ref: '#/components/schemas/ValidationError'
+        "403":
+          description: Forbidden.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnswerImage'
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
       security:
       - cookieAuth: []
   /topics:
@@ -535,6 +551,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TopicArray'
+        "500":
+          description: Internal Server Error.
     post:
       tags:
       - topic
@@ -553,6 +571,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Topic'
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
       security:
       - cookieAuth: []
   /packages:
@@ -568,6 +602,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PackageArray'
+        "500":
+          description: Internal Server Error.
     post:
       tags:
       - package
@@ -586,25 +622,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PackageCreateResponse'
-      security:
-      - cookieAuth: []
-  /packages/cover:
-    post:
-      tags:
-      - package
-      summary: Upload package cover
-      operationId: packagesCoverUpload
-      responses:
-        "200":
-          description: Successful operation.
+        "400":
+          description: Invalid request body.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PackageCover'
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
       security:
       - cookieAuth: []
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        detail:
+          type: string
+          example: ""
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+        detail:
+          $ref: '#/components/schemas/ValidationErrorDetail'
+    ValidationErrorDetail:
+      type: object
+      properties:
+        fieldName:
+          type: string
     Account:
       type: object
       properties:
@@ -655,7 +712,7 @@ components:
           minLength: 8
           type: string
           format: password
-    AccountForgotPasswordRequest:
+    AccountPasswordResetRequest:
       required:
       - login
       type: object
@@ -663,7 +720,7 @@ components:
         login:
           type: string
           format: email or username
-    AccountResetPasswordRequest:
+    AccountPasswordSetRequest:
       required:
       - password
       type: object
@@ -673,56 +730,6 @@ components:
           minLength: 4
           type: string
           format: password
-    LoginRequest:
-      required:
-      - login
-      - password
-      type: object
-      properties:
-        login:
-          type: string
-          format: email or username
-        password:
-          type: string
-          format: password
-    AccessTokenRequest:
-      required:
-      - audience
-      - password
-      type: object
-      properties:
-        audience:
-          type: string
-          format: uri
-        password:
-          type: string
-          format: password
-    AccessTokenResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          description: JWT token contains Account ID as subject, audience in payload
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-        detail:
-          type: string
-          example: ""
-    ValidationErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-        detail:
-          $ref: '#/components/schemas/ValidationErrorResponseDetail'
-    ValidationErrorResponseDetail:
-      type: object
-      properties:
-        fieldName:
-          type: string
     Session:
       type: object
       properties:
@@ -740,6 +747,36 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Session'
+    SessionCreateRequest:
+      required:
+      - login
+      - password
+      type: object
+      properties:
+        login:
+          type: string
+          format: email or username
+        password:
+          type: string
+          format: password
+    SecurityTokenRequest:
+      required:
+      - audience
+      - password
+      type: object
+      properties:
+        audience:
+          type: string
+          format: uri
+        password:
+          type: string
+          format: password
+    SecurityTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token contains Account Id as subject and audience in payload
     Tag:
       type: object
       properties:
@@ -773,6 +810,12 @@ components:
           type: string
         languageId:
           type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     TopicArray:
       type: array
       items:
@@ -787,60 +830,74 @@ components:
           type: string
         languageId:
           type: integer
-    QuestionType:
+    MimeType:
       type: string
       enum:
-      - DEFAULT
-      - BET
-      - SECRET
-      - SUPERSECRET
-      - SAFE
-    MediaType:
-      type: string
-      enum:
-      - AUDIO
-      - IMG
-      - VIDEO
-    QuestionMedia:
+      - image/jpeg
+      - image/png
+      - audio/mp4
+      - audio/aac
+      - audio/mpeg
+    Media:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         url:
           type: string
           format: uri
         type:
-          $ref: '#/components/schemas/MediaType'
-    AnswerImage:
-      type: object
-      properties:
-        id:
-          type: integer
-        url:
-          type: string
-          format: uri
+          $ref: '#/components/schemas/MimeType'
     Answer:
       type: object
       properties:
         id:
           type: integer
-        answer:
+        text:
           type: string
-        image:
-          $ref: '#/components/schemas/AnswerImage'
+        mediaId:
+          type: string
+          format: uuid
+    AnswerCreateRequest:
+      required:
+      - text
+      type: object
+      properties:
+        text:
+          maximum: 100
+          minimum: 1
+          type: string
+        mediaId:
+          type: string
+          format: uuid
     Question:
       type: object
       properties:
         id:
-          type: integer
-        question:
+          type: string
+          format: uuid
+        text:
           type: string
         answer:
-          $ref: '#/components/schemas/Answer'
-        media:
-          $ref: '#/components/schemas/QuestionMedia'
+          type: string
+        answerImageUrl:
+          type: string
+          format: uri
+        mediaUrl:
+          type: string
+        mediaType:
+          $ref: '#/components/schemas/MimeType'
+        author:
+          type: string
         languageId:
           type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     QuestionArray:
       type: array
       items:
@@ -858,17 +915,46 @@ components:
           maximum: 128
           minimum: 6
           type: string
-        answerImageId:
-          type: integer
+        questionMediaId:
+          type: string
+          format: uuid
+        answerMediaId:
+          type: string
+          format: uuid
         languageId:
-          type: integer
-        mediaId:
           type: integer
     QuestionCreateResponse:
       type: object
       properties:
         id:
+          type: string
+          format: uuid
+    QuestionType:
+      type: string
+      enum:
+      - DEFAULT
+      - BET
+      - SECRET
+      - SUPERSECRET
+      - SAFE
+    QuestionMedia:
+      type: object
+      properties:
+        id:
           type: integer
+        url:
+          type: string
+          format: uri
+        type:
+          $ref: '#/components/schemas/MimeType'
+    AnswerImage:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
     Stage:
       type: object
       properties:
@@ -879,50 +965,25 @@ components:
         final:
           type: boolean
           description: indicates that stage is final or not
-        content:
+        topics:
           type: array
           items:
-            $ref: '#/components/schemas/StageContent'
-    StageNested:
+            $ref: '#/components/schemas/StageTopic'
+    StageTopic:
       type: object
       properties:
         id:
           type: integer
         name:
           type: string
-        final:
-          type: boolean
-          description: indicates that stage is final or not
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/StageContentNested'
-    StageContentNested:
-      type: object
-      properties:
-        topic:
-          $ref: '#/components/schemas/Topic'
-        question:
-          $ref: '#/components/schemas/Question'
-        answer:
-          $ref: '#/components/schemas/Answer'
-    StageContent:
-      type: object
-      properties:
-        topicId:
+        languageId:
           type: integer
-        questionId:
-          type: integer
-        answerId:
-          type: integer
+        questions:
+          $ref: '#/components/schemas/QuestionArray'
     StageArray:
       type: array
       items:
         $ref: '#/components/schemas/Stage'
-    StageNestedArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/StageNested'
     StageCreateRequest:
       required:
       - final
@@ -953,7 +1014,7 @@ components:
           type: integer
         questionId:
           type: integer
-        type:
+        questionType:
           $ref: '#/components/schemas/QuestionType'
         cost:
           type: integer
@@ -982,13 +1043,13 @@ components:
           type: string
         languageId:
           type: integer
-        coverUrl:
+        cover:
           type: string
           format: uri
         published:
           type: boolean
         stages:
-          $ref: '#/components/schemas/StageNestedArray'
+          $ref: '#/components/schemas/StageArray'
         createdAt:
           type: string
           format: date-time
@@ -1047,6 +1108,12 @@ components:
         url:
           type: string
           format: uri
+    media_body:
+      type: object
+      properties:
+        media:
+          type: string
+          format: binary
   securitySchemes:
     cookieAuth:
       type: apiKey

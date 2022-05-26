@@ -24,8 +24,16 @@ type Account struct {
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
 
-// GeneratePasswordHash generates hash from password and sets it to PasswordHash
-func (a *Account) GeneratePasswordHash() error {
+func (a *Account) CompareHashAndPassword() error {
+	if err := bcrypt.CompareHashAndPassword([]byte(a.PasswordHash), []byte(a.Password)); err != nil {
+		return fmt.Errorf("bcrypt.CompareHashAndPassword: %w", ErrIncorrectPassword)
+	}
+
+	return nil
+}
+
+// generatePasswordHash generates hash from password and sets it to PasswordHash
+func (a *Account) generatePasswordHash() error {
 	b, err := bcrypt.GenerateFromPassword([]byte(a.Password), 11)
 	if err != nil {
 		return fmt.Errorf("bcrypt.GenerateFromPassword: %w", err)
@@ -36,20 +44,12 @@ func (a *Account) GeneratePasswordHash() error {
 	return nil
 }
 
-func (a *Account) CompareHashAndPassword() error {
-	if err := bcrypt.CompareHashAndPassword([]byte(a.PasswordHash), []byte(a.Password)); err != nil {
-		return fmt.Errorf("bcrypt.CompareHashAndPassword: %w", ErrIncorrectPassword)
-	}
-
-	return nil
-}
-
-// SetDiceBearAvatar sets dicebear identicon url from username to account AvatarURL
-func (a *Account) SetDiceBearAvatar() {
+// setDiceBearAvatar sets dicebear identicon url from username to account AvatarURL
+func (a *Account) setDiceBearAvatar() {
 	a.AvatarURL = dicebear.URL(a.Username)
 }
 
-func (a *Account) GenerateVerificationCode(length int) error {
+func (a *Account) generateVerificationCode(length int) error {
 	code, err := strings.NewUnique(length)
 	if err != nil {
 		return fmt.Errorf("strings.NewUnique: %w", err)
@@ -66,8 +66,8 @@ type PasswordResetToken struct {
 	CreatedAt time.Time
 }
 
-// CheckExpiration returns error if token is expired
-func (t PasswordResetToken) CheckExpiration(exp time.Duration) error {
+// checkExpiration returns error if token is expired
+func (t PasswordResetToken) checkExpiration(exp time.Duration) error {
 	expiresAt := t.CreatedAt.Add(exp)
 
 	if time.Now().After(expiresAt) {

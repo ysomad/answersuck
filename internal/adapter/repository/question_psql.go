@@ -13,7 +13,6 @@ import (
 const (
 	questionTable      = "question"
 	questionMediaTable = "question_media"
-	answerTable        = "answer"
 	answerImageTable   = "answer_image"
 )
 
@@ -74,7 +73,7 @@ func (r *questionPSQL) FindAll(ctx context.Context) ([]*question.Question, error
 
 		if err = rows.Scan(
 			&q.Id,
-			&q.Q,
+			&q.Text,
 			&q.Answer,
 			&q.AnswerImageURL,
 			&q.Author,

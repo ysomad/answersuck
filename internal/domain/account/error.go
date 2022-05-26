@@ -19,4 +19,5 @@ var (
 	ErrVerificationNotFound           = errors.New("account verification not found")
 	ErrPasswordNotSet                 = errors.New("account password is not set")
 	ErrPasswordResetTokenAlreadyExist = errors.New("account password reset token already exist")
+	ErrNotEnoughRights                = errors.New("not enough rights to perform the operation, verify account first")
 )

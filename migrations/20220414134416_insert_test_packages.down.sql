@@ -9,6 +9,3 @@ FROM stage;
 
 DELETE
 FROM package;
-
-DELETE
-FROM package_cover;

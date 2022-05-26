@@ -40,8 +40,9 @@ type (
 	}
 
 	PG struct {
-		PoolMax int    `env-required:"true" yaml:"poolMax"`
-		URL     string `env-required:"true" env:"PG_URL"`
+		PoolMax        int    `env-required:"true" yaml:"poolMax"`
+		URL            string `env-required:"true" env:"PG_URL"`
+		SimpleProtocol bool   `yaml:"simpleProtocol"`
 	}
 
 	Cache struct {
@@ -62,9 +63,6 @@ type (
 	Session struct {
 		Expiration time.Duration `env-required:"true" yaml:"expiration"`
 		CookieKey  string        `env-required:"true" yaml:"cookieKey"`
-
-		// DB is number of database inside redis
-		DB int `yaml:"db"`
 	}
 
 	AccessToken struct {
@@ -77,11 +75,16 @@ type (
 		Bucket    string `env-required:"true" yaml:"bucket" env:"FILE_STORAGE_BUCKET"`
 		AccessKey string `env-required:"true" env:"FILE_STORAGE_ACCESS_KEY"`
 		SecretKey string `env-required:"true" env:"FILE_STORAGE_SECRET_KEY"`
+		Domain    string `env-required:"true" env:"FILE_STORAGE_DOMAIN"`
+		CDNDomain string `env-required:"true" env:"FILE_STORAGE_CDN_DOMAIN"`
+		CDN       bool   `yaml:"cdn" env:"FILE_STORAGE_CDN"`
+		SSL       bool   `yaml:"ssl" env:"FILE_STORAGE_SSL"`
 	}
 
 	Email struct {
 		Template EmailTemplate `env-required:"true" yaml:"templates"`
 		Subject  EmailSubject  `env-required:"true" yaml:"subjects"`
+		Format   EmailFormat   `env-required:"true" yaml:"formats"`
 	}
 
 	EmailTemplate struct {
@@ -90,6 +93,11 @@ type (
 	}
 
 	EmailSubject struct {
+		AccountVerification  string `env-required:"true" yaml:"accountVerification"`
+		AccountPasswordReset string `env-required:"true" yaml:"accountPasswordReset"`
+	}
+
+	EmailFormat struct {
 		AccountVerification  string `env-required:"true" yaml:"accountVerification"`
 		AccountPasswordReset string `env-required:"true" yaml:"accountPasswordReset"`
 	}

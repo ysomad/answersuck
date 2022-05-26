@@ -5,4 +5,4 @@ DELETE
 FROM answer;
 
 DELETE
-FROM answer_image;
+FROM media;

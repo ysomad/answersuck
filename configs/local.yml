@@ -13,19 +13,19 @@ logger:
 
 postgres:
   poolMax: 2
+  simpleProtocol: true # see pgx.ConnConfig.PreferSimpleProtocol
 
 cache:
-  expiration: 1m
-  db: 1
+  expiration: 1h
+  db: 0
 
 cookie:
   secure: false
   httpOnly: true
 
 session:
-  expiration: 24h
+  expiration: 4h
   cookieKey: "id"
-  db: 0
 
 accessToken:
   expiration: 1m
@@ -41,6 +41,11 @@ smtp:
 fileStorage:
   endpoint: "s3.storage.selcloud.ru"
   bucket: "answersuck"
+  ssl: true
+
+  # if true FILE_STORAGE_CDN_DOMAIN env must be set, 
+  # otherwise using FILE_STORAGE_DOMAIN env for generating uploaded file url
+  cdn: false
 
 email:
   templates:
@@ -49,3 +54,6 @@ email:
   subjects:
     accountVerification: "Подтверждение аккаунта"
     accountPasswordReset: "Сброс пароля"
+  formats:
+    accountVerification: "%s/verify?code=%s"
+    accountPasswordReset: "%s/reset?token=%s"
