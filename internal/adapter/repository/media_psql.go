@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
+
+	"github.com/answersuck/vault/internal/domain/media"
 
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"

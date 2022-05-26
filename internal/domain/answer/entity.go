@@ -6,9 +6,9 @@ var (
 )
 
 type Answer struct {
-	Id      int    `json:"id"`
-	Text    string `json:"text"`
-	MediaId string `json:"mediaId,omitempty"`
+	Id      int     `json:"id"`
+	Text    string  `json:"text"`
+	MediaId *string `json:"mediaId"`
 }
 
 // isMimeTypeAllowed checks if media for answer is in allowed mime type array
@@ -23,4 +23,10 @@ func (a Answer) isMimeTypeAllowed(mt string) bool {
 	}
 
 	return allowed
+}
+
+func (a *Answer) setMediaId(s string) {
+	if s != "" {
+		a.MediaId = &s
+	}
 }

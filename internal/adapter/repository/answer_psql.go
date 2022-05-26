@@ -38,7 +38,6 @@ func (r *answerPSQL) Save(ctx context.Context, a answer.Answer) (answer.Answer, 
 
 	r.log.Info("psql - answer: %s", sql)
 
-	// TODO: сохранять image как NULL
 	if err := r.client.Pool.QueryRow(ctx, sql, a.Text, a.MediaId).Scan(&a.Id); err != nil {
 		var pgErr *pgconn.PgError
 
