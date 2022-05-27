@@ -2,18 +2,20 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain/question"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 const (
-	questionTable      = "question"
-	questionMediaTable = "question_media"
-	answerImageTable   = "answer_image"
+	questionTable = "question"
 )
 
 type questionPSQL struct {
@@ -28,69 +30,139 @@ func NewQuestionPSQL(l logging.Logger, c *postgres.Client) *questionPSQL {
 	}
 }
 
-func (r *questionPSQL) Create(ctx context.Context, dto *question.CreateDTO) (*question.Question, error) {
-	_ = fmt.Sprintf(`
-		INSERT INTO %s(question, answer_id, media_id, account_id, language_id, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id
+func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, error) {
+	sql := fmt.Sprintf(`
+		 INSERT INTO %s(
+			  text, 
+			  answer_id, 
+			  account_id, 
+			  media_id, 
+			  language_id, 
+			  created_at, 
+			  updated_at
+		 )
+		 VALUES (
+			  $1::varchar, 
+			  $2::integer, 
+			  $3::uuid, 
+			  $4::uuid, 
+			  $5::integer, 
+			  $6::timestamptz, 
+			  $7::timestamptz
+		 )
+		 RETURNING id
 	`, questionTable)
 
-	return nil, nil
+	r.log.Info("psql - question - Save: %s", sql)
+
+	var questionId int
+
+	err := r.client.Pool.QueryRow(
+		ctx,
+		sql,
+		q.Text,
+		q.AnswerId,
+		q.AccountId,
+		q.MediaId,
+		q.LanguageId,
+		q.CreatedAt,
+		q.UpdatedAt,
+	).Scan(&questionId)
+	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.ForeignKeyViolation {
+				return 0, fmt.Errorf("psql - r.client.Pool.QueryRow: %w", question.ErrForeignKeyViolation)
+			}
+		}
+
+		return 0, fmt.Errorf("psql - r.client.Pool.QueryRow: %w", err)
+	}
+
+	return questionId, nil
 }
 
-func (r *questionPSQL) FindAll(ctx context.Context) ([]*question.Question, error) {
+func (r *questionPSQL) FindAll(ctx context.Context) ([]question.Minimized, error) {
 	sql := fmt.Sprintf(`
 		SELECT
-			q.id,
-			q.question,
-			a.answer,
-			ai.url,
-			acc.username,
-			qm.url,
-			qm.type,
-			q.language_id,
-			q.created_at
+			q.id::integer,
+			q.text::varchar,
+			q.language_id::integer
 		FROM %s q
-		LEFT JOIN %s a ON a.id = q.answer_id
-		LEFT JOIN %s ai ON ai.id = a.answer_image_id
-		LEFT JOIN %s acc ON acc.id = q.account_id
-		LEFT JOIN %s qm ON qm.id = q.media_id
-	`, questionTable, answerTable, answerImageTable, accountTable, questionMediaTable)
+	`, questionTable)
 
 	r.log.Info("psql - question - FindAll: %s", sql)
 
 	rows, err := r.client.Pool.Query(ctx, sql)
 	if err != nil {
-		return nil, fmt.Errorf("r.client.Pool.Query.Scan: %w", err)
+		return nil, fmt.Errorf("psql - r.client.Pool.Query.Scan: %w", err)
 	}
 
 	defer rows.Close()
 
-	var questions []*question.Question
+	var qs []question.Minimized
 
 	for rows.Next() {
-		var q question.Question
+		var q question.Minimized
 
-		if err = rows.Scan(
-			&q.Id,
-			&q.Text,
-			&q.Answer,
-			&q.AnswerImageURL,
-			&q.Author,
-			&q.MediaURL,
-			&q.MediaType,
-			&q.LanguageId,
-			&q.CreatedAt,
-		); err != nil {
-			return nil, fmt.Errorf("rows.Scan: %w", err)
+		if err = rows.Scan(&q.Id, &q.Text, &q.LanguageId); err != nil {
+			return nil, fmt.Errorf("psql - rows.Scan: %w", err)
 		}
 
-		questions = append(questions, &q)
+		qs = append(qs, q)
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("rows.Err: %w", err)
+		return nil, fmt.Errorf("psql - rows.Err: %w", err)
 	}
 
-	return questions, nil
+	return qs, nil
+}
+
+func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
+	sql := fmt.Sprintf(`
+		SELECT
+			q.text::varchar,
+			ans.text::varchar AS answer,
+			am.url::varchar AS answer_image_url,
+			acc.username::varchar AS author,
+			qm.url::varchar AS media_url,
+			qm.mime_type::mime_type AS media_type,
+			q.language_id::integer,
+			q.created_at::timestamptz,
+			q.updated_at::timestamptz
+		FROM question q
+		INNER JOIN account acc on acc.id = q.account_id
+		INNER JOIN answer ans on ans.id = q.answer_id
+		LEFT JOIN media qm on qm.id = q.media_id
+		LEFT JOIN media am on am.id = ans.image
+		WHERE q.id = $1::integer
+	`)
+
+	r.log.Info("psql - question - FindById: %s", sql)
+
+	q := question.Detailed{Id: questionId}
+
+	err := r.client.Pool.QueryRow(ctx, sql, questionId).Scan(
+		&q.Text,
+		&q.Answer,
+		&q.AnswerImageURL,
+		&q.Author,
+		&q.MediaURL,
+		&q.MediaType,
+		&q.LanguageId,
+		&q.CreatedAt,
+		&q.UpdatedAt,
+	)
+	if err != nil {
+
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", question.ErrNotFound)
+		}
+
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return &q, nil
 }

@@ -424,6 +424,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
       security:
@@ -477,14 +483,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Answer'
-        "401":
-          description: Unauthorized.
         "400":
           description: Invalid request body.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
       security:
@@ -501,7 +513,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionArray'
+                $ref: '#/components/schemas/QuestionMinimizedArray'
         "500":
           description: Internal Server Error.
     post:
@@ -521,7 +533,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionCreateResponse'
+                $ref: '#/components/schemas/Question'
         "400":
           description: Invalid request body.
           content:
@@ -538,6 +550,32 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
+  /questions/{questionId}:
+    get:
+      tags:
+      - question
+      summary: Get question
+      operationId: questionGet
+      parameters:
+      - name: questionId
+        in: path
+        description: Integer ID of the question
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionDetailed'
+        "404":
+          description: Not Found.
+        "500":
+          description: Internal Server Error.
   /topics:
     get:
       tags:
@@ -875,8 +913,39 @@ components:
       type: object
       properties:
         id:
+          type: integer
+        text:
+          type: string
+        answerId:
+          type: integer
+        accoundId:
           type: string
           format: uuid
+        mediaId:
+          type: string
+          format: uuid
+        languageId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    QuestionMinimized:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        languageId:
+          type: integer
+    QuestionDetailed:
+      type: object
+      properties:
+        id:
+          type: integer
         text:
           type: string
         answer:
@@ -884,12 +953,13 @@ components:
         answerImageUrl:
           type: string
           format: uri
-        mediaUrl:
-          type: string
-        mediaType:
-          $ref: '#/components/schemas/MimeType'
         author:
           type: string
+        mediaUrl:
+          type: string
+          format: uri
+        mediaType:
+          $ref: '#/components/schemas/MimeType'
         languageId:
           type: integer
         createdAt:
@@ -902,33 +972,28 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Question'
+    QuestionMinimizedArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/QuestionMinimized'
     QuestionCreateRequest:
       required:
-      - answer
+      - answerId
       - languageId
-      - question
+      - text
       type: object
       properties:
-        question:
+        text:
+          maximum: 200
+          minimum: 1
           type: string
-        answer:
-          maximum: 128
-          minimum: 6
-          type: string
-        questionMediaId:
-          type: string
-          format: uuid
-        answerMediaId:
+        answerId:
+          type: integer
+        mediaId:
           type: string
           format: uuid
         languageId:
           type: integer
-    QuestionCreateResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
     QuestionType:
       type: string
       enum:

@@ -2,8 +2,10 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,8 +15,9 @@ import (
 )
 
 type QuestionService interface {
-	Create(ctx context.Context, dto *question.CreateDTO) (*question.Question, error)
-	GetAll(ctx context.Context) ([]*question.Question, error)
+	Create(ctx context.Context, q *question.Question) (*question.Question, error)
+	GetById(ctx context.Context, questionId int) (*question.Detailed, error)
+	GetAll(ctx context.Context) ([]question.Minimized, error)
 }
 
 type questionHandler struct {
@@ -33,9 +36,12 @@ func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
 	questions := r.Group("questions")
 	{
 		questions.GET("", h.getAll)
+		questions.GET(":questionId", h.getById)
 	}
 
-	authenticated := questions.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	authenticated := questions.Group("",
+		sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
+		protectionMiddleware(d.Logger))
 	{
 		authenticated.POST("", h.create)
 	}
@@ -56,27 +62,63 @@ func (h *questionHandler) create(c *gin.Context) {
 		return
 	}
 
-	q, err := h.service.Create(c.Request.Context(), &question.CreateDTO{
-		Question:      r.Question,
-		MediaId:       r.MediaId,
-		Answer:        r.Answer,
-		AnswerImageId: r.AnswerImageId,
-		LanguageId:    r.LanguageId,
-		AccountId:     accountId,
-	})
+	q := question.Question{
+		Text:       r.Text,
+		AnswerId:   r.AnswerId,
+		AccountId:  accountId,
+		LanguageId: r.LanguageId,
+	}
+
+	if r.MediaId != "" {
+		q.MediaId = &r.MediaId
+	}
+
+	res, err := h.service.Create(c.Request.Context(), &q)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - question - create - h.service.Create :%w", err))
+		h.log.Error("http - v1 - question - create - h.service.Create :%w", err)
+
+		if errors.Is(err, question.ErrForeignKeyViolation) {
+			abortWithError(c, http.StatusBadRequest, question.ErrForeignKeyViolation, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, q)
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *questionHandler) getAll(c *gin.Context) {
-	q, err := h.service.GetAll(c.Request.Context())
+	qs, err := h.service.GetAll(c.Request.Context())
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - question - getAll - h.service.GetAll: %w", err))
+		h.log.Error("http - v1 - question - getAll - h.service.GetAll: %w", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, qs)
+}
+
+func (h *questionHandler) getById(c *gin.Context) {
+	s := c.Param("questionId")
+
+	questionId, err := strconv.Atoi(s)
+	if err != nil {
+		h.log.Error("http - v1 - question - getById: %w", err)
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	q, err := h.service.GetById(c.Request.Context(), questionId)
+	if err != nil {
+		h.log.Error("http - v1 - question - getById: %w", err)
+
+		if errors.Is(err, question.ErrNotFound) {
+			abortWithError(c, http.StatusNotFound, question.ErrNotFound, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
