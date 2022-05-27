@@ -513,7 +513,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionMinArray'
+                $ref: '#/components/schemas/QuestionMinimizedArray'
         "500":
           description: Internal Server Error.
     post:
@@ -533,7 +533,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionCreateResponse'
+                $ref: '#/components/schemas/Question'
         "400":
           description: Invalid request body.
           content:
@@ -571,7 +571,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Question'
+                $ref: '#/components/schemas/QuestionDetailed'
         "404":
           description: Not Found.
         "500":
@@ -916,6 +916,38 @@ components:
           type: integer
         text:
           type: string
+        answerId:
+          type: integer
+        accoundId:
+          type: string
+          format: uuid
+        mediaId:
+          type: string
+          format: uuid
+        languageId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    QuestionMinimized:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        languageId:
+          type: integer
+    QuestionDetailed:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
         answer:
           type: string
         answerImageUrl:
@@ -925,6 +957,7 @@ components:
           type: string
         mediaUrl:
           type: string
+          format: uri
         mediaType:
           $ref: '#/components/schemas/MimeType'
         languageId:
@@ -935,23 +968,14 @@ components:
         updatedAt:
           type: string
           format: date-time
-    QuestionMin:
-      type: object
-      properties:
-        id:
-          type: integer
-        text:
-          type: string
-        languageId:
-          type: integer
     QuestionArray:
       type: array
       items:
         $ref: '#/components/schemas/Question'
-    QuestionMinArray:
+    QuestionMinimizedArray:
       type: array
       items:
-        $ref: '#/components/schemas/QuestionMin'
+        $ref: '#/components/schemas/QuestionMinimized'
     QuestionCreateRequest:
       required:
       - answerId
@@ -969,11 +993,6 @@ components:
           type: string
           format: uuid
         languageId:
-          type: integer
-    QuestionCreateResponse:
-      type: object
-      properties:
-        id:
           type: integer
     QuestionType:
       type: string
