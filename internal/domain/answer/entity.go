@@ -24,9 +24,3 @@ func (a Answer) isMimeTypeAllowed(mt string) bool {
 
 	return allowed
 }
-
-func (a *Answer) setMediaId(s string) {
-	if s != "" {
-		a.MediaId = &s
-	}
-}

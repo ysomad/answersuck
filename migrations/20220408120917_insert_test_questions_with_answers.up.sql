@@ -28,7 +28,7 @@ VALUES ('Русский ответ 1', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
        ('English answer 11', NULL),
        ('English answer 12', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9');
 
-INSERT INTO question (question, answer_id, account_id, language_id, media_id)
+INSERT INTO question (text, answer_id, account_id, language_id, media_id)
 VALUES ('Русский вопрос 1', 1, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
        ('Русский вопрос 2', 2, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
        ('Русский вопрос 3', 3, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL),

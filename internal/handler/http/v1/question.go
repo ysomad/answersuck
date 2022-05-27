@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -35,7 +36,9 @@ func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
 		questions.GET("", h.getAll)
 	}
 
-	authenticated := questions.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	authenticated := questions.Group("",
+		sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
+		protectionMiddleware(d.Logger))
 	{
 		authenticated.POST("", h.create)
 	}
@@ -56,16 +59,26 @@ func (h *questionHandler) create(c *gin.Context) {
 		return
 	}
 
-	q, err := h.service.Create(c.Request.Context(), &question.CreateDTO{
-		Question:      r.Question,
-		MediaId:       r.MediaId,
-		Answer:        r.Answer,
-		AnswerImageId: r.AnswerImageId,
-		LanguageId:    r.LanguageId,
-		AccountId:     accountId,
-	})
+	dto := question.CreateDTO{
+		Text:       r.Text,
+		AnswerId:   r.AnswerId,
+		AccountId:  accountId,
+		LanguageId: r.LanguageId,
+	}
+
+	if r.MediaId != "" {
+		dto.MediaId = &r.MediaId
+	}
+
+	q, err := h.service.Create(c.Request.Context(), &dto)
 	if err != nil {
 		h.log.Error(fmt.Errorf("http - v1 - question - create - h.service.Create :%w", err))
+
+		if errors.Is(err, question.ErrForeignKeyViolation) {
+			abortWithError(c, http.StatusBadRequest, question.ErrForeignKeyViolation, "")
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

@@ -33,7 +33,10 @@ func NewService(l logging.Logger, r Repository, m MediaService) *service {
 
 func (s *service) Create(ctx context.Context, r CreateRequest) (Answer, error) {
 	a := Answer{Text: r.Text}
-	a.setMediaId(r.MediaId)
+
+	if r.MediaId != "" {
+		a.MediaId = &r.MediaId
+	}
 
 	if a.MediaId != nil {
 		mimeType, err := s.media.GetMimeTypeById(ctx, r.MediaId)

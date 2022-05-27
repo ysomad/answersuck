@@ -424,6 +424,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
       security:
@@ -477,14 +483,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Answer'
-        "401":
-          description: Unauthorized.
         "400":
           description: Invalid request body.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal Server Error.
       security:
@@ -521,7 +533,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionCreateResponse'
+                $ref: '#/components/schemas/Question'
         "400":
           description: Invalid request body.
           content:
@@ -875,21 +887,17 @@ components:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
         text:
           type: string
-        answer:
+        answerId:
+          type: integer
+        author:
           type: string
-        answerImageUrl:
-          type: string
-          format: uri
         mediaUrl:
           type: string
         mediaType:
           $ref: '#/components/schemas/MimeType'
-        author:
-          type: string
         languageId:
           type: integer
         createdAt:
@@ -904,31 +912,22 @@ components:
         $ref: '#/components/schemas/Question'
     QuestionCreateRequest:
       required:
-      - answer
+      - answerId
       - languageId
-      - question
+      - text
       type: object
       properties:
-        question:
+        text:
+          maximum: 200
+          minimum: 1
           type: string
-        answer:
-          maximum: 128
-          minimum: 6
-          type: string
-        questionMediaId:
-          type: string
-          format: uuid
-        answerMediaId:
+        answerId:
+          type: integer
+        mediaId:
           type: string
           format: uuid
         languageId:
           type: integer
-    QuestionCreateResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
     QuestionType:
       type: string
       enum:

@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, dto *CreateDTO) (*Question, error)
+	Save(ctx context.Context, dto *CreateDTO) (*Question, error)
 	FindAll(ctx context.Context) ([]*Question, error)
 }
 
@@ -26,7 +26,7 @@ func (s *service) Create(ctx context.Context, dto *CreateDTO) (*Question, error)
 	dto.CreatedAt = now
 	dto.UpdatedAt = now
 
-	q, err := s.repo.Create(ctx, dto)
+	q, err := s.repo.Save(ctx, dto)
 	if err != nil {
 		return nil, fmt.Errorf("questionService - Create - s.repo.Create: %w", err)
 	}

@@ -2,18 +2,19 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/answersuck/vault/internal/domain/question"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 const (
-	questionTable      = "question"
-	questionMediaTable = "question_media"
-	answerImageTable   = "answer_image"
+	questionTable = "question"
 )
 
 type questionPSQL struct {
@@ -28,34 +29,79 @@ func NewQuestionPSQL(l logging.Logger, c *postgres.Client) *questionPSQL {
 	}
 }
 
-func (r *questionPSQL) Create(ctx context.Context, dto *question.CreateDTO) (*question.Question, error) {
-	_ = fmt.Sprintf(`
-		INSERT INTO %s(question, answer_id, media_id, account_id, language_id, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id
+func (r *questionPSQL) Save(ctx context.Context, dto *question.CreateDTO) (*question.Question, error) {
+	sql := fmt.Sprintf(`
+		WITH q AS (
+			INSERT INTO %s(
+				 text, 
+				 answer_id, 
+				 account_id, 
+				 media_id, 
+				 language_id, 
+				 created_at, 
+				 updated_at
+			)
+			VALUES (
+				 $1::varchar, 
+				 $2::integer, 
+				 $3::uuid, 
+				 $4::uuid, 
+				 $5::integer, 
+				 $6::timestamptz, 
+				 $7::timestamptz
+			)
+			RETURNING id AS question_id, media_id, account_id
+		)
+		SELECT
+			q.question_id,
+			m.url AS media_url,
+			m.mime_type AS media_type,
+			a.username AS author
+		FROM q
+		LEFT JOIN media m ON m.id = q.media_id
+		INNER JOIN account a ON a.id = q.account_id
 	`, questionTable)
 
-	return nil, nil
+	r.log.Info("psql - question - Save: %s", sql)
+
+	var q question.Question
+
+	err := r.client.Pool.QueryRow(
+		ctx,
+		sql,
+		dto.Text,
+		dto.AnswerId,
+		dto.AccountId,
+		dto.MediaId,
+		dto.LanguageId,
+		dto.CreatedAt,
+		dto.UpdatedAt,
+	).Scan(&q.Id, &q.MediaURL, &q.MediaType, &q.Author)
+	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.ForeignKeyViolation {
+				return nil, fmt.Errorf("psql - r.client.Pool.QueryRow: %w", question.ErrForeignKeyViolation)
+			}
+		}
+
+		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow: %w", err)
+	}
+
+	q.Text = dto.Text
+	q.AnswerId = dto.AnswerId
+	q.LanguageId = dto.LanguageId
+	q.CreatedAt = dto.CreatedAt
+	q.UpdatedAt = dto.UpdatedAt
+
+	return &q, nil
 }
 
 func (r *questionPSQL) FindAll(ctx context.Context) ([]*question.Question, error) {
 	sql := fmt.Sprintf(`
-		SELECT
-			q.id,
-			q.question,
-			a.answer,
-			ai.url,
-			acc.username,
-			qm.url,
-			qm.type,
-			q.language_id,
-			q.created_at
-		FROM %s q
-		LEFT JOIN %s a ON a.id = q.answer_id
-		LEFT JOIN %s ai ON ai.id = a.answer_image_id
-		LEFT JOIN %s acc ON acc.id = q.account_id
-		LEFT JOIN %s qm ON qm.id = q.media_id
-	`, questionTable, answerTable, answerImageTable, accountTable, questionMediaTable)
+	
+	`, questionTable)
 
 	r.log.Info("psql - question - FindAll: %s", sql)
 
@@ -71,17 +117,7 @@ func (r *questionPSQL) FindAll(ctx context.Context) ([]*question.Question, error
 	for rows.Next() {
 		var q question.Question
 
-		if err = rows.Scan(
-			&q.Id,
-			&q.Text,
-			&q.Answer,
-			&q.AnswerImageURL,
-			&q.Author,
-			&q.MediaURL,
-			&q.MediaType,
-			&q.LanguageId,
-			&q.CreatedAt,
-		); err != nil {
+		if err = rows.Scan(); err != nil {
 			return nil, fmt.Errorf("rows.Scan: %w", err)
 		}
 
