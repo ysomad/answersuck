@@ -513,7 +513,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionArray'
+                $ref: '#/components/schemas/QuestionMinArray'
         "500":
           description: Internal Server Error.
     post:
@@ -533,7 +533,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Question'
+                $ref: '#/components/schemas/QuestionCreateResponse'
         "400":
           description: Invalid request body.
           content:
@@ -550,6 +550,32 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
+  /questions/{questionId}:
+    get:
+      tags:
+      - question
+      summary: Get question
+      operationId: questionGet
+      parameters:
+      - name: questionId
+        in: path
+        description: Integer ID of the question
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        "404":
+          description: Not Found.
+        "500":
+          description: Internal Server Error.
   /topics:
     get:
       tags:
@@ -890,8 +916,11 @@ components:
           type: integer
         text:
           type: string
-        answerId:
-          type: integer
+        answer:
+          type: string
+        answerImageUrl:
+          type: string
+          format: uri
         author:
           type: string
         mediaUrl:
@@ -906,10 +935,23 @@ components:
         updatedAt:
           type: string
           format: date-time
+    QuestionMin:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        languageId:
+          type: integer
     QuestionArray:
       type: array
       items:
         $ref: '#/components/schemas/Question'
+    QuestionMinArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/QuestionMin'
     QuestionCreateRequest:
       required:
       - answerId
@@ -927,6 +969,11 @@ components:
           type: string
           format: uuid
         languageId:
+          type: integer
+    QuestionCreateResponse:
+      type: object
+      properties:
+        id:
           type: integer
     QuestionType:
       type: string
