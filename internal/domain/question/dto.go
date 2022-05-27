@@ -9,10 +9,6 @@ type (
 		MediaId    string `json:"mediaId" binding:"omitempty,uuid4"`
 		LanguageId int    `json:"languageId" binding:"required,number"`
 	}
-
-	CreateResponse struct {
-		Id int `json:"id"`
-	}
 )
 
 type (

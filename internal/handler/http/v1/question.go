@@ -15,8 +15,8 @@ import (
 )
 
 type QuestionService interface {
-	Create(ctx context.Context, dto *question.CreateDTO) (int, error)
-	GetById(ctx context.Context, questionId int) (*question.Question, error)
+	Create(ctx context.Context, q *question.Question) (*question.Question, error)
+	GetById(ctx context.Context, questionId int) (*question.Detailed, error)
 	GetAll(ctx context.Context) ([]question.Minimized, error)
 }
 
@@ -62,7 +62,7 @@ func (h *questionHandler) create(c *gin.Context) {
 		return
 	}
 
-	dto := question.CreateDTO{
+	q := question.Question{
 		Text:       r.Text,
 		AnswerId:   r.AnswerId,
 		AccountId:  accountId,
@@ -70,10 +70,10 @@ func (h *questionHandler) create(c *gin.Context) {
 	}
 
 	if r.MediaId != "" {
-		dto.MediaId = &r.MediaId
+		q.MediaId = &r.MediaId
 	}
 
-	questionId, err := h.service.Create(c.Request.Context(), &dto)
+	res, err := h.service.Create(c.Request.Context(), &q)
 	if err != nil {
 		h.log.Error("http - v1 - question - create - h.service.Create :%w", err)
 
@@ -86,7 +86,7 @@ func (h *questionHandler) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, question.CreateResponse{Id: questionId})
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *questionHandler) getAll(c *gin.Context) {

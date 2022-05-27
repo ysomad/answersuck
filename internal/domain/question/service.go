@@ -3,12 +3,11 @@ package question
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 type Repository interface {
-	Save(ctx context.Context, dto *CreateDTO) (int, error)
-	FindById(ctx context.Context, questionId int) (*Question, error)
+	Save(ctx context.Context, q *Question) (int, error)
+	FindById(ctx context.Context, questionId int) (*Detailed, error)
 	FindAll(ctx context.Context) ([]Minimized, error)
 }
 
@@ -22,17 +21,17 @@ func NewService(r Repository) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, dto *CreateDTO) (int, error) {
-	now := time.Now()
-	dto.CreatedAt = now
-	dto.UpdatedAt = now
+func (s *service) Create(ctx context.Context, q *Question) (*Question, error) {
+	q.PrepareForSave()
 
-	questionId, err := s.repo.Save(ctx, dto)
+	questionId, err := s.repo.Save(ctx, q)
 	if err != nil {
-		return 0, fmt.Errorf("questionService - Create - s.repo.Create: %w", err)
+		return nil, fmt.Errorf("questionService - Create - s.repo.Save: %w", err)
 	}
 
-	return questionId, nil
+	q.Id = questionId
+
+	return q, nil
 }
 
 func (s *service) GetAll(ctx context.Context) ([]Minimized, error) {
@@ -44,7 +43,7 @@ func (s *service) GetAll(ctx context.Context) ([]Minimized, error) {
 	return q, nil
 }
 
-func (s *service) GetById(ctx context.Context, questionId int) (*Question, error) {
+func (s *service) GetById(ctx context.Context, questionId int) (*Detailed, error) {
 	q, err := s.repo.FindById(ctx, questionId)
 	if err != nil {
 		return nil, fmt.Errorf("questionService - GetById - s.repo.FindById: %w", err)

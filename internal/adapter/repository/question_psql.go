@@ -30,7 +30,7 @@ func NewQuestionPSQL(l logging.Logger, c *postgres.Client) *questionPSQL {
 	}
 }
 
-func (r *questionPSQL) Save(ctx context.Context, dto *question.CreateDTO) (int, error) {
+func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, error) {
 	sql := fmt.Sprintf(`
 		 INSERT INTO %s(
 			  text, 
@@ -60,13 +60,13 @@ func (r *questionPSQL) Save(ctx context.Context, dto *question.CreateDTO) (int, 
 	err := r.client.Pool.QueryRow(
 		ctx,
 		sql,
-		dto.Text,
-		dto.AnswerId,
-		dto.AccountId,
-		dto.MediaId,
-		dto.LanguageId,
-		dto.CreatedAt,
-		dto.UpdatedAt,
+		q.Text,
+		q.AnswerId,
+		q.AccountId,
+		q.MediaId,
+		q.LanguageId,
+		q.CreatedAt,
+		q.UpdatedAt,
 	).Scan(&questionId)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -120,7 +120,7 @@ func (r *questionPSQL) FindAll(ctx context.Context) ([]question.Minimized, error
 	return qs, nil
 }
 
-func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.Question, error) {
+func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			q.text::varchar,
@@ -142,7 +142,7 @@ func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.
 
 	r.log.Info("psql - question - FindById: %s", sql)
 
-	q := question.Question{Id: questionId}
+	q := question.Detailed{Id: questionId}
 
 	err := r.client.Pool.QueryRow(ctx, sql, questionId).Scan(
 		&q.Text,
