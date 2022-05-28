@@ -36,7 +36,7 @@ func (a *Account) CompareHashAndPassword() error {
 func (a *Account) generatePasswordHash() error {
 	b, err := bcrypt.GenerateFromPassword([]byte(a.Password), 11)
 	if err != nil {
-		return fmt.Errorf("bcrypt.GenerateFromPassword: %w", err)
+		return fmt.Errorf("bcrypt.generateFromPassword: %w", err)
 	}
 
 	a.PasswordHash = string(b)

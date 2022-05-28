@@ -44,14 +44,14 @@ func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, err
 	}
 
 	if err := m.generateId(); err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.GenerateId: %w", err)
+		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.generateId: %w", err)
 	}
 
 	filename := m.filenameFromId(dto.Filename)
 
 	tmp, err := m.newTempFile(filename, dto.Buf)
 	if err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.NewFileFromBuffer: %w", err)
+		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.newTempFile: %w", err)
 	}
 
 	defer m.deleteTempFile(filename)

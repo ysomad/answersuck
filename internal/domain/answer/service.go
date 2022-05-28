@@ -41,7 +41,7 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (Answer, error) {
 	if a.MediaId != nil {
 		mimeType, err := s.media.GetMimeTypeById(ctx, r.MediaId)
 		if err != nil {
-			return Answer{}, fmt.Errorf("answerService - Create - s.media.FindMimeTypeById: %w", err)
+			return Answer{}, fmt.Errorf("answerService - Create - s.media.GetMimeTypeById: %w", err)
 		}
 
 		if !a.isMimeTypeAllowed(mimeType) {
