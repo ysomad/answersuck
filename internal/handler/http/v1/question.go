@@ -3,7 +3,6 @@ package v1
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -57,7 +56,7 @@ func (h *questionHandler) create(c *gin.Context) {
 
 	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - question - create - getAccountId: %w", err))
+		h.log.Error("http - v1 - question - create - getAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
