@@ -42,12 +42,12 @@ func newAccountHandler(r *gin.RouterGroup, d *Deps) {
 	accounts := r.Group("accounts")
 	{
 		accounts.POST("", h.create)
-	}
-
-	authenticated := accounts.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-	{
-		authenticated.GET("", h.get)
-		authenticated.DELETE("", tokenMiddleware(d.Logger, d.AuthService), h.delete)
+		accounts.DELETE(
+			"",
+			sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
+			tokenMiddleware(d.Logger, d.AuthService),
+			h.delete,
+		)
 	}
 
 	verification := accounts.Group("verification")
@@ -71,7 +71,7 @@ func (h *accountHandler) create(c *gin.Context) {
 		return
 	}
 
-	a, err := h.service.Create(c.Request.Context(), r)
+	_, err := h.service.Create(c.Request.Context(), r)
 	if err != nil {
 		h.log.Error("http - v1 - account - create - h.service.Create: %w", err)
 
@@ -88,7 +88,7 @@ func (h *accountHandler) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, a)
+	c.Status(http.StatusNoContent)
 }
 
 func (h *accountHandler) delete(c *gin.Context) {
@@ -113,24 +113,6 @@ func (h *accountHandler) delete(c *gin.Context) {
 
 	c.SetCookie(h.cfg.Session.CookieKey, "", -1, "", "", h.cfg.Cookie.Secure, h.cfg.Cookie.HTTPOnly)
 	c.Status(http.StatusNoContent)
-}
-
-func (h *accountHandler) get(c *gin.Context) {
-	accountId, err := getAccountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - account - get - getAccountId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	a, err := h.service.GetById(c.Request.Context(), accountId)
-	if err != nil {
-		h.log.Error("http - v1 - account - get - h.service.GetById: %w", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusOK, a)
 }
 
 func (h *accountHandler) requestVerification(c *gin.Context) {

@@ -6,5 +6,5 @@ CREATE TABLE IF NOT EXISTS session
     user_agent       text                                               NOT NULL,
     ip               varchar(15)                                        NOT NULL,
     expires_at       bigint                                             NOT NULL,
-    created_at       timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL
+    created_at       timestamptz DEFAULT current_timestamp NOT NULL
 );

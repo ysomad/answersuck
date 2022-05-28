@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS media
     url          varchar(2048) NOT NULL,
     mime_type    mime_type     NOT NULL,
     account_id   uuid          NOT NULL       REFERENCES account (id),
-    created_at   timestamp     WITH TIME ZONE DEFAULT current_timestamp NOT NULL
+    created_at   timestamptz DEFAULT current_timestamp NOT NULL
 );
 
