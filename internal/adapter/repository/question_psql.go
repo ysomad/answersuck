@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/jackc/pgx/v4"
 
 	"github.com/answersuck/vault/internal/domain/question"
@@ -41,15 +42,7 @@ func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, err
 			  created_at, 
 			  updated_at
 		 )
-		 VALUES (
-			  $1::varchar, 
-			  $2::integer, 
-			  $3::uuid, 
-			  $4::uuid, 
-			  $5::integer, 
-			  $6::timestamptz, 
-			  $7::timestamptz
-		 )
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 RETURNING id
 	`, questionTable)
 
@@ -84,13 +77,7 @@ func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, err
 }
 
 func (r *questionPSQL) FindAll(ctx context.Context) ([]question.Minimized, error) {
-	sql := fmt.Sprintf(`
-		SELECT
-			q.id::integer,
-			q.text::varchar,
-			q.language_id::integer
-		FROM %s q
-	`, questionTable)
+	sql := fmt.Sprintf(`SELECT q.id, q.text, q.language_id FROM %s q`, questionTable)
 
 	r.log.Info("psql - question - FindAll: %s", sql)
 
@@ -123,22 +110,22 @@ func (r *questionPSQL) FindAll(ctx context.Context) ([]question.Minimized, error
 func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
 	sql := fmt.Sprintf(`
 		SELECT
-			q.text::varchar,
-			ans.text::varchar AS answer,
-			am.url::varchar AS answer_image_url,
-			acc.username::varchar AS author,
-			qm.url::varchar AS media_url,
-			qm.mime_type::mime_type AS media_type,
-			q.language_id::integer,
-			q.created_at::timestamptz,
-			q.updated_at::timestamptz
-		FROM question q
-		INNER JOIN account acc on acc.id = q.account_id
-		INNER JOIN answer ans on ans.id = q.answer_id
-		LEFT JOIN media qm on qm.id = q.media_id
-		LEFT JOIN media am on am.id = ans.image
-		WHERE q.id = $1::integer
-	`)
+			q.text,
+			ans.text AS answer,
+			am.url AS answer_image_url,
+			acc.username AS author,
+			qm.url AS media_url,
+			qm.mime_type AS media_type,
+			q.language_id,
+			q.created_at,
+			q.updated_at
+		FROM %s q
+		INNER JOIN %s acc on acc.id = q.account_id
+		INNER JOIN %s ans on ans.id = q.answer_id
+		LEFT JOIN %s qm on qm.id = q.media_id
+		LEFT JOIN %s am on am.id = ans.image
+		WHERE q.id = $1
+	`, questionTable, accountTable, answerTable, mediaTable, mediaTable)
 
 	r.log.Info("psql - question - FindById: %s", sql)
 
