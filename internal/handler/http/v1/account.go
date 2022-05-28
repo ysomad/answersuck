@@ -79,8 +79,8 @@ func (h *accountHandler) create(c *gin.Context) {
 		case errors.Is(err, account.ErrAlreadyExist):
 			abortWithError(c, http.StatusConflict, account.ErrAlreadyExist, "")
 			return
-		case errors.Is(err, account.ErrForbiddenUsername):
-			abortWithError(c, http.StatusBadRequest, account.ErrForbiddenUsername, "")
+		case errors.Is(err, account.ErrForbiddenNickname):
+			abortWithError(c, http.StatusBadRequest, account.ErrForbiddenNickname, "")
 			return
 		}
 

@@ -8,7 +8,7 @@ var (
 	ErrAlreadyArchived                = errors.New("account already archived or not found")
 	ErrIncorrectCredentials           = errors.New("incorrect login or password")
 	ErrAlreadyVerified                = errors.New("current email already verified or verification code is expired")
-	ErrForbiddenUsername              = errors.New("username contains forbidden words")
+	ErrForbiddenNickname              = errors.New("nickname contains forbidden words")
 	ErrNotFound                       = errors.New("account not found")
 	ErrEmptyVerificationCode          = errors.New("empty account verification code")
 	ErrEmptyPasswordResetToken        = errors.New("empty password reset token")

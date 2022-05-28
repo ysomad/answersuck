@@ -11,14 +11,14 @@ CREATE TABLE IF NOT EXISTS account
     PRIMARY KEY (id, nickname)
 );
 
-CREATE TABLE IF NOT EXISTS account_verification_code
+CREATE TABLE IF NOT EXISTS verification
 (
     id         serial          NOT NULL PRIMARY KEY,
     code       char(64) UNIQUE NOT NULL,
     account_id uuid UNIQUE     NOT NULL REFERENCES account (id)
 );
 
-CREATE TABLE IF NOT EXISTS account_password_reset_token
+CREATE TABLE IF NOT EXISTS password_token
 (
     id         serial                                             NOT NULL PRIMARY KEY,
     token      char(64) UNIQUE                                    NOT NULL,

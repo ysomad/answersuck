@@ -35,10 +35,10 @@ func NewAccountRepo(l logging.Logger, c *postgres.Client) *accountRepo {
 	}
 }
 
-func (r *accountRepo) Save(ctx context.Context, a *account.Account) (*account.Account, error) {
+func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string) (string, error) {
 	sql := fmt.Sprintf(`
 		WITH a AS (
-			INSERT INTO %s(username, email, password, is_verified, updated_at, created_at)
+			INSERT INTO %s(nickname, email, password, is_verified, updated_at, created_at)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id AS account_id
 		),
@@ -56,7 +56,7 @@ func (r *accountRepo) Save(ctx context.Context, a *account.Account) (*account.Ac
 	r.l.Info("psql - account - Save: %s", sql)
 
 	err := r.c.Pool.QueryRow(ctx, sql,
-		a.Username,
+		a.Nickname,
 		a.Email,
 		a.PasswordHash,
 		a.Verified,
@@ -106,7 +106,7 @@ func (r *accountRepo) FindById(ctx context.Context, accountId string) (*account.
 	a := account.Account{Id: accountId}
 
 	if err := r.c.Pool.QueryRow(ctx, sql, accountId, false).Scan(
-		&a.Username,
+		&a.Nickname,
 		&a.Email,
 		&a.PasswordHash,
 		&a.CreatedAt,
@@ -149,7 +149,7 @@ func (r *accountRepo) FindByEmail(ctx context.Context, email string) (*account.A
 
 	if err := r.c.Pool.QueryRow(ctx, sql, email, false).Scan(
 		&a.Id,
-		&a.Username,
+		&a.Nickname,
 		&a.PasswordHash,
 		&a.CreatedAt,
 		&a.UpdatedAt,
@@ -167,7 +167,7 @@ func (r *accountRepo) FindByEmail(ctx context.Context, email string) (*account.A
 	return &a, nil
 }
 
-func (r *accountRepo) FindByUsername(ctx context.Context, username string) (*account.Account, error) {
+func (r *accountRepo) FindByNickname(ctx context.Context, username string) (*account.Account, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			a.id,
@@ -187,7 +187,7 @@ func (r *accountRepo) FindByUsername(ctx context.Context, username string) (*acc
 
 	r.l.Info("psql - account - FindByUsername: %s", sql)
 
-	a := account.Account{Username: username}
+	a := account.Account{Nickname: username}
 
 	err := r.c.Pool.QueryRow(ctx, sql, username, false).Scan(
 		&a.Id,

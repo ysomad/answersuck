@@ -18,10 +18,10 @@ const (
 
 type (
 	Repository interface {
-		Save(ctx context.Context, a *Account) (*Account, error)
+		Save(ctx context.Context, a *Account, code string) (string, error)
 		FindById(ctx context.Context, accountId string) (*Account, error)
 		FindByEmail(ctx context.Context, email string) (*Account, error)
-		FindByUsername(ctx context.Context, username string) (*Account, error)
+		FindByNickname(ctx context.Context, nickname string) (*Account, error)
 		SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error
 
 		Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error
@@ -78,35 +78,34 @@ func (s *service) Create(ctx context.Context, r CreateRequest) (*Account, error)
 	now := time.Now()
 
 	a := &Account{
-		Username:  r.Username,
 		Email:     r.Email,
+		Nickname:  r.Nickname,
 		Password:  r.Password,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
 
-	if s.blocklist.Find(a.Username) {
-		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenUsername)
+	if s.blocklist.Find(a.Nickname) {
+		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenNickname)
 	}
 
 	if err := a.generatePasswordHash(); err != nil {
-		return nil, fmt.Errorf("accountService - Create - acc.GeneratePasswordHash: %w", err)
+		return nil, fmt.Errorf("accountService - Create - a.generatePasswordHash: %w", err)
 	}
 
-	a.setDiceBearAvatar()
-
-	if err := a.generateVerificationCode(verificationCodeLength); err != nil {
-		return nil, fmt.Errorf("accountService - Create - a.GenerateVerificationCode: %w", err)
+	c, err := a.generateVerificationCode(verificationCodeLength)
+	if err != nil {
+		return nil, fmt.Errorf("accountService - Create - a.generateVerificationCode: %w", err)
 	}
 
-	a, err := s.repo.Save(ctx, a)
+	a, err = s.repo.Save(ctx, a, c)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - Create - s.repo.Save: %w", err)
 	}
 
 	go func() {
 		// TODO: handle error
-		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, a.VerificationCode)
+		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, c)
 	}()
 
 	return a, nil

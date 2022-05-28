@@ -4,24 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
-
-	"github.com/answersuck/vault/pkg/dicebear"
 	"github.com/answersuck/vault/pkg/strings"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Account struct {
-	Id               string    `json:"id"`
-	Email            string    `json:"email"`
-	Username         string    `json:"username"`
-	Password         string    `json:"-"`
-	PasswordHash     string    `json:"-"`
-	Verified         bool      `json:"verified"`
-	VerificationCode string    `json:"-"`
-	Archived         bool      `json:"archived"`
-	AvatarURL        string    `json:"avatarUrl"`
-	CreatedAt        time.Time `json:"createdAt"`
-	UpdatedAt        time.Time `json:"updatedAt"`
+	Id           string    `json:"id"`
+	Email        string    `json:"email"`
+	Nickname     string    `json:"nickname"`
+	Password     string    `json:"-"`
+	PasswordHash string    `json:"-"`
+	Verified     bool      `json:"verified"`
+	Archived     bool      `json:"archived"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 func (a *Account) CompareHashAndPassword() error {
@@ -44,20 +40,8 @@ func (a *Account) generatePasswordHash() error {
 	return nil
 }
 
-// setDiceBearAvatar sets dicebear identicon url from username to account AvatarURL
-func (a *Account) setDiceBearAvatar() {
-	a.AvatarURL = dicebear.URL(a.Username)
-}
-
-func (a *Account) generateVerificationCode(length int) error {
-	code, err := strings.NewUnique(length)
-	if err != nil {
-		return fmt.Errorf("strings.NewUnique: %w", err)
-	}
-
-	a.VerificationCode = code
-
-	return nil
+func (a *Account) generateVerificationCode(length int) (string, error) {
+	return strings.NewUnique(length)
 }
 
 type PasswordResetToken struct {
