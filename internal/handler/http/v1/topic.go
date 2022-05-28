@@ -3,7 +3,6 @@ package v1
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -55,7 +54,7 @@ func (h *topicHandler) create(c *gin.Context) {
 
 	t, err := h.service.Create(c.Request.Context(), r)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - topic - create - h.service.Create: %w", err))
+		h.log.Error("http - v1 - topic - create - h.service.Create: %w", err)
 
 		if errors.Is(err, topic.ErrLanguageNotFound) {
 			abortWithError(c, http.StatusBadRequest, topic.ErrLanguageNotFound, "")
@@ -72,7 +71,7 @@ func (h *topicHandler) create(c *gin.Context) {
 func (h *topicHandler) getAll(c *gin.Context) {
 	t, err := h.service.GetAll(c.Request.Context())
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - topic - getAll - h.service.GetAll: %w", err))
+		h.log.Error("http - v1 - topic - getAll - h.service.GetAll: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

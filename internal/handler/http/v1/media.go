@@ -61,7 +61,7 @@ func (h *mediaHandler) upload(c *gin.Context) {
 	buf := make([]byte, fh.Size)
 
 	if _, err := f.Read(buf); err != nil {
-		h.log.Error("http - v1 - media - upload - file.Read: %w", err)
+		h.log.Error("http - v1 - media - upload - f.Read: %w", err)
 		abortWithError(c, http.StatusBadRequest, err, "")
 		return
 	}

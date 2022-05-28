@@ -3,7 +3,6 @@ package v1
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -75,7 +74,7 @@ func (h *authHandler) login(c *gin.Context) {
 
 	s, err := h.service.Login(c.Request.Context(), r.Login, r.Password, d)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - login - h.service.Login: %w", err))
+		h.log.Error("http - v1 - auth - login - h.service.Login: %w", err)
 
 		if errors.Is(err, account.ErrIncorrectPassword) || errors.Is(err, account.ErrNotFound) {
 			abortWithError(c, http.StatusUnauthorized, account.ErrIncorrectCredentials, "")
@@ -94,7 +93,7 @@ func (h *authHandler) logout(c *gin.Context) {
 	sessionId := getSessionId(c)
 
 	if err := h.service.Logout(c.Request.Context(), sessionId); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - logout - h.service.Logout: %w", err))
+		h.log.Error("http - v1 - auth - logout - h.service.Logout: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -114,7 +113,7 @@ func (h *authHandler) createToken(c *gin.Context) {
 
 	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token - GetAccountId: %w", err))
+		h.log.Error("http - v1 - auth - createToken - getAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -126,7 +125,7 @@ func (h *authHandler) createToken(c *gin.Context) {
 		strings.ToLower(r.Audience),
 	)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - auth - token - h.service.NewToken: %w", err))
+		h.log.Error("http - v1 - auth - createToken - h.service.NewToken: %w", err)
 
 		if errors.Is(err, account.ErrIncorrectPassword) {
 			c.AbortWithStatus(http.StatusForbidden)

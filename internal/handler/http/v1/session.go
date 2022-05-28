@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -52,14 +51,14 @@ func newSessionHandler(r *gin.RouterGroup, d *Deps) {
 func (h *sessionHandler) getAll(c *gin.Context) {
 	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - get - GetAccountId: %w", err))
+		h.log.Error("http - v1 - session - getAll - getAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	sessions, err := h.service.GetAll(c.Request.Context(), accountId)
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - get - h.service.GetAll: %w", err))
+		h.log.Error("http - v1 - session - getAll - h.service.GetAll: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -67,17 +66,21 @@ func (h *sessionHandler) getAll(c *gin.Context) {
 	c.JSON(http.StatusOK, sessions)
 }
 
+const (
+	paramSessionId = "sessionId"
+)
+
 func (h *sessionHandler) terminate(c *gin.Context) {
 	currSessionId := getSessionId(c)
 
-	sessionId := c.Param("sessionId")
+	sessionId := c.Param(paramSessionId)
 	if currSessionId == sessionId {
 		abortWithError(c, http.StatusBadRequest, session.ErrCannotBeTerminated, "")
 		return
 	}
 
 	if err := h.service.Terminate(c.Request.Context(), sessionId); err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - session - terminate - h.service.Terminate: %w", err))
+		h.log.Error("http - v1 - session - terminate - h.service.Terminate: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -88,7 +91,7 @@ func (h *sessionHandler) terminate(c *gin.Context) {
 func (h *sessionHandler) terminateAll(c *gin.Context) {
 	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - GetAccountId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - getAccountId: %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 

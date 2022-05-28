@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +35,7 @@ func newTagHandler(r *gin.RouterGroup, d *Deps) {
 func (h *tagHandler) getAll(c *gin.Context) {
 	t, err := h.service.GetAll(c.Request.Context())
 	if err != nil {
-		h.log.Error(fmt.Errorf("http - v1 - tag - getAll - h.service.GetAll: %w", err))
+		h.log.Error("http - v1 - tag - getAll - h.service.GetAll: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
