@@ -12,7 +12,7 @@ import (
 
 	"github.com/answersuck/vault/internal/config"
 
-	"github.com/answersuck/vault/internal/adapter/repository"
+	"github.com/answersuck/vault/internal/adapter/repository/psql"
 	"github.com/answersuck/vault/internal/adapter/smtp"
 	"github.com/answersuck/vault/internal/adapter/storage"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
@@ -59,7 +59,7 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
-	sessionRepo := repository.NewSessionPSQL(l, pg)
+	sessionRepo := psql.NewSessionRepo(l, pg)
 	sessionService := session.NewService(&cfg.Session, sessionRepo)
 
 	emailClient, err := smtp.NewClient(&smtp.ClientOptions{
@@ -81,7 +81,7 @@ func Run(configPath string) {
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
-	accountRepo := repository.NewAccountPSQL(l, pg)
+	accountRepo := psql.NewAccountRepo(l, pg)
 	accountService := account.NewService(&account.Deps{
 		Config:         &cfg,
 		AccountRepo:    accountRepo,
@@ -98,16 +98,16 @@ func Run(configPath string) {
 		SessionService: sessionService,
 	})
 
-	languageRepo := repository.NewLanguagePSQL(l, pg)
+	languageRepo := psql.NewLanguageRepo(l, pg)
 	languageService := language.NewService(languageRepo)
 
-	tagRepo := repository.NewTagPSQL(l, pg)
+	tagRepo := psql.NewTagRepo(l, pg)
 	tagService := tag.NewService(tagRepo)
 
-	topicRepo := repository.NewTopicPSQL(l, pg)
+	topicRepo := psql.NewTopicRepo(l, pg)
 	topicService := topic.NewService(topicRepo)
 
-	questionRepo := repository.NewQuestionPSQL(l, pg)
+	questionRepo := psql.NewQuestionRepo(l, pg)
 	questionService := question.NewService(questionRepo)
 
 	ginTranslator, err := validation.NewGinTranslator()
@@ -120,10 +120,10 @@ func Run(configPath string) {
 		l.Fatal(fmt.Errorf("app - Run - storage.NewProvider: %w", err))
 	}
 
-	mediaRepo := repository.NewMediaPSQL(l, pg)
+	mediaRepo := psql.NewMediaRepo(l, pg)
 	mediaService := media.NewService(mediaRepo, storageProvider)
 
-	answerRepo := repository.NewAnswerPSQL(l, pg)
+	answerRepo := psql.NewAnswerRepo(l, pg)
 	answerService := answer.NewService(l, answerRepo, mediaService)
 
 	// HTTP Server

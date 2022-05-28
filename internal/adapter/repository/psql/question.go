@@ -1,4 +1,4 @@
-package repository
+package psql
 
 import (
 	"context"
@@ -19,19 +19,19 @@ const (
 	questionTable = "question"
 )
 
-type questionPSQL struct {
-	log    logging.Logger
-	client *postgres.Client
+type questionRepo struct {
+	l logging.Logger
+	c *postgres.Client
 }
 
-func NewQuestionPSQL(l logging.Logger, c *postgres.Client) *questionPSQL {
-	return &questionPSQL{
-		log:    l,
-		client: c,
+func NewQuestionRepo(l logging.Logger, c *postgres.Client) *questionRepo {
+	return &questionRepo{
+		l: l,
+		c: c,
 	}
 }
 
-func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, error) {
+func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, error) {
 	sql := fmt.Sprintf(`
 		 INSERT INTO %s(
 			  text, 
@@ -46,11 +46,11 @@ func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, err
 		 RETURNING id
 	`, questionTable)
 
-	r.log.Info("psql - question - Save: %s", sql)
+	r.l.Info("psql - question - Save: %s", sql)
 
 	var questionId int
 
-	err := r.client.Pool.QueryRow(
+	err := r.c.Pool.QueryRow(
 		ctx,
 		sql,
 		q.Text,
@@ -66,24 +66,24 @@ func (r *questionPSQL) Save(ctx context.Context, q *question.Question) (int, err
 
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.ForeignKeyViolation {
-				return 0, fmt.Errorf("psql - r.client.Pool.QueryRow: %w", question.ErrForeignKeyViolation)
+				return 0, fmt.Errorf("psql - question - Save - r.c.Pool.QueryRow.Scan: %w", question.ErrForeignKeyViolation)
 			}
 		}
 
-		return 0, fmt.Errorf("psql - r.client.Pool.QueryRow: %w", err)
+		return 0, fmt.Errorf("psql - question - Save - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return questionId, nil
 }
 
-func (r *questionPSQL) FindAll(ctx context.Context) ([]question.Minimized, error) {
+func (r *questionRepo) FindAll(ctx context.Context) ([]question.Minimized, error) {
 	sql := fmt.Sprintf(`SELECT q.id, q.text, q.language_id FROM %s q`, questionTable)
 
-	r.log.Info("psql - question - FindAll: %s", sql)
+	r.l.Info("psql - question - FindAll: %s", sql)
 
-	rows, err := r.client.Pool.Query(ctx, sql)
+	rows, err := r.c.Pool.Query(ctx, sql)
 	if err != nil {
-		return nil, fmt.Errorf("psql - r.client.Pool.Query.Scan: %w", err)
+		return nil, fmt.Errorf("psql - question - FindAll - r.c.Pool.Query: %w", err)
 	}
 
 	defer rows.Close()
@@ -94,20 +94,20 @@ func (r *questionPSQL) FindAll(ctx context.Context) ([]question.Minimized, error
 		var q question.Minimized
 
 		if err = rows.Scan(&q.Id, &q.Text, &q.LanguageId); err != nil {
-			return nil, fmt.Errorf("psql - rows.Scan: %w", err)
+			return nil, fmt.Errorf("psql - question - FindAll - rows.Scan: %w", err)
 		}
 
 		qs = append(qs, q)
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("psql - rows.Err: %w", err)
+		return nil, fmt.Errorf("psql - question - FindAll - rows.Err: %w", err)
 	}
 
 	return qs, nil
 }
 
-func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
+func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
 	sql := fmt.Sprintf(`
 		SELECT
 			q.text,
@@ -127,11 +127,11 @@ func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.
 		WHERE q.id = $1
 	`, questionTable, accountTable, answerTable, mediaTable, mediaTable)
 
-	r.log.Info("psql - question - FindById: %s", sql)
+	r.l.Info("psql - question - FindById: %s", sql)
 
 	q := question.Detailed{Id: questionId}
 
-	err := r.client.Pool.QueryRow(ctx, sql, questionId).Scan(
+	err := r.c.Pool.QueryRow(ctx, sql, questionId).Scan(
 		&q.Text,
 		&q.Answer,
 		&q.AnswerImageURL,
@@ -145,10 +145,10 @@ func (r *questionPSQL) FindById(ctx context.Context, questionId int) (*question.
 	if err != nil {
 
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", question.ErrNotFound)
+			return nil, fmt.Errorf("psql - question - FindById - r.c.Pool.QueryRow.Scan: %w", question.ErrNotFound)
 		}
 
-		return nil, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - question - FindById - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return &q, nil

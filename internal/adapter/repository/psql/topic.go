@@ -1,4 +1,4 @@
-package repository
+package psql
 
 import (
 	"context"
@@ -16,28 +16,28 @@ import (
 
 const topicTable = "topic"
 
-type topicPSQL struct {
-	log    logging.Logger
-	client *postgres.Client
+type topicRepo struct {
+	l logging.Logger
+	c *postgres.Client
 }
 
-func NewTopicPSQL(l logging.Logger, c *postgres.Client) *topicPSQL {
-	return &topicPSQL{
-		log:    l,
-		client: c,
+func NewTopicRepo(l logging.Logger, c *postgres.Client) *topicRepo {
+	return &topicRepo{
+		l: l,
+		c: c,
 	}
 }
 
-func (r *topicPSQL) Save(ctx context.Context, t topic.Topic) (topic.Topic, error) {
+func (r *topicRepo) Save(ctx context.Context, t topic.Topic) (topic.Topic, error) {
 	sql := fmt.Sprintf(`
 		INSERT INTO %s(name, language_id, created_at, updated_at)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`, topicTable)
 
-	r.log.Info("psql - topic - Create: %s", sql)
+	r.l.Info("psql - topic - Save: %s", sql)
 
-	if err := r.client.Pool.QueryRow(ctx, sql,
+	if err := r.c.Pool.QueryRow(ctx, sql,
 		t.Name,
 		t.LanguageId,
 		t.CreatedAt,
@@ -47,17 +47,17 @@ func (r *topicPSQL) Save(ctx context.Context, t topic.Topic) (topic.Topic, error
 
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.ForeignKeyViolation {
-				return topic.Topic{}, fmt.Errorf("psql - r.client.Pool.QueryRow.Scan: %w", topic.ErrLanguageNotFound)
+				return topic.Topic{}, fmt.Errorf("psql - topic - Save - r.c.Pool.QueryRow.Scan: %w", topic.ErrLanguageNotFound)
 			}
 		}
 
-		return topic.Topic{}, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+		return topic.Topic{}, fmt.Errorf("psql - topic - Save - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return t, nil
 }
 
-func (r *topicPSQL) FindAll(ctx context.Context) ([]*topic.Topic, error) {
+func (r *topicRepo) FindAll(ctx context.Context) ([]*topic.Topic, error) {
 	sql := fmt.Sprintf(`
 		SELECT 
 			id, 
@@ -68,11 +68,11 @@ func (r *topicPSQL) FindAll(ctx context.Context) ([]*topic.Topic, error) {
 		FROM %s
 	`, topicTable)
 
-	r.log.Info("psql - topic - FindAll: %s", sql)
+	r.l.Info("psql - topic - FindAll: %s", sql)
 
-	rows, err := r.client.Pool.Query(ctx, sql)
+	rows, err := r.c.Pool.Query(ctx, sql)
 	if err != nil {
-		return nil, fmt.Errorf("r.client.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - topic - FindAll - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
 	defer rows.Close()
@@ -83,14 +83,14 @@ func (r *topicPSQL) FindAll(ctx context.Context) ([]*topic.Topic, error) {
 		var t topic.Topic
 
 		if err = rows.Scan(&t.Id, &t.Name, &t.LanguageId, &t.CreatedAt, &t.UpdatedAt); err != nil {
-			return nil, fmt.Errorf("rows.Scan: %w", err)
+			return nil, fmt.Errorf("psql - topic - FindAll - rows.Scan: %w", err)
 		}
 
 		topics = append(topics, &t)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows.Err: %w", err)
+		return nil, fmt.Errorf("psql - topic - FindAll - rows.Err: %w", err)
 	}
 
 	return topics, nil
