@@ -64,7 +64,7 @@ func (h *sessionHandler) getAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, sessions)
+	c.JSON(http.StatusOK, listResponse{Result: sessions})
 }
 
 const (

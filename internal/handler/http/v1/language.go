@@ -40,5 +40,5 @@ func (h *languageHandler) getAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, l)
+	c.JSON(http.StatusOK, listResponse{Result: l})
 }

@@ -30,6 +30,10 @@ type Deps struct {
 	PlayerService   PlayerService
 }
 
+type listResponse struct {
+	Result any `json:"result"`
+}
+
 func NewHandler(r *gin.Engine, d *Deps) {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())

@@ -95,7 +95,7 @@ func (h *questionHandler) getAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, qs)
+	c.JSON(http.StatusOK, listResponse{Result: qs})
 }
 
 func (h *questionHandler) getById(c *gin.Context) {

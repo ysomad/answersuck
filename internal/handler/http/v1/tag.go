@@ -40,5 +40,5 @@ func (h *tagHandler) getAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, t)
+	c.JSON(http.StatusOK, listResponse{Result: t})
 }
