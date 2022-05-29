@@ -486,13 +486,19 @@ paths:
       - tag
       summary: Create tags
       operationId: tagCreateMultiple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tags_body'
+        required: true
       responses:
         "200":
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TagArray'
+                $ref: '#/components/schemas/inline_response_200_1'
         "500":
           description: Internal Server Error.
   /languages:
@@ -853,7 +859,17 @@ components:
       items:
         $ref: '#/components/schemas/Tag'
     TagCreateRequest:
+      required:
+      - languageId
+      - name
       type: object
+      properties:
+        name:
+          maximum: 32
+          minimum: 1
+          type: string
+        languageId:
+          type: integer
     Language:
       type: object
       properties:
@@ -1158,6 +1174,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/TagArray'
+    tags_body:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagCreateRequest'
     inline_response_200_2:
       type: object
       properties:
