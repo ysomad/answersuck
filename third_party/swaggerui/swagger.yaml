@@ -63,7 +63,7 @@ paths:
     delete:
       tags:
       - account
-      summary: Archive account
+      summary: Delete account
       description: Only account with state set to `isArchive=false` can be deleted. Security token should be provided at query param, request it at `/auth/token/`.
       operationId: accountDelete
       parameters:
@@ -246,14 +246,14 @@ paths:
     post:
       tags:
       - auth
-      summary: Log in account
-      description: Creates new session and sets its id in cookies. Login might be email or username.
+      summary: Login
+      description: Creates new session and sets its id in cookies. Login might be email or nickname.
       operationId: sessionCreate
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SessionCreateRequest'
+              $ref: '#/components/schemas/LoginRequest'
         required: true
       responses:
         "200":
@@ -284,7 +284,7 @@ paths:
       tags:
       - auth
       summary: Request security token
-      description: Request short live token which can be used to perform protected operations. Each token can be accepted by only one resource. Resource URI example - `localhost:8080/api/v1/sessions/:sessionId`
+      description: Request short live token which can be used to perform protected operations. Each token can be accepted by only one resource. Resource URI example - `localhost:8080/api/sessions/:sessionId`
       operationId: authToken
       requestBody:
         content:
@@ -796,7 +796,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Session'
-    SessionCreateRequest:
+    LoginRequest:
       required:
       - login
       - password
