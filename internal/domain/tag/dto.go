@@ -7,6 +7,6 @@ type (
 	}
 
 	CreateMultipleRequest struct {
-		Tags []CreateRequest `json:"tags" binding:"required"`
+		Tags []CreateRequest `json:"tags" binding:"required,min=1,max=10"`
 	}
 )
