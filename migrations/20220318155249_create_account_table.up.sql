@@ -1,14 +1,13 @@
 CREATE TABLE IF NOT EXISTS account
 (
-    id          uuid UNIQUE       DEFAULT gen_random_uuid() NOT NULL,
+    id          uuid PRIMARY KEY       DEFAULT gen_random_uuid() NOT NULL,
     email       varchar(255) UNIQUE                                NOT NULL,
     nickname    varchar(25) UNIQUE NOT NULL,
     password    varchar(255)                                       NOT NULL,
     is_verified boolean                  DEFAULT FALSE             NOT NULL,
     is_archived boolean                  DEFAULT FALSE             NOT NULL,
     created_at  timestamptz DEFAULT current_timestamp NOT NULL,
-    updated_at  timestamptz DEFAULT current_timestamp NOT NULL,
-    PRIMARY KEY (id, nickname)
+    updated_at  timestamptz DEFAULT current_timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS verification

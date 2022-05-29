@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS player
 (
     id       uuid        NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
-    nickname varchar(25) NOT NULL UNIQUE REFERENCES account (nickname)
+    account_id uuid NOT NULL UNIQUE REFERENCES account (id)
 );
 
 CREATE TABLE IF NOT EXISTS player_avatar
