@@ -11,7 +11,6 @@ import (
 
 const (
 	accountIdKey = "accountId"
-	nicknameKey  = "nickname"
 	sessionIdKey = "sessionId"
 	audienceKey  = "audience"
 	deviceKey    = "device"
@@ -19,7 +18,6 @@ const (
 
 var (
 	errAccountIdNotFound = errors.New("account id not found in context")
-	errNicknameNotFound  = errors.New("account nickname not found in context")
 	errSessionIdNotFound = errors.New("session id not found in context")
 )
 
@@ -33,15 +31,6 @@ func getAccountId(c *gin.Context) (string, error) {
 	}
 
 	return accountId, nil
-}
-
-func getNickname(c *gin.Context) (string, error) {
-	n := c.GetString(nicknameKey)
-	if n == "" {
-		return "", errNicknameNotFound
-	}
-
-	return n, nil
 }
 
 // getSessionId returns session id from context

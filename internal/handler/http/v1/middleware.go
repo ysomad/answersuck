@@ -75,7 +75,6 @@ func protectionMiddleware(l logging.Logger, cfg *config.Session, s SessionServic
 
 		c.Set(sessionIdKey, sess.Session.Id)
 		c.Set(accountIdKey, sess.Session.AccountId)
-		c.Set(nicknameKey, sess.Nickname)
 		c.Next()
 	}
 }

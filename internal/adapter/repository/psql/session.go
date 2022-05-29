@@ -108,7 +108,6 @@ func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId stri
 			s.max_age,
 			s.expires_at,
 			s.created_at,
-			a.nickname,
 			a.is_verified
 		FROM session s
 		INNER JOIN account a
@@ -130,7 +129,6 @@ func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId stri
 		&s.MaxAge,
 		&s.ExpiresAt,
 		&s.CreatedAt,
-		&d.Nickname,
 		&d.Verified,
 	)
 	if err != nil {
