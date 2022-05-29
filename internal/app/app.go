@@ -87,7 +87,7 @@ func Run(configPath string) {
 		AccountRepo:    accountRepo,
 		SessionService: sessionService,
 		EmailService:   emailService,
-		Blocklist:      usernameBlockList,
+		BlockList:      usernameBlockList,
 	})
 
 	authService := auth.NewService(&auth.Deps{

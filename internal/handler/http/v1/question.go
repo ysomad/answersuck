@@ -39,8 +39,7 @@ func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
 	}
 
 	authenticated := questions.Group("",
-		sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
-		protectionMiddleware(d.Logger))
+		protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 	{
 		authenticated.POST("", h.create)
 	}

@@ -16,7 +16,7 @@ type (
 	}
 
 	SetPasswordRequest struct {
-		Password string `json:"password" binding:"required,gte=8,lte=64"`
+		Password string `json:"password" binding:"required,gte=8,lte=71"`
 	}
 )
 
@@ -28,17 +28,9 @@ type (
 	}
 
 	SetPasswordDTO struct {
-		AccountId    string
-		Token        string
-		PasswordHash string
-		UpdatedAt    time.Time
-	}
-
-	sendEmailDTO struct {
-		To         string
-		Subject    string
-		Template   string
-		Format     string
-		FormatArgs []any
+		AccountId string
+		Password  string
+		Token     string
+		UpdatedAt time.Time
 	}
 )

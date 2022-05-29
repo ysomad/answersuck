@@ -4,54 +4,63 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/answersuck/vault/pkg/strings"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/answersuck/vault/pkg/strings"
 )
 
 type Account struct {
-	Id           string    `json:"id"`
-	Email        string    `json:"email"`
-	Nickname     string    `json:"nickname"`
-	Password     string    `json:"-"`
-	PasswordHash string    `json:"-"`
-	Verified     bool      `json:"verified"`
-	Archived     bool      `json:"archived"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	Id        string    `json:"id"`
+	Email     string    `json:"email"`
+	Nickname  string    `json:"nickname"`
+	Password  string    `json:"-"`
+	Verified  bool      `json:"verified"`
+	Archived  bool      `json:"archived"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func (a *Account) CompareHashAndPassword() error {
-	if err := bcrypt.CompareHashAndPassword([]byte(a.PasswordHash), []byte(a.Password)); err != nil {
+func (a *Account) ComparePasswords(p string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(p)); err != nil {
 		return fmt.Errorf("bcrypt.CompareHashAndPassword: %w", ErrIncorrectPassword)
 	}
 
 	return nil
 }
 
-// generatePasswordHash generates hash from password and sets it to PasswordHash
-func (a *Account) generatePasswordHash() error {
-	b, err := bcrypt.GenerateFromPassword([]byte(a.Password), 11)
+// setPassword hashes given password and sets it to password field
+func (a *Account) setPassword(p string) error {
+	ph, err := generatePasswordHash(p)
 	if err != nil {
-		return fmt.Errorf("bcrypt.generateFromPassword: %w", err)
+		return fmt.Errorf("generatePasswordHash: %w", err)
 	}
 
-	a.PasswordHash = string(b)
+	a.Password = ph
 
 	return nil
 }
 
-func (a *Account) generateVerificationCode(length int) (string, error) {
+func generatePasswordHash(p string) (string, error) {
+	b, err := bcrypt.GenerateFromPassword([]byte(p), 11)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+func (a *Account) generateVerifCode(length int) (string, error) {
 	return strings.NewUnique(length)
 }
 
-type PasswordResetToken struct {
+type PasswordToken struct {
 	AccountId string
 	Token     string
 	CreatedAt time.Time
 }
 
 // checkExpiration returns error if token is expired
-func (t PasswordResetToken) checkExpiration(exp time.Duration) error {
+func (t PasswordToken) checkExpiration(exp time.Duration) error {
 	expiresAt := t.CreatedAt.Add(exp)
 
 	if time.Now().After(expiresAt) {

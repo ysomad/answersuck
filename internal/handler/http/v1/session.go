@@ -14,6 +14,7 @@ import (
 
 type SessionService interface {
 	GetByIdWithVerified(ctx context.Context, sessionId string) (*session.SessionWithVerified, error)
+	GetById(ctx context.Context, sessionId string) (*session.Session, error)
 	GetAll(ctx context.Context, accountId string) ([]*session.Session, error)
 	Terminate(ctx context.Context, sessionId string) error
 	TerminateWithExcept(ctx context.Context, accountId, sessionId string) error

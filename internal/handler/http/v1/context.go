@@ -9,11 +9,10 @@ import (
 )
 
 const (
-	accountIdKey       = "accountId"
-	sessionIdKey       = "sessionId"
-	audienceKey        = "audience"
-	deviceKey          = "device"
-	accountVerifiedKey = "accountVerified"
+	accountIdKey = "accountId"
+	sessionIdKey = "sessionId"
+	audienceKey  = "audience"
+	deviceKey    = "device"
 )
 
 // getAccountId returns account id from context
@@ -43,19 +42,4 @@ func getDevice(c *gin.Context) (session.Device, error) {
 	}
 
 	return d, nil
-}
-
-// getAccountVerified return flag indicates is account verified or not from context
-func getAccountVerified(c *gin.Context) (bool, error) {
-	v, exists := c.Get(accountVerifiedKey)
-	if !exists {
-		return false, session.ErrAccountVerifiedContextNotFound
-	}
-
-	a, ok := v.(bool)
-	if !ok {
-		return false, session.ErrAccountVerifiedContextNotFound
-	}
-
-	return a, nil
 }

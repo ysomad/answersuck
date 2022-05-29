@@ -15,8 +15,6 @@ import (
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
-const sessionTable = "session"
-
 type sessionRepo struct {
 	l logging.Logger
 	c *postgres.Client
@@ -30,10 +28,10 @@ func NewSessionRepo(l logging.Logger, c *postgres.Client) *sessionRepo {
 }
 
 func (r *sessionRepo) Save(ctx context.Context, s *session.Session) error {
-	sql := fmt.Sprintf(`
-		INSERT INTO %s (id, account_id, max_age, user_agent, ip, expires_at, created_at)
+	sql := `
+		INSERT INTO session (id, account_id, max_age, user_agent, ip, expires_at, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`, sessionTable)
+	`
 
 	r.l.Info("psql - session - Save: %s", sql)
 
@@ -65,21 +63,21 @@ func (r *sessionRepo) Save(ctx context.Context, s *session.Session) error {
 }
 
 func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*session.Session, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		SELECT
-			s.account_id,
-			s.user_agent,
-			s.ip,
-			s.max_age,
-			s.expires_at,
-			s.created_at
-		FROM %s s
-		WHERE s.id = $1
-	`, sessionTable)
+			account_id,
+			user_agent,
+			ip,
+			max_age,
+			expires_at,
+			created_at
+		FROM session
+		WHERE id = $1
+	`
 
 	r.l.Info("psql - session - FindById: %s", sql)
 
-	s := session.Session{Id: sessionId}
+	var s session.Session
 
 	if err := r.c.Pool.QueryRow(ctx, sql, sessionId).Scan(
 		&s.AccountId,
@@ -96,11 +94,13 @@ func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*session.
 		return nil, fmt.Errorf("psql - session - FindById - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
+	s.Id = sessionId
+
 	return &s, nil
 }
 
 func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string) (*session.SessionWithVerified, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		SELECT
 			s.account_id,
 			s.user_agent,
@@ -109,28 +109,27 @@ func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string
 			s.expires_at,
 			s.created_at,
 			a.is_verified
-		FROM %s s
-		INNER JOIN %s a
+		FROM session s
+		INNER JOIN account a
 		ON s.account_id = a.id
 		WHERE s.id = $1
-	`, sessionTable, accountTable)
+	`
 
 	r.l.Info("psql - session - FindByIdWithVerified: %s", sql)
 
-	s := session.SessionWithVerified{
-		Session: session.Session{
-			Id: sessionId,
-		},
-	}
+	var (
+		s  session.Session
+		sv session.SessionWithVerified
+	)
 
 	err := r.c.Pool.QueryRow(ctx, sql, sessionId).Scan(
-		&s.Session.AccountId,
-		&s.Session.UserAgent,
-		&s.Session.IP,
-		&s.Session.MaxAge,
-		&s.Session.ExpiresAt,
-		&s.Session.CreatedAt,
-		&s.AccountVerified,
+		&s.AccountId,
+		&s.UserAgent,
+		&s.IP,
+		&s.MaxAge,
+		&s.ExpiresAt,
+		&s.CreatedAt,
+		&sv.AccountVerified,
 	)
 	if err != nil {
 
@@ -141,11 +140,13 @@ func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string
 		return nil, fmt.Errorf("psql - session - FindByIdWithVerified - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return &s, nil
+	sv.Session = s
+
+	return &sv, nil
 }
 
 func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session.Session, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		SELECT
 			id,
 			account_id,
@@ -154,9 +155,9 @@ func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session
    			ip,
    			expires_at,
 			created_at
-		FROM %s
+		FROM session
 		WHERE account_id = $1
-	`, sessionTable)
+	`
 
 	r.l.Info("psql - session - FindAll: %s", sql)
 
@@ -195,9 +196,9 @@ func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session
 }
 
 func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
-	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = $1`, sessionTable)
+	sql := "DELETE FROM session WHERE id = $1"
 
-	r.l.Info("psql - session - Delete: %s", sql)
+	r.l.Info("psql - session - Delete: %s", sql+sessionId)
 
 	ct, err := r.c.Pool.Exec(ctx, sql, sessionId)
 	if err != nil {
@@ -212,7 +213,7 @@ func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
 }
 
 func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
-	sql := fmt.Sprintf(`DELETE FROM %s WHERE account_id = $1 AND id != $2`, sessionTable)
+	sql := "DELETE FROM session WHERE account_id = $1 AND id != $2"
 
 	r.l.Info("psql - session - DeleteWithExcept: %s", sql)
 
@@ -229,7 +230,7 @@ func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId
 }
 
 func (r *sessionRepo) DeleteAll(ctx context.Context, accountId string) error {
-	sql := fmt.Sprintf(`DELETE FROM %s WHERE account_id = $1`, sessionTable)
+	sql := "DELETE FROM session WHERE account_id = $1"
 
 	r.l.Info("psql - session - DeleteAll: %s", sql)
 

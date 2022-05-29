@@ -15,10 +15,11 @@ import (
 
 type AccountService interface {
 	Create(ctx context.Context, req account.CreateRequest) (*account.Account, error)
-	GetById(ctx context.Context, accountId string) (*account.Account, error)
 	Delete(ctx context.Context, accountId string) error
+
 	RequestVerification(ctx context.Context, accountId string) error
-	Verify(ctx context.Context, code string, verified bool) error
+	Verify(ctx context.Context, code string) error
+
 	ResetPassword(ctx context.Context, login string) error
 	SetPassword(ctx context.Context, token, password string) error
 }
@@ -102,7 +103,7 @@ func (h *accountHandler) delete(c *gin.Context) {
 	if err = h.service.Delete(c.Request.Context(), accountId); err != nil {
 		h.log.Error("http - v1 - account - delete - h.service.Delete: %w", err)
 
-		if errors.Is(err, account.ErrNotArchived) {
+		if errors.Is(err, account.ErrNotDeleted) {
 			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyArchived, "")
 			return
 		}
@@ -118,7 +119,7 @@ func (h *accountHandler) delete(c *gin.Context) {
 func (h *accountHandler) requestVerification(c *gin.Context) {
 	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error("http - v1 - account - requestVerification - getAccountId: %w", err)
+		h.log.Error("http - v1 - account - requestVerification - getAccountId %w", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -149,7 +150,7 @@ func (h *accountHandler) verify(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Verify(c.Request.Context(), code, true); err != nil {
+	if err := h.service.Verify(c.Request.Context(), code); err != nil {
 		h.log.Error("http - v1 - account - verify - h.service.Verify: %w", err)
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
@@ -209,7 +210,7 @@ func (h *accountHandler) setPassword(c *gin.Context) {
 		h.log.Error("http - v1 - account - setPassword - h.service.SetPassword: %w", err)
 
 		if errors.Is(err, account.ErrPasswordResetTokenExpired) ||
-			errors.Is(err, account.ErrPasswordResetTokenNotFound) {
+			errors.Is(err, account.ErrPasswordTokenNotFound) {
 
 			c.AbortWithStatus(http.StatusForbidden)
 			return

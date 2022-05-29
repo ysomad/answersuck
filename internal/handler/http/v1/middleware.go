@@ -16,7 +16,7 @@ import (
 const userAgentHeader = "User-Agent"
 
 // sessionMiddleware looking for a cookie with session id, sets account id and session id to context
-func sessionMiddleware(l logging.Logger, cfg *config.Session, service SessionService) gin.HandlerFunc {
+func sessionMiddleware(l logging.Logger, cfg *config.Session, s SessionService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionId, err := c.Cookie(cfg.CookieKey)
 		if err != nil {
@@ -25,36 +25,56 @@ func sessionMiddleware(l logging.Logger, cfg *config.Session, service SessionSer
 			return
 		}
 
-		s, err := service.GetByIdWithVerified(c.Request.Context(), sessionId)
+		sess, err := s.GetById(c.Request.Context(), sessionId)
 		if err != nil {
-			l.Error("http - v1 - middleware - sessionMiddleware - s.Get: %w", err)
+			l.Error("http - v1 - middleware - sessionMiddleware - s.GetById: %w", err)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		if s.Session.IP != c.ClientIP() || s.Session.UserAgent != c.GetHeader(userAgentHeader) {
+		if sess.IP != c.ClientIP() || sess.UserAgent != c.GetHeader(userAgentHeader) {
 			l.Error("http - v1 - middleware - sessionMiddleware: %w", session.ErrDeviceMismatch)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
-		c.Set(sessionIdKey, s.Session.Id)
-		c.Set(accountIdKey, s.Session.AccountId)
-		c.Set(accountVerifiedKey, s.AccountVerified)
+		c.Set(sessionIdKey, sess.Id)
+		c.Set(accountIdKey, sess.AccountId)
 		c.Next()
 	}
 }
 
-// protectionMiddleware checks if account is verified from context
-func protectionMiddleware(l logging.Logger) gin.HandlerFunc {
+// protectionMiddleware checks if account is verified before
+func protectionMiddleware(l logging.Logger, cfg *config.Session, s SessionService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		a, err := getAccountVerified(c)
-		if err != nil || !a {
+		sessionId, err := c.Cookie(cfg.CookieKey)
+		if err != nil {
+			l.Error("http - v1 - middleware - protectionMiddleware - c.Cookie: %w", err)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		sess, err := s.GetByIdWithVerified(c.Request.Context(), sessionId)
+		if err != nil {
+			l.Error("http - v1 - middleware - protectionMiddleware - s.Get: %w", err)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		if sess.Session.IP != c.ClientIP() || sess.Session.UserAgent != c.GetHeader(userAgentHeader) {
+			l.Error("http - v1 - middleware - protectionMiddleware: %w", session.ErrDeviceMismatch)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		if !sess.AccountVerified {
 			l.Error("http - v1 - middleware - protectionMiddleware - getAccountVerified: %w", err)
 			abortWithError(c, http.StatusForbidden, account.ErrNotEnoughRights, "")
 			return
 		}
 
+		c.Set(sessionIdKey, sess.Session.Id)
+		c.Set(accountIdKey, sess.Session.AccountId)
 		c.Next()
 	}
 }

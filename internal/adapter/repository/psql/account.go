@@ -16,13 +16,6 @@ import (
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
-const (
-	accountTable                   = "account"
-	accountAvatarTable             = "account_avatar"
-	accountVerificationCodeTable   = "account_verification_code"
-	accountPasswordResetTokenTable = "account_password_reset_token"
-)
-
 type accountRepo struct {
 	l logging.Logger
 	c *postgres.Client
@@ -36,35 +29,32 @@ func NewAccountRepo(l logging.Logger, c *postgres.Client) *accountRepo {
 }
 
 func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string) (string, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		WITH a AS (
-			INSERT INTO %s(nickname, email, password, is_verified, updated_at, created_at)
+			INSERT INTO account(email, nickname, password, is_verified, created_at, updated_at)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id AS account_id
 		),
-		av AS (
-			INSERT INTO %s(code, account_id)
+		v AS (
+			INSERT INTO verification(code, account_id)
 			VALUES($7, (SELECT account_id FROM a) )
-		),
-		aa AS (
-			INSERT INTO %s(url, account_id)
-			VALUES($8, (SELECT account_id FROM a) )
 		)
 		SELECT account_id FROM a
-	`, accountTable, accountVerificationCodeTable, accountAvatarTable)
+	`
 
 	r.l.Info("psql - account - Save: %s", sql)
 
+	var accountId string
+
 	err := r.c.Pool.QueryRow(ctx, sql,
-		a.Nickname,
 		a.Email,
-		a.PasswordHash,
+		a.Nickname,
+		a.Password,
 		a.Verified,
-		a.UpdatedAt,
 		a.CreatedAt,
-		a.VerificationCode,
-		a.AvatarURL,
-	).Scan(&a.Id)
+		a.UpdatedAt,
+		code,
+	).Scan(&accountId)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -72,47 +62,43 @@ func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string)
 		if errors.As(err, &pgErr) {
 
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", account.ErrAlreadyExist)
+				return "", fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", account.ErrAlreadyExist)
 			}
 
 		}
 
-		return nil, fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", err)
+		return "", fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return a, nil
+	return accountId, nil
 }
 
 func (r *accountRepo) FindById(ctx context.Context, accountId string) (*account.Account, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		SELECT
-			a.username,
-			a.email,
-			a.password,
-			a.created_at,
-			a.updated_at,
-			a.is_verified,
-			aa.url AS avatar_url
-		FROM %s AS a
-		LEFT JOIN %s AS aa
-		ON aa.account_id = a.id
+			email,
+			nickname,
+			password,
+			is_verified,
+			created_at,
+			updated_at
+		FROM account
 		WHERE
-			a.id = $1
-			AND a.is_archived = $2
-	`, accountTable, accountAvatarTable)
+			id = $1
+			AND is_archived = $2
+	`
 
 	r.l.Info("psql - account - FindById: %s", sql)
 
-	a := account.Account{Id: accountId}
+	var a account.Account
 
 	if err := r.c.Pool.QueryRow(ctx, sql, accountId, false).Scan(
-		&a.Nickname,
 		&a.Email,
-		&a.PasswordHash,
+		&a.Nickname,
+		&a.Password,
+		&a.Verified,
 		&a.CreatedAt,
 		&a.UpdatedAt,
-		&a.Verified,
-		&a.AvatarURL,
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
@@ -122,39 +108,37 @@ func (r *accountRepo) FindById(ctx context.Context, accountId string) (*account.
 		return nil, fmt.Errorf("psql - account - FindById - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
+	a.Id = accountId
+
 	return &a, nil
 }
 
 func (r *accountRepo) FindByEmail(ctx context.Context, email string) (*account.Account, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		SELECT
-			a.id,
-			a.username,
-			a.password,
-			a.created_at,
-			a.updated_at,
-			a.is_verified,
-			aa.url AS avatar_url
-		FROM %s AS a
-		LEFT JOIN %s AS aa
-		ON aa.account_id = a.id
+			id,
+			nickname,
+			password,
+			created_at,
+			updated_at,
+			is_verified
+		FROM account
 		WHERE
-			a.email = $1
-			AND a.is_archived = $2
-	`, accountTable, accountAvatarTable)
+			email = $1
+			AND is_archived = $2
+	`
 
 	r.l.Info("psql - account - FindByEmail: %s", sql)
 
-	a := account.Account{Email: email}
+	var a account.Account
 
 	if err := r.c.Pool.QueryRow(ctx, sql, email, false).Scan(
 		&a.Id,
 		&a.Nickname,
-		&a.PasswordHash,
+		&a.Password,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 		&a.Verified,
-		&a.AvatarURL,
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
@@ -164,98 +148,99 @@ func (r *accountRepo) FindByEmail(ctx context.Context, email string) (*account.A
 		return nil, fmt.Errorf("psql - account - FindByEmail - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
+	a.Email = email
+
 	return &a, nil
 }
 
-func (r *accountRepo) FindByNickname(ctx context.Context, username string) (*account.Account, error) {
-	sql := fmt.Sprintf(`
+func (r *accountRepo) FindByNickname(ctx context.Context, nickname string) (*account.Account, error) {
+	sql := `
 		SELECT
-			a.id,
-			a.email,
-			a.password,
-			a.created_at,
-			a.updated_at,
-			a.is_verified,
-			aa.url AS avatar_url
-		FROM %s AS a
-		LEFT JOIN %s AS aa
-		ON aa.account_id = a.id
+			id,
+			email,
+			password,
+			created_at,
+			updated_at,
+			is_verified
+		FROM account
 		WHERE
-			a.username = $1
-			AND a.is_archived = $2
-	`, accountTable, accountAvatarTable)
+			nickname = $1
+			AND is_archived = $2
+	`
 
-	r.l.Info("psql - account - FindByUsername: %s", sql)
+	r.l.Info("psql - account - FindByNickname: %s", sql)
 
-	a := account.Account{Nickname: username}
+	var a account.Account
 
-	err := r.c.Pool.QueryRow(ctx, sql, username, false).Scan(
+	err := r.c.Pool.QueryRow(ctx, sql, nickname, false).Scan(
 		&a.Id,
 		&a.Email,
-		&a.PasswordHash,
+		&a.Password,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 		&a.Verified,
-		&a.AvatarURL,
 	)
 	if err != nil {
 
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("psql - account - FindByUsername - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+			return nil, fmt.Errorf("psql - account - FindByNickname - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 		}
 
-		return nil, fmt.Errorf("psql - account - FindByUsername - r.c.Pool.QueryRow.Scan: %w", err)
+		return nil, fmt.Errorf("psql - account - FindByNickname - r.c.Pool.QueryRow.Scan: %w", err)
 	}
+
+	a.Nickname = nickname
 
 	return &a, nil
 }
 
-func (r *accountRepo) SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
-	sql := fmt.Sprintf(`
-		UPDATE %s
+func (r *accountRepo) Archive(ctx context.Context, accountId string, updatedAt time.Time) error {
+	sql := `
+		UPDATE account
 		SET
 			is_archived = $1,
 			updated_at = $2
 		WHERE
 			id = $3
 			AND is_archived = $4
-	`, accountTable)
+	`
 
-	r.l.Info("psql - account - SetArchived: %s", sql)
+	r.l.Info("psql - account - Archive: %s", sql)
 
-	ct, err := r.c.Pool.Exec(ctx, sql, archived, updatedAt, accountId, !archived)
+	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, accountId, false)
+
 	if err != nil {
-		return fmt.Errorf("psql - account - SetArchived - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - account - Archive - r.c.Pool.Exec: %w", err)
 	}
 
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - account - SetArchived - r.c.Pool.Exec: %w", account.ErrNotArchived)
+		return fmt.Errorf("psql - account - Archive - r.c.Pool.Exec: %w", account.ErrNotDeleted)
 	}
 
 	return nil
 }
 
-func (r *accountRepo) Verify(ctx context.Context, code string, verified bool, updatedAt time.Time) error {
-	sql := fmt.Sprintf(`
-		UPDATE %s AS a
+func (r *accountRepo) Verify(ctx context.Context, code string, updatedAt time.Time) error {
+	sql := `
+		UPDATE account a
 		SET
 			is_verified = $1,
 			updated_at = $2
 		FROM (
-			SELECT av.code, a.id AS account_id
-			FROM %s AS av
-			INNER JOIN %s AS a
-			ON av.account_id = a.id
-			WHERE av.code = $3
+			SELECT v.code, a.id AS account_id
+			FROM verification v
+			INNER JOIN account a
+			ON v.account_id = a.id
+			WHERE v.code = $3
 		) AS sq
 		WHERE
 			a.is_verified = $4
 			AND a.id = sq.account_id;
-	`, accountTable, accountVerificationCodeTable, accountTable)
+	`
 
 	r.l.Info("psql - account - Verify: %s", sql)
 
-	ct, err := r.c.Pool.Exec(ctx, sql, verified, updatedAt, code, !verified)
+	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, code, false)
 	if err != nil {
 		return fmt.Errorf("psql - account - Verify - r.c.Pool.Exec: %w", err)
 	}
@@ -268,13 +253,16 @@ func (r *accountRepo) Verify(ctx context.Context, code string, verified bool, up
 }
 
 func (r *accountRepo) FindVerification(ctx context.Context, accountId string) (account.VerificationDTO, error) {
-	sql := fmt.Sprintf(`
-		SELECT a.email, a.is_verified, av.code AS verification_code
-		FROM %s AS a
-		LEFT JOIN %s AS av
-		ON av.account_id = a.id
+	sql := `
+		SELECT 
+			a.email, 
+			a.is_verified, 
+			v.code AS verification_code
+		FROM account a
+		LEFT JOIN verification v
+		ON v.account_id = a.id
 		WHERE a.id = $1
-	`, accountTable, accountVerificationCodeTable)
+	`
 
 	r.l.Info("psql - account - FindVerification: %s", sql)
 
@@ -297,13 +285,13 @@ func (r *accountRepo) FindVerification(ctx context.Context, accountId string) (a
 	return v, nil
 }
 
-func (r *accountRepo) SavePasswordResetToken(ctx context.Context, email, token string) error {
-	sql := fmt.Sprintf(`
-		INSERT INTO %s (token, account_id)
-		VALUES($1, (SELECT id AS account_id FROM %s WHERE email = $2))
-	`, accountPasswordResetTokenTable, accountTable)
+func (r *accountRepo) SavePasswordToken(ctx context.Context, email, token string) error {
+	sql := `
+		INSERT INTO password_token(token, account_id)
+		VALUES($1, (SELECT id AS account_id FROM account WHERE email = $2))
+	`
 
-	r.l.Info("psql - account - SavePasswordResetToken: %s", sql)
+	r.l.Info("psql - account - SavePasswordToken: %s", sql)
 
 	if _, err := r.c.Pool.Exec(ctx, sql, token, email); err != nil {
 
@@ -312,63 +300,85 @@ func (r *accountRepo) SavePasswordResetToken(ctx context.Context, email, token s
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return fmt.Errorf("psql - account - SavePasswordResetToken - r.c.Pool.Exec: %w", account.ErrPasswordResetTokenAlreadyExist)
+				return fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.Exec: %w", account.ErrPasswordTokenAlreadyExist)
 			case pgerrcode.ForeignKeyViolation:
-				return fmt.Errorf("psql - account - SavePasswordResetToken - r.c.Pool.Exec: %w", account.ErrNotFound)
+				return fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.Exec: %w", account.ErrNotFound)
 			}
 		}
 
-		return fmt.Errorf("psql - account - SavePasswordResetToken - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.Exec: %w", err)
 	}
 
 	return nil
 }
 
-func (r *accountRepo) FindPasswordResetToken(ctx context.Context, token string) (account.PasswordResetToken, error) {
-	sql := fmt.Sprintf(`
+func (r *accountRepo) FindPasswordToken(ctx context.Context, token string) (account.PasswordToken, error) {
+	sql := `
 		SELECT t.token, t.created_at, a.id
-		FROM %s AS t
-		INNER JOIN %s AS a
+		FROM password_token t
+		INNER JOIN account a
 		ON a.id = t.account_id
 		WHERE t.token = $1
-	`, accountPasswordResetTokenTable, accountTable)
+	`
 
-	r.l.Info("psql - account - FindPasswordResetToken: %s", sql)
+	r.l.Info("psql - account - FindPasswordToken: %s", sql)
 
-	var t account.PasswordResetToken
+	var t account.PasswordToken
 
 	if err := r.c.Pool.QueryRow(ctx, sql, token).Scan(&t.Token, &t.CreatedAt, &t.AccountId); err != nil {
 
 		if err == pgx.ErrNoRows {
-			return account.PasswordResetToken{},
-				fmt.Errorf("psql - account - FindPasswordResetToken - r.c.Pool.QueryRow.Scan: %w", account.ErrPasswordResetTokenNotFound)
+			return account.PasswordToken{},
+				fmt.Errorf("psql - account - FindPasswordToken - r.c.Pool.QueryRow.Scan: %w", account.ErrPasswordTokenNotFound)
 		}
 
-		return account.PasswordResetToken{}, fmt.Errorf("psql - account - FindPasswordResetToken - r.client.Pool.QueryRow.Scan: %w", err)
+		return account.PasswordToken{}, fmt.Errorf("psql - account - FindPasswordToken - r.client.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return t, nil
 }
 
+func (r *accountRepo) FindEmailByNickname(ctx context.Context, nickname string) (string, error) {
+	sql := "SELECT email FROM account WHERE nickname = $1"
+
+	r.l.Info("psql - account - FindEmailByNickname: %s", sql)
+
+	var email string
+
+	if err := r.c.Pool.QueryRow(ctx, sql, nickname).Scan(&email); err != nil {
+
+		if err == pgx.ErrNoRows {
+			return "",
+				fmt.Errorf("psql - account - FindEmailByNickname - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+		}
+
+		return "", fmt.Errorf("psql - account - FindPasswordToken - r.client.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return email, nil
+}
+
 func (r *accountRepo) SetPassword(ctx context.Context, dto account.SetPasswordDTO) error {
-	sql := fmt.Sprintf(`
+	sql := `
 		WITH a AS (
-			UPDATE %s
-			SET password = $1, updated_at = $2
+			UPDATE account
+			SET 
+				password = $1, 
+				updated_at = $2
 			WHERE id = $3
 		)
-		DELETE FROM %s
+		DELETE FROM password_token
 		WHERE
 			account_id = $4
 			AND token = $5
-	`, accountTable, accountPasswordResetTokenTable)
+	`
 
-	r.l.Info("psql - account - UpdatePasswordWithToken: %s", sql)
+	r.l.Info("psql - account - SetPassword: %s", sql)
 
 	ct, err := r.c.Pool.Exec(
 		ctx,
 		sql,
-		dto.PasswordHash,
+		dto.Password,
 		dto.UpdatedAt,
 		dto.AccountId,
 		dto.AccountId,
