@@ -1,8 +1,8 @@
 package session
 
 type (
-	SessionWithVerified struct {
-		Session         Session
-		AccountVerified bool
+	WithAccountDetails struct {
+		Session  Session
+		Verified bool
 	}
 )

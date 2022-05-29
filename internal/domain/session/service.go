@@ -10,7 +10,7 @@ import (
 type Repository interface {
 	Save(ctx context.Context, s *Session) error
 	FindById(ctx context.Context, sessionId string) (*Session, error)
-	FindByIdWithVerified(ctx context.Context, sessionId string) (*SessionWithVerified, error)
+	FindWithAccountDetails(ctx context.Context, sessionId string) (*WithAccountDetails, error)
 	FindAll(ctx context.Context, accountId string) ([]*Session, error)
 	Delete(ctx context.Context, sessionId string) error
 	DeleteAll(ctx context.Context, accountId string) error
@@ -50,14 +50,14 @@ func (s *service) Create(ctx context.Context, accountId string, d Device) (*Sess
 func (s *service) GetById(ctx context.Context, sessionId string) (*Session, error) {
 	sess, err := s.repo.FindById(ctx, sessionId)
 	if err != nil {
-		return nil, fmt.Errorf("sessionService - GetById - s.repo.FindByID: %w", err)
+		return nil, fmt.Errorf("sessionService - GetById - s.repo.FindById: %w", err)
 	}
 
 	return sess, nil
 }
 
-func (s *service) GetAll(ctx context.Context, accountId string) ([]*Session, error) {
-	sessions, err := s.repo.FindAll(ctx, accountId)
+func (s *service) GetAll(ctx context.Context, nickname string) ([]*Session, error) {
+	sessions, err := s.repo.FindAll(ctx, nickname)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - GetAll - s.repo.FindAll: %w", err)
 	}
@@ -73,8 +73,8 @@ func (s *service) Terminate(ctx context.Context, sessionId string) error {
 	return nil
 }
 
-func (s *service) TerminateWithExcept(ctx context.Context, accountId, sessionId string) error {
-	if err := s.repo.DeleteWithExcept(ctx, accountId, sessionId); err != nil {
+func (s *service) TerminateWithExcept(ctx context.Context, nickname, sessionId string) error {
+	if err := s.repo.DeleteWithExcept(ctx, nickname, sessionId); err != nil {
 		return fmt.Errorf("sessionService - TerminateWithExcept - s.repo.DeleteWithExcept: %w", err)
 	}
 
@@ -89,8 +89,8 @@ func (s *service) TerminateAll(ctx context.Context, accountId string) error {
 	return nil
 }
 
-func (s *service) GetByIdWithVerified(ctx context.Context, sessionId string) (*SessionWithVerified, error) {
-	sess, err := s.repo.FindByIdWithVerified(ctx, sessionId)
+func (s *service) GetByIdWithVerified(ctx context.Context, sessionId string) (*WithAccountDetails, error) {
+	sess, err := s.repo.FindWithAccountDetails(ctx, sessionId)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - GetByIdWithVerified - s.repo.FindByIdWithVerified: %w", err)
 	}

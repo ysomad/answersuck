@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/app/auth"
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain/auth"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
@@ -27,6 +27,7 @@ type Deps struct {
 	TopicService    TopicService
 	MediaService    MediaService
 	AnswerService   AnswerService
+	PlayerService   PlayerService
 }
 
 func NewHandler(r *gin.Engine, d *Deps) {
@@ -46,5 +47,6 @@ func NewHandler(r *gin.Engine, d *Deps) {
 		newQuestionHandler(h, d)
 		newMediaHandler(h, d)
 		newAnswerHandler(h, d)
+		newPlayerHandler(h, d)
 	}
 }

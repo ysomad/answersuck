@@ -1,4 +1,3 @@
 DROP TABLE IF EXISTS account CASCADE;
-DROP TABLE IF EXISTS account_password_reset_token CASCADE;
-DROP TABLE IF EXISTS account_verification_code CASCADE;
-DROP TABLE IF EXISTS account_avatar CASCADE;
+DROP TABLE IF EXISTS password_token CASCADE;
+DROP TABLE IF EXISTS verification CASCADE;

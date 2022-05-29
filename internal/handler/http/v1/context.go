@@ -1,19 +1,24 @@
 package v1
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
 )
 
 const (
-	accountIdKey       = "accountId"
-	sessionIdKey       = "sessionId"
-	audienceKey        = "audience"
-	deviceKey          = "device"
-	accountVerifiedKey = "accountVerified"
+	accountIdKey = "accountId"
+	sessionIdKey = "sessionId"
+	audienceKey  = "audience"
+	deviceKey    = "device"
+)
+
+var (
+	errAccountIdNotFound = errors.New("account id not found in context")
+	errSessionIdNotFound = errors.New("session id not found in context")
 )
 
 // getAccountId returns account id from context
@@ -22,40 +27,32 @@ func getAccountId(c *gin.Context) (string, error) {
 
 	_, err := uuid.Parse(accountId)
 	if err != nil {
-		return "", account.ErrContextNotFound
+		return "", errAccountIdNotFound
 	}
 
 	return accountId, nil
 }
 
 // getSessionId returns session id from context
-func getSessionId(c *gin.Context) string { return c.GetString(sessionIdKey) }
+func getSessionId(c *gin.Context) (string, error) {
+	s := c.GetString(sessionIdKey)
+	if s == "" {
+		return "", errSessionIdNotFound
+	}
+
+	return s, nil
+}
 
 func getDevice(c *gin.Context) (session.Device, error) {
 	v, exists := c.Get(deviceKey)
 	if !exists {
-		return session.Device{}, session.ErrDeviceContextNotFound
+		return session.Device{}, errSessionIdNotFound
 	}
 
 	d, ok := v.(session.Device)
 	if !ok {
-		return session.Device{}, session.ErrDeviceContextNotFound
+		return session.Device{}, errSessionIdNotFound
 	}
 
 	return d, nil
-}
-
-// getAccountVerified return flag indicates is account verified or not from context
-func getAccountVerified(c *gin.Context) (bool, error) {
-	v, exists := c.Get(accountVerifiedKey)
-	if !exists {
-		return false, session.ErrAccountVerifiedContextNotFound
-	}
-
-	a, ok := v.(bool)
-	if !ok {
-		return false, session.ErrAccountVerifiedContextNotFound
-	}
-
-	return a, nil
 }

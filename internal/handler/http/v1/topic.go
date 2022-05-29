@@ -34,11 +34,8 @@ func newTopicHandler(r *gin.RouterGroup, d *Deps) {
 		topics.GET("", h.getAll)
 	}
 
-	protected := topics.Group(
-		"",
-		sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
-		protectionMiddleware(d.Logger),
-	)
+	protected := topics.Group("",
+		protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 	{
 		protected.POST("", h.create)
 	}

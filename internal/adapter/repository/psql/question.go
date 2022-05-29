@@ -15,10 +15,6 @@ import (
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
-const (
-	questionTable = "question"
-)
-
 type questionRepo struct {
 	l logging.Logger
 	c *postgres.Client
@@ -32,8 +28,8 @@ func NewQuestionRepo(l logging.Logger, c *postgres.Client) *questionRepo {
 }
 
 func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, error) {
-	sql := fmt.Sprintf(`
-		 INSERT INTO %s(
+	sql := `
+		 INSERT INTO question(
 			  text, 
 			  answer_id, 
 			  account_id, 
@@ -44,7 +40,7 @@ func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, err
 		 )
 		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 RETURNING id
-	`, questionTable)
+	`
 
 	r.l.Info("psql - question - Save: %s", sql)
 
@@ -77,7 +73,7 @@ func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, err
 }
 
 func (r *questionRepo) FindAll(ctx context.Context) ([]question.Minimized, error) {
-	sql := fmt.Sprintf(`SELECT q.id, q.text, q.language_id FROM %s q`, questionTable)
+	sql := "SELECT id, text, language_id FROM question"
 
 	r.l.Info("psql - question - FindAll: %s", sql)
 
@@ -108,28 +104,28 @@ func (r *questionRepo) FindAll(ctx context.Context) ([]question.Minimized, error
 }
 
 func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
-	sql := fmt.Sprintf(`
+	sql := `
 		SELECT
 			q.text,
 			ans.text AS answer,
 			am.url AS answer_image_url,
-			acc.username AS author,
+			acc.nickname AS author,
 			qm.url AS media_url,
 			qm.mime_type AS media_type,
 			q.language_id,
 			q.created_at,
 			q.updated_at
-		FROM %s q
-		INNER JOIN %s acc on acc.id = q.account_id
-		INNER JOIN %s ans on ans.id = q.answer_id
-		LEFT JOIN %s qm on qm.id = q.media_id
-		LEFT JOIN %s am on am.id = ans.image
+		FROM question q
+		INNER JOIN account acc on acc.id = q.account_id
+		INNER JOIN answer ans on ans.id = q.answer_id
+		LEFT JOIN media qm on qm.id = q.media_id
+		LEFT JOIN media am on am.id = ans.image
 		WHERE q.id = $1
-	`, questionTable, accountTable, answerTable, mediaTable, mediaTable)
+	`
 
 	r.l.Info("psql - question - FindById: %s", sql)
 
-	q := question.Detailed{Id: questionId}
+	var q question.Detailed
 
 	err := r.c.Pool.QueryRow(ctx, sql, questionId).Scan(
 		&q.Text,
@@ -150,6 +146,8 @@ func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.
 
 		return nil, fmt.Errorf("psql - question - FindById - r.c.Pool.QueryRow.Scan: %w", err)
 	}
+
+	q.Id = questionId
 
 	return &q, nil
 }

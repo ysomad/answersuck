@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/app/auth"
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain/auth"
 
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
@@ -19,7 +19,6 @@ import (
 
 type AuthService interface {
 	Login(ctx context.Context, login, password string, d session.Device) (*session.Session, error)
-	Logout(ctx context.Context, sessionId string) error
 
 	NewToken(ctx context.Context, accountId, password, audience string) (string, error)
 	ParseToken(ctx context.Context, token, audience string) (string, error)
@@ -30,6 +29,7 @@ type authHandler struct {
 	cfg     *config.Aggregate
 	log     logging.Logger
 	service AuthService
+	session SessionService
 }
 
 func newAuthHandler(r *gin.RouterGroup, d *Deps) {
@@ -38,6 +38,7 @@ func newAuthHandler(r *gin.RouterGroup, d *Deps) {
 		cfg:     d.Config,
 		log:     d.Logger,
 		service: d.AuthService,
+		session: d.SessionService,
 	}
 
 	auth := r.Group("auth")
@@ -90,10 +91,15 @@ func (h *authHandler) login(c *gin.Context) {
 }
 
 func (h *authHandler) logout(c *gin.Context) {
-	sessionId := getSessionId(c)
+	sessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - auth - logout - getSessionId: %w", err)
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
-	if err := h.service.Logout(c.Request.Context(), sessionId); err != nil {
-		h.log.Error("http - v1 - auth - logout - h.service.Logout: %w", err)
+	if err := h.session.Terminate(c.Request.Context(), sessionId); err != nil {
+		h.log.Error("http - v1 - auth - logout - h.session.Terminate: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

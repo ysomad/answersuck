@@ -17,7 +17,7 @@ type (
 	AccountService interface {
 		GetById(ctx context.Context, accountId string) (*account.Account, error)
 		GetByEmail(ctx context.Context, email string) (*account.Account, error)
-		GetByUsername(ctx context.Context, username string) (*account.Account, error)
+		GetByNickname(ctx context.Context, nickname string) (*account.Account, error)
 	}
 
 	SessionService interface {
@@ -62,9 +62,9 @@ func (s *service) Login(ctx context.Context, login, password string, d session.D
 
 	_, err := mail.ParseAddress(login)
 	if err != nil {
-		a, err = s.account.GetByUsername(ctx, login)
+		a, err = s.account.GetByNickname(ctx, login)
 		if err != nil {
-			return nil, fmt.Errorf("authService - Login - s.account.GetByUsername: %w", err)
+			return nil, fmt.Errorf("authService - Login - s.account.GetByNickname: %w", err)
 		}
 	} else {
 		a, err = s.account.GetByEmail(ctx, login)
@@ -73,9 +73,7 @@ func (s *service) Login(ctx context.Context, login, password string, d session.D
 		}
 	}
 
-	a.Password = password
-
-	if err = a.CompareHashAndPassword(); err != nil {
+	if err = a.ComparePasswords(password); err != nil {
 		return nil, fmt.Errorf("authService - Login - a.CompareHashAndPassword: %w", err)
 	}
 
@@ -87,23 +85,13 @@ func (s *service) Login(ctx context.Context, login, password string, d session.D
 	return sess, nil
 }
 
-func (s *service) Logout(ctx context.Context, sessionId string) error {
-	if err := s.session.Terminate(ctx, sessionId); err != nil {
-		return fmt.Errorf("authService - Logout - s.session.Terminate: %w", err)
-	}
-
-	return nil
-}
-
 func (s *service) NewToken(ctx context.Context, accountId, password, audience string) (string, error) {
 	a, err := s.account.GetById(ctx, accountId)
 	if err != nil {
 		return "", fmt.Errorf("authService - NewSecurityToken - s.account.GetByID: %w", err)
 	}
 
-	a.Password = password
-
-	if err = a.CompareHashAndPassword(); err != nil {
+	if err = a.ComparePasswords(password); err != nil {
 		return "", fmt.Errorf("authService - NewSecurityToken - a.CompareHashAndPassword: %w", err)
 	}
 

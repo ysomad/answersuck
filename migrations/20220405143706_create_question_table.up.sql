@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS question
     account_id  uuid                                               NOT NULL REFERENCES account (id),
     language_id int                                                NOT NULL REFERENCES language (id),
     media_id    uuid REFERENCES media (id),
-    created_at  timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL,
-    updated_at  timestamp WITH TIME ZONE DEFAULT current_timestamp NOT NULL
+    created_at  timestamptz DEFAULT current_timestamp NOT NULL,
+    updated_at  timestamp DEFAULT current_timestamp NOT NULL
 );

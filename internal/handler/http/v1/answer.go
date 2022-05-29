@@ -35,8 +35,7 @@ func newAnswerHandler(r *gin.RouterGroup, d *Deps) {
 	}
 
 	answers := r.Group("answers",
-		sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
-		protectionMiddleware(d.Logger))
+		protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
 	{
 		answers.POST("", h.create)
 	}
