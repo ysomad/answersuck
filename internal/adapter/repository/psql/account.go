@@ -38,6 +38,10 @@ func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string)
 		v AS (
 			INSERT INTO verification(code, account_id)
 			VALUES($7, (SELECT account_id FROM a) )
+		),
+		p AS (
+			INSERT INTO player(account_id)
+			VALUES((SELECT account_id FROM a))
 		)
 		SELECT account_id FROM a
 	`

@@ -23,6 +23,7 @@ import (
 	"github.com/answersuck/vault/internal/domain/email"
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
+	"github.com/answersuck/vault/internal/domain/player"
 	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
@@ -125,6 +126,9 @@ func Run(configPath string) {
 	answerRepo := psql.NewAnswerRepo(l, pg)
 	answerService := answer.NewService(l, answerRepo, mediaService)
 
+	playerRepo := psql.NewPlayerRepo(l, pg)
+	playerService := player.NewService(playerRepo)
+
 	// HTTP Server
 	engine := gin.New()
 	v1.NewHandler(
@@ -143,6 +147,7 @@ func Run(configPath string) {
 			QuestionService: questionService,
 			MediaService:    mediaService,
 			AnswerService:   answerService,
+			PlayerService:   playerService,
 		},
 	)
 

@@ -27,6 +27,7 @@ type Deps struct {
 	TopicService    TopicService
 	MediaService    MediaService
 	AnswerService   AnswerService
+	PlayerService   PlayerService
 }
 
 func NewHandler(r *gin.Engine, d *Deps) {
@@ -46,5 +47,6 @@ func NewHandler(r *gin.Engine, d *Deps) {
 		newQuestionHandler(h, d)
 		newMediaHandler(h, d)
 		newAnswerHandler(h, d)
+		newPlayerHandler(h, d)
 	}
 }
