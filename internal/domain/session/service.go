@@ -10,7 +10,7 @@ import (
 type Repository interface {
 	Save(ctx context.Context, s *Session) error
 	FindById(ctx context.Context, sessionId string) (*Session, error)
-	FindByIdWithVerified(ctx context.Context, sessionId string) (*SessionWithVerified, error)
+	FindWithAccountDetails(ctx context.Context, sessionId string) (*WithAccountDetails, error)
 	FindAll(ctx context.Context, accountId string) ([]*Session, error)
 	Delete(ctx context.Context, sessionId string) error
 	DeleteAll(ctx context.Context, accountId string) error
@@ -89,8 +89,8 @@ func (s *service) TerminateAll(ctx context.Context, accountId string) error {
 	return nil
 }
 
-func (s *service) GetByIdWithVerified(ctx context.Context, sessionId string) (*SessionWithVerified, error) {
-	sess, err := s.repo.FindByIdWithVerified(ctx, sessionId)
+func (s *service) GetByIdWithVerified(ctx context.Context, sessionId string) (*WithAccountDetails, error) {
+	sess, err := s.repo.FindWithAccountDetails(ctx, sessionId)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - GetByIdWithVerified - s.repo.FindByIdWithVerified: %w", err)
 	}

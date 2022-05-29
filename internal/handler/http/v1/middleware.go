@@ -67,7 +67,7 @@ func protectionMiddleware(l logging.Logger, cfg *config.Session, s SessionServic
 			return
 		}
 
-		if !sess.AccountVerified {
+		if !sess.Verified {
 			l.Error("http - v1 - middleware - protectionMiddleware - getAccountVerified: %w", err)
 			abortWithError(c, http.StatusForbidden, account.ErrNotEnoughRights, "")
 			return
@@ -75,6 +75,7 @@ func protectionMiddleware(l logging.Logger, cfg *config.Session, s SessionServic
 
 		c.Set(sessionIdKey, sess.Session.Id)
 		c.Set(accountIdKey, sess.Session.AccountId)
+		c.Set(nicknameKey, sess.Nickname)
 		c.Next()
 	}
 }

@@ -91,7 +91,12 @@ func (h *authHandler) login(c *gin.Context) {
 }
 
 func (h *authHandler) logout(c *gin.Context) {
-	sessionId := getSessionId(c)
+	sessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - auth - logout - getSessionId: %w", err)
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
 	if err := h.session.Terminate(c.Request.Context(), sessionId); err != nil {
 		h.log.Error("http - v1 - auth - logout - h.session.Terminate: %w", err)

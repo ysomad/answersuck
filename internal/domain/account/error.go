@@ -14,7 +14,6 @@ var (
 	ErrEmptyPasswordResetToken   = errors.New("empty password reset token")
 	ErrPasswordTokenNotFound     = errors.New("account password reset token not found or expired")
 	ErrIncorrectPassword         = errors.New("incorrect password")
-	ErrContextNotFound           = errors.New("account id not found in context")
 	ErrPasswordResetTokenExpired = errors.New("password reset token is expired")
 	ErrVerificationNotFound      = errors.New("account verification not found")
 	ErrPasswordNotSet            = errors.New("account password is not set")

@@ -13,7 +13,7 @@ import (
 )
 
 type SessionService interface {
-	GetByIdWithVerified(ctx context.Context, sessionId string) (*session.SessionWithVerified, error)
+	GetByIdWithVerified(ctx context.Context, sessionId string) (*session.WithAccountDetails, error)
 	GetById(ctx context.Context, sessionId string) (*session.Session, error)
 	GetAll(ctx context.Context, accountId string) ([]*session.Session, error)
 	Terminate(ctx context.Context, sessionId string) error
@@ -72,7 +72,12 @@ const (
 )
 
 func (h *sessionHandler) terminate(c *gin.Context) {
-	currSessionId := getSessionId(c)
+	currSessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - session - terminate - getSessionId: %w", err)
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
 	sessionId := c.Param(paramSessionId)
 	if currSessionId == sessionId {
@@ -98,7 +103,14 @@ func (h *sessionHandler) terminateAll(c *gin.Context) {
 
 	}
 
-	if err = h.service.TerminateWithExcept(c.Request.Context(), accountId, getSessionId(c)); err != nil {
+	sessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - session - terminateAll - getSessionId: %w", err)
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	if err = h.service.TerminateWithExcept(c.Request.Context(), accountId, sessionId); err != nil {
 		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return

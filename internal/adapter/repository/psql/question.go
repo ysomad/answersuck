@@ -109,7 +109,7 @@ func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.
 			q.text,
 			ans.text AS answer,
 			am.url AS answer_image_url,
-			acc.username AS author,
+			acc.nickname AS author,
 			qm.url AS media_url,
 			qm.mime_type AS media_type,
 			q.language_id,

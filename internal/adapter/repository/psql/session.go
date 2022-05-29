@@ -99,7 +99,7 @@ func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*session.
 	return &s, nil
 }
 
-func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string) (*session.SessionWithVerified, error) {
+func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId string) (*session.WithAccountDetails, error) {
 	sql := `
 		SELECT
 			s.account_id,
@@ -108,6 +108,7 @@ func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string
 			s.max_age,
 			s.expires_at,
 			s.created_at,
+			a.nickname,
 			a.is_verified
 		FROM session s
 		INNER JOIN account a
@@ -118,8 +119,8 @@ func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string
 	r.l.Info("psql - session - FindByIdWithVerified: %s", sql)
 
 	var (
-		s  session.Session
-		sv session.SessionWithVerified
+		s session.Session
+		d session.WithAccountDetails
 	)
 
 	err := r.c.Pool.QueryRow(ctx, sql, sessionId).Scan(
@@ -129,7 +130,8 @@ func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string
 		&s.MaxAge,
 		&s.ExpiresAt,
 		&s.CreatedAt,
-		&sv.AccountVerified,
+		&d.Nickname,
+		&d.Verified,
 	)
 	if err != nil {
 
@@ -140,9 +142,9 @@ func (r *sessionRepo) FindByIdWithVerified(ctx context.Context, sessionId string
 		return nil, fmt.Errorf("psql - session - FindByIdWithVerified - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
-	sv.Session = s
+	d.Session = s
 
-	return &sv, nil
+	return &d, nil
 }
 
 func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session.Session, error) {
@@ -198,7 +200,7 @@ func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session
 func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
 	sql := "DELETE FROM session WHERE id = $1"
 
-	r.l.Info("psql - session - Delete: %s", sql+sessionId)
+	r.l.Info("psql - session - Delete: %s", sql)
 
 	ct, err := r.c.Pool.Exec(ctx, sql, sessionId)
 	if err != nil {
