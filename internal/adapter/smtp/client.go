@@ -7,7 +7,7 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/answersuck/vault/internal/app/email"
+	"github.com/answersuck/vault/internal/domain/email"
 
 	smail "github.com/xhit/go-simple-mail/v2"
 )

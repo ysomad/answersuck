@@ -17,11 +17,10 @@ import (
 	"github.com/answersuck/vault/internal/adapter/storage"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
-	"github.com/answersuck/vault/internal/app/auth"
-	"github.com/answersuck/vault/internal/app/email"
-
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/answer"
+	"github.com/answersuck/vault/internal/domain/auth"
+	"github.com/answersuck/vault/internal/domain/email"
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/question"

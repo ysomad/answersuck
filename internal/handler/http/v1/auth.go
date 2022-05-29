@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/answersuck/vault/internal/app/auth"
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain/auth"
 
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
