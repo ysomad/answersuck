@@ -2,6 +2,7 @@ package validation
 
 import (
 	"errors"
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin/binding"
@@ -24,8 +25,20 @@ func NewGinTranslator() (*ginTranslator, error) {
 		return nil, errors.New("validation translator not found")
 	}
 
+	v := binding.Validator.Engine().(*validator.Validate)
+
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+
+		if name == "-" {
+			return ""
+		}
+
+		return name
+	})
+
 	return &ginTranslator{
-		validate: binding.Validator.Engine().(*validator.Validate),
+		validate: v,
 		trans:    trans,
 	}, nil
 }
@@ -41,7 +54,7 @@ func (gt *ginTranslator) TranslateError(err error) map[string]string {
 	errs := make(map[string]string)
 
 	for _, err := range err.(validator.ValidationErrors) {
-		errs[err.Field()] = strings.Join(strings.Split(err.Translate(gt.trans), " ")[1:], " ")
+		errs[err.Field()] = strings.Join(strings.Split(err.Translate(gt.trans), " "), " ")
 	}
 
 	return errs

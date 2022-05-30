@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// YOINKED FROM https://github.com/jackc/pgx/issues/764#issuecomment-685249471
+//
 // getBulkInsertSQL is a helper function to prepare a SQL query for a bulk insert.
 //
 // For example:
