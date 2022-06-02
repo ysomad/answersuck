@@ -6,7 +6,8 @@ web:
   url: "http://localhost:8000"
 
 http:
-  port: "8080"
+  port: ":8080"
+  debug: true
 
 logger:
   logLevel: "debug"
@@ -19,13 +20,11 @@ cache:
   expiration: 1h
   db: 0
 
-cookie:
-  secure: false
-  httpOnly: true
-
 session:
   expiration: 4h
-  cookieKey: "id"
+  cookieName: "id"
+  cookieSecure: false
+  cookieHttpOnly: true
 
 accessToken:
   expiration: 1m

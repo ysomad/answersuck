@@ -11,7 +11,6 @@ type (
 		HTTP        HTTP        `yaml:"http"`
 		Log         Log         `yaml:"logger"`
 		PG          PG          `yaml:"postgres"`
-		Cookie      Cookie      `yaml:"cookie"`
 		Cache       Cache       `yaml:"cache"`
 		Redis       Redis       `yaml:"redis"`
 		AccessToken AccessToken `yaml:"accessToken"`
@@ -32,7 +31,8 @@ type (
 	}
 
 	HTTP struct {
-		Port string `env-required:"true" yaml:"port"`
+		Port  string `env-required:"true" yaml:"port"`
+		Debug bool   `yaml:"debug"`
 	}
 
 	Log struct {
@@ -55,14 +55,11 @@ type (
 		Password string `env-required:"true" env:"REDIS_PASSWORD"`
 	}
 
-	Cookie struct {
-		Secure   bool `yaml:"secure"`
-		HTTPOnly bool `yaml:"httpOnly"`
-	}
-
 	Session struct {
-		Expiration time.Duration `env-required:"true" yaml:"expiration"`
-		CookieKey  string        `env-required:"true" yaml:"cookieKey"`
+		Expiration     time.Duration `env-required:"true" yaml:"expiration"`
+		CookieName     string        `env-required:"true" yaml:"cookieName"`
+		CookieSecure   bool          `yaml:"cookieSecure"`
+		CookieHTTPOnly bool          `yaml:"cookieHttpOnly"`
 	}
 
 	AccessToken struct {

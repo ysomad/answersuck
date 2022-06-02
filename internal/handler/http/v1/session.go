@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/session"
@@ -21,100 +21,47 @@ type SessionService interface {
 }
 
 type sessionHandler struct {
-	t       ErrorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
+	v       ValidationModule
 	service SessionService
 }
 
-func newSessionHandler(r *gin.RouterGroup, d *Deps) {
+func newSessionRouter(d *Deps) *fiber.App {
 	h := &sessionHandler{
-		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
+		v:       d.ValidationModule,
 		service: d.SessionService,
 	}
 
-	sessions := r.Group("sessions")
+	r := fiber.New()
 
-	authenticated := sessions.Group("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
+	authenticated := r.Group("/", sessionMW(d.Logger, &d.Config.Session, d.SessionService))
 	{
-		authenticated.GET("", h.getAll)
+		authenticated.Get("/", h.getAll)
 	}
 
-	secure := authenticated.Group("", tokenMiddleware(d.Logger, d.AuthService))
+	protected := authenticated.Group("/", tokenMW(d.Logger, d.AuthService))
 	{
-		secure.DELETE(":sessionId", h.terminate)
-		secure.DELETE("", h.terminateAll)
+		protected.Delete(":sessionId", h.terminate)
+		protected.Delete("/", h.terminateAll)
 	}
+
+	return r
 }
 
-func (h *sessionHandler) getAll(c *gin.Context) {
-	accountId, err := getAccountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - session - getAll - getAccountId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+func (h *sessionHandler) getAll(c *fiber.Ctx) error {
 
-	sessions, err := h.service.GetAll(c.Request.Context(), accountId)
-	if err != nil {
-		h.log.Error("http - v1 - session - getAll - h.service.GetAll: %w", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusOK, listResponse{Result: sessions})
+	return c.SendStatus(http.StatusOK)
 }
 
-const (
-	paramSessionId = "sessionId"
-)
+func (h *sessionHandler) terminate(c *fiber.Ctx) error {
 
-func (h *sessionHandler) terminate(c *gin.Context) {
-	currSessionId, err := getSessionId(c)
-	if err != nil {
-		h.log.Info("http - v1 - session - terminate - getSessionId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	sessionId := c.Param(paramSessionId)
-	if currSessionId == sessionId {
-		abortWithError(c, http.StatusBadRequest, session.ErrCannotBeTerminated, "")
-		return
-	}
-
-	if err := h.service.Terminate(c.Request.Context(), sessionId); err != nil {
-		h.log.Error("http - v1 - session - terminate - h.service.Terminate: %w", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusNoContent)
+	return c.SendStatus(http.StatusNoContent)
 }
 
-func (h *sessionHandler) terminateAll(c *gin.Context) {
-	accountId, err := getAccountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - getAccountId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+func (h *sessionHandler) terminateAll(c *fiber.Ctx) error {
 
-	}
-
-	sessionId, err := getSessionId(c)
-	if err != nil {
-		h.log.Info("http - v1 - session - terminateAll - getSessionId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	if err = h.service.TerminateWithExcept(c.Request.Context(), accountId, sessionId); err != nil {
-		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusNoContent)
+	return c.SendStatus(http.StatusNoContent)
 }

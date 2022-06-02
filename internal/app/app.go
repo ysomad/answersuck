@@ -7,30 +7,21 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
 	"github.com/ilyakaznacheev/cleanenv"
 
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/handler/http"
+	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
 	"github.com/answersuck/vault/internal/adapter/smtp"
-	"github.com/answersuck/vault/internal/adapter/storage"
-	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
 	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/email"
-	"github.com/answersuck/vault/internal/domain/language"
-	"github.com/answersuck/vault/internal/domain/media"
-	"github.com/answersuck/vault/internal/domain/player"
-	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
-	"github.com/answersuck/vault/internal/domain/tag"
-	"github.com/answersuck/vault/internal/domain/topic"
 
 	"github.com/answersuck/vault/pkg/blocklist"
-	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 	"github.com/answersuck/vault/pkg/token"
@@ -47,8 +38,6 @@ func Run(configPath string) {
 
 	l := logging.NewLogger(cfg.Log.Level)
 
-	l.Info(fmt.Sprintf("%+v\n", cfg))
-
 	// DB
 	pg, err := postgres.NewClient(cfg.PG.URL,
 		postgres.MaxPoolSize(cfg.PG.PoolMax),
@@ -59,6 +48,11 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
+	validationModule, err := validation.NewModule()
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - validation.NewModule: %w", err))
+	}
+
 	sessionRepo := psql.NewSessionRepo(l, pg)
 	sessionService := session.NewService(&cfg.Session, sessionRepo)
 
@@ -76,7 +70,7 @@ func Run(configPath string) {
 
 	tokenManager, err := token.NewManager(cfg.AccessToken.Sign)
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - auth.NewTokenManager: %w", err))
+		l.Fatal(fmt.Errorf("app - Run - token.NewManager: %w", err))
 	}
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
@@ -98,77 +92,59 @@ func Run(configPath string) {
 		SessionService: sessionService,
 	})
 
-	languageRepo := psql.NewLanguageRepo(l, pg)
-	languageService := language.NewService(languageRepo)
+	// languageRepo := psql.NewLanguageRepo(l, pg)
+	// languageService := language.NewService(languageRepo)
 
-	tagRepo := psql.NewTagRepo(l, pg)
-	tagService := tag.NewService(tagRepo)
+	// tagRepo := psql.NewTagRepo(l, pg)
+	// tagService := tag.NewService(tagRepo)
 
-	topicRepo := psql.NewTopicRepo(l, pg)
-	topicService := topic.NewService(topicRepo)
+	// topicRepo := psql.NewTopicRepo(l, pg)
+	// topicService := topic.NewService(topicRepo)
 
-	questionRepo := psql.NewQuestionRepo(l, pg)
-	questionService := question.NewService(questionRepo)
+	// questionRepo := psql.NewQuestionRepo(l, pg)
+	// questionService := question.NewService(questionRepo)
 
-	ginTranslator, err := validation.NewGinTranslator()
-	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - validation.NewGinTranslator: %w", err))
-	}
+	// storageProvider, err := storage.NewProvider(&cfg.FileStorage)
+	// if err != nil {
+	// 	l.Fatal(fmt.Errorf("app - Run - storage.NewProvider: %w", err))
+	// }
 
-	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
-	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - storage.NewProvider: %w", err))
-	}
+	// mediaRepo := psql.NewMediaRepo(l, pg)
+	// mediaService := media.NewService(mediaRepo, storageProvider)
 
-	mediaRepo := psql.NewMediaRepo(l, pg)
-	mediaService := media.NewService(mediaRepo, storageProvider)
+	// answerRepo := psql.NewAnswerRepo(l, pg)
+	// answerService := answer.NewService(l, answerRepo, mediaService)
 
-	answerRepo := psql.NewAnswerRepo(l, pg)
-	answerService := answer.NewService(l, answerRepo, mediaService)
+	// playerRepo := psql.NewPlayerRepo(l, pg)
+	// playerService := player.NewService(playerRepo)
 
-	playerRepo := psql.NewPlayerRepo(l, pg)
-	playerService := player.NewService(playerRepo)
+	app := http.NewApp(cfg)
 
-	// HTTP Server
-	engine := gin.New()
-	v1.NewHandler(
-		engine,
-		&v1.Deps{
-			Config:          &cfg,
-			Logger:          l,
-			ErrorTranslator: ginTranslator,
-			TokenManager:    tokenManager,
-			AccountService:  accountService,
-			SessionService:  sessionService,
-			AuthService:     authService,
-			LanguageService: languageService,
-			TagService:      tagService,
-			TopicService:    topicService,
-			QuestionService: questionService,
-			MediaService:    mediaService,
-			AnswerService:   answerService,
-			PlayerService:   playerService,
-		},
-	)
+	app.Mount("/v1", v1.NewRouter(&v1.Deps{
+		Config:           &cfg,
+		Logger:           l,
+		ValidationModule: validationModule,
+		SessionService:   sessionService,
+		AccountService:   accountService,
+		AuthService:      authService,
+	}))
 
-	// Swagger UI
-	engine.Static("docs", "third_party/swaggerui")
+	http.ServeSwaggerUI(app, cfg.HTTP.Debug)
 
-	httpServer := httpserver.New(engine, httpserver.Port(cfg.HTTP.Port))
+	// Listen from a different goroutine
+	go func() {
+		if err := app.Listen(cfg.HTTP.Port); err != nil {
+			l.Fatal("app.Listen: %w", err)
+		}
+	}()
 
-	// Graceful shutdown
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	c := make(chan os.Signal, 1)                    // Create channel to signify a signal being sent
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM) // When an interrupt or termination signal is sent, notify the channel
 
-	select {
-	case s := <-interrupt:
-		l.Info("app - Run - signal: " + s.String())
-	case err = <-httpServer.Notify():
-		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
-	}
+	_ = <-c // This blocks the main thread until an interrupt is received
+	l.Info("Gracefully shutting down...")
 
-	err = httpServer.Shutdown()
-	if err != nil {
-		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
-	}
+	_ = app.Shutdown()
+
+	l.Info("HTTP App was successful shutdown.")
 }

@@ -1,129 +1,120 @@
 package v1
 
 import (
-	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
-
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-const userAgentHeader = "User-Agent"
+// sessionMW check if request is authenticated and sets accountId and sessionId to locals (context)
+func sessionMW(l logging.Logger, cfg *config.Session,
+	s SessionService) fiber.Handler {
 
-// sessionMiddleware looking for a cookie with session id, sets account id and session id to context
-func sessionMiddleware(l logging.Logger, cfg *config.Session, s SessionService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sessionId, err := c.Cookie(cfg.CookieKey)
+	return func(c *fiber.Ctx) error {
+		sessionId := c.Cookies(cfg.CookieName)
+		if sessionId == "" {
+			l.Info("http - v1 - middleware - sessionMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
+			return c.SendStatus(fiber.StatusUnauthorized)
+		}
+
+		sess, err := s.GetById(c.Context(), sessionId)
 		if err != nil {
-			l.Error("http - v1 - middleware - sessionMiddleware - c.Cookie: %w", err)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
+			l.Error("http - v1 - middleware - sessionMW - s.GetById: %w", err)
+			return c.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		sess, err := s.GetById(c.Request.Context(), sessionId)
-		if err != nil {
-			l.Error("http - v1 - middleware - sessionMiddleware - s.GetById: %w", err)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
+		if sess.IP != c.IP() || sess.UserAgent != c.Get(fiber.HeaderUserAgent) {
+			l.Error("http - v1 - middleware - sessionMW: %w", session.ErrDeviceMismatch)
+			return c.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		if sess.IP != c.ClientIP() || sess.UserAgent != c.GetHeader(userAgentHeader) {
-			l.Error("http - v1 - middleware - sessionMiddleware: %w", session.ErrDeviceMismatch)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
+		c.Locals(sessionIdKey, sess.Id)
+		c.Locals(accountIdKey, sess.AccountId)
 
-		c.Set(sessionIdKey, sess.Id)
-		c.Set(accountIdKey, sess.AccountId)
-		c.Next()
+		return c.Next()
 	}
 }
 
-// protectionMiddleware checks if account is verified before
-func protectionMiddleware(l logging.Logger, cfg *config.Session, s SessionService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		sessionId, err := c.Cookie(cfg.CookieKey)
+// verifiedMW is simillar to sessionMW but also checks if account is verified,
+// aborts if not.
+//
+// should be used instead of sessionMW
+func verifiedMW(l logging.Logger, cfg *config.Session,
+	s SessionService) fiber.Handler {
+
+	return func(c *fiber.Ctx) error {
+		sessionId := c.Cookies(cfg.CookieName)
+		if sessionId == "" {
+			l.Info("http - v1 - middleware - verifiedMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
+			return c.SendStatus(fiber.StatusUnauthorized)
+		}
+
+		d, err := s.GetByIdWithVerified(c.Context(), sessionId)
 		if err != nil {
-			l.Error("http - v1 - middleware - protectionMiddleware - c.Cookie: %w", err)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
+			l.Error("http - v1 - middleware - verifiedMW - s.GetById: %w", err)
+			return c.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		sess, err := s.GetByIdWithVerified(c.Request.Context(), sessionId)
-		if err != nil {
-			l.Error("http - v1 - middleware - protectionMiddleware - s.Get: %w", err)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
+		if d.Session.IP != c.IP() || d.Session.UserAgent != c.Get(fiber.HeaderUserAgent) {
+			l.Error("http - v1 - middleware - verifiedMW: %w", session.ErrDeviceMismatch)
+			return c.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		if sess.Session.IP != c.ClientIP() || sess.Session.UserAgent != c.GetHeader(userAgentHeader) {
-			l.Error("http - v1 - middleware - protectionMiddleware: %w", session.ErrDeviceMismatch)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
+		if !d.Verified {
+			l.Info("http - v1 - middleware - verifiedMW - !d.Verified: %w", account.ErrNotEnoughRights)
+			return errorResp(c, fiber.StatusForbidden, account.ErrNotEnoughRights, "")
 		}
 
-		if !sess.Verified {
-			l.Error("http - v1 - middleware - protectionMiddleware - getAccountVerified: %w", err)
-			abortWithError(c, http.StatusForbidden, account.ErrNotEnoughRights, "")
-			return
-		}
+		c.Locals(sessionIdKey, d.Session.Id)
+		c.Locals(accountIdKey, d.Session.AccountId)
 
-		c.Set(sessionIdKey, sess.Session.Id)
-		c.Set(accountIdKey, sess.Session.AccountId)
-		c.Next()
+		return c.Next()
 	}
 }
 
-// tokenMiddleware parses and validates security token
-func tokenMiddleware(l logging.Logger, auth AuthService) gin.HandlerFunc {
-	return func(c *gin.Context) {
+// tokenMW parses and validates security token
+func tokenMW(l logging.Logger, auth AuthService) fiber.Handler {
+	return func(c *fiber.Ctx) error {
 		accountId, err := getAccountId(c)
 		if err != nil {
-			l.Error("http - v1 - middleware - tokenMiddleware - accountId: %w", err)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
+			l.Info("http - v1 - middleware - tokenMW - getAccountId: %w", err)
+			return c.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		t, found := c.GetQuery("token")
-		if !found || t == "" {
-			l.Error("http - v1 - middleware - tokenMiddleware - c.GetQuery: %w", err)
-			c.AbortWithStatus(http.StatusForbidden)
-			return
+		t := c.Query("token")
+		if t == "" {
+			l.Info("http - v1 - middleware - tokenMW - c.Query: %w", err)
+			return c.SendStatus(fiber.StatusForbidden)
 		}
 
-		currAud := strings.ToLower(c.Request.Host + c.FullPath())
+		reqURI := strings.ToLower(c.BaseURL() + c.OriginalURL())
 
-		sub, err := auth.ParseToken(c.Request.Context(), t, currAud)
+		sub, err := auth.ParseToken(c.Context(), t, reqURI)
 		if err != nil {
-			l.Error("http - v1 - middleware - tokenMiddleware - auth.ParseAccessToken: %w", err)
-			c.AbortWithStatus(http.StatusForbidden)
-			return
+			l.Error("http - v1 - middleware - tokenMW - auth.ParseToken: %w", err)
+			return c.SendStatus(fiber.StatusForbidden)
 		}
 
 		if sub != accountId {
-			l.Error("http - v1 - middleware - tokenMiddleware: %w", err)
-			c.AbortWithStatus(http.StatusForbidden)
-			return
+			l.Info("http - v1 - middleware - tokenMW: %w", err)
+			return c.SendStatus(fiber.StatusForbidden)
 		}
 
-		c.Set(audienceKey, currAud)
-		c.Next()
+		return c.Next()
 	}
 }
 
-func deviceMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		d := session.Device{
-			IP:        c.ClientIP(),
-			UserAgent: c.GetHeader(userAgentHeader),
-		}
+// deviceMW sets session.Device object to locals
+func deviceMW(c *fiber.Ctx) error {
+	c.Locals(deviceKey, session.Device{
+		IP:        c.IP(),
+		UserAgent: c.Get(fiber.HeaderUserAgent),
+	})
 
-		c.Set(deviceKey, d)
-		c.Next()
-	}
+	return c.Next()
 }

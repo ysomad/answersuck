@@ -3,9 +3,8 @@ package v1
 import (
 	"context"
 	"errors"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
@@ -14,7 +13,7 @@ import (
 )
 
 type AccountService interface {
-	Create(ctx context.Context, req account.CreateRequest) (*account.Account, error)
+	Create(ctx context.Context, r account.CreateRequest) (*account.Account, error)
 	Delete(ctx context.Context, accountId string) error
 
 	RequestVerification(ctx context.Context, accountId string) error
@@ -25,200 +24,115 @@ type AccountService interface {
 }
 
 type accountHandler struct {
-	t   ErrorTranslator
-	cfg *config.Aggregate
-	log logging.Logger
-
+	cfg     *config.Aggregate
+	log     logging.Logger
+	v       ValidationModule
 	service AccountService
 }
 
-func newAccountHandler(r *gin.RouterGroup, d *Deps) {
+func newAccountRouter(d *Deps) *fiber.App {
 	h := &accountHandler{
-		t:       d.ErrorTranslator,
 		cfg:     d.Config,
 		log:     d.Logger,
+		v:       d.ValidationModule,
 		service: d.AccountService,
 	}
 
-	accounts := r.Group("accounts")
+	r := fiber.New()
+
+	r.Post("/", h.create)
+
+	protected := r.Group("/",
+		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
+		tokenMW(d.Logger, d.AuthService))
 	{
-		accounts.POST("", h.create)
-		accounts.DELETE(
-			"",
-			sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService),
-			tokenMiddleware(d.Logger, d.AuthService),
-			h.delete,
-		)
+		protected.Delete("/", h.delete)
 	}
 
-	verification := accounts.Group("verification")
+	verification := r.Group("/verification")
 	{
-		verification.POST("", sessionMiddleware(d.Logger, &d.Config.Session, d.SessionService), h.requestVerification)
-		verification.PUT("", h.verify)
+		verification.Post("/",
+			sessionMW(d.Logger, &d.Config.Session, d.SessionService),
+			h.requestVerification)
+		verification.Put("/", h.verify)
 	}
 
-	password := accounts.Group("password")
+	password := r.Group("/password")
 	{
-		password.POST("", h.resetPassword)
-		password.PUT("", h.setPassword)
+		password.Post("/", h.resetPassword)
+		password.Put("/", h.setPassword)
 	}
+
+	return r
 }
 
-func (h *accountHandler) create(c *gin.Context) {
+func (h *accountHandler) create(c *fiber.Ctx) error {
+	c.Accepts(fiber.MIMEApplicationJSON)
+
 	var r account.CreateRequest
 
-	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-		return
+	if err := c.BodyParser(&r); err != nil {
+		h.log.Info("http - v1 - account - create - c.BodyParser: %w", err)
+
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
 	}
 
-	_, err := h.service.Create(c.Request.Context(), r)
+	if err := h.v.ValidateStruct(r); err != nil {
+		h.log.Info("http - v1 - account - create - ValidateStruct: %w", err)
+
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+	}
+
+	_, err := h.service.Create(c.Context(), r)
 	if err != nil {
 		h.log.Error("http - v1 - account - create - h.service.Create: %w", err)
 
 		switch {
+
 		case errors.Is(err, account.ErrAlreadyExist):
-			abortWithError(c, http.StatusConflict, account.ErrAlreadyExist, "")
-			return
+			return errorResp(c, fiber.StatusConflict, account.ErrAlreadyExist, "")
+
 		case errors.Is(err, account.ErrForbiddenNickname):
-			abortWithError(c, http.StatusBadRequest, account.ErrForbiddenNickname, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, account.ErrForbiddenNickname, "")
+
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.Status(http.StatusNoContent)
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
-func (h *accountHandler) delete(c *gin.Context) {
+func (h *accountHandler) delete(c *fiber.Ctx) error {
 	accountId, err := getAccountId(c)
 	if err != nil {
 		h.log.Error("http - v1 - account - delete - getAccountId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
-	if err = h.service.Delete(c.Request.Context(), accountId); err != nil {
+	if err = h.service.Delete(c.Context(), accountId); err != nil {
 		h.log.Error("http - v1 - account - delete - h.service.Delete: %w", err)
 
 		if errors.Is(err, account.ErrNotDeleted) {
-			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyArchived, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, account.ErrAlreadyArchived, "")
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.SetCookie(h.cfg.Session.CookieKey, "", -1, "", "", h.cfg.Cookie.Secure, h.cfg.Cookie.HTTPOnly)
-	c.Status(http.StatusNoContent)
+	c.Cookie(&fiber.Cookie{
+		Name:     h.cfg.Session.CookieName,
+		Value:    "",
+		MaxAge:   -1,
+		Secure:   h.cfg.Session.CookieSecure,
+		HTTPOnly: h.cfg.Session.CookieHTTPOnly,
+	})
+
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
-func (h *accountHandler) requestVerification(c *gin.Context) {
-	accountId, err := getAccountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - account - requestVerification - getAccountId %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+func (h *accountHandler) requestVerification(c *fiber.Ctx) error { return nil }
 
-	if err = h.service.RequestVerification(c.Request.Context(), accountId); err != nil {
-		h.log.Error("http - v1 - account - requestVerification - h.service.RequestVerification: %w", err)
-
-		if errors.Is(err, account.ErrAlreadyVerified) {
-			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyVerified, "")
-			return
-		}
-
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusAccepted)
-}
-
-const (
-	queryCode = "code"
-)
-
-func (h *accountHandler) verify(c *gin.Context) {
-	code, found := c.GetQuery(queryCode)
-	if !found {
-		abortWithError(c, http.StatusBadRequest, account.ErrEmptyVerificationCode, "")
-		return
-	}
-
-	if err := h.service.Verify(c.Request.Context(), code); err != nil {
-		h.log.Error("http - v1 - account - verify - h.service.Verify: %w", err)
-
-		if errors.Is(err, account.ErrAlreadyVerified) {
-			abortWithError(c, http.StatusBadRequest, account.ErrAlreadyVerified, "")
-			return
-		}
-
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusNoContent)
-}
-
-func (h *accountHandler) resetPassword(c *gin.Context) {
-	var r account.ResetPasswordRequest
-
-	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-		return
-	}
-
-	if err := h.service.ResetPassword(c.Request.Context(), r.Login); err != nil {
-		h.log.Error("http - v1 - account - resetPassword - h.service.ResetPassword: %w", err)
-
-		if errors.Is(err, account.ErrNotFound) {
-			abortWithError(c, http.StatusNotFound, account.ErrNotFound, "")
-			return
-		}
-
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusAccepted)
-}
-
-const (
-	queryToken = "token"
-)
-
-func (h *accountHandler) setPassword(c *gin.Context) {
-	var r account.SetPasswordRequest
-
-	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-		return
-	}
-
-	t, found := c.GetQuery(queryToken)
-	if !found || t == "" {
-		abortWithError(c, http.StatusBadRequest, account.ErrEmptyPasswordResetToken, "")
-		return
-	}
-
-	if err := h.service.SetPassword(c.Request.Context(), t, r.Password); err != nil {
-		h.log.Error("http - v1 - account - setPassword - h.service.SetPassword: %w", err)
-
-		if errors.Is(err, account.ErrPasswordResetTokenExpired) ||
-			errors.Is(err, account.ErrPasswordTokenNotFound) {
-
-			c.AbortWithStatus(http.StatusForbidden)
-			return
-		}
-
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.Status(http.StatusNoContent)
-}
+func (h *accountHandler) verify(c *fiber.Ctx) error        { return nil }
+func (h *accountHandler) resetPassword(c *fiber.Ctx) error { return nil }
+func (h *accountHandler) setPassword(c *fiber.Ctx) error   { return nil }

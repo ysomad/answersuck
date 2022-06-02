@@ -6,9 +6,9 @@ import (
 
 type (
 	CreateRequest struct {
-		Email    string `json:"email" binding:"required,email,lte=255"`
-		Nickname string `json:"nickname" binding:"required,alphanum,gte=4,lte=25"`
-		Password string `json:"password" binding:"required,gte=8,lte=71"`
+		Email    string `json:"email" validate:"required,email,lte=255"`
+		Nickname string `json:"nickname" validate:"required,alphanum,gte=4,lte=25"`
+		Password string `json:"password" validate:"required,gte=8,lte=71"`
 	}
 
 	ResetPasswordRequest struct {

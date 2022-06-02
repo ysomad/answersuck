@@ -1,24 +1,18 @@
 package v1
 
 import (
-	"errors"
-
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-var errInvalidRequestBody = errors.New("invalid request body")
-
-type ErrorTranslator interface {
-	TranslateError(err error) map[string]string
-}
-
-type errorResponse[T string | map[string]string] struct {
+type detailedError[D string | map[string]string] struct {
 	Error  string `json:"error"`
-	Detail T      `json:"detail"`
+	Detail D      `json:"detail"`
 }
 
-func abortWithError[T string | map[string]string](c *gin.Context, code int, err error, detail T) {
-	c.AbortWithStatusJSON(code, errorResponse[T]{
+func errorResp[D string | map[string]string](c *fiber.Ctx, status int,
+	err error, detail D) error {
+
+	return c.Status(status).JSON(detailedError[D]{
 		Error:  err.Error(),
 		Detail: detail,
 	})
