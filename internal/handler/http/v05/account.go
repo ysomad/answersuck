@@ -14,7 +14,7 @@ import (
 )
 
 type AccountService interface {
-	Create(ctx context.Context, req account.CreateRequest) (*account.Account, error)
+	Create(ctx context.Context, req account.CreateReq) (*account.Account, error)
 	Delete(ctx context.Context, accountId string) error
 
 	RequestVerification(ctx context.Context, accountId string) error
@@ -65,7 +65,7 @@ func newAccountHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *accountHandler) create(c *gin.Context) {
-	var r account.CreateRequest
+	var r account.CreateReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
@@ -166,7 +166,7 @@ func (h *accountHandler) verify(c *gin.Context) {
 }
 
 func (h *accountHandler) resetPassword(c *gin.Context) {
-	var r account.ResetPasswordRequest
+	var r account.ResetPasswordReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
@@ -193,7 +193,7 @@ const (
 )
 
 func (h *accountHandler) setPassword(c *gin.Context) {
-	var r account.SetPasswordRequest
+	var r account.SetPasswordReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))

@@ -77,7 +77,7 @@ func NewService(d *Deps) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateRequest) (*Account, error) {
+func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
 	now := time.Now()
 
 	a := &Account{
