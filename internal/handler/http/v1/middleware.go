@@ -19,18 +19,24 @@ func sessionMW(l logging.Logger, cfg *config.Session,
 		sessionId := c.Cookies(cfg.CookieName)
 		if sessionId == "" {
 			l.Info("http - v1 - middleware - sessionMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		sess, err := s.GetById(c.Context(), sessionId)
 		if err != nil {
 			l.Error("http - v1 - middleware - sessionMW - s.GetById: %w", err)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		if sess.IP != c.IP() || sess.UserAgent != c.Get(fiber.HeaderUserAgent) {
 			l.Error("http - v1 - middleware - sessionMW: %w", session.ErrDeviceMismatch)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		c.Locals(sessionIdKey, sess.Id)
@@ -51,22 +57,29 @@ func verifiedMW(l logging.Logger, cfg *config.Session,
 		sessionId := c.Cookies(cfg.CookieName)
 		if sessionId == "" {
 			l.Info("http - v1 - middleware - verifiedMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		d, err := s.GetByIdWithVerified(c.Context(), sessionId)
 		if err != nil {
 			l.Error("http - v1 - middleware - verifiedMW - s.GetById: %w", err)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		if d.Session.IP != c.IP() || d.Session.UserAgent != c.Get(fiber.HeaderUserAgent) {
 			l.Error("http - v1 - middleware - verifiedMW: %w", session.ErrDeviceMismatch)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		if !d.Verified {
 			l.Info("http - v1 - middleware - verifiedMW - !d.Verified: %w", account.ErrNotEnoughRights)
+
 			return errorResp(c, fiber.StatusForbidden, account.ErrNotEnoughRights, "")
 		}
 
@@ -83,13 +96,17 @@ func tokenMW(l logging.Logger, auth AuthService) fiber.Handler {
 		accountId, err := getAccountId(c)
 		if err != nil {
 			l.Info("http - v1 - middleware - tokenMW - getAccountId: %w", err)
-			return c.SendStatus(fiber.StatusUnauthorized)
+
+			c.Status(fiber.StatusUnauthorized)
+			return nil
 		}
 
 		t := c.Query("token")
 		if t == "" {
-			l.Info("http - v1 - middleware - tokenMW - c.Query: %w", err)
-			return c.SendStatus(fiber.StatusForbidden)
+			l.Info("http - v1 - middleware - tokenMW - c.Query: %w", account.ErrEmptyPasswordResetToken)
+
+			c.Status(fiber.StatusForbidden)
+			return nil
 		}
 
 		reqURI := strings.ToLower(c.BaseURL() + c.OriginalURL())
@@ -97,12 +114,16 @@ func tokenMW(l logging.Logger, auth AuthService) fiber.Handler {
 		sub, err := auth.ParseToken(c.Context(), t, reqURI)
 		if err != nil {
 			l.Error("http - v1 - middleware - tokenMW - auth.ParseToken: %w", err)
-			return c.SendStatus(fiber.StatusForbidden)
+
+			c.Status(fiber.StatusForbidden)
+			return nil
 		}
 
 		if sub != accountId {
 			l.Info("http - v1 - middleware - tokenMW: %w", err)
-			return c.SendStatus(fiber.StatusForbidden)
+
+			c.Status(fiber.StatusForbidden)
+			return nil
 		}
 
 		return c.Next()

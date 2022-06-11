@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -42,26 +41,77 @@ func newSessionRouter(d *Deps) *fiber.App {
 		authenticated.Get("/", h.getAll)
 	}
 
-	protected := authenticated.Group("/", tokenMW(d.Logger, d.AuthService))
+	requireToken := authenticated.Group("/", tokenMW(d.Logger, d.AuthService))
 	{
-		protected.Delete(":sessionId", h.terminate)
-		protected.Delete("/", h.terminateAll)
+		requireToken.Delete(":sessionId", h.terminate)
+		requireToken.Delete("/", h.terminateAll)
 	}
 
 	return r
 }
 
 func (h *sessionHandler) getAll(c *fiber.Ctx) error {
+	accountId, err := getAccountId(c)
+	if err != nil {
+		h.log.Error("http - v1 - session - getAll - getAccountId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
 
-	return c.SendStatus(http.StatusOK)
+	s, err := h.service.GetAll(c.Context(), accountId)
+	if err != nil {
+		h.log.Error("http - v1 - session - getAll - h.service.GetAll: %w", err)
+		c.Status(fiber.StatusInternalServerError)
+		return nil
+	}
+
+	return c.Status(fiber.StatusOK).JSON(s)
 }
 
 func (h *sessionHandler) terminate(c *fiber.Ctx) error {
+	currSessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - session - terminate - getSessionId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
 
-	return c.SendStatus(http.StatusNoContent)
+	sessionId := c.Params("sessionId")
+	if currSessionId == sessionId {
+		return errorResp(c, fiber.StatusBadRequest, session.ErrCannotBeTerminated, "")
+	}
+
+	if err := h.service.Terminate(c.Context(), sessionId); err != nil {
+		h.log.Error("http - v1 - session - terminate - h.service.Terminate: %w", err)
+		c.Status(fiber.StatusInternalServerError)
+		return nil
+	}
+
+	c.Status(fiber.StatusNoContent)
+	return nil
 }
 
 func (h *sessionHandler) terminateAll(c *fiber.Ctx) error {
+	accountId, err := getAccountId(c)
+	if err != nil {
+		h.log.Error("http - v1 - session - terminateAll - getAccountId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
 
-	return c.SendStatus(http.StatusNoContent)
+	sessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - session - terminateAll - getSessionId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
+
+	if err = h.service.TerminateWithExcept(c.Context(), accountId, sessionId); err != nil {
+		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
+		c.Status(fiber.StatusInternalServerError)
+		return nil
+	}
+
+	c.Status(fiber.StatusNoContent)
+	return nil
 }
