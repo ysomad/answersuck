@@ -14,7 +14,8 @@ type Deps struct {
 	ValidationModule ValidationModule
 	SessionService   SessionService
 	AccountService   AccountService
-	AuthService      AuthService
+	LoginService     LoginService
+	TokenService     TokenService
 }
 
 func NewRouter(d *Deps) *fiber.App {

@@ -1,17 +1,23 @@
 package auth
 
 type (
-	LoginRequest struct {
-		Login    string `json:"login" binding:"required,email|alphanum"`
-		Password string `json:"password" binding:"required"`
+	LoginReq struct {
+		Login    string `json:"login" validate:"required,email|alphanum"`
+		Password string `json:"password" validate:"required"`
 	}
 
-	TokenCreateRequest struct {
-		Audience string `json:"audience" binding:"required,uri"`
-		Password string `json:"password" binding:"required"`
+	TokenCreateReq struct {
+		Audience string `json:"audience" validate:"required,uri"`
+		Password string `json:"password" validate:"required"`
 	}
 
-	TokenCreateResponse struct {
+	TokenCreateResp struct {
 		Token string `json:"token"`
+	}
+)
+
+type (
+	TokenCreateDTO struct {
+		AccountId, Password, Audience string
 	}
 )

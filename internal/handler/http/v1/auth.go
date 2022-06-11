@@ -1,41 +1,40 @@
 package v1
 
 import (
-	"context"
 	"errors"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/config"
+
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
-	"github.com/answersuck/vault/internal/domain/session"
+
 	"github.com/answersuck/vault/pkg/logging"
 )
-
-type AuthService interface {
-	Login(ctx context.Context, login, password string, d session.Device) (*session.Session, error)
-
-	NewToken(ctx context.Context, accountId, password, audience string) (string, error)
-	ParseToken(ctx context.Context, token, audience string) (string, error)
-}
 
 type authHandler struct {
 	cfg     *config.Aggregate
 	log     logging.Logger
 	v       ValidationModule
-	service AuthService
+	service LoginService
+	token   TokenService
 	session SessionService
 }
 
-func newAuthRouter(d *Deps) *fiber.App {
-	h := &authHandler{
+func newAuthHandler(d *Deps) *authHandler {
+	return &authHandler{
 		cfg:     d.Config,
 		log:     d.Logger,
 		v:       d.ValidationModule,
-		service: d.AuthService,
+		service: d.LoginService,
 		session: d.SessionService,
 	}
+}
+
+func newAuthRouter(d *Deps) *fiber.App {
+	h := newAuthHandler(d)
 
 	r := fiber.New()
 
@@ -55,35 +54,37 @@ func (h *authHandler) login(c *fiber.Ctx) error {
 		return errorResp(c, fiber.StatusBadRequest, auth.ErrAlreadyLoggedIn, "")
 	}
 
-	var r auth.LoginRequest
+	var r auth.LoginReq
 
 	if err := c.BodyParser(&r); err != nil {
 		h.log.Info("http - v1 - auth - login - c.BodyParser: %w", err)
-
 		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
 	}
 
 	if err := h.v.ValidateStruct(r); err != nil {
 		h.log.Info("http - v1 - auth - login - h.v.ValidateStruct: %w", err)
-
 		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 	}
 
 	d, err := getDevice(c)
 	if err != nil {
 		h.log.Error("http - v1 - auth - login - getDevice: %w", err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		c.Status(fiber.StatusInternalServerError)
+		return nil
 	}
 
 	s, err := h.service.Login(c.Context(), r.Login, r.Password, d)
 	if err != nil {
 		h.log.Error("http - v1 - auth - login - h.service.Login: %w", err)
 
-		if errors.Is(err, account.ErrIncorrectPassword) || errors.Is(err, account.ErrNotFound) {
+		if errors.Is(err, account.ErrIncorrectPassword) ||
+			errors.Is(err, account.ErrNotFound) {
+
 			return errorResp(c, fiber.StatusUnauthorized, account.ErrIncorrectCredentials, "")
 		}
 
-		return c.SendStatus(fiber.StatusInternalServerError)
+		c.Status(fiber.StatusInternalServerError)
+		return nil
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -95,63 +96,74 @@ func (h *authHandler) login(c *fiber.Ctx) error {
 	})
 
 	c.Status(fiber.StatusOK)
-
 	return nil
 }
 
 func (h *authHandler) logout(c *fiber.Ctx) error {
-	// sessionId, err := getSessionId(c)
-	// if err != nil {
-	// 	h.log.Info("http - v1 - auth - logout - getSessionId: %w", err)
-	// 	c.AbortWithStatus(http.StatusUnauthorized)
-	// 	return
-	// }
+	sessionId, err := getSessionId(c)
+	if err != nil {
+		h.log.Info("http - v1 - auth - logout - getSessionId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
 
-	// if err := h.session.Terminate(c.Request.Context(), sessionId); err != nil {
-	// 	h.log.Error("http - v1 - auth - logout - h.session.Terminate: %w", err)
-	// 	c.AbortWithStatus(http.StatusInternalServerError)
-	// 	return
-	// }
+	if err := h.session.Terminate(c.Context(), sessionId); err != nil {
+		h.log.Error("http - v1 - auth - logout - h.session.Terminate: %w", err)
+		c.Status(fiber.StatusInternalServerError)
+		return nil
+	}
 
-	// c.SetCookie(h.cfg.Session.CookieName, "", -1, "", "", h.cfg.Session.CookieSecure, h.cfg.Session.CookieHTTPOnly)
-	// c.Status(http.StatusNoContent)
+	c.Cookie(&fiber.Cookie{
+		Name:     h.cfg.Session.CookieName,
+		Value:    "",
+		MaxAge:   -1,
+		Secure:   h.cfg.Session.CookieSecure,
+		HTTPOnly: h.cfg.Session.CookieHTTPOnly,
+	})
+
+	c.Status(fiber.StatusOK)
 	return nil
 }
 
 func (h *authHandler) createToken(c *fiber.Ctx) error {
-	// var r auth.TokenCreateRequest
+	c.Accepts(fiber.MIMEApplicationJSON)
 
-	// if err := c.ShouldBindJSON(&r); err != nil {
-	// 	h.log.Info(err.Error())
-	// 	abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-	// 	return
-	// }
+	var r auth.TokenCreateReq
 
-	// accountId, err := getAccountId(c)
-	// if err != nil {
-	// 	h.log.Error("http - v1 - auth - createToken - getAccountId: %w", err)
-	// 	c.AbortWithStatus(http.StatusUnauthorized)
-	// 	return
-	// }
+	if err := c.BodyParser(&r); err != nil {
+		h.log.Info("http - v1 - auth - createToken - c.BodyParser: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
+	}
 
-	// t, err := h.service.NewToken(
-	// 	c.Request.Context(),
-	// 	accountId,
-	// 	r.Password,
-	// 	strings.ToLower(r.Audience),
-	// )
-	// if err != nil {
-	// 	h.log.Error("http - v1 - auth - createToken - h.service.NewToken: %w", err)
+	if err := h.v.ValidateStruct(r); err != nil {
+		h.log.Info("http - v1 - auth - createToken - h.v.ValidateStruct: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+	}
 
-	// 	if errors.Is(err, account.ErrIncorrectPassword) {
-	// 		c.AbortWithStatus(http.StatusForbidden)
-	// 		return
-	// 	}
+	accountId, err := getAccountId(c)
+	if err != nil {
+		h.log.Error("http - v1 - auth - createToken - getAccountId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
 
-	// 	c.AbortWithStatus(http.StatusInternalServerError)
-	// 	return
-	// }
+	t, err := h.token.Create(c.Context(), auth.TokenCreateDTO{
+		AccountId: accountId,
+		Password:  r.Password,
+		Audience:  strings.ToLower(r.Audience),
+	})
+	if err != nil {
+		h.log.Error("http - v1 - auth - createToken - h.token.New: %w", err)
 
-	// c.JSON(http.StatusOK, auth.TokenCreateResponse{Token: t})
+		if errors.Is(err, account.ErrIncorrectPassword) {
+			c.Status(fiber.StatusForbidden)
+			return nil
+		}
+
+		c.Status(fiber.StatusInternalServerError)
+		return nil
+	}
+
+	c.Status(fiber.StatusOK).JSON(auth.TokenCreateResp{Token: t})
 	return nil
 }

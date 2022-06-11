@@ -91,7 +91,7 @@ func verifiedMW(l logging.Logger, cfg *config.Session,
 }
 
 // tokenMW parses and validates security token
-func tokenMW(l logging.Logger, auth AuthService) fiber.Handler {
+func tokenMW(l logging.Logger, token TokenService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		accountId, err := getAccountId(c)
 		if err != nil {
@@ -111,9 +111,9 @@ func tokenMW(l logging.Logger, auth AuthService) fiber.Handler {
 
 		reqURI := strings.ToLower(c.BaseURL() + c.OriginalURL())
 
-		sub, err := auth.ParseToken(c.Context(), t, reqURI)
+		sub, err := token.Parse(c.Context(), t, reqURI)
 		if err != nil {
-			l.Error("http - v1 - middleware - tokenMW - auth.ParseToken: %w", err)
+			l.Error("http - v1 - middleware - tokenMW - token.Parse: %w", err)
 
 			c.Status(fiber.StatusForbidden)
 			return nil

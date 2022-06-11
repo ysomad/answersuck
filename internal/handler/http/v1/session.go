@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"context"
-
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/config"
@@ -10,14 +8,6 @@ import (
 
 	"github.com/answersuck/vault/pkg/logging"
 )
-
-type SessionService interface {
-	GetByIdWithVerified(ctx context.Context, sessionId string) (*session.WithAccountDetails, error)
-	GetById(ctx context.Context, sessionId string) (*session.Session, error)
-	GetAll(ctx context.Context, accountId string) ([]*session.Session, error)
-	Terminate(ctx context.Context, sessionId string) error
-	TerminateWithExcept(ctx context.Context, accountId, sessionId string) error
-}
 
 type sessionHandler struct {
 	cfg     *config.Aggregate
@@ -45,7 +35,7 @@ func newSessionRouter(d *Deps) *fiber.App {
 		authenticated.Get("/", h.getAll)
 	}
 
-	requireToken := authenticated.Group("/", tokenMW(d.Logger, d.AuthService))
+	requireToken := authenticated.Group("/", tokenMW(d.Logger, d.TokenService))
 	{
 		requireToken.Delete(":sessionId", h.terminate)
 		requireToken.Delete("/", h.terminateAll)

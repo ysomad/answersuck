@@ -59,7 +59,7 @@ func (h *authHandler) login(c *gin.Context) {
 		return
 	}
 
-	var r auth.LoginRequest
+	var r auth.LoginReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
@@ -109,7 +109,7 @@ func (h *authHandler) logout(c *gin.Context) {
 }
 
 func (h *authHandler) createToken(c *gin.Context) {
-	var r auth.TokenCreateRequest
+	var r auth.TokenCreateReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		h.log.Info(err.Error())
@@ -142,5 +142,5 @@ func (h *authHandler) createToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, auth.TokenCreateResponse{Token: t})
+	c.JSON(http.StatusOK, auth.TokenCreateResp{Token: t})
 }

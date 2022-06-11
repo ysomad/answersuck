@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,17 +10,6 @@ import (
 
 	"github.com/answersuck/vault/pkg/logging"
 )
-
-type AccountService interface {
-	Create(ctx context.Context, r account.CreateReq) (*account.Account, error)
-	Delete(ctx context.Context, accountId string) error
-
-	RequestVerification(ctx context.Context, accountId string) error
-	Verify(ctx context.Context, code string) error
-
-	ResetPassword(ctx context.Context, login string) error
-	SetPassword(ctx context.Context, token, password string) error
-}
 
 type accountHandler struct {
 	cfg     *config.Aggregate
@@ -48,7 +36,7 @@ func newAccountRouter(d *Deps) *fiber.App {
 
 	protected := r.Group("/",
 		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
-		tokenMW(d.Logger, d.AuthService))
+		tokenMW(d.Logger, d.TokenService))
 	{
 		protected.Delete("/", h.delete)
 	}

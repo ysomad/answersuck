@@ -12,11 +12,11 @@ type (
 	}
 
 	ResetPasswordReq struct {
-		Login string `json:"login" binding:"required,email|alphanum"`
+		Login string `json:"login" validate:"required,email|alphanum"`
 	}
 
 	SetPasswordReq struct {
-		Password string `json:"password" binding:"required,gte=8,lte=71"`
+		Password string `json:"password" validate:"required,gte=8,lte=71"`
 	}
 )
 

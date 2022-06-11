@@ -10,6 +10,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 
 	"github.com/answersuck/vault/internal/config"
+
 	"github.com/answersuck/vault/internal/handler/http"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
@@ -84,13 +85,8 @@ func Run(configPath string) {
 		BlockList:      usernameBlockList,
 	})
 
-	authService := auth.NewService(&auth.Deps{
-		Logger:         l,
-		Config:         &cfg,
-		Token:          tokenManager,
-		AccountService: accountService,
-		SessionService: sessionService,
-	})
+	loginService := auth.NewLoginService(accountService, sessionService)
+	tokenService := auth.NewTokenService(&cfg.AccessToken, tokenManager, accountService)
 
 	// languageRepo := psql.NewLanguageRepo(l, pg)
 	// languageService := language.NewService(languageRepo)
@@ -126,7 +122,8 @@ func Run(configPath string) {
 		ValidationModule: validationModule,
 		SessionService:   sessionService,
 		AccountService:   accountService,
-		AuthService:      authService,
+		LoginService:     loginService,
+		TokenService:     tokenService,
 	}))
 
 	http.ServeSwaggerUI(app, cfg.HTTP.Debug)
