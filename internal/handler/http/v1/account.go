@@ -30,13 +30,17 @@ type accountHandler struct {
 	account AccountService
 }
 
-func newAccountRouter(d *Deps) *fiber.App {
-	h := &accountHandler{
+func newAccountHandler(d *Deps) *accountHandler {
+	return &accountHandler{
 		cfg:     d.Config,
 		log:     d.Logger,
 		v:       d.ValidationModule,
 		account: d.AccountService,
 	}
+}
+
+func newAccountRouter(d *Deps) *fiber.App {
+	h := newAccountHandler(d)
 
 	r := fiber.New()
 

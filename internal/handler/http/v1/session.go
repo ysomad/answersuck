@@ -26,13 +26,17 @@ type sessionHandler struct {
 	service SessionService
 }
 
-func newSessionRouter(d *Deps) *fiber.App {
-	h := &sessionHandler{
+func newSessionHandler(d *Deps) *sessionHandler {
+	return &sessionHandler{
 		cfg:     d.Config,
 		log:     d.Logger,
 		v:       d.ValidationModule,
 		service: d.SessionService,
 	}
+}
+
+func newSessionRouter(d *Deps) *fiber.App {
+	h := newSessionHandler(d)
 
 	r := fiber.New()
 
