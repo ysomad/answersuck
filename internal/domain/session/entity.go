@@ -25,10 +25,10 @@ type fields struct {
 	expiration time.Duration
 }
 
-func newSession(f fields) (*Session, error) {
+func newSession(accountId, userAgent, ip string, exp time.Duration) (*Session, error) {
 	// TODO: add useragent validation
 
-	if _, err := netip.ParseAddr(f.ip); err != nil {
+	if _, err := netip.ParseAddr(ip); err != nil {
 		return nil, fmt.Errorf("netip.ParseAddr: %w", err)
 	}
 
@@ -41,11 +41,11 @@ func newSession(f fields) (*Session, error) {
 
 	return &Session{
 		Id:        sid,
-		AccountId: f.accountId,
-		UserAgent: f.userAgent,
-		IP:        f.ip,
-		MaxAge:    int(f.expiration.Seconds()),
-		ExpiresAt: now.Add(f.expiration).Unix(),
+		AccountId: accountId,
+		UserAgent: userAgent,
+		IP:        ip,
+		MaxAge:    int(exp.Seconds()),
+		ExpiresAt: now.Add(exp).Unix(),
 		CreatedAt: now,
 	}, nil
 }

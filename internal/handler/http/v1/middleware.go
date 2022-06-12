@@ -2,12 +2,14 @@ package v1
 
 import (
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
+
 	"github.com/answersuck/vault/pkg/logging"
 )
 
@@ -19,7 +21,6 @@ func sessionMW(l logging.Logger, cfg *config.Session,
 		sessionId := c.Cookies(cfg.CookieName)
 		if sessionId == "" {
 			l.Info("http - v1 - middleware - sessionMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
-
 			c.Status(fiber.StatusUnauthorized)
 			return nil
 		}
@@ -27,14 +28,18 @@ func sessionMW(l logging.Logger, cfg *config.Session,
 		sess, err := s.GetById(c.Context(), sessionId)
 		if err != nil {
 			l.Error("http - v1 - middleware - sessionMW - s.GetById: %w", err)
+			c.Status(fiber.StatusUnauthorized)
+			return nil
+		}
 
+		if time.Now().Unix() > sess.ExpiresAt {
+			l.Info("http - v1 - middleware - sessionMW: %w", session.ErrExpired)
 			c.Status(fiber.StatusUnauthorized)
 			return nil
 		}
 
 		if sess.IP != c.IP() || sess.UserAgent != c.Get(fiber.HeaderUserAgent) {
 			l.Error("http - v1 - middleware - sessionMW: %w", session.ErrDeviceMismatch)
-
 			c.Status(fiber.StatusUnauthorized)
 			return nil
 		}
@@ -96,7 +101,6 @@ func tokenMW(l logging.Logger, token TokenService) fiber.Handler {
 		accountId, err := getAccountId(c)
 		if err != nil {
 			l.Info("http - v1 - middleware - tokenMW - getAccountId: %w", err)
-
 			c.Status(fiber.StatusUnauthorized)
 			return nil
 		}
@@ -104,24 +108,19 @@ func tokenMW(l logging.Logger, token TokenService) fiber.Handler {
 		t := c.Query("token")
 		if t == "" {
 			l.Info("http - v1 - middleware - tokenMW - c.Query: %w", account.ErrEmptyPasswordResetToken)
-
 			c.Status(fiber.StatusForbidden)
 			return nil
 		}
 
-		reqURI := strings.ToLower(c.BaseURL() + c.OriginalURL())
-
-		sub, err := token.Parse(c.Context(), t, reqURI)
+		sub, err := token.Parse(c.Context(), t, strings.ToLower(c.Hostname()+c.Route().Path))
 		if err != nil {
 			l.Error("http - v1 - middleware - tokenMW - token.Parse: %w", err)
-
 			c.Status(fiber.StatusForbidden)
 			return nil
 		}
 
 		if sub != accountId {
 			l.Info("http - v1 - middleware - tokenMW: %w", err)
-
 			c.Status(fiber.StatusForbidden)
 			return nil
 		}

@@ -9,4 +9,5 @@ var (
 	ErrAccountNotFound    = errors.New("session cannot be created, account with given account id is not found")
 	ErrNotFound           = errors.New("session not found")
 	ErrNotDeleted         = errors.New("session has not been deleted")
+	ErrExpired            = errors.New("session expired")
 )

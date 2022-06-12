@@ -1,6 +1,6 @@
 app:
   name: "answersuck-backend"
-  version: "0.1.0"
+  version: "0.0.2"
 
 web:
   url: "http://localhost:8000"
@@ -26,7 +26,7 @@ session:
   cookieSecure: false
   cookieHttpOnly: true
 
-accessToken:
+securityToken:
   expiration: 1m
   signingKey: "secret"
 

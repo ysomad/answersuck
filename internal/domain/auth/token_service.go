@@ -8,12 +8,12 @@ import (
 )
 
 type tokenService struct {
-	cfg     *config.AccessToken
+	cfg     *config.SecurityToken
 	token   TokenManager
 	account AccountService
 }
 
-func NewTokenService(c *config.AccessToken, t TokenManager, a AccountService) *tokenService {
+func NewTokenService(c *config.SecurityToken, t TokenManager, a AccountService) *tokenService {
 	return &tokenService{
 		cfg:     c,
 		token:   t,

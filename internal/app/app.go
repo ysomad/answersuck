@@ -69,7 +69,7 @@ func Run(configPath string) {
 
 	emailService := email.NewService(&cfg, emailClient)
 
-	tokenManager, err := token.NewManager(cfg.AccessToken.Sign)
+	tokenManager, err := token.NewManager(cfg.SecurityToken.Sign)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - token.NewManager: %w", err))
 	}
@@ -89,7 +89,7 @@ func Run(configPath string) {
 	accountVerifService := account.NewVerificationService(accountVerifRepo, emailService)
 
 	loginService := auth.NewLoginService(accountService, sessionService)
-	tokenService := auth.NewTokenService(&cfg.AccessToken, tokenManager, accountService)
+	tokenService := auth.NewTokenService(&cfg.SecurityToken, tokenManager, accountService)
 
 	// languageRepo := psql.NewLanguageRepo(l, pg)
 	// languageService := language.NewService(languageRepo)

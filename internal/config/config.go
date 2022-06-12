@@ -6,19 +6,19 @@ import (
 
 type (
 	Aggregate struct {
-		App         App         `yaml:"app"`
-		Web         Web         `yaml:"web"`
-		HTTP        HTTP        `yaml:"http"`
-		Log         Log         `yaml:"logger"`
-		PG          PG          `yaml:"postgres"`
-		Cache       Cache       `yaml:"cache"`
-		Redis       Redis       `yaml:"redis"`
-		AccessToken AccessToken `yaml:"accessToken"`
-		Session     Session     `yaml:"session"`
-		FileStorage FileStorage `yaml:"fileStorage"`
-		Email       Email       `yaml:"email"`
-		SMTP        SMTP        `yaml:"smtp"`
-		Password    Password    `yaml:"password"`
+		App           App           `yaml:"app"`
+		Web           Web           `yaml:"web"`
+		HTTP          HTTP          `yaml:"http"`
+		Log           Log           `yaml:"logger"`
+		PG            PG            `yaml:"postgres"`
+		Cache         Cache         `yaml:"cache"`
+		Redis         Redis         `yaml:"redis"`
+		SecurityToken SecurityToken `yaml:"securityToken"`
+		Session       Session       `yaml:"session"`
+		FileStorage   FileStorage   `yaml:"fileStorage"`
+		Email         Email         `yaml:"email"`
+		SMTP          SMTP          `yaml:"smtp"`
+		Password      Password      `yaml:"password"`
 	}
 
 	Web struct {
@@ -62,7 +62,7 @@ type (
 		CookieHTTPOnly bool          `yaml:"cookieHttpOnly"`
 	}
 
-	AccessToken struct {
+	SecurityToken struct {
 		Expiration time.Duration `env-required:"true" yaml:"expiration"`
 		Sign       string        `env-required:"true" yaml:"signingKey" env:"ACCESS_TOKEN_SIGNING_KEY"`
 	}

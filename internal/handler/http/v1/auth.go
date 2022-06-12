@@ -29,6 +29,7 @@ func newAuthHandler(d *Deps) *authHandler {
 		log:     d.Logger,
 		v:       d.ValidationModule,
 		service: d.LoginService,
+		token:   d.TokenService,
 		session: d.SessionService,
 	}
 }
@@ -41,10 +42,8 @@ func newAuthRouter(d *Deps) *fiber.App {
 	r.Post("/login", deviceMW, h.login)
 
 	authenticated := r.Group("/", sessionMW(d.Logger, &d.Config.Session, d.SessionService))
-	{
-		authenticated.Post("logout", h.logout)
-		authenticated.Post("token", h.createToken)
-	}
+	authenticated.Post("logout", h.logout)
+	authenticated.Post("token", h.createToken)
 
 	return r
 }
@@ -153,7 +152,7 @@ func (h *authHandler) createToken(c *fiber.Ctx) error {
 		Audience:  strings.ToLower(r.Audience),
 	})
 	if err != nil {
-		h.log.Error("http - v1 - auth - createToken - h.token.New: %w", err)
+		h.log.Error("http - v1 - auth - createToken - h.token.Create: %w", err)
 
 		if errors.Is(err, account.ErrIncorrectPassword) {
 			c.Status(fiber.StatusForbidden)

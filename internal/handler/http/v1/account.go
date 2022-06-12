@@ -35,27 +35,21 @@ func newAccountRouter(d *Deps) *fiber.App {
 	r := fiber.New()
 
 	r.Post("/", h.create)
-
-	protected := r.Group("/",
+	r.Delete("/",
 		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
-		tokenMW(d.Logger, d.TokenService))
-	{
-		protected.Delete("/", h.delete)
-	}
+		tokenMW(d.Logger, d.TokenService),
+		h.delete,
+	)
 
 	verification := r.Group("/verification")
-	{
-		verification.Post("/",
-			sessionMW(d.Logger, &d.Config.Session, d.SessionService),
-			h.requestVerification)
-		verification.Put("/", h.verify)
-	}
+	verification.Post("/",
+		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
+		h.requestVerification)
+	verification.Put("/", h.verify)
 
 	password := r.Group("/password")
-	{
-		password.Post("/", h.resetPassword)
-		password.Put("/", h.setPassword)
-	}
+	password.Post("/", h.resetPassword)
+	password.Put("/", h.setPassword)
 
 	return r
 }
@@ -160,7 +154,7 @@ func (h *accountHandler) verify(c *fiber.Ctx) error {
 		h.log.Error("http - v1 - account - verify - h.verification.Verify: %w", err)
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
-			return errorResp(c, fiber.StatusNotFound, account.ErrAlreadyVerified, "")
+			return errorResp(c, fiber.StatusBadRequest, account.ErrAlreadyVerified, "")
 		}
 
 		c.Status(fiber.StatusInternalServerError)
@@ -235,6 +229,14 @@ func (h *accountHandler) setPassword(c *fiber.Ctx) error {
 		return nil
 	}
 
-	c.Status(fiber.StatusNoContent)
+	c.Cookie(&fiber.Cookie{
+		Name:     h.cfg.Session.CookieName,
+		Value:    "",
+		MaxAge:   -1,
+		Secure:   h.cfg.Session.CookieSecure,
+		HTTPOnly: h.cfg.Session.CookieHTTPOnly,
+	})
+
+	c.Status(fiber.StatusOK)
 	return nil
 }

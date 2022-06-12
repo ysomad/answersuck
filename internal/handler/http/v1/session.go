@@ -30,16 +30,13 @@ func newSessionRouter(d *Deps) *fiber.App {
 
 	r := fiber.New()
 
-	authenticated := r.Group("/", sessionMW(d.Logger, &d.Config.Session, d.SessionService))
-	{
-		authenticated.Get("/", h.getAll)
-	}
+	r.Get("/", sessionMW(d.Logger, &d.Config.Session, d.SessionService), h.getAll)
 
-	requireToken := authenticated.Group("/", tokenMW(d.Logger, d.TokenService))
-	{
-		requireToken.Delete(":sessionId", h.terminate)
-		requireToken.Delete("/", h.terminateAll)
-	}
+	requireToken := r.Group("/",
+		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
+		tokenMW(d.Logger, d.TokenService))
+	requireToken.Delete(":sessionId", h.terminate)
+	requireToken.Delete("/", h.terminateAll)
 
 	return r
 }
