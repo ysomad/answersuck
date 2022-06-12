@@ -69,3 +69,9 @@ func (t PasswordToken) checkExpiration(exp time.Duration) error {
 
 	return nil
 }
+
+type Verification struct {
+	Email    string
+	Code     string
+	Verified bool
+}

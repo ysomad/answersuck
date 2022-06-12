@@ -21,12 +21,6 @@ type (
 )
 
 type (
-	VerificationDTO struct {
-		Email    string
-		Code     string
-		Verified bool
-	}
-
 	SetPasswordDTO struct {
 		AccountId string
 		Password  string

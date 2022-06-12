@@ -9,13 +9,14 @@ import (
 )
 
 type Deps struct {
-	Config           *config.Aggregate
-	Logger           logging.Logger
-	ValidationModule ValidationModule
-	SessionService   SessionService
-	AccountService   AccountService
-	LoginService     LoginService
-	TokenService     TokenService
+	Config              *config.Aggregate
+	Logger              logging.Logger
+	ValidationModule    ValidationModule
+	SessionService      SessionService
+	AccountService      AccountService
+	VerificationService VerificationService
+	LoginService        LoginService
+	TokenService        TokenService
 }
 
 func NewRouter(d *Deps) *fiber.App {

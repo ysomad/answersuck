@@ -12,18 +12,20 @@ import (
 )
 
 type accountHandler struct {
-	cfg     *config.Aggregate
-	log     logging.Logger
-	v       ValidationModule
-	account AccountService
+	cfg          *config.Aggregate
+	log          logging.Logger
+	v            ValidationModule
+	account      AccountService
+	verification VerificationService
 }
 
 func newAccountHandler(d *Deps) *accountHandler {
 	return &accountHandler{
-		cfg:     d.Config,
-		log:     d.Logger,
-		v:       d.ValidationModule,
-		account: d.AccountService,
+		cfg:          d.Config,
+		log:          d.Logger,
+		v:            d.ValidationModule,
+		account:      d.AccountService,
+		verification: d.VerificationService,
 	}
 }
 
@@ -133,8 +135,8 @@ func (h *accountHandler) requestVerification(c *fiber.Ctx) error {
 		return nil
 	}
 
-	if err = h.account.RequestVerification(c.Context(), accountId); err != nil {
-		h.log.Error("http - v1 - account - requestVerification - h.account.RequestVerification")
+	if err = h.verification.Request(c.Context(), accountId); err != nil {
+		h.log.Error("http - v1 - account - requestVerification - h.verification.Request")
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
 			return errorResp(c, fiber.StatusBadRequest, account.ErrAlreadyVerified, "")
@@ -154,8 +156,8 @@ func (h *accountHandler) verify(c *fiber.Ctx) error {
 		return errorResp(c, fiber.StatusBadRequest, account.ErrEmptyVerificationCode, "")
 	}
 
-	if err := h.account.Verify(c.Context(), code); err != nil {
-		h.log.Error("http - v1 - account - verify - h.account.Verify: %w", err)
+	if err := h.verification.Verify(c.Context(), code); err != nil {
+		h.log.Error("http - v1 - account - verify - h.verification.Verify: %w", err)
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
 			return errorResp(c, fiber.StatusNotFound, account.ErrAlreadyVerified, "")
@@ -185,7 +187,7 @@ func (h *accountHandler) resetPassword(c *fiber.Ctx) error {
 	}
 
 	if err := h.account.ResetPassword(c.Context(), r.Login); err != nil {
-		h.log.Error("http - v1 - account - resetPassword - h.account.ResetPassword: %w", err)
+		h.log.Error("http - v1 - account - resetPassword - h.password.Reset: %w", err)
 
 		if errors.Is(err, account.ErrNotFound) {
 			return errorResp(c, fiber.StatusNotFound, account.ErrNotFound, "")

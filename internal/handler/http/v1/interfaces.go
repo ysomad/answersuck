@@ -8,16 +8,20 @@ import (
 	"github.com/answersuck/vault/internal/domain/session"
 )
 
-type AccountService interface {
-	Create(ctx context.Context, r account.CreateReq) (*account.Account, error)
-	Delete(ctx context.Context, accountId string) error
+type (
+	AccountService interface {
+		Create(ctx context.Context, r account.CreateReq) (*account.Account, error)
+		Delete(ctx context.Context, accountId string) error
 
-	RequestVerification(ctx context.Context, accountId string) error
-	Verify(ctx context.Context, code string) error
+		ResetPassword(ctx context.Context, login string) error
+		SetPassword(ctx context.Context, token, password string) error
+	}
 
-	ResetPassword(ctx context.Context, login string) error
-	SetPassword(ctx context.Context, token, password string) error
-}
+	VerificationService interface {
+		Request(ctx context.Context, accountId string) error
+		Verify(ctx context.Context, code string) error
+	}
+)
 
 type SessionService interface {
 	GetByIdWithVerified(ctx context.Context, sessionId string) (*session.WithAccountDetails, error)

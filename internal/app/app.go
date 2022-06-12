@@ -77,13 +77,16 @@ func Run(configPath string) {
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
 	accountRepo := psql.NewAccountRepo(l, pg)
-	accountService := account.NewService(&account.Deps{
+	accountService := account.NewAccountService(&account.Deps{
 		Config:         &cfg,
 		AccountRepo:    accountRepo,
 		SessionService: sessionService,
 		EmailService:   emailService,
 		BlockList:      usernameBlockList,
 	})
+
+	accountVerifRepo := psql.NewAccountVerificationRepo(l, pg)
+	accountVerifService := account.NewVerificationService(accountVerifRepo, emailService)
 
 	loginService := auth.NewLoginService(accountService, sessionService)
 	tokenService := auth.NewTokenService(&cfg.AccessToken, tokenManager, accountService)
@@ -117,13 +120,14 @@ func Run(configPath string) {
 	app := http.NewApp(cfg)
 
 	app.Mount("/v1", v1.NewRouter(&v1.Deps{
-		Config:           &cfg,
-		Logger:           l,
-		ValidationModule: validationModule,
-		SessionService:   sessionService,
-		AccountService:   accountService,
-		LoginService:     loginService,
-		TokenService:     tokenService,
+		Config:              &cfg,
+		Logger:              l,
+		ValidationModule:    validationModule,
+		SessionService:      sessionService,
+		AccountService:      accountService,
+		VerificationService: accountVerifService,
+		LoginService:        loginService,
+		TokenService:        tokenService,
 	}))
 
 	http.ServeSwaggerUI(app, cfg.HTTP.Debug)

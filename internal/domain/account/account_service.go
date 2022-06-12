@@ -16,59 +16,24 @@ const (
 	pwdTokenLen  = 64
 )
 
-type (
-	Repository interface {
-		Save(ctx context.Context, a *Account, code string) (string, error)
-		FindEmailByNickname(ctx context.Context, nickname string) (string, error)
-		FindById(ctx context.Context, accountId string) (*Account, error)
-		FindByEmail(ctx context.Context, email string) (*Account, error)
-		FindByNickname(ctx context.Context, nickname string) (*Account, error)
-		Archive(ctx context.Context, accountId string, updatedAt time.Time) error
+type accountService struct {
+	cfg       *config.Aggregate
+	repo      AccountRepo
+	session   SessionService
+	email     EmailService
+	blockList BlockList
+}
 
-		Verify(ctx context.Context, code string, updatedAt time.Time) error
-		FindVerification(ctx context.Context, nickname string) (VerificationDTO, error)
+type Deps struct {
+	Config         *config.Aggregate
+	AccountRepo    AccountRepo
+	SessionService SessionService
+	EmailService   EmailService
+	BlockList      BlockList
+}
 
-		SavePasswordToken(ctx context.Context, email, token string) error
-		FindPasswordToken(ctx context.Context, token string) (PasswordToken, error)
-		SetPassword(ctx context.Context, dto SetPasswordDTO) error
-	}
-
-	SessionService interface {
-		TerminateAll(ctx context.Context, accountId string) error
-	}
-
-	EmailService interface {
-		SendAccountVerificationEmail(ctx context.Context, to, code string) error
-		SendPasswordResetEmail(ctx context.Context, to, token string) error
-	}
-
-	BlockList interface {
-		Find(s string) bool
-	}
-)
-
-type (
-	service struct {
-		cfg *config.Aggregate
-
-		repo    Repository
-		session SessionService
-		email   EmailService
-
-		blockList BlockList
-	}
-
-	Deps struct {
-		Config         *config.Aggregate
-		AccountRepo    Repository
-		SessionService SessionService
-		EmailService   EmailService
-		BlockList      BlockList
-	}
-)
-
-func NewService(d *Deps) *service {
-	return &service{
+func NewAccountService(d *Deps) *accountService {
+	return &accountService{
 		cfg:       d.Config,
 		repo:      d.AccountRepo,
 		session:   d.SessionService,
@@ -77,7 +42,7 @@ func NewService(d *Deps) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
+func (s *accountService) Create(ctx context.Context, r CreateReq) (*Account, error) {
 	now := time.Now()
 
 	a := &Account{
@@ -115,7 +80,7 @@ func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
 	return a, nil
 }
 
-func (s *service) GetById(ctx context.Context, accountId string) (*Account, error) {
+func (s *accountService) GetById(ctx context.Context, accountId string) (*Account, error) {
 	a, err := s.repo.FindById(ctx, accountId)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByID - s.repo.FindById: %w", err)
@@ -124,7 +89,7 @@ func (s *service) GetById(ctx context.Context, accountId string) (*Account, erro
 	return a, nil
 }
 
-func (s *service) GetByEmail(ctx context.Context, email string) (*Account, error) {
+func (s *accountService) GetByEmail(ctx context.Context, email string) (*Account, error) {
 	a, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByEmail - s.repo.FindByEmail: %w", err)
@@ -133,7 +98,7 @@ func (s *service) GetByEmail(ctx context.Context, email string) (*Account, error
 	return a, nil
 }
 
-func (s *service) GetByNickname(ctx context.Context, nickname string) (*Account, error) {
+func (s *accountService) GetByNickname(ctx context.Context, nickname string) (*Account, error) {
 	a, err := s.repo.FindByNickname(ctx, nickname)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByNickname - s.repo.FindByNickname: %w", err)
@@ -142,7 +107,7 @@ func (s *service) GetByNickname(ctx context.Context, nickname string) (*Account,
 	return a, nil
 }
 
-func (s *service) Delete(ctx context.Context, accountId string) error {
+func (s *accountService) Delete(ctx context.Context, accountId string) error {
 	if err := s.repo.Archive(ctx, accountId, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Delete - s.repo.Archive: %w", err)
 	}
@@ -155,33 +120,7 @@ func (s *service) Delete(ctx context.Context, accountId string) error {
 	return nil
 }
 
-func (s *service) RequestVerification(ctx context.Context, accountId string) error {
-	v, err := s.repo.FindVerification(ctx, accountId)
-	if err != nil {
-		return fmt.Errorf("accountService - RequestVerification - s.repo.FindVerification: %w", err)
-	}
-
-	if v.Verified {
-		return fmt.Errorf("accountService - v.Verified: %w", ErrAlreadyVerified)
-	}
-
-	go func() {
-		// TODO: handle error
-		_ = s.email.SendAccountVerificationEmail(ctx, v.Email, v.Code)
-	}()
-
-	return nil
-}
-
-func (s *service) Verify(ctx context.Context, code string) error {
-	if err := s.repo.Verify(ctx, code, time.Now()); err != nil {
-		return fmt.Errorf("accountService - Verify - s.repo.Verify: %w", err)
-	}
-
-	return nil
-}
-
-func (s *service) ResetPassword(ctx context.Context, login string) error {
+func (s *accountService) ResetPassword(ctx context.Context, login string) error {
 	email := login
 
 	if _, err := mail.ParseAddress(login); err != nil {
@@ -210,7 +149,7 @@ func (s *service) ResetPassword(ctx context.Context, login string) error {
 	return nil
 }
 
-func (s *service) SetPassword(ctx context.Context, token, password string) error {
+func (s *accountService) SetPassword(ctx context.Context, token, password string) error {
 	t, err := s.repo.FindPasswordToken(ctx, token)
 	if err != nil {
 		return fmt.Errorf("accountService - SetPassword - s.repo.FindPasswordToken: %w", err)
