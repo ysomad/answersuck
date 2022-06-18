@@ -130,7 +130,7 @@ func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.
 	err := r.c.Pool.QueryRow(ctx, sql, questionId).Scan(
 		&q.Text,
 		&q.Answer,
-		&q.AnswerImageURL,
+		&q.AnswerMediaURL,
 		&q.Author,
 		&q.MediaURL,
 		&q.MediaType,

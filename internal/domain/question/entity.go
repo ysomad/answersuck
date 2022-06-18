@@ -24,7 +24,7 @@ type Detailed struct {
 	Id             int       `json:"id"`
 	Text           string    `json:"text"`
 	Answer         string    `json:"answer"`
-	AnswerImageURL *string   `json:"answerImageUrl"`
+	AnswerMediaURL *string   `json:"answerMediaUrl"`
 	Author         string    `json:"author"`
 	MediaURL       *string   `json:"media"`
 	MediaType      *string   `json:"mediaType"`

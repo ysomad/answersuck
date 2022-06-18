@@ -352,7 +352,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionArray'
+                $ref: '#/components/schemas/inline_response_200'
         "401":
           description: Unauthorized.
         "500":
@@ -478,9 +478,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TagArray'
+                $ref: '#/components/schemas/inline_response_200_1'
         "500":
           description: Internal Server Error.
+    post:
+      tags:
+      - tag
+      summary: Create tags
+      operationId: tagCreateMultiple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tags_body'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
   /languages:
     get:
       tags:
@@ -493,7 +525,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LanguageArray'
+                $ref: '#/components/schemas/inline_response_200_2'
         "500":
           description: Internal Server Error.
   /answers:
@@ -545,7 +577,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionMinimizedArray'
+                $ref: '#/components/schemas/inline_response_200_3'
         "500":
           description: Internal Server Error.
     post:
@@ -620,7 +652,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TopicArray'
+                $ref: '#/components/schemas/inline_response_200_4'
         "500":
           description: Internal Server Error.
     post:
@@ -691,7 +723,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PackageCreateResponse'
+                $ref: '#/components/schemas/Package'
         "400":
           description: Invalid request body.
           content:
@@ -735,9 +767,6 @@ components:
     Player:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
         nickname:
           type: string
         avatarUrl:
@@ -841,6 +870,18 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Tag'
+    TagCreateRequest:
+      required:
+      - languageId
+      - name
+      type: object
+      properties:
+        name:
+          maximum: 32
+          minimum: 1
+          type: string
+        languageId:
+          type: integer
     Language:
       type: object
       properties:
@@ -1009,24 +1050,6 @@ components:
       - SECRET
       - SUPERSECRET
       - SAFE
-    QuestionMedia:
-      type: object
-      properties:
-        id:
-          type: integer
-        url:
-          type: string
-          format: uri
-        type:
-          $ref: '#/components/schemas/MimeType'
-    AnswerImage:
-      type: object
-      properties:
-        id:
-          type: integer
-        url:
-          type: string
-          format: uri
     Stage:
       type: object
       properties:
@@ -1052,10 +1075,6 @@ components:
           type: integer
         questions:
           $ref: '#/components/schemas/QuestionArray'
-    StageArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/Stage'
     StageCreateRequest:
       required:
       - final
@@ -1115,13 +1134,15 @@ components:
           type: string
         languageId:
           type: integer
-        cover:
+        coverUrl:
           type: string
           format: uri
         published:
           type: boolean
-        stages:
-          $ref: '#/components/schemas/StageArray'
+        tags:
+          type: array
+          items:
+            type: integer
         createdAt:
           type: string
           format: date-time
@@ -1136,56 +1157,57 @@ components:
       required:
       - languageId
       - name
-      - stages
       type: object
       properties:
         name:
           type: string
         languageId:
           type: integer
-        coverId:
-          type: integer
-        stages:
+        mediaId:
+          type: string
+          format: uuid
+        tags:
           type: array
           items:
-            $ref: '#/components/schemas/StageCreateRequest'
-    PackageCreateResponse:
+            type: integer
+    inline_response_200:
       type: object
       properties:
-        id:
-          type: integer
-        name:
-          type: string
-        languageId:
-          type: integer
-        coverUrl:
-          type: string
-          format: uri
-        published:
-          type: boolean
-        stages:
-          $ref: '#/components/schemas/StageArray'
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    PackageCover:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        url:
-          type: string
-          format: uri
+        result:
+          $ref: '#/components/schemas/SessionArray'
     media_body:
       type: object
       properties:
         media:
           type: string
           format: binary
+    inline_response_200_1:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/TagArray'
+    tags_body:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagCreateRequest'
+    inline_response_200_2:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/LanguageArray'
+    inline_response_200_3:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/QuestionMinimizedArray'
+    inline_response_200_4:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/TopicArray'
   securitySchemes:
     cookieAuth:
       type: apiKey

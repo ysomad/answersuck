@@ -3,55 +3,50 @@ package v1
 import (
 	"errors"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-
 	"github.com/answersuck/vault/internal/domain/session"
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
-	accountIdKey = "accountId"
+	accountIdKey = "accoutId"
 	sessionIdKey = "sessionId"
-	audienceKey  = "audience"
 	deviceKey    = "device"
 )
 
 var (
 	errAccountIdNotFound = errors.New("account id not found in context")
 	errSessionIdNotFound = errors.New("session id not found in context")
+	errDeviceNotFound    = errors.New("device not found in context")
 )
 
-// getAccountId returns account id from context
-func getAccountId(c *gin.Context) (string, error) {
-	accountId := c.GetString(accountIdKey)
+func getAccountId(c *fiber.Ctx) (string, error) {
+	v := c.Locals(accountIdKey)
 
-	_, err := uuid.Parse(accountId)
-	if err != nil {
+	aid, ok := v.(string)
+	if !ok || aid == "" {
 		return "", errAccountIdNotFound
 	}
 
-	return accountId, nil
+	return aid, nil
 }
 
-// getSessionId returns session id from context
-func getSessionId(c *gin.Context) (string, error) {
-	s := c.GetString(sessionIdKey)
-	if s == "" {
+func getSessionId(c *fiber.Ctx) (string, error) {
+	v := c.Locals(sessionIdKey)
+
+	sid, ok := v.(string)
+	if !ok || sid == "" {
 		return "", errSessionIdNotFound
 	}
 
-	return s, nil
+	return sid, nil
 }
 
-func getDevice(c *gin.Context) (session.Device, error) {
-	v, exists := c.Get(deviceKey)
-	if !exists {
-		return session.Device{}, errSessionIdNotFound
-	}
+func getDevice(c *fiber.Ctx) (session.Device, error) {
+	v := c.Locals(deviceKey)
 
 	d, ok := v.(session.Device)
 	if !ok {
-		return session.Device{}, errSessionIdNotFound
+		return session.Device{}, errDeviceNotFound
 	}
 
 	return d, nil

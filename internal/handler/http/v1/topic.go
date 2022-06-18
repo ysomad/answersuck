@@ -1,77 +1,76 @@
 package v1
 
 import (
-	"context"
 	"errors"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/domain/topic"
 	"github.com/answersuck/vault/pkg/logging"
+	"github.com/gofiber/fiber/v2"
 )
 
-type TopicService interface {
-	Create(ctx context.Context, req topic.CreateRequest) (topic.Topic, error)
-	GetAll(ctx context.Context) ([]*topic.Topic, error)
-}
-
 type topicHandler struct {
-	t       ErrorTranslator
 	log     logging.Logger
+	v       ValidationModule
 	service TopicService
 }
 
-func newTopicHandler(r *gin.RouterGroup, d *Deps) {
-	h := &topicHandler{
-		t:       d.ErrorTranslator,
+func newTopicHandler(d *Deps) *topicHandler {
+	return &topicHandler{
 		log:     d.Logger,
+		v:       d.ValidationModule,
 		service: d.TopicService,
-	}
-
-	topics := r.Group("topics")
-	{
-		topics.GET("", h.getAll)
-	}
-
-	protected := topics.Group("",
-		protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-	{
-		protected.POST("", h.create)
 	}
 }
 
-func (h *topicHandler) create(c *gin.Context) {
-	var r topic.CreateRequest
+func newTopicRouter(d *Deps) *fiber.App {
+	h := newTopicHandler(d)
+	r := fiber.New()
 
-	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-		return
+	r.Get("/", h.getAll)
+	r.Post("/",
+		verifiedMW(d.Logger, &d.Config.Session, d.SessionService),
+		h.create)
+
+	return r
+}
+
+func (h *topicHandler) create(c *fiber.Ctx) error {
+	var r topic.CreateReq
+
+	if err := c.BodyParser(&r); err != nil {
+		h.log.Info("http - v1 - topic - create - c.BodyParser: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
 	}
 
-	t, err := h.service.Create(c.Request.Context(), r)
+	if err := h.v.ValidateStruct(r); err != nil {
+		h.log.Info("http - v1 - topic - create - ValidateStruct: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+	}
+
+	t, err := h.service.Create(c.Context(), r)
 	if err != nil {
 		h.log.Error("http - v1 - topic - create - h.service.Create: %w", err)
 
 		if errors.Is(err, topic.ErrLanguageNotFound) {
-			abortWithError(c, http.StatusBadRequest, topic.ErrLanguageNotFound, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, topic.ErrLanguageNotFound, "")
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		c.Status(fiber.StatusInternalServerError)
+		return nil
 	}
 
-	c.JSON(http.StatusOK, t)
+	c.Status(fiber.StatusOK).JSON(t)
+	return nil
 }
 
-func (h *topicHandler) getAll(c *gin.Context) {
-	t, err := h.service.GetAll(c.Request.Context())
+func (h *topicHandler) getAll(c *fiber.Ctx) error {
+	t, err := h.service.GetAll(c.Context())
 	if err != nil {
 		h.log.Error("http - v1 - topic - getAll - h.service.GetAll: %w", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		c.Status(fiber.StatusInternalServerError)
+		return nil
 	}
 
-	c.JSON(http.StatusOK, t)
+	c.Status(fiber.StatusOK).JSON(listResp{Result: t})
+	return nil
 }

@@ -11,7 +11,7 @@ compose-down:
 
 run:
 	go mod tidy && go mod download && \
-	GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate ./cmd/app
+	go run -tags migrate ./cmd/app
 .PHONY: run
 
 migrate-create:

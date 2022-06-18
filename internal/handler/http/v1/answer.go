@@ -1,70 +1,67 @@
 package v1
 
 import (
-	"context"
 	"errors"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
-	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/media"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type AnswerService interface {
-	Create(ctx context.Context, r answer.CreateRequest) (answer.Answer, error)
-}
-
 type answerHandler struct {
-	t   ErrorTranslator
-	cfg *config.Aggregate
-	log logging.Logger
-
+	log     logging.Logger
+	v       ValidationModule
 	service AnswerService
 }
 
-func newAnswerHandler(r *gin.RouterGroup, d *Deps) {
-	h := &answerHandler{
-		t:       d.ErrorTranslator,
-		cfg:     d.Config,
+func newAnswerHandler(d *Deps) *answerHandler {
+	return &answerHandler{
 		log:     d.Logger,
+		v:       d.ValidationModule,
 		service: d.AnswerService,
-	}
-
-	answers := r.Group("answers",
-		protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-	{
-		answers.POST("", h.create)
 	}
 }
 
-func (h *answerHandler) create(c *gin.Context) {
-	var r answer.CreateRequest
+func newAnswerRouter(d *Deps) *fiber.App {
+	h := newAnswerHandler(d)
+	r := fiber.New()
 
-	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-		return
+	r.Post("/",
+		verifiedMW(d.Logger, &d.Config.Session, d.SessionService),
+		h.create)
+
+	return r
+}
+
+func (h *answerHandler) create(c *fiber.Ctx) error {
+	var r answer.CreateReq
+
+	if err := c.BodyParser(&r); err != nil {
+		h.log.Info("http - v1 - answer - create - c.BodyParser: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
 	}
 
-	a, err := h.service.Create(c.Request.Context(), r)
+	if err := h.v.ValidateStruct(r); err != nil {
+		h.log.Info("http - v1 - answer - create - ValidateStruct: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+	}
+
+	a, err := h.service.Create(c.Context(), r)
 	if err != nil {
 		h.log.Error("http - v1 - answer - create - h.service.Create: %w", err)
 
 		switch {
 		case errors.Is(err, answer.ErrMimeTypeNotAllowed):
-			abortWithError(c, http.StatusBadRequest, answer.ErrMimeTypeNotAllowed, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, answer.ErrMimeTypeNotAllowed, "")
 		case errors.Is(err, media.ErrNotFound):
-			abortWithError(c, http.StatusBadRequest, answer.ErrMediaNotFound, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, answer.ErrMediaNotFound, "")
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.JSON(http.StatusOK, a)
+	return c.Status(fiber.StatusOK).JSON(a)
 }

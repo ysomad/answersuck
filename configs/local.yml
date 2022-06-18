@@ -1,12 +1,13 @@
 app:
   name: "answersuck-backend"
-  version: "0.1.0"
+  version: "0.0.2"
 
 web:
   url: "http://localhost:8000"
 
 http:
-  port: "8080"
+  port: ":8080"
+  debug: true
 
 logger:
   logLevel: "debug"
@@ -19,15 +20,13 @@ cache:
   expiration: 1h
   db: 0
 
-cookie:
-  secure: false
-  httpOnly: true
-
 session:
   expiration: 4h
-  cookieKey: "id"
+  cookieName: "id"
+  cookieSecure: false
+  cookieHttpOnly: true
 
-accessToken:
+securityToken:
   expiration: 1m
   signingKey: "secret"
 

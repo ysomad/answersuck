@@ -1,55 +1,62 @@
 package v1
 
 import (
-	"context"
 	"errors"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/pkg/logging"
+	"github.com/gofiber/fiber/v2"
 )
 
-type MediaService interface {
-	UploadAndSave(ctx context.Context, dto *media.UploadDTO) (media.Media, error)
-}
-
 type mediaHandler struct {
-	t       ErrorTranslator
 	cfg     *config.Aggregate
 	log     logging.Logger
+	v       ValidationModule
 	service MediaService
 }
 
-func newMediaHandler(r *gin.RouterGroup, d *Deps) {
-	h := &mediaHandler{
-		t:       d.ErrorTranslator,
+func newMediaHandler(d *Deps) *mediaHandler {
+	h := mediaHandler{
 		cfg:     d.Config,
 		log:     d.Logger,
+		v:       d.ValidationModule,
 		service: d.MediaService,
 	}
 
-	media := r.Group("media")
-	{
-		media.POST("",
-			protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService), h.upload)
-	}
+	return &h
 }
 
-const (
-	mediaFormKey = "media"
-)
+func newMediaRouter(d *Deps) *fiber.App {
+	h := newMediaHandler(d)
+	r := fiber.New()
 
-func (h *mediaHandler) upload(c *gin.Context) {
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, media.MaxUploadSize)
+	r.Post("/", verifiedMW(d.Logger, &d.Config.Session, d.SessionService), h.upload)
 
-	f, fh, err := c.Request.FormFile(mediaFormKey)
+	return r
+}
+
+func (h *mediaHandler) upload(c *fiber.Ctx) error {
+	c.Accepts(fiber.MIMEMultipartForm)
+
+	accountId, err := getAccountId(c)
 	if err != nil {
-		h.log.Error("http - v1 - media - upload - c.Request.FormFile: %w", err)
-		abortWithError(c, http.StatusBadRequest, err, "")
-		return
+		h.log.Info("http - v1 - media - upload - getAccountId: %w", err)
+		c.Status(fiber.StatusUnauthorized)
+		return nil
+	}
+
+	fh, err := c.FormFile("media")
+	if err != nil {
+		h.log.Info("http - v1 - media - upload - c.FormFile: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, err, "")
+	}
+
+	f, err := fh.Open()
+	if err != nil {
+		h.log.Info("http - v1 - media - upload - c.FormFile: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, err, "")
 	}
 
 	defer f.Close()
@@ -57,37 +64,30 @@ func (h *mediaHandler) upload(c *gin.Context) {
 	buf := make([]byte, fh.Size)
 
 	if _, err := f.Read(buf); err != nil {
-		h.log.Error("http - v1 - media - upload - f.Read: %w", err)
-		abortWithError(c, http.StatusBadRequest, err, "")
-		return
+		h.log.Info("http - v1 - media - upload - c.FormFile: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, err, "")
 	}
 
-	accountId, err := getAccountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - media - upload - getAccountId: %w", err)
-		abortWithError(c, http.StatusUnauthorized, err, "")
-		return
-	}
+	//c.SaveFile(f, fmt.Sprintf("./static/media/%s", f.Filename))
 
-	m, err := h.service.UploadAndSave(c.Request.Context(), &media.UploadDTO{
+	m, err := h.service.UploadAndSave(c.Context(), &media.UploadDTO{
 		Filename:    fh.Filename,
 		ContentType: http.DetectContentType(buf),
 		Size:        fh.Size,
 		Buf:         buf,
 		AccountId:   accountId,
 	})
-
 	if err != nil {
 		h.log.Error("http - v1 - media - upload: %w", err)
 
 		if errors.Is(err, media.ErrInvalidMimeType) {
-			abortWithError(c, http.StatusBadRequest, media.ErrInvalidMimeType, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, media.ErrInvalidMimeType, "")
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		c.Status(fiber.StatusInternalServerError)
+		return nil
 	}
 
-	c.JSON(http.StatusOK, m)
+	c.Status(fiber.StatusOK).JSON(m)
+	return nil
 }

@@ -30,12 +30,7 @@ func NewService(cfg *config.Session, s Repository) *service {
 }
 
 func (s *service) Create(ctx context.Context, accountId string, d Device) (*Session, error) {
-	sess, err := newSession(fields{
-		accountId:  accountId,
-		userAgent:  d.UserAgent,
-		ip:         d.IP,
-		expiration: s.cfg.Expiration,
-	})
+	sess, err := newSession(accountId, d.UserAgent, d.IP, s.cfg.Expiration)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - Create - newSession: %w", err)
 	}

@@ -33,7 +33,6 @@ func init() {
 		m        *migrate.Migrate
 	)
 
-	log.Print(databaseURL)
 	for attempts > 0 {
 		m, err = migrate.New("file://migrations", databaseURL)
 		if err == nil {

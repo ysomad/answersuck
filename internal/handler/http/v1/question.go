@@ -1,63 +1,58 @@
 package v1
 
 import (
-	"context"
 	"errors"
-	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 
 	"github.com/answersuck/vault/internal/domain/question"
 
 	"github.com/answersuck/vault/pkg/logging"
 )
 
-type QuestionService interface {
-	Create(ctx context.Context, q *question.Question) (*question.Question, error)
-	GetById(ctx context.Context, questionId int) (*question.Detailed, error)
-	GetAll(ctx context.Context) ([]question.Minimized, error)
-}
-
 type questionHandler struct {
-	t       ErrorTranslator
 	log     logging.Logger
+	v       ValidationModule
 	service QuestionService
 }
 
-func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
-	h := &questionHandler{
-		t:       d.ErrorTranslator,
+func newQuestionHandler(d *Deps) *questionHandler {
+	return &questionHandler{
 		log:     d.Logger,
+		v:       d.ValidationModule,
 		service: d.QuestionService,
-	}
-
-	questions := r.Group("questions")
-	{
-		questions.GET("", h.getAll)
-		questions.GET(":questionId", h.getById)
-	}
-
-	authenticated := questions.Group("",
-		protectionMiddleware(d.Logger, &d.Config.Session, d.SessionService))
-	{
-		authenticated.POST("", h.create)
 	}
 }
 
-func (h *questionHandler) create(c *gin.Context) {
-	var r question.CreateRequest
+func newQuestionRouter(d *Deps) *fiber.App {
+	h := newQuestionHandler(d)
+	r := fiber.New()
 
-	if err := c.ShouldBindJSON(&r); err != nil {
-		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))
-		return
+	r.Get("/", h.getAll)
+	r.Post("/", verifiedMW(d.Logger, &d.Config.Session, d.SessionService), h.create)
+	r.Get(":questionId", h.getById)
+
+	return r
+}
+
+func (h *questionHandler) create(c *fiber.Ctx) error {
+	var r question.CreateReq
+
+	if err := c.BodyParser(&r); err != nil {
+		h.log.Info("http - v1 - question - create - c.BodyParser: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
+	}
+
+	if err := h.v.ValidateStruct(r); err != nil {
+		h.log.Info("http - v1 - question - create - ValidateStruct: %w", err)
+		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 	}
 
 	accountId, err := getAccountId(c)
 	if err != nil {
 		h.log.Error("http - v1 - question - create - getAccountId: %w", err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	q := question.Question{
@@ -71,55 +66,49 @@ func (h *questionHandler) create(c *gin.Context) {
 		q.MediaId = &r.MediaId
 	}
 
-	res, err := h.service.Create(c.Request.Context(), &q)
+	res, err := h.service.Create(c.Context(), &q)
 	if err != nil {
 		h.log.Error("http - v1 - question - create - h.service.Create :%w", err)
 
 		if errors.Is(err, question.ErrForeignKeyViolation) {
-			abortWithError(c, http.StatusBadRequest, question.ErrForeignKeyViolation, "")
-			return
+			return errorResp(c, fiber.StatusBadRequest, question.ErrForeignKeyViolation, "")
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.JSON(http.StatusOK, res)
+	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-func (h *questionHandler) getAll(c *gin.Context) {
-	qs, err := h.service.GetAll(c.Request.Context())
+func (h *questionHandler) getAll(c *fiber.Ctx) error {
+	qs, err := h.service.GetAll(c.Context())
 	if err != nil {
 		h.log.Error("http - v1 - question - getAll - h.service.GetAll: %w", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.JSON(http.StatusOK, qs)
+	return c.Status(fiber.StatusOK).JSON(listResp{Result: qs})
 }
 
-func (h *questionHandler) getById(c *gin.Context) {
-	s := c.Param("questionId")
+func (h *questionHandler) getById(c *fiber.Ctx) error {
+	s := c.Params("questionId")
 
 	questionId, err := strconv.Atoi(s)
 	if err != nil {
 		h.log.Error("http - v1 - question - getById: %w", err)
-		c.AbortWithStatus(http.StatusNotFound)
-		return
+		return c.SendStatus(fiber.StatusNotFound)
 	}
 
-	q, err := h.service.GetById(c.Request.Context(), questionId)
+	q, err := h.service.GetById(c.Context(), questionId)
 	if err != nil {
 		h.log.Error("http - v1 - question - getById: %w", err)
 
 		if errors.Is(err, question.ErrNotFound) {
-			abortWithError(c, http.StatusNotFound, question.ErrNotFound, "")
-			return
+			return errorResp(c, fiber.StatusNotFound, question.ErrNotFound, "")
 		}
 
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.JSON(http.StatusOK, q)
+	return c.Status(fiber.StatusOK).JSON(q)
 }

@@ -31,7 +31,7 @@ func NewService(l logging.Logger, r Repository, m MediaService) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateRequest) (Answer, error) {
+func (s *service) Create(ctx context.Context, r CreateReq) (Answer, error) {
 	a := Answer{Text: r.Text}
 
 	if r.MediaId != "" {

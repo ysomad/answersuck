@@ -30,7 +30,7 @@ func NewManager(sign string) (manager, error) {
 	}, nil
 }
 
-func (tm manager) New(subject, audience string, expiration time.Duration) (string, error) {
+func (tm manager) Create(subject, audience string, expiration time.Duration) (string, error) {
 	_, err := url.Parse(audience)
 	if err != nil {
 		return "", ErrInvalidAudience
