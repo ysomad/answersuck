@@ -39,7 +39,7 @@ func newTagHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *tagHandler) createMultiple(c *gin.Context) {
-	var r tag.CreateMultipleRequest
+	var r tag.CreateMultipleReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))

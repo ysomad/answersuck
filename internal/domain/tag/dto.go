@@ -6,7 +6,7 @@ type (
 		LanguageId int    `json:"languageId" binding:"required"`
 	}
 
-	CreateMultipleRequest struct {
+	CreateMultipleReq struct {
 		Tags []CreateRequest `json:"tags" binding:"required,min=1,max=10"`
 	}
 )

@@ -8,6 +8,7 @@ import (
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
+	"github.com/answersuck/vault/internal/domain/tag"
 )
 
 type (
@@ -50,4 +51,9 @@ type MediaService interface {
 
 type LanguageService interface {
 	GetAll(ctx context.Context) ([]*language.Language, error)
+}
+
+type TagService interface {
+	CreateMultiple(ctx context.Context, r []tag.CreateRequest) ([]*tag.Tag, error)
+	GetAll(ctx context.Context) ([]*tag.Tag, error)
 }
