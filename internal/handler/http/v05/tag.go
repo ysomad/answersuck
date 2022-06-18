@@ -12,7 +12,7 @@ import (
 )
 
 type TagService interface {
-	CreateMultiple(ctx context.Context, r []tag.CreateRequest) ([]*tag.Tag, error)
+	CreateMultiple(ctx context.Context, r []tag.CreateReq) ([]*tag.Tag, error)
 	GetAll(ctx context.Context) ([]*tag.Tag, error)
 }
 

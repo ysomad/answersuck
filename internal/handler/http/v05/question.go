@@ -46,7 +46,7 @@ func newQuestionHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *questionHandler) create(c *gin.Context) {
-	var r question.CreateRequest
+	var r question.CreateReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))

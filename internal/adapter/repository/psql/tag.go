@@ -22,7 +22,7 @@ func NewTagRepo(l logging.Logger, c *postgres.Client) *tagRepo {
 	}
 }
 
-func (r *tagRepo) SaveMultiple(ctx context.Context, req []tag.CreateRequest) ([]*tag.Tag, error) {
+func (r *tagRepo) SaveMultiple(ctx context.Context, req []tag.CreateReq) ([]*tag.Tag, error) {
 	sql := `
 		INSERT INTO tag(name, language_id)
 		VALUES %s

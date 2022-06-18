@@ -3,7 +3,7 @@ package question
 import "time"
 
 type (
-	CreateRequest struct {
+	CreateReq struct {
 		Text       string `json:"text" binding:"required,gte=1,lte=200"`
 		AnswerId   int    `json:"answerId" binding:"required,number"`
 		MediaId    string `json:"mediaId" binding:"omitempty,uuid4"`

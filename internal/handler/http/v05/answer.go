@@ -15,7 +15,7 @@ import (
 )
 
 type AnswerService interface {
-	Create(ctx context.Context, r answer.CreateRequest) (answer.Answer, error)
+	Create(ctx context.Context, r answer.CreateReq) (answer.Answer, error)
 }
 
 type answerHandler struct {
@@ -42,7 +42,7 @@ func newAnswerHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *answerHandler) create(c *gin.Context) {
-	var r answer.CreateRequest
+	var r answer.CreateReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))

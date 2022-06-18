@@ -4,9 +4,11 @@ import (
 	"context"
 
 	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
+	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
 	"github.com/answersuck/vault/internal/domain/topic"
@@ -55,11 +57,21 @@ type LanguageService interface {
 }
 
 type TagService interface {
-	CreateMultiple(ctx context.Context, r []tag.CreateRequest) ([]*tag.Tag, error)
+	CreateMultiple(ctx context.Context, r []tag.CreateReq) ([]*tag.Tag, error)
 	GetAll(ctx context.Context) ([]*tag.Tag, error)
 }
 
 type TopicService interface {
 	Create(ctx context.Context, req topic.CreateReq) (topic.Topic, error)
 	GetAll(ctx context.Context) ([]*topic.Topic, error)
+}
+
+type AnswerService interface {
+	Create(ctx context.Context, r answer.CreateReq) (answer.Answer, error)
+}
+
+type QuestionService interface {
+	Create(ctx context.Context, q *question.Question) (*question.Question, error)
+	GetById(ctx context.Context, questionId int) (*question.Detailed, error)
+	GetAll(ctx context.Context) ([]question.Minimized, error)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	SaveMultiple(ctx context.Context, r []CreateRequest) ([]*Tag, error)
+	SaveMultiple(ctx context.Context, r []CreateReq) ([]*Tag, error)
 	FindAll(ctx context.Context) ([]*Tag, error)
 }
 
@@ -20,7 +20,7 @@ func NewService(r Repository) *service {
 	}
 }
 
-func (s *service) CreateMultiple(ctx context.Context, r []CreateRequest) ([]*Tag, error) {
+func (s *service) CreateMultiple(ctx context.Context, r []CreateReq) ([]*Tag, error) {
 	t, err := s.repo.SaveMultiple(ctx, r)
 	if err != nil {
 		return nil, fmt.Errorf("tagService - CreateMultiple - s.repo.SaveMultiple: %w", err)

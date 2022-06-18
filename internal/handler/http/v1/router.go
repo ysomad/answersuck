@@ -21,6 +21,8 @@ type Deps struct {
 	LanguageService     LanguageService
 	TagService          TagService
 	TopicService        TopicService
+	QuestionService     QuestionService
+	AnswerService       AnswerService
 }
 
 type listResp struct {
@@ -37,6 +39,8 @@ func NewRouter(d *Deps) *fiber.App {
 	r.Mount("/languages", newLanguageRouter(d))
 	r.Mount("/tags", newTagRouter(d))
 	r.Mount("/topics", newTopicRouter(d))
+	r.Mount("/answers", newAnswerRouter(d))
+	r.Mount("/questions", newQuestionRouter(d))
 
 	return r
 }

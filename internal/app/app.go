@@ -18,10 +18,12 @@ import (
 	"github.com/answersuck/vault/internal/adapter/storage"
 
 	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/email"
 	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
+	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
 	"github.com/answersuck/vault/internal/domain/topic"
@@ -104,8 +106,8 @@ func Run(configPath string) {
 	topicRepo := psql.NewTopicRepo(l, pg)
 	topicService := topic.NewService(topicRepo)
 
-	// questionRepo := psql.NewQuestionRepo(l, pg)
-	// questionService := question.NewService(questionRepo)
+	questionRepo := psql.NewQuestionRepo(l, pg)
+	questionService := question.NewService(questionRepo)
 
 	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
 	if err != nil {
@@ -115,8 +117,8 @@ func Run(configPath string) {
 	mediaRepo := psql.NewMediaRepo(l, pg)
 	mediaService := media.NewService(mediaRepo, storageProvider)
 
-	// answerRepo := psql.NewAnswerRepo(l, pg)
-	// answerService := answer.NewService(l, answerRepo, mediaService)
+	answerRepo := psql.NewAnswerRepo(l, pg)
+	answerService := answer.NewService(l, answerRepo, mediaService)
 
 	// playerRepo := psql.NewPlayerRepo(l, pg)
 	// playerService := player.NewService(playerRepo)
@@ -136,6 +138,8 @@ func Run(configPath string) {
 		LanguageService:     languageService,
 		TagService:          tagService,
 		TopicService:        topicService,
+		QuestionService:     questionService,
+		AnswerService:       answerService,
 	}))
 
 	http.ServeSwaggerUI(app, cfg.HTTP.Debug)
