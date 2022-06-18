@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	logFmt = "${pid} ${locals:requestid} ${status} - ${method} ${path}\n"
+	logFmt           = "${pid} ${locals:requestid} ${status} - ${method} ${path}\n"
+	defaultBodyLimit = 5 << 20 // 5MB
 )
 
 func ServeSwaggerUI(app *fiber.App, debug bool) {
@@ -20,11 +21,12 @@ func ServeSwaggerUI(app *fiber.App, debug bool) {
 	}
 }
 
-func NewApp(cfg config.Aggregate) *fiber.App {
+func NewApp(cfg *config.Aggregate) *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName:     cfg.App.Name,
 		JSONEncoder: json.Marshal,
 		JSONDecoder: json.Unmarshal,
+		BodyLimit:   defaultBodyLimit,
 	})
 
 	app.Use(recover.New(recover.Config{

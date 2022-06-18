@@ -1,12 +1,32 @@
 package account
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/answersuck/vault/pkg/strings"
+)
+
+var (
+	ErrAlreadyExist              = errors.New("account with given email or username already exist")
+	ErrNotDeleted                = errors.New("account has not been deleted")
+	ErrAlreadyArchived           = errors.New("account already archived or not found")
+	ErrIncorrectCredentials      = errors.New("incorrect login or password")
+	ErrAlreadyVerified           = errors.New("current email already verified or verification code is expired")
+	ErrForbiddenNickname         = errors.New("nickname contains forbidden words")
+	ErrNotFound                  = errors.New("account not found")
+	ErrEmptyVerificationCode     = errors.New("empty account verification code")
+	ErrEmptyPasswordResetToken   = errors.New("empty password reset token")
+	ErrPasswordTokenNotFound     = errors.New("account password reset token not found or expired")
+	ErrIncorrectPassword         = errors.New("incorrect password")
+	ErrPasswordResetTokenExpired = errors.New("password reset token is expired")
+	ErrVerificationNotFound      = errors.New("account verification not found")
+	ErrPasswordNotSet            = errors.New("account password is not set")
+	ErrPasswordTokenAlreadyExist = errors.New("account password reset token already exist")
+	ErrNotEnoughRights           = errors.New("not enough rights to perform the operation, verify account first")
 )
 
 type Account struct {
@@ -20,6 +40,17 @@ type Account struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+func (a *Account) setPassword(p string) error {
+	h, err := a.hashPassword(p)
+	if err != nil {
+		return err
+	}
+
+	a.Password = h
+
+	return nil
+}
+
 func (a *Account) ComparePasswords(p string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(a.Password), []byte(p)); err != nil {
 		return fmt.Errorf("bcrypt.CompareHashAndPassword: %w", ErrIncorrectPassword)
@@ -28,19 +59,7 @@ func (a *Account) ComparePasswords(p string) error {
 	return nil
 }
 
-// setPassword hashes given password and sets it to password field
-func (a *Account) setPassword(p string) error {
-	ph, err := generatePasswordHash(p)
-	if err != nil {
-		return fmt.Errorf("generatePasswordHash: %w", err)
-	}
-
-	a.Password = ph
-
-	return nil
-}
-
-func generatePasswordHash(p string) (string, error) {
+func (a *Account) hashPassword(p string) (string, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(p), 11)
 	if err != nil {
 		return "", err

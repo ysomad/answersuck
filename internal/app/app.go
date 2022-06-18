@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -16,10 +15,12 @@ import (
 
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
 	"github.com/answersuck/vault/internal/adapter/smtp"
+	"github.com/answersuck/vault/internal/adapter/storage"
 
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/email"
+	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
 
 	"github.com/answersuck/vault/pkg/blocklist"
@@ -44,14 +45,14 @@ func Run(configPath string) {
 		postgres.MaxPoolSize(cfg.PG.PoolMax),
 		postgres.PreferSimpleProtocol(cfg.PG.SimpleProtocol))
 	if err != nil {
-		l.Fatal(fmt.Errorf("main - run - postgres.NewClient: %w", err))
+		l.Fatal("app - run - postgres.NewClient: %w", err)
 	}
 	defer pg.Close()
 
 	// Service
 	validationModule, err := validation.NewModule()
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - validation.NewModule: %w", err))
+		l.Fatal("app - Run - validation.NewModule: %w", err)
 	}
 
 	sessionRepo := psql.NewSessionRepo(l, pg)
@@ -64,20 +65,20 @@ func Run(configPath string) {
 		Password: cfg.SMTP.Password,
 	})
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - email.NewClient: %w", err))
+		l.Fatal("app - Run - email.NewClient: %w", err)
 	}
 
 	emailService := email.NewService(&cfg, emailClient)
 
 	tokenManager, err := token.NewManager(cfg.SecurityToken.Sign)
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - token.NewManager: %w", err))
+		l.Fatal("app - Run - token.NewManager: %w", err)
 	}
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
 
 	accountRepo := psql.NewAccountRepo(l, pg)
-	accountService := account.NewAccountService(&account.Deps{
+	accountService := account.NewService(&account.Deps{
 		Config:         &cfg,
 		AccountRepo:    accountRepo,
 		SessionService: sessionService,
@@ -103,13 +104,13 @@ func Run(configPath string) {
 	// questionRepo := psql.NewQuestionRepo(l, pg)
 	// questionService := question.NewService(questionRepo)
 
-	// storageProvider, err := storage.NewProvider(&cfg.FileStorage)
-	// if err != nil {
-	// 	l.Fatal(fmt.Errorf("app - Run - storage.NewProvider: %w", err))
-	// }
+	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
+	if err != nil {
+		l.Fatal("app - Run - storage.NewProvider: %w", err)
+	}
 
-	// mediaRepo := psql.NewMediaRepo(l, pg)
-	// mediaService := media.NewService(mediaRepo, storageProvider)
+	mediaRepo := psql.NewMediaRepo(l, pg)
+	mediaService := media.NewService(mediaRepo, storageProvider)
 
 	// answerRepo := psql.NewAnswerRepo(l, pg)
 	// answerService := answer.NewService(l, answerRepo, mediaService)
@@ -117,7 +118,7 @@ func Run(configPath string) {
 	// playerRepo := psql.NewPlayerRepo(l, pg)
 	// playerService := player.NewService(playerRepo)
 
-	app := http.NewApp(cfg)
+	app := http.NewApp(&cfg)
 
 	app.Mount("/v1", v1.NewRouter(&v1.Deps{
 		Config:              &cfg,
@@ -128,6 +129,7 @@ func Run(configPath string) {
 		VerificationService: accountVerifService,
 		LoginService:        loginService,
 		TokenService:        tokenService,
+		MediaService:        mediaService,
 	}))
 
 	http.ServeSwaggerUI(app, cfg.HTTP.Debug)

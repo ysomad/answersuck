@@ -17,6 +17,7 @@ type Deps struct {
 	VerificationService VerificationService
 	LoginService        LoginService
 	TokenService        TokenService
+	MediaService        MediaService
 }
 
 func NewRouter(d *Deps) *fiber.App {
@@ -25,6 +26,7 @@ func NewRouter(d *Deps) *fiber.App {
 	r.Mount("/sessions", newSessionRouter(d))
 	r.Mount("/accounts", newAccountRouter(d))
 	r.Mount("/auth", newAuthRouter(d))
+	r.Mount("/media", NewMediaRouter(d))
 
 	return r
 }

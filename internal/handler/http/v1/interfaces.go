@@ -5,6 +5,7 @@ import (
 
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
+	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
 )
 
@@ -41,3 +42,7 @@ type (
 		Parse(ctx context.Context, token, audience string) (string, error)
 	}
 )
+
+type MediaService interface {
+	UploadAndSave(ctx context.Context, dto *media.UploadDTO) (media.Media, error)
+}

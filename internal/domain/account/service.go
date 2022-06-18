@@ -16,7 +16,7 @@ const (
 	pwdTokenLen  = 64
 )
 
-type accountService struct {
+type service struct {
 	cfg       *config.Aggregate
 	repo      AccountRepo
 	session   SessionService
@@ -32,8 +32,8 @@ type Deps struct {
 	BlockList      BlockList
 }
 
-func NewAccountService(d *Deps) *accountService {
-	return &accountService{
+func NewService(d *Deps) *service {
+	return &service{
 		cfg:       d.Config,
 		repo:      d.AccountRepo,
 		session:   d.SessionService,
@@ -42,7 +42,11 @@ func NewAccountService(d *Deps) *accountService {
 	}
 }
 
-func (s *accountService) Create(ctx context.Context, r CreateReq) (*Account, error) {
+func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
+	if s.blockList.Find(r.Nickname) {
+		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenNickname)
+	}
+
 	now := time.Now()
 
 	a := &Account{
@@ -50,10 +54,6 @@ func (s *accountService) Create(ctx context.Context, r CreateReq) (*Account, err
 		Nickname:  r.Nickname,
 		CreatedAt: now,
 		UpdatedAt: now,
-	}
-
-	if s.blockList.Find(a.Nickname) {
-		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenNickname)
 	}
 
 	if err := a.setPassword(r.Password); err != nil {
@@ -80,7 +80,7 @@ func (s *accountService) Create(ctx context.Context, r CreateReq) (*Account, err
 	return a, nil
 }
 
-func (s *accountService) GetById(ctx context.Context, accountId string) (*Account, error) {
+func (s *service) GetById(ctx context.Context, accountId string) (*Account, error) {
 	a, err := s.repo.FindById(ctx, accountId)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByID - s.repo.FindById: %w", err)
@@ -89,7 +89,7 @@ func (s *accountService) GetById(ctx context.Context, accountId string) (*Accoun
 	return a, nil
 }
 
-func (s *accountService) GetByEmail(ctx context.Context, email string) (*Account, error) {
+func (s *service) GetByEmail(ctx context.Context, email string) (*Account, error) {
 	a, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByEmail - s.repo.FindByEmail: %w", err)
@@ -98,7 +98,7 @@ func (s *accountService) GetByEmail(ctx context.Context, email string) (*Account
 	return a, nil
 }
 
-func (s *accountService) GetByNickname(ctx context.Context, nickname string) (*Account, error) {
+func (s *service) GetByNickname(ctx context.Context, nickname string) (*Account, error) {
 	a, err := s.repo.FindByNickname(ctx, nickname)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - GetByNickname - s.repo.FindByNickname: %w", err)
@@ -107,7 +107,7 @@ func (s *accountService) GetByNickname(ctx context.Context, nickname string) (*A
 	return a, nil
 }
 
-func (s *accountService) Delete(ctx context.Context, accountId string) error {
+func (s *service) Delete(ctx context.Context, accountId string) error {
 	if err := s.repo.Archive(ctx, accountId, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Delete - s.repo.Archive: %w", err)
 	}
@@ -120,7 +120,7 @@ func (s *accountService) Delete(ctx context.Context, accountId string) error {
 	return nil
 }
 
-func (s *accountService) ResetPassword(ctx context.Context, login string) error {
+func (s *service) ResetPassword(ctx context.Context, login string) error {
 	email := login
 
 	if _, err := mail.ParseAddress(login); err != nil {
@@ -149,7 +149,7 @@ func (s *accountService) ResetPassword(ctx context.Context, login string) error 
 	return nil
 }
 
-func (s *accountService) SetPassword(ctx context.Context, token, password string) error {
+func (s *service) SetPassword(ctx context.Context, token, password string) error {
 	t, err := s.repo.FindPasswordToken(ctx, token)
 	if err != nil {
 		return fmt.Errorf("accountService - SetPassword - s.repo.FindPasswordToken: %w", err)
@@ -159,7 +159,9 @@ func (s *accountService) SetPassword(ctx context.Context, token, password string
 		return fmt.Errorf("accountService - SetPassword - t.checkExpiration: %w", err)
 	}
 
-	phash, err := generatePasswordHash(password)
+	var a Account
+
+	phash, err := a.hashPassword(password)
 	if err != nil {
 		return fmt.Errorf("accountService - SetPassword - a.generatePasswordHash: %w", err)
 	}
