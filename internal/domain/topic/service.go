@@ -21,7 +21,7 @@ func NewService(r Repository) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateRequest) (Topic, error) {
+func (s *service) Create(ctx context.Context, r CreateReq) (Topic, error) {
 	now := time.Now()
 
 	t := Topic{

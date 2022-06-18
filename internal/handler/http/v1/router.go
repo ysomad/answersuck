@@ -20,6 +20,7 @@ type Deps struct {
 	MediaService        MediaService
 	LanguageService     LanguageService
 	TagService          TagService
+	TopicService        TopicService
 }
 
 type listResp struct {
@@ -35,6 +36,7 @@ func NewRouter(d *Deps) *fiber.App {
 	r.Mount("/media", newMediaRouter(d))
 	r.Mount("/languages", newLanguageRouter(d))
 	r.Mount("/tags", newTagRouter(d))
+	r.Mount("/topics", newTopicRouter(d))
 
 	return r
 }

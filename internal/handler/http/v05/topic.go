@@ -12,7 +12,7 @@ import (
 )
 
 type TopicService interface {
-	Create(ctx context.Context, req topic.CreateRequest) (topic.Topic, error)
+	Create(ctx context.Context, req topic.CreateReq) (topic.Topic, error)
 	GetAll(ctx context.Context) ([]*topic.Topic, error)
 }
 
@@ -42,7 +42,7 @@ func newTopicHandler(r *gin.RouterGroup, d *Deps) {
 }
 
 func (h *topicHandler) create(c *gin.Context) {
-	var r topic.CreateRequest
+	var r topic.CreateReq
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		abortWithError(c, http.StatusBadRequest, errInvalidRequestBody, h.t.TranslateError(err))

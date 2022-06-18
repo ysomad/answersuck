@@ -24,6 +24,7 @@ import (
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
+	"github.com/answersuck/vault/internal/domain/topic"
 
 	"github.com/answersuck/vault/pkg/blocklist"
 	"github.com/answersuck/vault/pkg/logging"
@@ -100,8 +101,8 @@ func Run(configPath string) {
 	tagRepo := psql.NewTagRepo(l, pg)
 	tagService := tag.NewService(tagRepo)
 
-	// topicRepo := psql.NewTopicRepo(l, pg)
-	// topicService := topic.NewService(topicRepo)
+	topicRepo := psql.NewTopicRepo(l, pg)
+	topicService := topic.NewService(topicRepo)
 
 	// questionRepo := psql.NewQuestionRepo(l, pg)
 	// questionService := question.NewService(questionRepo)
@@ -134,6 +135,7 @@ func Run(configPath string) {
 		MediaService:        mediaService,
 		LanguageService:     languageService,
 		TagService:          tagService,
+		TopicService:        topicService,
 	}))
 
 	http.ServeSwaggerUI(app, cfg.HTTP.Debug)

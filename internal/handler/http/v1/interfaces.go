@@ -9,6 +9,7 @@ import (
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
 	"github.com/answersuck/vault/internal/domain/tag"
+	"github.com/answersuck/vault/internal/domain/topic"
 )
 
 type (
@@ -56,4 +57,9 @@ type LanguageService interface {
 type TagService interface {
 	CreateMultiple(ctx context.Context, r []tag.CreateRequest) ([]*tag.Tag, error)
 	GetAll(ctx context.Context) ([]*tag.Tag, error)
+}
+
+type TopicService interface {
+	Create(ctx context.Context, req topic.CreateReq) (topic.Topic, error)
+	GetAll(ctx context.Context) ([]*topic.Topic, error)
 }
