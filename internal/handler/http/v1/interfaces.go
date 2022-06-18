@@ -5,6 +5,7 @@ import (
 
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
+	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
 )
@@ -45,4 +46,8 @@ type (
 
 type MediaService interface {
 	UploadAndSave(ctx context.Context, dto *media.UploadDTO) (media.Media, error)
+}
+
+type LanguageService interface {
+	GetAll(ctx context.Context) ([]*language.Language, error)
 }

@@ -18,6 +18,11 @@ type Deps struct {
 	LoginService        LoginService
 	TokenService        TokenService
 	MediaService        MediaService
+	LanguageService     LanguageService
+}
+
+type listResp struct {
+	Result any `json:"result"`
 }
 
 func NewRouter(d *Deps) *fiber.App {
@@ -26,7 +31,8 @@ func NewRouter(d *Deps) *fiber.App {
 	r.Mount("/sessions", newSessionRouter(d))
 	r.Mount("/accounts", newAccountRouter(d))
 	r.Mount("/auth", newAuthRouter(d))
-	r.Mount("/media", NewMediaRouter(d))
+	r.Mount("/media", newMediaRouter(d))
+	r.Mount("/languages", newLanguageRouter(d))
 
 	return r
 }

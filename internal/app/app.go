@@ -20,6 +20,7 @@ import (
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/email"
+	"github.com/answersuck/vault/internal/domain/language"
 	"github.com/answersuck/vault/internal/domain/media"
 	"github.com/answersuck/vault/internal/domain/session"
 
@@ -92,8 +93,8 @@ func Run(configPath string) {
 	loginService := auth.NewLoginService(accountService, sessionService)
 	tokenService := auth.NewTokenService(&cfg.SecurityToken, tokenManager, accountService)
 
-	// languageRepo := psql.NewLanguageRepo(l, pg)
-	// languageService := language.NewService(languageRepo)
+	languageRepo := psql.NewLanguageRepo(l, pg)
+	languageService := language.NewService(languageRepo)
 
 	// tagRepo := psql.NewTagRepo(l, pg)
 	// tagService := tag.NewService(tagRepo)
@@ -130,6 +131,7 @@ func Run(configPath string) {
 		LoginService:        loginService,
 		TokenService:        tokenService,
 		MediaService:        mediaService,
+		LanguageService:     languageService,
 	}))
 
 	http.ServeSwaggerUI(app, cfg.HTTP.Debug)

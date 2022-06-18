@@ -28,7 +28,7 @@ func newMediaHandler(d *Deps) *mediaHandler {
 	return &h
 }
 
-func NewMediaRouter(d *Deps) *fiber.App {
+func newMediaRouter(d *Deps) *fiber.App {
 	h := newMediaHandler(d)
 	r := fiber.New()
 
