@@ -10,14 +10,16 @@ import (
 )
 
 type loginService struct {
-	account AccountService
-	session SessionService
+	account  AccountService
+	session  SessionService
+	password PasswordVerifier
 }
 
-func NewLoginService(a AccountService, s SessionService) *loginService {
+func NewLoginService(a AccountService, s SessionService, p PasswordVerifier) *loginService {
 	return &loginService{
-		account: a,
-		session: s,
+		account:  a,
+		session:  s,
+		password: p,
 	}
 }
 
@@ -37,8 +39,12 @@ func (s *loginService) Login(ctx context.Context, login, password string, d sess
 		}
 	}
 
-	if err = a.ComparePasswords(password); err != nil {
-		return nil, fmt.Errorf("loginService - Login - a.CompareHashAndPassword: %w", err)
+	ok, err := s.password.Verify(password, a.Password)
+	if err != nil {
+		return nil, fmt.Errorf("tokenService - Create - s.password.Verify: %w", err)
+	}
+	if !ok {
+		return nil, fmt.Errorf("tokenService - Create - s.password.Verify: %w", ErrIncorrectPassword)
 	}
 
 	sess, err := s.session.Create(ctx, a.Id, d)

@@ -1,19 +1,35 @@
 package v1
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"encoding/json"
+	"net/http"
 )
 
-type detailedError[D string | map[string]string] struct {
-	Error  string `json:"error"`
-	Detail D      `json:"detail"`
+type detailedErr[D string | map[string]string] struct {
+	Message string `json:"message"`
+	Details D      `json:"details"`
 }
 
-func errorResp[D string | map[string]string](c *fiber.Ctx, status int,
-	err error, detail D) error {
+type msgResp struct {
+	Message string `json:"message"`
+}
 
-	return c.Status(status).JSON(detailedError[D]{
-		Error:  err.Error(),
-		Detail: detail,
+type detailedMsgResp struct {
+	Message string            `json:"message"`
+	Details map[string]string `json:"details"`
+}
+
+func writeError(w http.ResponseWriter, code int, err error) {
+	b, _ := json.Marshal(msgResp{Message: err.Error()})
+	w.WriteHeader(code)
+	w.Write(b)
+}
+
+func writeDetailedError(w http.ResponseWriter, code int, err error, details map[string]string) {
+	b, _ := json.Marshal(detailedMsgResp{
+		Message: err.Error(),
+		Details: details,
 	})
+	w.WriteHeader(code)
+	w.Write(b)
 }

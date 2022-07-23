@@ -60,6 +60,7 @@ type (
 		CookieName     string        `env-required:"true" yaml:"cookieName"`
 		CookieSecure   bool          `yaml:"cookieSecure"`
 		CookieHTTPOnly bool          `yaml:"cookieHttpOnly"`
+		CookiePath     string        `yaml:"cookiePath"`
 	}
 
 	SecurityToken struct {

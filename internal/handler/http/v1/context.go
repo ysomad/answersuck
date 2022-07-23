@@ -1,16 +1,16 @@
 package v1
 
 import (
+	"context"
 	"errors"
 
 	"github.com/answersuck/vault/internal/domain/session"
-	"github.com/gofiber/fiber/v2"
 )
 
-const (
-	accountIdKey = "accoutId"
-	sessionIdKey = "sessionId"
-	deviceKey    = "device"
+type (
+	accountIdCtxKey struct{}
+	sessionIdCtxKey struct{}
+	deviceCtxKey    struct{}
 )
 
 var (
@@ -19,8 +19,8 @@ var (
 	errDeviceNotFound    = errors.New("device not found in context")
 )
 
-func getAccountId(c *fiber.Ctx) (string, error) {
-	v := c.Locals(accountIdKey)
+func getAccountId(c context.Context) (string, error) {
+	v := c.Value(accountIdCtxKey{})
 
 	aid, ok := v.(string)
 	if !ok || aid == "" {
@@ -30,8 +30,8 @@ func getAccountId(c *fiber.Ctx) (string, error) {
 	return aid, nil
 }
 
-func getSessionId(c *fiber.Ctx) (string, error) {
-	v := c.Locals(sessionIdKey)
+func getSessionId(c context.Context) (string, error) {
+	v := c.Value(sessionIdCtxKey{})
 
 	sid, ok := v.(string)
 	if !ok || sid == "" {
@@ -41,8 +41,8 @@ func getSessionId(c *fiber.Ctx) (string, error) {
 	return sid, nil
 }
 
-func getDevice(c *fiber.Ctx) (session.Device, error) {
-	v := c.Locals(deviceKey)
+func getDevice(c context.Context) (session.Device, error) {
+	v := c.Value(deviceCtxKey{})
 
 	d, ok := v.(session.Device)
 	if !ok {

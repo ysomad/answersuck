@@ -7,17 +7,10 @@ type (
 	}
 
 	TokenCreateReq struct {
-		Audience string `json:"audience" validate:"required,uri"`
 		Password string `json:"password" validate:"required"`
 	}
 
 	TokenCreateResp struct {
 		Token string `json:"token"`
-	}
-)
-
-type (
-	TokenCreateDTO struct {
-		AccountId, Password, Audience string
 	}
 )

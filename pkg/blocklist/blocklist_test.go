@@ -7,37 +7,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNew(t *testing.T) {
+func Test_New(t *testing.T) {
 	bl := New(WithUsernames)
 
 	assert.Equal(t, sort.StringsAreSorted(bl.values), true)
 	assert.Equal(t, len(WithUsernames()), len(bl.values))
 }
 
-func TestFind(t *testing.T) {
-	type testCase struct {
-		description string
-		value       string
-		expected    bool
-	}
-
+func Test_Find(t *testing.T) {
 	bl := New(WithUsernames)
 
-	for _, c := range []testCase{
+	for _, c := range []struct {
+		description string
+		value       string
+		want        bool
+	}{
 		{
 			description: "found",
 			value:       "admin",
-			expected:    true,
+			want:        true,
 		},
 		{
 			description: "not found",
 			value:       "ysomad",
-			expected:    false,
+			want:        false,
 		},
 	} {
 		t.Run(c.description, func(t *testing.T) {
 			found := bl.Find(c.value)
-			assert.Equal(t, found, c.expected)
+			assert.Equal(t, found, c.want)
 		})
 	}
 }

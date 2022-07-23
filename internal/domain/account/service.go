@@ -7,18 +7,13 @@ import (
 	"time"
 
 	"github.com/answersuck/vault/internal/config"
-
 	"github.com/answersuck/vault/pkg/strings"
-)
-
-const (
-	verifCodeLen = 64
-	pwdTokenLen  = 64
 )
 
 type service struct {
 	cfg       *config.Aggregate
 	repo      AccountRepo
+	password  Password
 	session   SessionService
 	email     EmailService
 	blockList BlockList
@@ -27,18 +22,20 @@ type service struct {
 type Deps struct {
 	Config         *config.Aggregate
 	AccountRepo    AccountRepo
+	BlockList      BlockList
+	Password       Password
 	SessionService SessionService
 	EmailService   EmailService
-	BlockList      BlockList
 }
 
 func NewService(d *Deps) *service {
 	return &service{
 		cfg:       d.Config,
 		repo:      d.AccountRepo,
+		blockList: d.BlockList,
+		password:  d.Password,
 		session:   d.SessionService,
 		email:     d.EmailService,
-		blockList: d.BlockList,
 	}
 }
 
@@ -49,15 +46,17 @@ func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
 
 	now := time.Now()
 
-	a := &Account{
-		Email:     r.Email,
-		Nickname:  r.Nickname,
-		CreatedAt: now,
-		UpdatedAt: now,
+	phash, err := s.password.Hash(r.Password)
+	if err != nil {
+		return nil, fmt.Errorf("accountService - Create - s.password.Hash: %w", err)
 	}
 
-	if err := a.setPassword(r.Password); err != nil {
-		return nil, fmt.Errorf("accountService - Create - a.setPassword: %w", err)
+	a := Account{
+		Email:     r.Email,
+		Nickname:  r.Nickname,
+		Password:  phash,
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	c, err := a.generateVerifCode(verifCodeLen)
@@ -65,7 +64,7 @@ func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
 		return nil, fmt.Errorf("accountService - Create - a.generateVerifCode: %w", err)
 	}
 
-	accountId, err := s.repo.Save(ctx, a, c)
+	accountId, err := s.repo.Save(ctx, &a, c)
 	if err != nil {
 		return nil, fmt.Errorf("accountService - Create - s.repo.Save: %w", err)
 	}
@@ -77,7 +76,7 @@ func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
 		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, c)
 	}()
 
-	return a, nil
+	return &a, nil
 }
 
 func (s *service) GetById(ctx context.Context, accountId string) (*Account, error) {
@@ -124,12 +123,10 @@ func (s *service) ResetPassword(ctx context.Context, login string) error {
 	email := login
 
 	if _, err := mail.ParseAddress(login); err != nil {
-
 		email, err = s.repo.FindEmailByNickname(ctx, login)
 		if err != nil {
 			return fmt.Errorf("accountService - ResetPassword - s.repo.FindEmailByNickname: %w", err)
 		}
-
 	}
 
 	t, err := strings.NewUnique(pwdTokenLen)
@@ -159,11 +156,9 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 		return fmt.Errorf("accountService - SetPassword - t.checkExpiration: %w", err)
 	}
 
-	var a Account
-
-	phash, err := a.hashPassword(password)
+	phash, err := s.password.Hash(password)
 	if err != nil {
-		return fmt.Errorf("accountService - SetPassword - a.generatePasswordHash: %w", err)
+		return fmt.Errorf("accountService - SetPassword - s.password.Hash: %w", err)
 	}
 
 	if err = s.repo.SetPassword(ctx, SetPasswordDTO{
@@ -179,6 +174,32 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 		// TODO: handle error
 		_ = s.session.TerminateAll(ctx, t.AccountId)
 	}()
+
+	return nil
+}
+
+func (s *service) RequestVerification(ctx context.Context, accountId string) error {
+	v, err := s.repo.FindVerification(ctx, accountId)
+	if err != nil {
+		return fmt.Errorf("accountService - RequestVerification - s.repo.FindVerification: %w", err)
+	}
+
+	if v.Verified {
+		return fmt.Errorf("accountService - RequestVerification - v.Verified: %w", ErrAlreadyVerified)
+	}
+
+	go func() {
+		// TODO: handle error
+		_ = s.email.SendAccountVerificationEmail(ctx, v.Email, v.Code)
+	}()
+
+	return nil
+}
+
+func (s *service) Verify(ctx context.Context, code string) error {
+	if err := s.repo.Verify(ctx, code, time.Now()); err != nil {
+		return fmt.Errorf("accountService - Verify - s.repo.Verify: %w", err)
+	}
 
 	return nil
 }

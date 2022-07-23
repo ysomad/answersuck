@@ -6,7 +6,7 @@ volumes:
 services:
   postgres:
     container_name: postgres
-    image: postgres
+    image: "postgres:14.4-alpine"
     environment:
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "pass"

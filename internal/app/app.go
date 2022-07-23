@@ -1,34 +1,30 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/ilyakaznacheev/cleanenv"
 
 	"github.com/answersuck/vault/internal/config"
 
-	"github.com/answersuck/vault/internal/handler/http"
 	v1 "github.com/answersuck/vault/internal/handler/http/v1"
 
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
 	"github.com/answersuck/vault/internal/adapter/smtp"
-	"github.com/answersuck/vault/internal/adapter/storage"
 
 	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/answer"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/email"
-	"github.com/answersuck/vault/internal/domain/language"
-	"github.com/answersuck/vault/internal/domain/media"
-	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/internal/domain/session"
-	"github.com/answersuck/vault/internal/domain/tag"
-	"github.com/answersuck/vault/internal/domain/topic"
 
 	"github.com/answersuck/vault/pkg/blocklist"
+	"github.com/answersuck/vault/pkg/crypto"
+	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 	"github.com/answersuck/vault/pkg/token"
@@ -81,83 +77,80 @@ func Run(configPath string) {
 	}
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
+	argon2Hasher := crypto.NewArgon2Id()
 
 	accountRepo := psql.NewAccountRepo(l, pg)
 	accountService := account.NewService(&account.Deps{
 		Config:         &cfg,
+		Password:       argon2Hasher,
 		AccountRepo:    accountRepo,
 		SessionService: sessionService,
 		EmailService:   emailService,
 		BlockList:      usernameBlockList,
 	})
 
-	accountVerifRepo := psql.NewAccountVerificationRepo(l, pg)
-	accountVerifService := account.NewVerificationService(accountVerifRepo, emailService)
-
-	loginService := auth.NewLoginService(accountService, sessionService)
-	tokenService := auth.NewTokenService(&cfg.SecurityToken, tokenManager, accountService)
-
-	languageRepo := psql.NewLanguageRepo(l, pg)
-	languageService := language.NewService(languageRepo)
-
-	tagRepo := psql.NewTagRepo(l, pg)
-	tagService := tag.NewService(tagRepo)
-
-	topicRepo := psql.NewTopicRepo(l, pg)
-	topicService := topic.NewService(topicRepo)
-
-	questionRepo := psql.NewQuestionRepo(l, pg)
-	questionService := question.NewService(questionRepo)
-
-	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
-	if err != nil {
-		l.Fatal("app - Run - storage.NewProvider: %w", err)
-	}
-
-	mediaRepo := psql.NewMediaRepo(l, pg)
-	mediaService := media.NewService(mediaRepo, storageProvider)
-
-	answerRepo := psql.NewAnswerRepo(l, pg)
-	answerService := answer.NewService(l, answerRepo, mediaService)
-
+	loginService := auth.NewLoginService(accountService, sessionService, argon2Hasher)
+	tokenService := auth.NewTokenService(auth.TokenServiceDeps{
+		Config:          &cfg.SecurityToken,
+		TokenManager:    tokenManager,
+		AccountService:  accountService,
+		PasswordMatcher: argon2Hasher,
+	})
+	//
+	// languageRepo := psql.NewLanguageRepo(l, pg)
+	// languageService := language.NewService(languageRepo)
+	//
+	// tagRepo := psql.NewTagRepo(l, pg)
+	// tagService := tag.NewService(tagRepo)
+	//
+	// topicRepo := psql.NewTopicRepo(l, pg)
+	// topicService := topic.NewService(topicRepo)
+	//
+	// questionRepo := psql.NewQuestionRepo(l, pg)
+	// questionService := question.NewService(questionRepo)
+	//
+	// storageProvider, err := storage.NewProvider(&cfg.FileStorage)
+	// if err != nil {
+	// 	l.Fatal("app - Run - storage.NewProvider: %w", err)
+	// }
+	//
+	// mediaRepo := psql.NewMediaRepo(l, pg)
+	// mediaService := media.NewService(mediaRepo, storageProvider)
+	//
+	// answerRepo := psql.NewAnswerRepo(l, pg)
+	// answerService := answer.NewService(l, answerRepo, mediaService)
+	//
 	// playerRepo := psql.NewPlayerRepo(l, pg)
 	// playerService := player.NewService(playerRepo)
 
-	app := http.NewApp(&cfg)
+	// http
+	m := chi.NewMux()
 
-	app.Mount("/v1", v1.NewRouter(&v1.Deps{
-		Config:              &cfg,
-		Logger:              l,
-		ValidationModule:    validationModule,
-		SessionService:      sessionService,
-		AccountService:      accountService,
-		VerificationService: accountVerifService,
-		LoginService:        loginService,
-		TokenService:        tokenService,
-		MediaService:        mediaService,
-		LanguageService:     languageService,
-		TagService:          tagService,
-		TopicService:        topicService,
-		QuestionService:     questionService,
-		AnswerService:       answerService,
+	m.Mount("/v1", v1.NewHandler(&v1.Deps{
+		Config:           &cfg,
+		Logger:           l,
+		ValidationModule: validationModule,
+		AccountService:   accountService,
+		SessionService:   sessionService,
+		LoginService:     loginService,
+		TokenService:     tokenService,
 	}))
 
-	http.ServeSwaggerUI(app, cfg.HTTP.Debug)
+	httpServer := httpserver.New(m, httpserver.Port(cfg.HTTP.Port))
 
-	// Listen from a different goroutine
-	go func() {
-		if err := app.Listen(cfg.HTTP.Port); err != nil {
-			l.Fatal("app.Listen: %w", err)
-		}
-	}()
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
-	c := make(chan os.Signal, 1)                    // Create channel to signify a signal being sent
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM) // When an interrupt or termination signal is sent, notify the channel
+	select {
+	case s := <-interrupt:
+		l.Info("app - Run - signal: " + s.String())
+	case err = <-httpServer.Notify():
+		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+	}
 
-	_ = <-c // This blocks the main thread until an interrupt is received
-	l.Info("Gracefully shutting down...")
-
-	_ = app.Shutdown()
-
-	l.Info("HTTP App was successful shutdown.")
+	// Shutdown
+	err = httpServer.Shutdown()
+	if err != nil {
+		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
+	}
 }

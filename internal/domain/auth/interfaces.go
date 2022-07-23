@@ -21,7 +21,11 @@ type (
 	}
 
 	TokenManager interface {
-		Create(subject, audience string, expiration time.Duration) (string, error)
-		Parse(token, audience string) (string, error)
+		Create(subject string, expiration time.Duration) (string, error)
+		Parse(token string) (string, error)
+	}
+
+	PasswordVerifier interface {
+		Verify(plain, hash string) (bool, error)
 	}
 )

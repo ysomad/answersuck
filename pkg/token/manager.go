@@ -2,7 +2,6 @@ package token
 
 import (
 	"errors"
-	"net/url"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -12,8 +11,6 @@ var (
 	ErrEmptySign            = errors.New("signing key is empty")
 	ErrNoClaims             = errors.New("error getting claims from token")
 	ErrUnexpectedSignMethod = errors.New("unexpected signing method")
-	ErrInvalidAudience      = errors.New("audience is not valid uri")
-	ErrAudienceMismatch     = errors.New("audience does not match the audience in the token")
 )
 
 type manager struct {
@@ -30,26 +27,16 @@ func NewManager(sign string) (manager, error) {
 	}, nil
 }
 
-func (tm manager) Create(subject, audience string, expiration time.Duration) (string, error) {
-	_, err := url.Parse(audience)
-	if err != nil {
-		return "", ErrInvalidAudience
-	}
-
+func (tm manager) Create(subject string, expiration time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Subject:   subject,
-		Audience:  audience,
 		ExpiresAt: time.Now().Add(expiration).Unix(),
 	})
 
 	return token.SignedString([]byte(tm.sign))
 }
 
-func (tm manager) Parse(token, audience string) (string, error) {
-	_, err := url.Parse(audience)
-	if err != nil {
-		return "", ErrInvalidAudience
-	}
+func (tm manager) Parse(token string) (string, error) {
 
 	t, err := jwt.Parse(token, func(t *jwt.Token) (i interface{}, err error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -65,10 +52,6 @@ func (tm manager) Parse(token, audience string) (string, error) {
 	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok && !t.Valid {
 		return "", ErrNoClaims
-	}
-
-	if claims["aud"].(string) != audience {
-		return "", ErrAudienceMismatch
 	}
 
 	return claims["sub"].(string), nil
