@@ -266,7 +266,7 @@ func (r *accountRepo) FindPasswordToken(ctx context.Context, token string) (acco
 
 	var t account.PasswordToken
 
-	if err := r.c.Pool.QueryRow(ctx, sql, token).Scan(&t.Token, &t.Created, &t.AccountId); err != nil {
+	if err := r.c.Pool.QueryRow(ctx, sql, token).Scan(&t.Token, &t.CreatedAt, &t.AccountId); err != nil {
 
 		if err == pgx.ErrNoRows {
 			return account.PasswordToken{},

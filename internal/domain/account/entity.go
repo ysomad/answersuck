@@ -50,12 +50,12 @@ const (
 type PasswordToken struct {
 	AccountId string
 	Token     string
-	Created   time.Time
+	CreatedAt time.Time
 }
 
 // checkExpiration returns error if token is expired
 func (t PasswordToken) checkExpiration(exp time.Duration) error {
-	if time.Now().After(t.Created.Add(exp)) {
+	if time.Now().After(t.CreatedAt.Add(exp)) {
 		return ErrPasswordTokenExpired
 	}
 
