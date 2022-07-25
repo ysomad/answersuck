@@ -41,7 +41,7 @@ func (s *tokenService) Create(ctx context.Context, accountId, password string) (
 		return "", fmt.Errorf("tokenService - Create - s.password.Verify: %w", err)
 	}
 	if !ok {
-		return "", fmt.Errorf("tokenService - Create - s.password.Verify: %w", ErrIncorrectPassword)
+		return "", fmt.Errorf("tokenService - Create - s.password.Verify: %w", ErrIncorrectAccountPassword)
 	}
 
 	t, err := s.token.Create(accountId, s.cfg.Expiration)

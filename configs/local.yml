@@ -31,7 +31,7 @@ securityToken:
   signingKey: "secret"
 
 password:
-  resetTokenExpiration: 1m
+  resetTokenExpiration: 10m
 
 smtp:
   host: "smtp.yandex.ru"

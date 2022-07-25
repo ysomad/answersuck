@@ -44,7 +44,7 @@ func (s *loginService) Login(ctx context.Context, login, password string, d sess
 		return nil, fmt.Errorf("tokenService - Create - s.password.Verify: %w", err)
 	}
 	if !ok {
-		return nil, fmt.Errorf("tokenService - Create - s.password.Verify: %w", ErrIncorrectPassword)
+		return nil, fmt.Errorf("tokenService - Create - s.password.Verify: %w", ErrIncorrectAccountPassword)
 	}
 
 	sess, err := s.session.Create(ctx, a.Id, d)

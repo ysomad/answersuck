@@ -1,0 +1,3 @@
+postgres:
+  poolMax: 1
+  url: "postgres://user:pass@localhost:5432/postgres"

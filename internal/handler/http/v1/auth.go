@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
 )
 
@@ -69,9 +70,8 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("http - v1 - auth - login - h.service.Login", zap.Error(err))
 
-		if errors.Is(err, auth.ErrIncorrectPassword) ||
-			errors.Is(err, auth.ErrAccountNotFound) {
-
+		if errors.Is(err, auth.ErrIncorrectAccountPassword) ||
+			errors.Is(err, account.ErrNotFound) {
 			writeError(w, http.StatusUnauthorized, auth.ErrIncorrectCredentials)
 			return
 		}
@@ -101,6 +101,7 @@ func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) {
 		Secure:   h.cfg.CookieSecure,
 		HttpOnly: h.cfg.CookieHTTPOnly,
 	})
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -128,7 +129,7 @@ func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.log.Error("http - v1 - auth - createToken - h.token.Create", zap.Error(err))
 
-		if errors.Is(err, auth.ErrIncorrectPassword) {
+		if errors.Is(err, auth.ErrIncorrectAccountPassword) {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}

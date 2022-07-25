@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrAlreadyExist      = errors.New("account with given email or username already exist")
+	ErrAlreadyExist      = errors.New("account with given email or nickname already exist")
 	ErrNotDeleted        = errors.New("account has not been deleted")
 	ErrAlreadyArchived   = errors.New("account already archived or not found")
 	ErrAlreadyVerified   = errors.New("current email already verified or verification code is expired")

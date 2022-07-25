@@ -22,10 +22,7 @@ type accountRepo struct {
 }
 
 func NewAccountRepo(l *zap.Logger, c *postgres.Client) *accountRepo {
-	return &accountRepo{
-		l: l,
-		c: c,
-	}
+	return &accountRepo{l: l, c: c}
 }
 
 func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string) (string, error) {
@@ -224,31 +221,46 @@ func (r *accountRepo) Archive(ctx context.Context, accountId string, updatedAt t
 	return nil
 }
 
-func (r *accountRepo) SavePasswordToken(ctx context.Context, email, token string) error {
+func (r *accountRepo) SavePasswordToken(ctx context.Context, login, token string) (string, error) {
 	sql := `
-		INSERT INTO password_token(token, account_id)
-		VALUES($1, (SELECT id AS account_id FROM account WHERE email = $2))
+        WITH e AS (
+            SELECT id AS account_id, email AS account_email
+            FROM account
+            WHERE email = $1
+            OR nickname = $2
+        ),
+        pt AS (
+            INSERT INTO password_token(token, account_id)
+            VALUES($3, (SELECT account_id FROM e))
+        )
+        SELECT account_email FROM e
 	`
 
-	r.l.Debug("psql - account - SavePasswordToken", zap.String("sql", sql), zap.String("email", email), zap.String("token", token))
+	r.l.Debug(
+		"psql - account - SavePasswordToken",
+		zap.String("sql", sql),
+		zap.String("login", login),
+		zap.String("token", token),
+	)
 
-	if _, err := r.c.Pool.Exec(ctx, sql, token, email); err != nil {
+	var email string
+
+	if err := r.c.Pool.QueryRow(ctx, sql, login, login, token).Scan(&email); err != nil {
 
 		var pgErr *pgconn.PgError
-
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.Exec: %w", account.ErrPasswordTokenAlreadyExist)
+				return "", fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.QueryRow.Scan: %w", account.ErrPasswordTokenAlreadyExist)
 			case pgerrcode.ForeignKeyViolation:
-				return fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.Exec: %w", account.ErrNotFound)
+				return "", fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 			}
 		}
 
-		return fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.Exec: %w", err)
+		return "", fmt.Errorf("psql - account - SavePasswordToken - r.c.QueryRow.Scan: %w", err)
 	}
 
-	return nil
+	return email, nil
 }
 
 func (r *accountRepo) FindPasswordToken(ctx context.Context, token string) (account.PasswordToken, error) {

@@ -1,4 +1,4 @@
-package psql_test
+package psql
 
 import (
 	"log"
@@ -6,33 +6,38 @@ import (
 	"testing"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/vault/pkg/logger"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
-const configPath = "./configs/local.yml"
+const configPath = "../../../../configs/test.yml"
 
 var (
-	testClient *postgres.Client
+	_testClient *postgres.Client
+	_testCfg    *config.TestPG
+	_testLogger *zap.Logger
 )
 
 func TestMain(m *testing.M) {
-	var cfg config.PG
+	var cfg config.Test
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		log.Fatalf("Config error: %v", err)
 	}
+	_testCfg = &cfg.PG
 
-	pg, err := postgres.NewClient(cfg.URL,
-		postgres.MaxPoolSize(cfg.PoolMax),
-		postgres.PreferSimpleProtocol(cfg.SimpleProtocol))
+	pg, err := postgres.NewClient(_testCfg.URL, postgres.MaxPoolSize(_testCfg.PoolMax))
 	if err != nil {
 		log.Fatalf("postgres.NewClient: %v", err)
 	}
-	defer pg.Close()
+	_testClient = pg
+	defer _testClient.Close()
 
-	testClient = pg
+	_testLogger = logger.New(os.Stdout, "")
+	defer _testLogger.Sync()
 
 	os.Exit(m.Run())
 }

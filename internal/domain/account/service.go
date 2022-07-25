@@ -3,7 +3,6 @@ package account
 import (
 	"context"
 	"fmt"
-	"net/mail"
 	"time"
 
 	"github.com/answersuck/vault/internal/config"
@@ -120,21 +119,13 @@ func (s *service) Delete(ctx context.Context, accountId string) error {
 }
 
 func (s *service) ResetPassword(ctx context.Context, login string) error {
-	email := login
-
-	if _, err := mail.ParseAddress(login); err != nil {
-		email, err = s.repo.FindEmailByNickname(ctx, login)
-		if err != nil {
-			return fmt.Errorf("accountService - ResetPassword - s.repo.FindEmailByNickname: %w", err)
-		}
-	}
-
 	t, err := strings.NewUnique(pwdTokenLen)
 	if err != nil {
 		return fmt.Errorf("accountService - ResetPassword - strings.NewUnique: %w", err)
 	}
 
-	if err = s.repo.SavePasswordToken(ctx, email, t); err != nil {
+	email, err := s.repo.SavePasswordToken(ctx, login, t)
+	if err != nil {
 		return fmt.Errorf("accountService - ResetPassword - s.repo.SavePasswordToken: %w", err)
 	}
 

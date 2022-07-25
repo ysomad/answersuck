@@ -16,7 +16,8 @@ type AccountRepo interface {
 	Verify(ctx context.Context, code string, updatedAt time.Time) error
 	FindVerification(ctx context.Context, nickname string) (Verification, error)
 
-	SavePasswordToken(ctx context.Context, email, token string) error
+	// SavePasswordToken saves password token for account with login, returns email
+	SavePasswordToken(ctx context.Context, login, token string) (string, error)
 	FindPasswordToken(ctx context.Context, token string) (PasswordToken, error)
 	SetPassword(ctx context.Context, dto SetPasswordDTO) error
 }
