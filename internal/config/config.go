@@ -28,7 +28,6 @@ type (
 	App struct {
 		Name string `env-required:"true" yaml:"name"`
 		Ver  string `env-required:"true" yaml:"version"`
-		Dev  bool   `yaml:"development"`
 	}
 
 	HTTP struct {
