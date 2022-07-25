@@ -8,10 +8,10 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/media"
 
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
@@ -20,11 +20,11 @@ const (
 )
 
 type mediaRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewMediaRepo(l logging.Logger, c *postgres.Client) *mediaRepo {
+func NewMediaRepo(l *zap.Logger, c *postgres.Client) *mediaRepo {
 	return &mediaRepo{
 		l: l,
 		c: c,
@@ -36,8 +36,6 @@ func (r *mediaRepo) Save(ctx context.Context, m media.Media) (media.Media, error
 		INSERT INTO %s(id, url, mime_type, account_id, created_at)
 		VALUES ($1, $2, $3, $4, $5)
 	`, mediaTable)
-
-	r.l.Info("psql - media - Save: %s", sql)
 
 	_, err := r.c.Pool.Exec(
 		ctx,
@@ -69,8 +67,6 @@ func (r *mediaRepo) Save(ctx context.Context, m media.Media) (media.Media, error
 
 func (r *mediaRepo) FindMimeTypeById(ctx context.Context, mediaId string) (string, error) {
 	sql := fmt.Sprintf(`SELECT mime_type FROM %s WHERE id = $1`, mediaTable)
-
-	r.l.Info("psql - media - FindMimeTypeById: %s", sql)
 
 	var mimeType string
 

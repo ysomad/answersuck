@@ -5,15 +5,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type Deps struct {
 	Config           *config.Aggregate
-	Logger           logging.Logger
+	Logger           *zap.Logger
 	ValidationModule ValidationModule
 	AccountService   AccountService
 	SessionService   SessionService
@@ -27,20 +26,14 @@ type Deps struct {
 	QuestionService  QuestionService
 }
 
-func mountMiddlewares(r chi.Router) {
-	for _, mw := range []func(http.Handler) http.Handler{
+func NewHandler(d *Deps) http.Handler {
+	r := chi.NewRouter()
+	r.Use(
 		middleware.RequestID,
 		middleware.RealIP,
 		middleware.Logger,
 		middleware.Recoverer,
-	} {
-		r.Use(mw)
-	}
-}
-
-func NewHandler(d *Deps) http.Handler {
-	r := chi.NewRouter()
-	mountMiddlewares(r)
+	)
 
 	r.Mount("/accounts", newAccountHandler(d))
 	r.Mount("/sessions", newSessionHandler(d))

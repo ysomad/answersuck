@@ -7,21 +7,21 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/topic"
 
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 const topicTable = "topic"
 
 type topicRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewTopicRepo(l logging.Logger, c *postgres.Client) *topicRepo {
+func NewTopicRepo(l *zap.Logger, c *postgres.Client) *topicRepo {
 	return &topicRepo{
 		l: l,
 		c: c,
@@ -34,8 +34,6 @@ func (r *topicRepo) Save(ctx context.Context, t topic.Topic) (topic.Topic, error
 		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`, topicTable)
-
-	r.l.Info("psql - topic - Save: %s", sql)
 
 	if err := r.c.Pool.QueryRow(ctx, sql,
 		t.Name,
@@ -59,16 +57,14 @@ func (r *topicRepo) Save(ctx context.Context, t topic.Topic) (topic.Topic, error
 
 func (r *topicRepo) FindAll(ctx context.Context) ([]*topic.Topic, error) {
 	sql := fmt.Sprintf(`
-		SELECT 
-			id, 
-			name, 
-			language_id, 
-			created_at, 
-			updated_at 
+		SELECT
+			id,
+			name,
+			language_id,
+			created_at,
+			updated_at
 		FROM %s
 	`, topicTable)
-
-	r.l.Info("psql - topic - FindAll: %s", sql)
 
 	rows, err := r.c.Pool.Query(ctx, sql)
 	if err != nil {

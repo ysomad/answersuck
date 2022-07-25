@@ -14,9 +14,7 @@ import (
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
 
-var (
-	errTranslatorNotFound = errors.New("translator not found")
-)
+var errTranslatorNotFound = errors.New("translator not found")
 
 type module struct {
 	validate *validator.Validate

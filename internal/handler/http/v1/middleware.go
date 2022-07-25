@@ -3,22 +3,21 @@ package v1
 import (
 	"context"
 	"net/http"
-	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 // mwAuthenticator check if request is authenticated and sets accountId and sessionId to locals (context)
-func mwAuthenticator(l logging.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+func mwAuthenticator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
 			if err != nil {
-				l.Info("http - v1 - middleware - mwAuthenticator - r.Cookie :%w", err)
+				l.Info("http - v1 - middleware - mwAuthenticator - r.Cookie", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -27,13 +26,13 @@ func mwAuthenticator(l logging.Logger, cfg *config.Session, s SessionService) fu
 
 			sess, err := s.GetById(ctx, sessionCookie.Value)
 			if err != nil {
-				l.Error("http - v1 - middleware - mwAuthenticator - s.GetById: %w", err)
+				l.Error("http - v1 - middleware - mwAuthenticator - s.GetById", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
 			if sess.Expired() {
-				l.Info("http - v1 - middleware - mwAuthenticator: %w", session.ErrExpired)
+				l.Info("http - v1 - middleware - mwAuthenticator", zap.Error(session.ErrExpired))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -58,38 +57,38 @@ func mwAuthenticator(l logging.Logger, cfg *config.Session, s SessionService) fu
 // aborts if not.
 //
 // should be used instead of sessionMW
-func mwVerificator(l logging.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
 			if err != nil {
-				l.Info("http - v1 - middleware - mwVerificator - r.Cookie :%w", err)
+				l.Info("http - v1 - middleware - mwVerificator - r.Cookie", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
 			ctx := r.Context()
 
-			res, err := s.GetByIdWithVerified(ctx, sessionCookie.Value)
+			res, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
 			if err != nil {
-				l.Error("http - v1 - middleware - mwVerificator - s.GetById: %w", err)
+				l.Error("http - v1 - middleware - mwVerificator - s.GetById", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 			if !res.Verified {
-				l.Info("http - v1 - middleware - mwVerificator - !res.Verified: %w", account.ErrNotEnoughRights)
+				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
 				writeError(w, http.StatusForbidden, account.ErrNotEnoughRights)
 				return
 			}
 
-			if time.Now().Unix() > res.Session.ExpiresAt {
-				l.Info("http - v1 - middleware - mwVerificator: %w", session.ErrExpired)
+			if res.Session.Expired() {
+				l.Info("http - v1 - middleware - mwVerificator", zap.Error(session.ErrExpired))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			if res.Session.IP != r.RemoteAddr || res.Session.UserAgent != r.UserAgent() {
-				l.Error("http - v1 - middleware - mwVerificator: %w", session.ErrDeviceMismatch)
+			if !res.Session.SameDevice(r.RemoteAddr, r.UserAgent()) {
+				l.Error("http - v1 - middleware - mwVerificator", zap.Error(session.ErrDeviceMismatch))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -105,32 +104,31 @@ func mwVerificator(l logging.Logger, cfg *config.Session, s SessionService) func
 }
 
 // mwTokenRequired parses and validates security token
-func mwTokenRequired(l logging.Logger, token TokenService) func(http.Handler) http.Handler {
+func mwTokenRequired(l *zap.Logger, token TokenService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			accountId, err := getAccountId(r.Context())
 			if err != nil {
-				l.Info("http - v1 - middleware - mwTokenRequired - getAccountId: %w", err)
+				l.Info("http - v1 - middleware - mwTokenRequired - getAccountId", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
 			t := r.URL.Query().Get("token")
 			if t == "" {
-				l.Info("http - v1 - middleware - mwTokenRequired - r.URL.Query.Get: %w", err)
+				l.Info("http - v1 - middleware - mwTokenRequired - r.URL.Query.Get", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 
 			sub, err := token.Parse(r.Context(), t)
 			if err != nil {
-				l.Error("http - v1 - middleware - mwTokenRequired - t.Parse: %w", err)
+				l.Error("http - v1 - middleware - mwTokenRequired - t.Parse", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
-
 			if sub != accountId {
-				l.Info("http - v1 - middleware - mwTokenRequired - sub!=accountId: %w", err)
+				l.Info("http - v1 - middleware - mwTokenRequired - sub != accountId", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}

@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/domain/player"
-	"github.com/answersuck/vault/pkg/logging"
-	"github.com/answersuck/vault/pkg/postgres"
 	"github.com/jackc/pgx/v4"
+	"go.uber.org/zap"
+
+	"github.com/answersuck/vault/internal/domain/player"
+	"github.com/answersuck/vault/pkg/postgres"
 )
 
 type playerRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewPlayerRepo(l logging.Logger, c *postgres.Client) *playerRepo {
+func NewPlayerRepo(l *zap.Logger, c *postgres.Client) *playerRepo {
 	return &playerRepo{
 		l: l,
 		c: c,
@@ -31,12 +32,10 @@ func (r *playerRepo) FindByNickname(ctx context.Context, nickname string) (playe
 		FROM player p
 		INNER JOIN account a ON a.id = p.account_id
 		LEFT JOIN player_avatar pa ON p.id = pa.player_id
-		WHERE 
+		WHERE
 			a.nickname = $1
 			AND a.is_archived = $2
 	`
-
-	r.l.Info("psql - player - FindByNickname: %s", sql)
 
 	var p player.Player
 

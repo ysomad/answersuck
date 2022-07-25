@@ -5,16 +5,15 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/auth"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type authHandler struct {
 	cfg     *config.Session
-	log     logging.Logger
+	log     *zap.Logger
 	v       ValidationModule
 	service LoginService
 	token   TokenService
@@ -52,7 +51,7 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 	var req auth.LoginReq
 
 	if err = h.v.ValidateRequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - auth - login - h.v.ValidateRequestBody: %w", err)
+		h.log.Info("http - v1 - auth - login - h.v.ValidateRequestBody", zap.Error(err))
 		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
@@ -61,14 +60,14 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 
 	d, err := getDevice(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - auth - login - getDevice: %w", err)
+		h.log.Error("http - v1 - auth - login - getDevice", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	s, err := h.service.Login(ctx, req.Login, req.Password, d)
 	if err != nil {
-		h.log.Error("http - v1 - auth - login - h.service.Login: %w", err)
+		h.log.Error("http - v1 - auth - login - h.service.Login", zap.Error(err))
 
 		if errors.Is(err, auth.ErrIncorrectPassword) ||
 			errors.Is(err, auth.ErrAccountNotFound) {
@@ -102,7 +101,6 @@ func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) {
 		Secure:   h.cfg.CookieSecure,
 		HttpOnly: h.cfg.CookieHTTPOnly,
 	})
-
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -112,7 +110,7 @@ func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
 	var req auth.TokenCreateReq
 
 	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - auth - createToken - h.v.ValidateRequestBody: %w", err)
+		h.log.Info("http - v1 - auth - createToken - h.v.ValidateRequestBody", zap.Error(err))
 		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
@@ -121,14 +119,14 @@ func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
 
 	accountId, err := getAccountId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - auth - createToken - getAccountId: %w", err)
+		h.log.Error("http - v1 - auth - createToken - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	t, err := h.token.Create(ctx, accountId, req.Password)
 	if err != nil {
-		h.log.Error("http - v1 - auth - createToken - h.token.Create: %w", err)
+		h.log.Error("http - v1 - auth - createToken - h.token.Create", zap.Error(err))
 
 		if errors.Is(err, auth.ErrIncorrectPassword) {
 			w.WriteHeader(http.StatusForbidden)

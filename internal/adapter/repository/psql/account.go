@@ -9,19 +9,19 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/account"
 
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 type accountRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewAccountRepo(l logging.Logger, c *postgres.Client) *accountRepo {
+func NewAccountRepo(l *zap.Logger, c *postgres.Client) *accountRepo {
 	return &accountRepo{
 		l: l,
 		c: c,
@@ -45,8 +45,6 @@ func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string)
 		)
 		SELECT account_id FROM a
 	`
-
-	r.l.Info("psql - account - Save: %s", sql)
 
 	var accountId string
 
@@ -94,8 +92,6 @@ func (r *accountRepo) FindById(ctx context.Context, accountId string) (*account.
 			AND is_archived = $2
 	`
 
-	r.l.Info("psql - account - FindById: %s", sql)
-
 	var a account.Account
 
 	if err := r.c.Pool.QueryRow(ctx, sql, accountId, false).Scan(
@@ -133,8 +129,6 @@ func (r *accountRepo) FindByEmail(ctx context.Context, email string) (*account.A
 			email = $1
 			AND is_archived = $2
 	`
-
-	r.l.Info("psql - account - FindByEmail: %s", sql)
 
 	var a account.Account
 
@@ -174,8 +168,6 @@ func (r *accountRepo) FindByNickname(ctx context.Context, nickname string) (*acc
 			AND is_archived = $2
 	`
 
-	r.l.Info("psql - account - FindByNickname: %s", sql)
-
 	var a account.Account
 
 	err := r.c.Pool.QueryRow(ctx, sql, nickname, false).Scan(
@@ -211,8 +203,6 @@ func (r *accountRepo) Archive(ctx context.Context, accountId string, updatedAt t
 			AND is_archived = $4
 	`
 
-	r.l.Info("psql - account - Archive: %s", sql)
-
 	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, accountId, false)
 
 	if err != nil {
@@ -231,8 +221,6 @@ func (r *accountRepo) SavePasswordToken(ctx context.Context, email, token string
 		INSERT INTO password_token(token, account_id)
 		VALUES($1, (SELECT id AS account_id FROM account WHERE email = $2))
 	`
-
-	r.l.Info("psql - account - SavePasswordToken: %s", sql)
 
 	if _, err := r.c.Pool.Exec(ctx, sql, token, email); err != nil {
 
@@ -262,8 +250,6 @@ func (r *accountRepo) FindPasswordToken(ctx context.Context, token string) (acco
 		WHERE t.token = $1
 	`
 
-	r.l.Info("psql - account - FindPasswordToken: %s", sql)
-
 	var t account.PasswordToken
 
 	if err := r.c.Pool.QueryRow(ctx, sql, token).Scan(&t.Token, &t.CreatedAt, &t.AccountId); err != nil {
@@ -281,8 +267,6 @@ func (r *accountRepo) FindPasswordToken(ctx context.Context, token string) (acco
 
 func (r *accountRepo) FindEmailByNickname(ctx context.Context, nickname string) (string, error) {
 	sql := "SELECT email FROM account WHERE nickname = $1"
-
-	r.l.Info("psql - account - FindEmailByNickname: %s", sql)
 
 	var email string
 
@@ -313,8 +297,6 @@ func (r *accountRepo) SetPassword(ctx context.Context, dto account.SetPasswordDT
 			account_id = $4
 			AND token = $5
 	`
-
-	r.l.Info("psql - account - SetPassword: %s", sql)
 
 	ct, err := r.c.Pool.Exec(
 		ctx,
@@ -354,8 +336,6 @@ func (r *accountRepo) Verify(ctx context.Context, code string, updatedAt time.Ti
 			AND a.id = sq.account_id;
 	`
 
-	r.l.Info("psql - account - Verify: %s", sql)
-
 	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, code, false)
 	if err != nil {
 		return fmt.Errorf("psql - account - Verify - r.c.Pool.Exec: %w", err)
@@ -379,8 +359,6 @@ func (r *accountRepo) FindVerification(ctx context.Context, accountId string) (a
 		ON v.account_id = a.id
 		WHERE a.id = $1
 	`
-
-	r.l.Info("psql - account - FindVerification: %s", sql)
 
 	var v account.Verification
 

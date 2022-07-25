@@ -1,11 +1,9 @@
 package v1
 
-import (
-	"github.com/answersuck/vault/pkg/logging"
-)
+import "go.uber.org/zap"
 
 type questionHandler struct {
-	log     logging.Logger
+	log     *zap.Logger
 	v       ValidationModule
 	service QuestionService
 }

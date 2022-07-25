@@ -4,23 +4,22 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type sessionHandler struct {
-	log     logging.Logger
+	log     *zap.Logger
 	v       ValidationModule
-	service SessionService
+	session SessionService
 }
 
 func newSessionHandler(d *Deps) http.Handler {
 	h := sessionHandler{
 		log:     d.Logger,
 		v:       d.ValidationModule,
-		service: d.SessionService,
+		session: d.SessionService,
 	}
 
 	r := chi.NewRouter()
@@ -34,10 +33,7 @@ func newSessionHandler(d *Deps) http.Handler {
 		r.With(tokenRequired).Delete("/", h.terminateAll)
 	})
 
-	r.Route("/{sessionId}", func(r chi.Router) {
-		r.Use(authenticator, tokenRequired)
-		r.Delete("/", h.terminate)
-	})
+	r.With(authenticator, tokenRequired).Delete("/{sessionId}", h.terminate)
 
 	return r
 }
@@ -48,14 +44,14 @@ func (h *sessionHandler) getAll(w http.ResponseWriter, r *http.Request) {
 
 	accountId, err := getAccountId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - session - getAll - getAccountId: %w", err)
+		h.log.Error("http - v1 - session - getAll - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	s, err := h.service.GetAll(ctx, accountId)
+	s, err := h.session.GetAll(ctx, accountId)
 	if err != nil {
-		h.log.Error("http - v1 - session - getAll - h.service.GetAll: %w", err)
+		h.log.Error("http - v1 - session - getAll - h.service.GetAll", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -70,7 +66,7 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 
 	currSessionId, err := getSessionId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminate - getSessionId: %w", err)
+		h.log.Error("http - v1 - session - terminate - getSessionId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -81,8 +77,8 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Terminate(ctx, sessionId); err != nil {
-		h.log.Error("http - v1 - session - terminate - h.service.Terminate: %w", err)
+	if err := h.session.Terminate(ctx, sessionId); err != nil {
+		h.log.Error("http - v1 - session - terminate - h.service.Terminate", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -96,20 +92,20 @@ func (h *sessionHandler) terminateAll(w http.ResponseWriter, r *http.Request) {
 
 	accountId, err := getAccountId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - getAccountId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	sessionId, err := getSessionId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - getSessionId: %w", err)
+		h.log.Error("http - v1 - session - terminateAll - getSessionId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	if err = h.service.TerminateWithExcept(ctx, accountId, sessionId); err != nil {
-		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
+	if err = h.session.TerminateWithExcept(ctx, accountId, sessionId); err != nil {
+		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

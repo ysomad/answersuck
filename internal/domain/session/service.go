@@ -84,7 +84,7 @@ func (s *service) TerminateAll(ctx context.Context, accountId string) error {
 	return nil
 }
 
-func (s *service) GetByIdWithVerified(ctx context.Context, sessionId string) (*WithAccountDetails, error) {
+func (s *service) GetByIdWithDetails(ctx context.Context, sessionId string) (*WithAccountDetails, error) {
 	sess, err := s.repo.FindWithAccountDetails(ctx, sessionId)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - GetByIdWithVerified - s.repo.FindByIdWithVerified: %w", err)

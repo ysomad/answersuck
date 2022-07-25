@@ -8,19 +8,19 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/session"
 
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 type sessionRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewSessionRepo(l logging.Logger, c *postgres.Client) *sessionRepo {
+func NewSessionRepo(l *zap.Logger, c *postgres.Client) *sessionRepo {
 	return &sessionRepo{
 		l: l,
 		c: c,
@@ -32,8 +32,6 @@ func (r *sessionRepo) Save(ctx context.Context, s *session.Session) error {
 		INSERT INTO session (id, account_id, max_age, user_agent, ip, expires_at, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-
-	r.l.Info("psql - session - Save: %s", sql)
 
 	_, err := r.c.Pool.Exec(ctx, sql,
 		s.Id,
@@ -75,8 +73,6 @@ func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*session.
 		WHERE id = $1
 	`
 
-	r.l.Info("psql - session - FindById: %s", sql)
-
 	var s session.Session
 
 	if err := r.c.Pool.QueryRow(ctx, sql, sessionId).Scan(
@@ -114,8 +110,6 @@ func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId stri
 		ON s.account_id = a.id
 		WHERE s.id = $1
 	`
-
-	r.l.Info("psql - session - FindByIdWithVerified: %s", sql)
 
 	var (
 		s session.Session
@@ -159,8 +153,6 @@ func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session
 		WHERE account_id = $1
 	`
 
-	r.l.Info("psql - session - FindAll: %s", sql)
-
 	rows, err := r.c.Pool.Query(ctx, sql, accountId)
 	if err != nil {
 		return nil, fmt.Errorf("psql - session - FindAll - r.c.Pool.Query: %w", err)
@@ -198,8 +190,6 @@ func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session
 func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
 	sql := "DELETE FROM session WHERE id = $1"
 
-	r.l.Info("psql - session - Delete: %s", sql)
-
 	ct, err := r.c.Pool.Exec(ctx, sql, sessionId)
 	if err != nil {
 		return fmt.Errorf("psql - session - Delete - r.c.Pool.Exec: %w", err)
@@ -215,8 +205,6 @@ func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
 func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
 	sql := "DELETE FROM session WHERE account_id = $1 AND id != $2"
 
-	r.l.Info("psql - session - DeleteWithExcept: %s", sql)
-
 	ct, err := r.c.Pool.Exec(ctx, sql, accountId, sessionId)
 	if err != nil {
 		return fmt.Errorf("psql - session - Delete - r.c.Pool.Exec: %w", err)
@@ -231,8 +219,6 @@ func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId
 
 func (r *sessionRepo) DeleteAll(ctx context.Context, accountId string) error {
 	sql := "DELETE FROM session WHERE account_id = $1"
-
-	r.l.Info("psql - session - DeleteAll: %s", sql)
 
 	ct, err := r.c.Pool.Exec(ctx, sql, accountId)
 	if err != nil {

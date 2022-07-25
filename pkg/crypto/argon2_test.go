@@ -2,6 +2,8 @@ package crypto
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_argon2Id(t *testing.T) {
@@ -9,21 +11,21 @@ func Test_argon2Id(t *testing.T) {
 		name    string
 		plain   string
 		hash    string
-		want    bool
+		ok      bool
 		wantErr bool
 	}{
 		{
 			name:    "correct match",
 			plain:   "inanzzz",
 			hash:    "$argon2id$v=19$m=65536,t=1,p=4$3Ymrg20KqXd9mMawXP/YzA$nf7ubeO0tB1NDk4nBscgsHvIcDECMjIuEeEjgBRMe3s",
-			want:    true,
+			ok:      true,
 			wantErr: false,
 		},
 		{
 			name:    "incorrect match",
 			plain:   "test123",
 			hash:    "$argon2id$v=19$m=65536,t=1,p=4$L/6i/DD9Ie5dKo7L6PpvVg$8OLc5G2E715nbsSgA4ZKcGngVLtAeCnB4CD76XbShic",
-			want:    false,
+			ok:      false,
 			wantErr: false,
 		},
 	}
@@ -32,14 +34,8 @@ func Test_argon2Id(t *testing.T) {
 			a := NewArgon2Id()
 			got, err := a.Verify(tt.plain, tt.hash)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("argon2Id.Match() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if got != tt.want {
-				t.Errorf("argon2Id.Match() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.Equal(t, tt.ok, got)
 		})
 	}
 }

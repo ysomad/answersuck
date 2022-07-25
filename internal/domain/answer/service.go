@@ -3,8 +3,6 @@ package answer
 import (
 	"context"
 	"fmt"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type (
@@ -18,14 +16,12 @@ type (
 )
 
 type service struct {
-	log   logging.Logger
 	repo  Repository
 	media MediaService
 }
 
-func NewService(l logging.Logger, r Repository, m MediaService) *service {
+func NewService(r Repository, m MediaService) *service {
 	return &service{
-		log:   l,
 		repo:  r,
 		media: m,
 	}

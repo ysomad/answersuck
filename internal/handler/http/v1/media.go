@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"go.uber.org/zap"
+
 	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type mediaHandler struct {
 	cfg     *config.Aggregate
-	log     logging.Logger
+	log     *zap.Logger
 	v       ValidationModule
 	service MediaService
 }

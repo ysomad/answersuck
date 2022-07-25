@@ -5,19 +5,19 @@ import (
 	"fmt"
 
 	"github.com/answersuck/vault/internal/domain/language"
+	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 const languageTable = "language"
 
 type languageRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewLanguageRepo(l logging.Logger, c *postgres.Client) *languageRepo {
+func NewLanguageRepo(l *zap.Logger, c *postgres.Client) *languageRepo {
 	return &languageRepo{
 		l: l,
 		c: c,
@@ -26,11 +26,9 @@ func NewLanguageRepo(l logging.Logger, c *postgres.Client) *languageRepo {
 
 func (r *languageRepo) FindAll(ctx context.Context) ([]*language.Language, error) {
 	sql := fmt.Sprintf(`
-		SELECT id, name 
+		SELECT id, name
 		FROM %s
 	`, languageTable)
-
-	r.l.Info("psql - language - FindAll: %s", sql)
 
 	rows, err := r.c.Pool.Query(ctx, sql)
 	if err != nil {

@@ -1,13 +1,13 @@
 app:
   name: "answersuck-backend"
   version: "0.0.2"
+  development: true
 
 web:
   url: "http://localhost:8000"
 
 http:
   port: "8080"
-  debug: true
 
 logger:
   logLevel: "debug"

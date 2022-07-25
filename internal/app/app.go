@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/ilyakaznacheev/cleanenv"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
 
@@ -25,7 +25,7 @@ import (
 	"github.com/answersuck/vault/pkg/blocklist"
 	"github.com/answersuck/vault/pkg/crypto"
 	"github.com/answersuck/vault/pkg/httpserver"
-	"github.com/answersuck/vault/pkg/logging"
+	"github.com/answersuck/vault/pkg/logger"
 	"github.com/answersuck/vault/pkg/postgres"
 	"github.com/answersuck/vault/pkg/token"
 	"github.com/answersuck/vault/pkg/validation"
@@ -39,21 +39,22 @@ func Run(configPath string) {
 		log.Fatalf("Config error: %s", err)
 	}
 
-	l := logging.NewLogger(cfg.Log.Level)
+	l := logger.New(os.Stdout, cfg.Log.Level)
+	defer l.Sync()
 
 	// DB
 	pg, err := postgres.NewClient(cfg.PG.URL,
 		postgres.MaxPoolSize(cfg.PG.PoolMax),
 		postgres.PreferSimpleProtocol(cfg.PG.SimpleProtocol))
 	if err != nil {
-		l.Fatal("app - run - postgres.NewClient: %w", err)
+		l.Fatal("app - run - postgres.NewClient", zap.Error(err))
 	}
 	defer pg.Close()
 
 	// Service
 	validationModule, err := validation.NewModule()
 	if err != nil {
-		l.Fatal("app - Run - validation.NewModule: %w", err)
+		l.Fatal("app - Run - validation.NewModule", zap.Error(err))
 	}
 
 	sessionRepo := psql.NewSessionRepo(l, pg)
@@ -66,14 +67,14 @@ func Run(configPath string) {
 		Password: cfg.SMTP.Password,
 	})
 	if err != nil {
-		l.Fatal("app - Run - email.NewClient: %w", err)
+		l.Fatal("app - Run - email.NewClient", zap.Error(err))
 	}
 
 	emailService := email.NewService(&cfg, emailClient)
 
 	tokenManager, err := token.NewManager(cfg.SecurityToken.Sign)
 	if err != nil {
-		l.Fatal("app - Run - token.NewManager: %w", err)
+		l.Fatal("app - Run - token.NewManager", zap.Error(err))
 	}
 
 	usernameBlockList := blocklist.New(blocklist.WithUsernames)
@@ -145,12 +146,12 @@ func Run(configPath string) {
 	case s := <-interrupt:
 		l.Info("app - Run - signal: " + s.String())
 	case err = <-httpServer.Notify():
-		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+		l.Error("app - Run - httpServer.Notify", zap.Error(err))
 	}
 
 	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
+		l.Error("app - Run - httpServer.Shutdown", zap.Error(err))
 	}
 }
