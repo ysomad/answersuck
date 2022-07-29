@@ -27,4 +27,9 @@ type (
 		Token     string
 		UpdatedAt time.Time
 	}
+
+	CreateDTO struct {
+		Email, Nickname, PasswordHash, Code string
+		Verified                            bool
+	}
 )

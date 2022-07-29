@@ -6,7 +6,7 @@ import (
 )
 
 type AccountRepo interface {
-	Save(ctx context.Context, a *Account, code string) (string, error)
+	Save(ctx context.Context, dto CreateDTO) (Account, error)
 	FindEmailByNickname(ctx context.Context, nickname string) (string, error)
 	FindById(ctx context.Context, accountId string) (*Account, error)
 	FindByEmail(ctx context.Context, email string) (*Account, error)

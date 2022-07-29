@@ -33,7 +33,7 @@ func NewMediaRepo(l *zap.Logger, c *postgres.Client) *mediaRepo {
 
 func (r *mediaRepo) Save(ctx context.Context, m media.Media) (media.Media, error) {
 	sql := fmt.Sprintf(`
-		INSERT INTO %s(id, url, mime_type, account_id, created_at)
+		INSERT INTO %s(id, url, type, account_id, created_at)
 		VALUES ($1, $2, $3, $4, $5)
 	`, mediaTable)
 
@@ -66,7 +66,7 @@ func (r *mediaRepo) Save(ctx context.Context, m media.Media) (media.Media, error
 }
 
 func (r *mediaRepo) FindMimeTypeById(ctx context.Context, mediaId string) (string, error) {
-	sql := fmt.Sprintf(`SELECT mime_type FROM %s WHERE id = $1`, mediaTable)
+	sql := fmt.Sprintf(`SELECT type FROM %s WHERE id = $1`, mediaTable)
 
 	var mimeType string
 

@@ -3,8 +3,6 @@ package account
 import (
 	"errors"
 	"time"
-
-	"github.com/answersuck/vault/pkg/strings"
 )
 
 var (
@@ -38,10 +36,6 @@ type Account struct {
 	UpdatedAt time.Time
 }
 
-func (a *Account) generateVerifCode(length int) (string, error) {
-	return strings.NewUnique(length)
-}
-
 const (
 	verifCodeLen = 64
 	pwdTokenLen  = 64
@@ -53,13 +47,8 @@ type PasswordToken struct {
 	CreatedAt time.Time
 }
 
-// checkExpiration returns error if token is expired
-func (t PasswordToken) checkExpiration(exp time.Duration) error {
-	if time.Now().After(t.CreatedAt.Add(exp)) {
-		return ErrPasswordTokenExpired
-	}
-
-	return nil
+func (t PasswordToken) expired(exp time.Duration) bool {
+	return time.Now().After(t.CreatedAt.Add(exp))
 }
 
 type Verification struct {

@@ -14,7 +14,7 @@ import (
 )
 
 type AccountService interface {
-	Create(ctx context.Context, r account.CreateReq) (*account.Account, error)
+	Create(ctx context.Context, r account.CreateReq) (account.Account, error)
 	Delete(ctx context.Context, accountId string) error
 
 	RequestVerification(ctx context.Context, accountId string) error

@@ -38,44 +38,37 @@ func NewService(d *Deps) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateReq) (*Account, error) {
+func (s *service) Create(ctx context.Context, r CreateReq) (Account, error) {
 	if s.blockList.Find(r.Nickname) {
-		return nil, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenNickname)
+		return Account{}, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenNickname)
 	}
-
-	now := time.Now()
 
 	phash, err := s.password.Hash(r.Password)
 	if err != nil {
-		return nil, fmt.Errorf("accountService - Create - s.password.Hash: %w", err)
+		return Account{}, fmt.Errorf("accountService - Create - s.password.Hash: %w", err)
 	}
 
-	a := Account{
-		Email:     r.Email,
-		Nickname:  r.Nickname,
-		Password:  phash,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-
-	c, err := a.generateVerifCode(verifCodeLen)
+	code, err := strings.NewUnique(verifCodeLen)
 	if err != nil {
-		return nil, fmt.Errorf("accountService - Create - a.generateVerifCode: %w", err)
+		return Account{}, fmt.Errorf("accountService - Create - a.generateVerifCode: %w", err)
 	}
 
-	accountId, err := s.repo.Save(ctx, &a, c)
+	a, err := s.repo.Save(ctx, CreateDTO{
+		Email:        r.Email,
+		Nickname:     r.Nickname,
+		PasswordHash: phash,
+		Code:         code,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("accountService - Create - s.repo.Save: %w", err)
+		return Account{}, fmt.Errorf("accountService - Create - s.repo.Save: %w", err)
 	}
-
-	a.Id = accountId
 
 	go func() {
 		// TODO: handle error
-		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, c)
+		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, code)
 	}()
 
-	return &a, nil
+	return a, nil
 }
 
 func (s *service) GetById(ctx context.Context, accountId string) (*Account, error) {
@@ -143,8 +136,8 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 		return fmt.Errorf("accountService - SetPassword - s.repo.FindPasswordToken: %w", err)
 	}
 
-	if err = t.checkExpiration(s.cfg.Password.ResetTokenExp); err != nil {
-		return fmt.Errorf("accountService - SetPassword - t.checkExpiration: %w", err)
+	if t.expired(s.cfg.Password.ResetTokenExpiration) {
+		return fmt.Errorf("accountService - SetPassword - t.expired: %w", ErrPasswordTokenExpired)
 	}
 
 	phash, err := s.password.Hash(password)

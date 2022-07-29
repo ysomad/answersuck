@@ -26,6 +26,15 @@ migrate-up:
 	@echo "Running all new database migrations..."
 	@$(MIGRATE) up
 
+.PHONY: migrate-drop
+migrate-drop:
+	@echo "Dropping everything in database..."
+	@$(MIGRATE) drop
+
 .PHONY: migrate-down
 migrate-down:
-	@$(MIGRATE) down 
+	@$(MIGRATE) down
+
+.PHONY: integration-test
+integration-test:
+	INTEGRATION_TESTDB=true go test -v -race -count 1 ./...

@@ -106,7 +106,7 @@ func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.
 			am.url AS answer_image_url,
 			acc.nickname AS author,
 			qm.url AS media_url,
-			qm.mime_type AS media_type,
+			qm.type AS media_type,
 			q.language_id,
 			q.created_at,
 			q.updated_at

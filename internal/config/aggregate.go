@@ -108,6 +108,6 @@ type (
 	}
 
 	Password struct {
-		ResetTokenExp time.Duration `env-required:"true" yaml:"resetTokenExpiration"`
+		ResetTokenExpiration time.Duration `env-required:"true" yaml:"resetTokenExpiration"`
 	}
 )

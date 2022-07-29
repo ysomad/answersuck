@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/account"
-
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
@@ -25,53 +24,50 @@ func NewAccountRepo(l *zap.Logger, c *postgres.Client) *accountRepo {
 	return &accountRepo{l: l, c: c}
 }
 
-func (r *accountRepo) Save(ctx context.Context, a *account.Account, code string) (string, error) {
+func (r *accountRepo) Save(ctx context.Context, dto account.CreateDTO) (account.Account, error) {
 	sql := `
-		WITH a AS (
-			INSERT INTO account(email, nickname, password, is_verified, created_at, updated_at)
-			VALUES ($1, $2, $3, $4, $5, $6)
-			RETURNING id AS account_id
-		),
-		v AS (
-			INSERT INTO verification(code, account_id)
-			VALUES($7, (SELECT account_id FROM a) )
-		),
-		p AS (
-			INSERT INTO player(account_id)
-			VALUES((SELECT account_id FROM a))
-		)
-		SELECT account_id FROM a
+        WITH a AS (
+            INSERT INTO account(email, nickname, password, is_verified)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id AS account_id, created_at, updated_at
+        ),
+        v AS (
+            INSERT INTO verification(code, account_id)
+            VALUES($5, (SELECT account_id FROM a) )
+        ),
+        p AS (
+            INSERT INTO player(account_id)
+            VALUES((SELECT account_id FROM a))
+        )
+        SELECT account_id, created_at, updated_at FROM a
 	`
 
-	r.l.Debug("psql - account - Save", zap.String("sql", sql), zap.Any("account", a))
+	r.l.Debug("psql - account - Save", zap.String("sql", sql), zap.Any("account", dto))
 
-	var accountId string
+	var a account.Account
 
 	err := r.c.Pool.QueryRow(ctx, sql,
-		a.Email,
-		a.Nickname,
-		a.Password,
-		a.Verified,
-		a.CreatedAt,
-		a.UpdatedAt,
-		code,
-	).Scan(&accountId)
-
+		dto.Email,
+		dto.Nickname,
+		dto.PasswordHash,
+		dto.Verified,
+		dto.Code,
+	).Scan(&a.Id, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		var pgErr *pgconn.PgError
-
 		if errors.As(err, &pgErr) {
-
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return "", fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", account.ErrAlreadyExist)
+				return account.Account{}, fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", account.ErrAlreadyExist)
 			}
-
 		}
-
-		return "", fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", err)
+		return account.Account{}, fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return accountId, nil
+	a.Email = dto.Email
+	a.Nickname = dto.Nickname
+	a.Verified = dto.Verified
+
+	return a, nil
 }
 
 func (r *accountRepo) FindById(ctx context.Context, accountId string) (*account.Account, error) {
