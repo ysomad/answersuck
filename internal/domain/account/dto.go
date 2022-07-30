@@ -28,8 +28,9 @@ type (
 		UpdatedAt time.Time
 	}
 
-	CreateDTO struct {
-		Email, Nickname, PasswordHash, Code string
-		Verified                            bool
+	SavePasswordTokenDTO struct {
+		Login     string
+		Token     string
+		CreatedAt time.Time
 	}
 )

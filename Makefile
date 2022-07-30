@@ -35,6 +35,6 @@ migrate-drop:
 migrate-down:
 	@$(MIGRATE) down
 
-.PHONY: integration-test
-integration-test:
-	INTEGRATION_TESTDB=true go test -v -race -count 1 ./...
+.PHONY: test
+test:
+	INTEGRATION_TESTDB=true INTEGRATION_LOGLEVEL=debug go test -v -race -count=1 ./...

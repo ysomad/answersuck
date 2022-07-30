@@ -24,7 +24,7 @@ func NewLoginService(a AccountService, s SessionService, p PasswordVerifier) *lo
 }
 
 func (s *loginService) Login(ctx context.Context, login, password string, d session.Device) (*session.Session, error) {
-	var a *account.Account
+	var a account.Account
 
 	_, err := mail.ParseAddress(login)
 	if err != nil {

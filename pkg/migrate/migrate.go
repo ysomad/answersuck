@@ -16,7 +16,7 @@ const (
 	defaultTimeout  = time.Second
 )
 
-func connect(migrationsURL string) *migrate.Migrate {
+func connect(path string) *migrate.Migrate {
 	databaseURL, ok := os.LookupEnv("PG_URL")
 	if !ok || len(databaseURL) == 0 {
 		log.Fatalf("migrate: environment variable not declared: PG_URL")
@@ -31,7 +31,7 @@ func connect(migrationsURL string) *migrate.Migrate {
 	)
 
 	for attempts > 0 {
-		m, err = migrate.New(migrationsURL, databaseURL)
+		m, err = migrate.New("file://"+path, databaseURL)
 		if err == nil {
 			break
 		}
@@ -48,8 +48,8 @@ func connect(migrationsURL string) *migrate.Migrate {
 	return m
 }
 
-func Up(migrationsURL string) {
-	m := connect(migrationsURL)
+func Up(path string) {
+	m := connect(path)
 
 	err := m.Up()
 	defer m.Close()
@@ -65,8 +65,8 @@ func Up(migrationsURL string) {
 	log.Printf("Migrate: up success")
 }
 
-func Down(migrationsURL string) {
-	m := connect(migrationsURL)
+func Down(path string) {
+	m := connect(path)
 
 	err := m.Down()
 	defer m.Close()
@@ -80,16 +80,4 @@ func Down(migrationsURL string) {
 	}
 
 	log.Printf("Migrate: down success")
-}
-
-func Drop(migrationsURL string) {
-	m := connect(migrationsURL)
-
-	err := m.Drop()
-	defer m.Close()
-	if err != nil {
-		log.Fatalf("Migrate: drop error: %s", err)
-	}
-
-	log.Printf("Migrate: drop success")
 }

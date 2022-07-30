@@ -37,8 +37,8 @@ type Account struct {
 }
 
 const (
-	verifCodeLen = 64
-	pwdTokenLen  = 64
+	VerifCodeLen     = 64
+	PasswordTokenLen = 64
 )
 
 type PasswordToken struct {

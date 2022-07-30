@@ -32,7 +32,6 @@ func NewClient(uri string, opts ...Option) (*Client, error) {
 		connTimeout:  defaultConnTimeout,
 	}
 
-	// Custom options
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -58,7 +57,6 @@ func NewClient(uri string, opts ...Option) (*Client, error) {
 
 		c.connAttempts--
 	}
-
 	if err != nil {
 		return nil, fmt.Errorf("postgres - NewClient - connAttempts == 0: %w", err)
 	}

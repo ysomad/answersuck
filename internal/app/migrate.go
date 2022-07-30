@@ -2,4 +2,4 @@ package app
 
 import "github.com/answersuck/vault/pkg/migrate"
 
-func init() { migrate.Up("file://migrations") }
+func init() { migrate.Up("migrations") }
