@@ -42,10 +42,10 @@ func Run(configPath string) {
 		log.Fatalf("Config error: %s", err)
 	}
 
+	log.Printf("Connecting to: %s", cfg.PG.URL)
+
 	l := logger.New(os.Stdout, cfg.Log.Level)
 	defer l.Sync()
-
-	l.Info("connecting to", zap.String("url", cfg.PG.URL))
 
 	// DB
 	pg, err := postgres.NewClient(cfg.PG.URL,
