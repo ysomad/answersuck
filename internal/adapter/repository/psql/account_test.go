@@ -609,8 +609,9 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 	a := s.insertTestAccount(account.Account{
 		Email:    "setpasswordtest@mail.com",
 		Nickname: "setpasswordtest@mail.com",
-		Password: "changeme",
+		Password: "forgotten",
 	})
+	t := s.insertTestPasswordToken(a.Id, time.Now())
 
 	type args struct {
 		ctx context.Context
@@ -626,8 +627,28 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 			name: "password succesfully set",
 			args: args{
 				ctx: context.Background(),
-				dto: account.SetPasswordDTO{},
+				dto: account.SetPasswordDTO{
+					AccountId: a.Id,
+					Password:  "newsecret",
+					Token:     t,
+					UpdatedAt: time.Now(),
+				},
 			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "password not set with empty token",
+			args: args{
+				ctx: context.Background(),
+				dto: account.SetPasswordDTO{
+					AccountId: a.Id,
+					Password:  "newsecret",
+					UpdatedAt: time.Now(),
+				},
+			},
+			wantErr: true,
+			err:     account.ErrPasswordNotSet,
 		},
 	}
 	for _, tt := range tests {
@@ -639,76 +660,162 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 			}
 			assert.Equal(t, tt.wantErr, (err != nil))
 			assert.NoError(t, err)
+
+			var (
+				password  string
+				updatedAt time.Time
+			)
+			err = postgresClient.Pool.QueryRow(
+				context.Background(),
+				"SELECT password, updated_at FROM account WHERE id = $1",
+				tt.args.dto.AccountId,
+			).Scan(&password, &updatedAt)
+			assert.NoError(t, err)
+
+			var exists bool
+			err = postgresClient.Pool.QueryRow(
+				context.Background(),
+				"SELECT EXISTS(SELECT 1 FROM password_token WHERE token = $1)",
+				tt.args.dto.Token,
+			).Scan(&exists)
+			assert.NoError(t, err)
+			assert.Equal(t, false, exists)
 		})
 	}
 }
 
-func Test_accountRepo_Verify(t *testing.T) {
-	t.Parallel()
-	// type fields struct {
-	// 	l *zap.Logger
-	// 	c *postgres.Client
-	// }
-	// type args struct {
-	// 	ctx       context.Context
-	// 	code      string
-	// 	updatedAt time.Time
-	// }
-	// tests := []struct {
-	// 	name    string
-	// 	fields  fields
-	// 	args    args
-	// 	wantErr bool
-	// }{
-	// 	// TODO: Add test cases.
-	// }
-	// for _, tt := range tests {
-	// 	t.Run(tt.name, func(t *testing.T) {
-	// 		r := &accountRepo{
-	// 			l: tt.fields.l,
-	// 			c: tt.fields.c,
-	// 		}
-	// 		if err := r.Verify(tt.args.ctx, tt.args.code, tt.args.updatedAt); (err != nil) != tt.wantErr {
-	// 			t.Errorf("accountRepo.Verify() error = %v, wantErr %v", err, tt.wantErr)
-	// 		}
-	// 	})
-	// }
+func (s *accountRepoTestSuite) TestVerify() {
+	a := s.insertTestAccount(account.Account{
+		Email:    "testverify@mail.com",
+		Nickname: "testverify@mail.com",
+		Verified: false,
+	})
+	code := s.insertTestVerifCode(a.Id)
+
+	a1 := s.insertTestAccount(account.Account{
+		Email:    "testverify1@mail.com",
+		Nickname: "testverify1@mail.com",
+		Verified: true,
+	})
+	code1 := s.insertTestVerifCode(a1.Id)
+
+	type args struct {
+		ctx       context.Context
+		code      string
+		updatedAt time.Time
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "account successfully verified",
+			args: args{
+				ctx:       context.Background(),
+				code:      code,
+				updatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account already verified",
+			args: args{
+				ctx:       context.Background(),
+				code:      code1,
+				updatedAt: time.Now(),
+			},
+			wantErr: true,
+			err:     account.ErrAlreadyVerified,
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			err := accountRepo.Verify(tt.args.ctx, tt.args.code, tt.args.updatedAt)
+			if tt.wantErr {
+				assert.ErrorIs(t, err, tt.err)
+				return
+			}
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.NoError(t, err)
+
+			var (
+				verified  bool
+				updatedAt time.Time
+			)
+			err = postgresClient.Pool.QueryRow(
+				context.Background(),
+				"SELECT is_verified, updated_at FROM account WHERE id = $1",
+				a.Id,
+			).Scan(&verified, &updatedAt)
+			assert.NoError(t, err)
+			assert.Equal(t, true, verified)
+			assert.Equal(t, tt.args.updatedAt.Unix(), updatedAt.Unix())
+		})
+	}
 }
 
-func Test_accountRepo_FindVerification(t *testing.T) {
-	// t.Parallel()
-	//
-	// type fields struct {
-	// 	l *zap.Logger
-	// 	c *postgres.Client
-	// }
-	// type args struct {
-	// 	ctx       context.Context
-	// 	accountId string
-	// }
-	// tests := []struct {
-	// 	name    string
-	// 	fields  fields
-	// 	args    args
-	// 	want    account.Verification
-	// 	wantErr bool
-	// }{
-	// 	// TODO: Add test cases.
-	// }
-	// for _, tt := range tests {
-	// 	t.Run(tt.name, func(t *testing.T) {
-	// 		r := &accountRepo{
-	// 			l: tt.fields.l,
-	// 			c: tt.fields.c,
-	// 		}
-	// 		got, err := r.FindVerification(tt.args.ctx, tt.args.accountId)
-	// 		if (err != nil) != tt.wantErr {
-	// 			t.Errorf("accountRepo.FindVerification() error = %v, wantErr %v", err, tt.wantErr)
-	// 			return
-	// 		}
-	// 		if !reflect.DeepEqual(got, tt.want) {
-	// 			t.Errorf("accountRepo.FindVerification() = %v, want %v", got, tt.want)
-	// 		}
-	// 	})
-	// }
+func (s *accountRepoTestSuite) TestFindVerification() {
+	a := s.insertTestAccount(account.Account{
+		Email:    "findverification@mail.com",
+		Nickname: "findverification",
+		Verified: true,
+	})
+	code := s.insertTestVerifCode(a.Id)
+
+	type args struct {
+		ctx       context.Context
+		accountId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    account.Verification
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "verification found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: a.Id,
+			},
+			want: account.Verification{
+				Email:    a.Email,
+				Code:     code,
+				Verified: a.Verified,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "verification not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "6a3daeca-9036-4f37-8c2c-ee29c9bebc97", // doesnt exist
+			},
+			want: account.Verification{
+				Email:    a.Email,
+				Code:     code,
+				Verified: a.Verified,
+			},
+			wantErr: true,
+			err:     account.ErrVerificationNotFound,
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			got, err := accountRepo.FindVerification(tt.args.ctx, tt.args.accountId)
+			if tt.wantErr {
+				assert.ErrorIs(t, err, tt.err)
+				return
+			}
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.NoError(t, err)
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }
