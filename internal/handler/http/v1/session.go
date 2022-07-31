@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -79,6 +80,12 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.session.Terminate(ctx, sessionId); err != nil {
 		h.log.Error("http - v1 - session - terminate - h.service.Terminate", zap.Error(err))
+
+		if errors.Is(err, session.ErrNotFound) {
+			writeError(w, http.StatusNotFound, session.ErrNotFound)
+			return
+		}
+
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

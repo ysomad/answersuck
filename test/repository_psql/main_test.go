@@ -14,9 +14,10 @@ import (
 
 var postgresClient *postgres.Client
 
-func initRepos() {
-	logger := logger.New(os.Stdout, "info")
+func initRepos(logLevel string) {
+	logger := logger.New(os.Stdout, logLevel)
 	accountRepo = psql.NewAccountRepo(logger, postgresClient)
+	sessionRepo = psql.NewSessionRepo(logger, postgresClient)
 }
 
 func TestMain(m *testing.M) {
@@ -35,7 +36,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Error initializing Postgres test client: %v", err)
 	}
 
-	initRepos()
+	initRepos(os.Getenv("LOG_LEVEL"))
 
 	os.Exit(m.Run())
 }

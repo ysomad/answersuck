@@ -1,10 +1,23 @@
 package session
 
 import (
+	"errors"
 	"time"
 
 	"github.com/answersuck/vault/pkg/strings"
 )
+
+var (
+	ErrCannotBeTerminated = errors.New("current session cannot be terminated, use logout instead")
+	ErrDeviceMismatch     = errors.New("device doesn't match with device of current session")
+	ErrAlreadyExist       = errors.New("session with given id already exist")
+	ErrAccountNotFound    = errors.New("session cannot be created, account with given account id is not found")
+	ErrNotFound           = errors.New("session not found")
+	ErrNotDeleted         = errors.New("session has not been deleted")
+	ErrExpired            = errors.New("session expired")
+)
+
+const SessionIdLen = 64
 
 type Session struct {
 	Id        string    `json:"id"`
@@ -18,18 +31,14 @@ type Session struct {
 
 func newSession(accountId, userAgent, ip string, exp time.Duration) (*Session, error) {
 	// TODO: add useragent validation
+	// TODO: add ip validation
 
-	// if _, err := netip.ParseAddr(ip); err != nil {
-	// 	return nil, fmt.Errorf("netip.ParseAddr: %w", err)
-	// }
-
-	sid, err := strings.NewUnique(64)
+	sid, err := strings.NewUnique(SessionIdLen)
 	if err != nil {
 		return nil, err
 	}
 
 	now := time.Now()
-
 	return &Session{
 		Id:        sid,
 		AccountId: accountId,
@@ -53,4 +62,9 @@ func (s *Session) SameDevice(ip, ua string) bool {
 type Device struct {
 	UserAgent string
 	IP        string
+}
+
+type WithAccountDetails struct {
+	Session         Session
+	AccountVerified bool
 }
