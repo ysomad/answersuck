@@ -42,8 +42,6 @@ func Run(configPath string) {
 		log.Fatalf("Config error: %s", err)
 	}
 
-	log.Printf("Connecting to: %s", cfg.PG.URL)
-
 	l := logger.New(os.Stdout, cfg.Log.Level)
 	defer l.Sync()
 

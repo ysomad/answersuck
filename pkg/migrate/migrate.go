@@ -22,6 +22,8 @@ func connect(path string) *migrate.Migrate {
 		log.Fatalf("migrate: environment variable not declared: PG_URL")
 	}
 
+	log.Printf("Connecting to: %s", databaseURL)
+
 	databaseURL += "?sslmode=disable"
 
 	var (
