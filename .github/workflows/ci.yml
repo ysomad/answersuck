@@ -1,0 +1,26 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18.4
+
+    - name: Build
+      run: go build ./cmd/app/
+
+    - name: Run tests
+      run: INTEGRATION_TESTDB=true INTEGRATION_LOGLEVEL=debug go test -v -race -count=1 ./...
+
