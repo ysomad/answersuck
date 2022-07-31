@@ -57,3 +57,5 @@ jobs:
 
     - name: Integration tests
       run: go test -v -race -count 1 ./test/...
+      env:
+        PG_URL: ${{ secrets.TEST_PG_URL }}
