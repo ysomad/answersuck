@@ -18,13 +18,22 @@ services:
       - pg-data:/var/lib/postgresql/data
 
   app:
-    build: .
     container_name: app
     image: app
     restart: always
+    build: .
     env_file:
       - .env
     ports:
       - "8080:8080"
     depends_on:
       - postgres
+
+  integration:
+    container_name: integration
+    build:
+      context: .
+      dockerfile: test/Dockerfile
+    image: integration
+    depends_on:
+      - app
