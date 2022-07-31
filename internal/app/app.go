@@ -45,6 +45,8 @@ func Run(configPath string) {
 	l := logger.New(os.Stdout, cfg.Log.Level)
 	defer l.Sync()
 
+	l.Info("connecting to", zap.String("url", cfg.PG.URL))
+
 	// DB
 	pg, err := postgres.NewClient(cfg.PG.URL,
 		postgres.MaxPoolSize(cfg.PG.PoolMax),
