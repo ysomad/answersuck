@@ -14,7 +14,11 @@ compose-down:
 .PHONY: run
 run:
 	go mod tidy && go mod download && \
-	go run -tags migrate ./cmd/app
+	go run ./cmd/app
+
+.PHONY: build
+build:
+	go build ./cmd/app
 
 .PHONY: migrate-new
 migrate-new:

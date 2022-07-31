@@ -26,10 +26,13 @@ import (
 	"github.com/answersuck/vault/pkg/crypto"
 	"github.com/answersuck/vault/pkg/httpserver"
 	"github.com/answersuck/vault/pkg/logger"
+	"github.com/answersuck/vault/pkg/migrate"
 	"github.com/answersuck/vault/pkg/postgres"
 	"github.com/answersuck/vault/pkg/token"
 	"github.com/answersuck/vault/pkg/validation"
 )
+
+func init() { migrate.Up("migrations") }
 
 func Run(configPath string) {
 	var cfg config.Aggregate
