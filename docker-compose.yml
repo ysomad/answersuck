@@ -22,22 +22,9 @@ services:
     container_name: app
     image: app
     restart: always
-    environment:
-      - PG_URL
-      - SMTP_FROM
-      - SMTP_PASSWORD
-      - FILE_STORAGE_ACCESS_KEY
-      - FILE_STORAGE_SECRET_KEY
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     depends_on:
       - postgres
-
-  integration:
-    build:
-      context: .
-      dockerfile: test/Dockerfile
-    container_name: integration
-    image: integration
-    depends_on:
-      - app
