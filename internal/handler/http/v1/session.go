@@ -1,108 +1,114 @@
 package v1
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
 
-	"github.com/answersuck/vault/internal/config"
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
+
 	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type sessionHandler struct {
-	cfg     *config.Aggregate
-	log     logging.Logger
+	log     *zap.Logger
 	v       ValidationModule
-	service SessionService
+	session SessionService
 }
 
-func newSessionHandler(d *Deps) *sessionHandler {
-	return &sessionHandler{
-		cfg:     d.Config,
+func newSessionHandler(d *Deps) http.Handler {
+	h := sessionHandler{
 		log:     d.Logger,
 		v:       d.ValidationModule,
-		service: d.SessionService,
+		session: d.SessionService,
 	}
-}
 
-func newSessionRouter(d *Deps) *fiber.App {
-	h := newSessionHandler(d)
+	r := chi.NewRouter()
 
-	r := fiber.New()
+	authenticator := mwAuthenticator(d.Logger, &d.Config.Session, d.SessionService)
+	tokenRequired := mwTokenRequired(d.Logger, d.TokenService)
 
-	r.Get("/", sessionMW(d.Logger, &d.Config.Session, d.SessionService), h.getAll)
+	r.Route("/", func(r chi.Router) {
+		r.Use(authenticator)
+		r.Get("/", h.getAll)
+		r.With(tokenRequired).Delete("/", h.terminateAll)
+	})
 
-	requireToken := r.Group("/",
-		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
-		tokenMW(d.Logger, d.TokenService))
-	requireToken.Delete(":sessionId", h.terminate)
-	requireToken.Delete("/", h.terminateAll)
+	r.With(authenticator, tokenRequired).Delete("/{sessionId}", h.terminate)
 
 	return r
 }
 
-func (h *sessionHandler) getAll(c *fiber.Ctx) error {
-	accountId, err := getAccountId(c)
+func (h *sessionHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
+
+	accountId, err := getAccountId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - session - getAll - getAccountId: %w", err)
-		c.Status(fiber.StatusUnauthorized)
-		return nil
+		h.log.Error("http - v1 - session - getAll - getAccountId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
-	s, err := h.service.GetAll(c.Context(), accountId)
+	s, err := h.session.GetAll(ctx, accountId)
 	if err != nil {
-		h.log.Error("http - v1 - session - getAll - h.service.GetAll: %w", err)
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		h.log.Error("http - v1 - session - getAll - h.service.GetAll", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(s)
+	writeList(w, s)
+	w.WriteHeader(http.StatusOK)
 }
 
-func (h *sessionHandler) terminate(c *fiber.Ctx) error {
-	currSessionId, err := getSessionId(c)
+func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
+
+	currSessionId, err := getSessionId(ctx)
 	if err != nil {
-		h.log.Info("http - v1 - session - terminate - getSessionId: %w", err)
-		c.Status(fiber.StatusUnauthorized)
-		return nil
+		h.log.Error("http - v1 - session - terminate - getSessionId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
-	sessionId := c.Params("sessionId")
+	sessionId := chi.URLParam(r, "sessionId")
 	if currSessionId == sessionId {
-		return errorResp(c, fiber.StatusBadRequest, session.ErrCannotBeTerminated, "")
+		writeError(w, http.StatusBadRequest, session.ErrCannotBeTerminated)
+		return
 	}
 
-	if err := h.service.Terminate(c.Context(), sessionId); err != nil {
-		h.log.Error("http - v1 - session - terminate - h.service.Terminate: %w", err)
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+	if err := h.session.Terminate(ctx, sessionId); err != nil {
+		h.log.Error("http - v1 - session - terminate - h.service.Terminate", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Status(fiber.StatusNoContent)
-	return nil
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *sessionHandler) terminateAll(c *fiber.Ctx) error {
-	accountId, err := getAccountId(c)
+func (h *sessionHandler) terminateAll(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
+
+	accountId, err := getAccountId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - session - terminateAll - getAccountId: %w", err)
-		c.Status(fiber.StatusUnauthorized)
-		return nil
+		h.log.Error("http - v1 - session - terminateAll - getAccountId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
-	sessionId, err := getSessionId(c)
+	sessionId, err := getSessionId(ctx)
 	if err != nil {
-		h.log.Info("http - v1 - session - terminateAll - getSessionId: %w", err)
-		c.Status(fiber.StatusUnauthorized)
-		return nil
+		h.log.Error("http - v1 - session - terminateAll - getSessionId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
-	if err = h.service.TerminateWithExcept(c.Context(), accountId, sessionId); err != nil {
-		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept: %w", err)
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+	if err = h.session.TerminateWithExcept(ctx, accountId, sessionId); err != nil {
+		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Status(fiber.StatusNoContent)
-	return nil
+	w.WriteHeader(http.StatusNoContent)
 }

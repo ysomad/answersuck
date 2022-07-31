@@ -1,8 +1,10 @@
 package validation
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 
@@ -12,9 +14,7 @@ import (
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
 
-var (
-	errTranslatorNotFound = errors.New("translator not found")
-)
+var errTranslatorNotFound = errors.New("translator not found")
 
 type module struct {
 	validate *validator.Validate
@@ -69,16 +69,28 @@ func tagName(fld reflect.StructField) string {
 	return name
 }
 
-func (v *module) ValidateStruct(s any) error {
-	return v.validate.Struct(s)
+func (m *module) ValidateStruct(s any) error {
+	return m.validate.Struct(s)
 }
 
-func (v *module) TranslateError(err error) map[string]string {
+func (m *module) TranslateError(err error) map[string]string {
 	errs := make(map[string]string)
 
 	for _, err := range err.(validator.ValidationErrors) {
-		errs[err.Field()] = err.Translate(v.trans)
+		errs[err.Field()] = err.Translate(m.trans)
 	}
 
 	return errs
+}
+
+func (m *module) ValidateRequestBody(b io.ReadCloser, dest any) error {
+	if err := json.NewDecoder(b).Decode(dest); err != nil {
+		return err
+	}
+
+	if err := m.ValidateStruct(dest); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,27 +1,55 @@
 include .env
 export
 
-compose-up:
-	docker compose up --build -d postgres redis && docker compose logs -f
-.PHONY: compose-up
+MIGRATE := migrate -path migrations -database "$(PG_URL)?sslmode=disable"
 
+.PHONY: compose-up
+compose-up:
+	docker compose up --build -d postgres && docker compose logs -f
+
+.PHONY: compose-down
 compose-down:
 	docker-compose down --remove-orphans
-.PHONY: compose-down
 
+.PHONY: run
 run:
 	go mod tidy && go mod download && \
-	go run -tags migrate ./cmd/app
-.PHONY: run
+	go run ./cmd/app
 
-migrate-create:
-	migrate create -ext sql -dir migrations $(name)
-.PHONY: migrate-create
+.PHONY: build
+build:
+	go build ./cmd/app
 
-migrate-up:
-	migrate -path migrations -database '$(PG_URL)?sslmode=disable' up
+.PHONY: test
+test:
+	go test -v -cover -race -count 1 ./internal/... ./pkg/...
+
+.PHONY: compose-up-integration-test
+compose-up-integration-test:
+	docker-compose up --build --abort-on-container-exit --exit-code-from integration
+
+.PHONY: integration-test
+integration-test:
+	go test -v -race -count 1 ./test/...
+
+.PHONY: migrate-new
+migrate-new:
+	@read -p "Enter the name of the new migration: " name; \
+	$(MIGRATE) create -ext sql -dir migrations $${name// /_}
+
 .PHONY: migrate-up
+migrate-up:
+	@echo "Running all new database migrations..."
+	@$(MIGRATE) up
 
-migrate-down:
-	migrate -path migrations -database '$(PG_URL)?sslmode=disable' down
+.PHONY: migrate-drop
+migrate-drop:
+	@echo "Dropping everything in database..."
+	@$(MIGRATE) drop
+
 .PHONY: migrate-down
+migrate-down:
+	@echo "Running all down database migrations..."
+	@$(MIGRATE) down
+
+

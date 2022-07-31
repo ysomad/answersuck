@@ -47,6 +47,7 @@ func (e *Email) validate() error {
 
 	if e.message == "" {
 		return ErrEmptyMessage
+
 	}
 
 	return nil

@@ -5,22 +5,21 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
-
-	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v4"
+	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/pkg/logging"
+	"github.com/answersuck/vault/internal/domain/question"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 type questionRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewQuestionRepo(l logging.Logger, c *postgres.Client) *questionRepo {
+func NewQuestionRepo(l *zap.Logger, c *postgres.Client) *questionRepo {
 	return &questionRepo{
 		l: l,
 		c: c,
@@ -30,19 +29,17 @@ func NewQuestionRepo(l logging.Logger, c *postgres.Client) *questionRepo {
 func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, error) {
 	sql := `
 		 INSERT INTO question(
-			  text, 
-			  answer_id, 
-			  account_id, 
-			  media_id, 
-			  language_id, 
-			  created_at, 
+			  text,
+			  answer_id,
+			  account_id,
+			  media_id,
+			  language_id,
+			  created_at,
 			  updated_at
 		 )
 		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 RETURNING id
 	`
-
-	r.l.Info("psql - question - Save: %s", sql)
 
 	var questionId int
 
@@ -74,8 +71,6 @@ func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, err
 
 func (r *questionRepo) FindAll(ctx context.Context) ([]question.Minimized, error) {
 	sql := "SELECT id, text, language_id FROM question"
-
-	r.l.Info("psql - question - FindAll: %s", sql)
 
 	rows, err := r.c.Pool.Query(ctx, sql)
 	if err != nil {
@@ -111,7 +106,7 @@ func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.
 			am.url AS answer_image_url,
 			acc.nickname AS author,
 			qm.url AS media_url,
-			qm.mime_type AS media_type,
+			qm.type AS media_type,
 			q.language_id,
 			q.created_at,
 			q.updated_at
@@ -122,8 +117,6 @@ func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.
 		LEFT JOIN media am on am.id = ans.image
 		WHERE q.id = $1
 	`
-
-	r.l.Info("psql - question - FindById: %s", sql)
 
 	var q question.Detailed
 

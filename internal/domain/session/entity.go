@@ -1,8 +1,6 @@
 package session
 
 import (
-	"fmt"
-	"net/netip"
 	"time"
 
 	"github.com/answersuck/vault/pkg/strings"
@@ -11,26 +9,19 @@ import (
 type Session struct {
 	Id        string    `json:"id"`
 	AccountId string    `json:"-"`
-	UserAgent string    `json:"userAgent"`
+	UserAgent string    `json:"user_agent"`
 	IP        string    `json:"ip"`
-	MaxAge    int       `json:"maxAge"`
-	ExpiresAt int64     `json:"expiresAt"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-type fields struct {
-	accountId  string
-	userAgent  string
-	ip         string
-	expiration time.Duration
+	MaxAge    int       `json:"-"`
+	ExpiresAt int64     `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func newSession(accountId, userAgent, ip string, exp time.Duration) (*Session, error) {
 	// TODO: add useragent validation
 
-	if _, err := netip.ParseAddr(ip); err != nil {
-		return nil, fmt.Errorf("netip.ParseAddr: %w", err)
-	}
+	// if _, err := netip.ParseAddr(ip); err != nil {
+	// 	return nil, fmt.Errorf("netip.ParseAddr: %w", err)
+	// }
 
 	sid, err := strings.NewUnique(64)
 	if err != nil {
@@ -48,6 +39,15 @@ func newSession(accountId, userAgent, ip string, exp time.Duration) (*Session, e
 		ExpiresAt: now.Add(exp).Unix(),
 		CreatedAt: now,
 	}, nil
+}
+
+func (s *Session) Expired() bool { return time.Now().Unix() > s.ExpiresAt }
+
+func (s *Session) SameDevice(ip, ua string) bool {
+	if s.IP != ip || s.UserAgent != ua {
+		return false
+	}
+	return true
 }
 
 type Device struct {

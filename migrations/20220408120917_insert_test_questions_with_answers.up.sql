@@ -1,56 +1,9 @@
-INSERT INTO media (id, url, mime_type, account_id)
-VALUES ('af91809a-3910-4594-aeef-1a2f2a3babe1', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', 'audio/mpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600'),
-       ('7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9', 'https://i1.sndcdn.com/artworks-XJdVplPCbvDvJlH7-jF9c4A-t500x500.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600');
+INSERT INTO media (id, url, type, account_id)
+    VALUES ('af91809a-3910-4594-aeef-1a2f2a3babe1', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', 'audio/mpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600'), ('7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9', 'https://i1.sndcdn.com/artworks-XJdVplPCbvDvJlH7-jF9c4A-t500x500.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600');
 
 INSERT INTO answer (text, image)
-VALUES ('Русский ответ 1', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский ответ 2', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский ответ 3', NULL),
-       ('Русский ответ 4', NULL),
-       ('Русский ответ 5', NULL),
-       ('Русский ответ 6', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский ответ 7', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский ответ 8', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский ответ 9', NULL),
-       ('Русский ответ 10', NULL),
-       ('Русский ответ 11', NULL),
-       ('Русский ответ 12', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English answer 1', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English answer 2', NULL),
-       ('English answer 3', NULL),
-       ('English answer 4', NULL),
-       ('English answer 5', NULL),
-       ('English answer 6', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English answer 7', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English answer 8', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English answer 9', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English answer 10', NULL),
-       ('English answer 11', NULL),
-       ('English answer 12', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9');
+    VALUES ('Русский ответ 1', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский ответ 2', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский ответ 3', NULL), ('Русский ответ 4', NULL), ('Русский ответ 5', NULL), ('Русский ответ 6', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский ответ 7', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский ответ 8', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский ответ 9', NULL), ('Русский ответ 10', NULL), ('Русский ответ 11', NULL), ('Русский ответ 12', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English answer 1', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English answer 2', NULL), ('English answer 3', NULL), ('English answer 4', NULL), ('English answer 5', NULL), ('English answer 6', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English answer 7', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English answer 8', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English answer 9', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English answer 10', NULL), ('English answer 11', NULL), ('English answer 12', '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9');
 
 INSERT INTO question (text, answer_id, account_id, language_id, media_id)
-VALUES ('Русский вопрос 1', 1, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский вопрос 2', 2, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('Русский вопрос 3', 3, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL),
-       ('Русский вопрос 4', 4, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('Русский вопрос 5', 5, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('Русский вопрос 6', 6, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский вопрос 7', 7, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский вопрос 8', 8, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('Русский вопрос 9', 9, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL),
-       ('Русский вопрос 10', 10, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL),
-       ('Русский вопрос 11', 11, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL),
-       ('Русский вопрос 12', 12, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('English question 1', 13, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL),
-       ('English question 2', 14, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('English question 3', 15, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English question 4', 16, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('English question 5', 17, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English question 6', 18, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL),
-       ('English question 7', 19, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL),
-       ('English question 8', 20, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL),
-       ('English question 9', 21, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'),
-       ('English question 10', 22, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('English question 11', 23, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'),
-       ('English question 12', 24, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9');
+    VALUES ('Русский вопрос 1', 1, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский вопрос 2', 2, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('Русский вопрос 3', 3, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL), ('Русский вопрос 4', 4, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('Русский вопрос 5', 5, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('Русский вопрос 6', 6, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский вопрос 7', 7, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский вопрос 8', 8, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('Русский вопрос 9', 9, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL), ('Русский вопрос 10', 10, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL), ('Русский вопрос 11', 11, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, NULL), ('Русский вопрос 12', 12, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 1, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('English question 1', 13, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL), ('English question 2', 14, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('English question 3', 15, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English question 4', 16, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('English question 5', 17, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English question 6', 18, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL), ('English question 7', 19, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL), ('English question 8', 20, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, NULL), ('English question 9', 21, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9'), ('English question 10', 22, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('English question 11', 23, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, 'af91809a-3910-4594-aeef-1a2f2a3babe1'), ('English question 12', 24, 'd0fbc24f-5061-4d10-b92c-d386c8eba600', 2, '7d8ef85a-8cf8-4d1e-ab15-31f9196fc5b9');
 

@@ -1,140 +1,153 @@
 package v1
 
 import (
-	"strings"
-	"time"
+	"context"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
-// sessionMW check if request is authenticated and sets accountId and sessionId to locals (context)
-func sessionMW(l logging.Logger, cfg *config.Session,
-	s SessionService) fiber.Handler {
+// mwAuthenticator check if request is authenticated and sets accountId and sessionId to locals (context)
+func mwAuthenticator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			sessionCookie, err := r.Cookie(cfg.CookieName)
+			if err != nil {
+				l.Info("http - v1 - middleware - mwAuthenticator - r.Cookie", zap.Error(err))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
 
-	return func(c *fiber.Ctx) error {
-		sessionId := c.Cookies(cfg.CookieName)
-		if sessionId == "" {
-			l.Info("http - v1 - middleware - sessionMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
-			c.Status(fiber.StatusUnauthorized)
-			return nil
+			ctx := r.Context()
+
+			sess, err := s.GetById(ctx, sessionCookie.Value)
+			if err != nil {
+				l.Error("http - v1 - middleware - mwAuthenticator - s.GetById", zap.Error(err))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			if sess.Expired() {
+				l.Info("http - v1 - middleware - mwAuthenticator", zap.Error(session.ErrExpired))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			// if !sess.SameDevice(r.RemoteAddr, r.UserAgent()) {
+			// 	l.Error("http - v1 - middleware - mwAuthenticator: %w", session.ErrDeviceMismatch)
+			// 	w.WriteHeader(http.StatusUnauthorized)
+			// 	return
+			// }
+
+			ctx = context.WithValue(ctx, sessionIdCtxKey{}, sess.Id)
+			ctx = context.WithValue(ctx, accountIdCtxKey{}, sess.AccountId)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 
-		sess, err := s.GetById(c.Context(), sessionId)
-		if err != nil {
-			l.Error("http - v1 - middleware - sessionMW - s.GetById: %w", err)
-			c.Status(fiber.StatusUnauthorized)
-			return nil
-		}
-
-		if time.Now().Unix() > sess.ExpiresAt {
-			l.Info("http - v1 - middleware - sessionMW: %w", session.ErrExpired)
-			c.Status(fiber.StatusUnauthorized)
-			return nil
-		}
-
-		if sess.IP != c.IP() || sess.UserAgent != c.Get(fiber.HeaderUserAgent) {
-			l.Error("http - v1 - middleware - sessionMW: %w", session.ErrDeviceMismatch)
-			c.Status(fiber.StatusUnauthorized)
-			return nil
-		}
-
-		c.Locals(sessionIdKey, sess.Id)
-		c.Locals(accountIdKey, sess.AccountId)
-
-		return c.Next()
+		return http.HandlerFunc(fn)
 	}
 }
 
-// verifiedMW is simillar to sessionMW but also checks if account is verified,
+// mwVerificator is simillar to mwAuthenticator but also checks if account is verified,
 // aborts if not.
 //
 // should be used instead of sessionMW
-func verifiedMW(l logging.Logger, cfg *config.Session,
-	s SessionService) fiber.Handler {
+func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			sessionCookie, err := r.Cookie(cfg.CookieName)
+			if err != nil {
+				l.Info("http - v1 - middleware - mwVerificator - r.Cookie", zap.Error(err))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
 
-	return func(c *fiber.Ctx) error {
-		sessionId := c.Cookies(cfg.CookieName)
-		if sessionId == "" {
-			l.Info("http - v1 - middleware - verifiedMW - c.Cookies: cookie '%s' not found", cfg.CookieName)
+			ctx := r.Context()
 
-			c.Status(fiber.StatusUnauthorized)
-			return nil
+			res, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
+			if err != nil {
+				l.Error("http - v1 - middleware - mwVerificator - s.GetById", zap.Error(err))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			if !res.Verified {
+				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
+				writeError(w, http.StatusForbidden, account.ErrNotEnoughRights)
+				return
+			}
+
+			if res.Session.Expired() {
+				l.Info("http - v1 - middleware - mwVerificator", zap.Error(session.ErrExpired))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			if !res.Session.SameDevice(r.RemoteAddr, r.UserAgent()) {
+				l.Error("http - v1 - middleware - mwVerificator", zap.Error(session.ErrDeviceMismatch))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			ctx = context.WithValue(ctx, sessionIdCtxKey{}, res.Session.Id)
+			ctx = context.WithValue(ctx, accountIdCtxKey{}, res.Session.AccountId)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		}
 
-		d, err := s.GetByIdWithVerified(c.Context(), sessionId)
-		if err != nil {
-			l.Error("http - v1 - middleware - verifiedMW - s.GetById: %w", err)
-
-			c.Status(fiber.StatusUnauthorized)
-			return nil
-		}
-
-		if d.Session.IP != c.IP() || d.Session.UserAgent != c.Get(fiber.HeaderUserAgent) {
-			l.Error("http - v1 - middleware - verifiedMW: %w", session.ErrDeviceMismatch)
-
-			c.Status(fiber.StatusUnauthorized)
-			return nil
-		}
-
-		if !d.Verified {
-			l.Info("http - v1 - middleware - verifiedMW - !d.Verified: %w", account.ErrNotEnoughRights)
-
-			return errorResp(c, fiber.StatusForbidden, account.ErrNotEnoughRights, "")
-		}
-
-		c.Locals(sessionIdKey, d.Session.Id)
-		c.Locals(accountIdKey, d.Session.AccountId)
-
-		return c.Next()
+		return http.HandlerFunc(fn)
 	}
 }
 
-// tokenMW parses and validates security token
-func tokenMW(l logging.Logger, token TokenService) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		accountId, err := getAccountId(c)
-		if err != nil {
-			l.Info("http - v1 - middleware - tokenMW - getAccountId: %w", err)
-			c.Status(fiber.StatusUnauthorized)
-			return nil
+// mwTokenRequired parses and validates security token
+func mwTokenRequired(l *zap.Logger, token TokenService) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			accountId, err := getAccountId(r.Context())
+			if err != nil {
+				l.Info("http - v1 - middleware - mwTokenRequired - getAccountId", zap.Error(err))
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			t := r.URL.Query().Get("token")
+			if t == "" {
+				l.Info("http - v1 - middleware - mwTokenRequired - r.URL.Query.Get", zap.Error(err))
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			sub, err := token.Parse(r.Context(), t)
+			if err != nil {
+				l.Error("http - v1 - middleware - mwTokenRequired - t.Parse", zap.Error(err))
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+			if sub != accountId {
+				l.Info("http - v1 - middleware - mwTokenRequired - sub != accountId", zap.Error(err))
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			next.ServeHTTP(w, r)
 		}
 
-		t := c.Query("token")
-		if t == "" {
-			l.Info("http - v1 - middleware - tokenMW - c.Query: %w", account.ErrEmptyPasswordResetToken)
-			c.Status(fiber.StatusForbidden)
-			return nil
-		}
-
-		sub, err := token.Parse(c.Context(), t, strings.ToLower(c.Hostname()+c.Route().Path))
-		if err != nil {
-			l.Error("http - v1 - middleware - tokenMW - token.Parse: %w", err)
-			c.Status(fiber.StatusForbidden)
-			return nil
-		}
-
-		if sub != accountId {
-			l.Info("http - v1 - middleware - tokenMW: %w", err)
-			c.Status(fiber.StatusForbidden)
-			return nil
-		}
-
-		return c.Next()
+		return http.HandlerFunc(fn)
 	}
 }
 
-// deviceMW sets session.Device object to locals
-func deviceMW(c *fiber.Ctx) error {
-	c.Locals(deviceKey, session.Device{
-		IP:        c.IP(),
-		UserAgent: c.Get(fiber.HeaderUserAgent),
+// mwDeviceCtx sets session.Device object to context
+func mwDeviceCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), deviceCtxKey{}, session.Device{
+			IP:        r.RemoteAddr,
+			UserAgent: r.UserAgent(),
+		})
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-
-	return c.Next()
 }

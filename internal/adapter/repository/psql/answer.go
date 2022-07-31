@@ -7,9 +7,9 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/answer"
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
@@ -18,11 +18,11 @@ const (
 )
 
 type answerRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewAnswerRepo(l logging.Logger, c *postgres.Client) *answerRepo {
+func NewAnswerRepo(l *zap.Logger, c *postgres.Client) *answerRepo {
 	return &answerRepo{
 		l: l,
 		c: c,
@@ -31,12 +31,10 @@ func NewAnswerRepo(l logging.Logger, c *postgres.Client) *answerRepo {
 
 func (r *answerRepo) Save(ctx context.Context, a answer.Answer) (answer.Answer, error) {
 	sql := fmt.Sprintf(`
-		INSERT INTO %s(text, image)	
+		INSERT INTO %s(text, image)
 		VALUES ($1, $2)
 		RETURNING id
 	`, answerTable)
-
-	r.l.Info("psql - answer - Save: %s", sql)
 
 	if err := r.c.Pool.QueryRow(ctx, sql, a.Text, a.MediaId).Scan(&a.Id); err != nil {
 		var pgErr *pgconn.PgError

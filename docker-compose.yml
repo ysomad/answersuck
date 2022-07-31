@@ -6,7 +6,7 @@ volumes:
 services:
   postgres:
     container_name: postgres
-    image: postgres
+    image: "postgres:14-alpine"
     environment:
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "pass"
@@ -17,14 +17,6 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
 
-  redis:
-    container_name: redis
-    image: redis:alpine
-    restart: always
-    command: redis-server --requirepass secret
-    ports:
-      - "6379:6379"
-
   app:
     build: .
     container_name: app
@@ -33,7 +25,6 @@ services:
     env_file:
       - .env
     ports:
-      - "8000:8000"
+      - "8080:8080"
     depends_on:
       - postgres
-      - redis

@@ -5,17 +5,17 @@ import (
 	"fmt"
 
 	"github.com/answersuck/vault/internal/domain/tag"
+	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/pkg/logging"
 	"github.com/answersuck/vault/pkg/postgres"
 )
 
 type tagRepo struct {
-	l logging.Logger
+	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewTagRepo(l logging.Logger, c *postgres.Client) *tagRepo {
+func NewTagRepo(l *zap.Logger, c *postgres.Client) *tagRepo {
 	return &tagRepo{
 		l: l,
 		c: c,
@@ -38,8 +38,6 @@ func (r *tagRepo) SaveMultiple(ctx context.Context, req []tag.CreateReq) ([]*tag
 	}
 
 	sql = getBulkInsertSQLSimple(sql, argsNum, l)
-
-	r.l.Info("psql - tag - SaveMultiple: %w", sql)
 
 	rows, err := r.c.Pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -70,13 +68,10 @@ func (r *tagRepo) SaveMultiple(ctx context.Context, req []tag.CreateReq) ([]*tag
 func (r *tagRepo) FindAll(ctx context.Context) ([]*tag.Tag, error) {
 	sql := "SELECT id, name, language_id FROM tag"
 
-	r.l.Info("psql - tag - FindAll: %s", sql)
-
 	rows, err := r.c.Pool.Query(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("psql - tag - FindAll - r.c.Pool.Query: %w", err)
 	}
-
 	defer rows.Close()
 
 	var tags []*tag.Tag

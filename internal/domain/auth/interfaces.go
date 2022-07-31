@@ -10,9 +10,9 @@ import (
 
 type (
 	AccountService interface {
-		GetById(ctx context.Context, accountId string) (*account.Account, error)
-		GetByEmail(ctx context.Context, email string) (*account.Account, error)
-		GetByNickname(ctx context.Context, nickname string) (*account.Account, error)
+		GetById(ctx context.Context, accountId string) (account.Account, error)
+		GetByEmail(ctx context.Context, email string) (account.Account, error)
+		GetByNickname(ctx context.Context, nickname string) (account.Account, error)
 	}
 
 	SessionService interface {
@@ -21,7 +21,11 @@ type (
 	}
 
 	TokenManager interface {
-		Create(subject, audience string, expiration time.Duration) (string, error)
-		Parse(token, audience string) (string, error)
+		Create(subject string, expiration time.Duration) (string, error)
+		Parse(token string) (string, error)
+	}
+
+	PasswordVerifier interface {
+		Verify(plain, hash string) (bool, error)
 	}
 )

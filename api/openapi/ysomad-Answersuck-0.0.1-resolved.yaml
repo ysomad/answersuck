@@ -1,0 +1,496 @@
+---
+openapi: 3.0.3
+info:
+  title: Answersuck backend API
+  description: ""
+  version: 0.0.1
+servers:
+- url: http://localhost:8080/v1
+  description: Local server
+tags:
+- name: account
+  description: Account operations
+- name: session
+  description: Session operations
+- name: auth
+  description: Auth operations
+paths:
+  /accounts:
+    post:
+      tags:
+      - account
+      summary: Create account
+      operationId: accountCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountCreateRequest'
+        required: true
+      responses:
+        "204":
+          description: Account created.
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedError'
+        "409":
+          description: Account with given email or username already exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
+    delete:
+      tags:
+      - account
+      summary: Delete account
+      description: Only account with state set to `isArchive=false` can be deleted. Security token should be provided at query param, request it at `/auth/token/`.
+      operationId: accountDelete
+      parameters:
+      - name: token
+        in: query
+        description: Short live security token
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Account deleted.
+          headers:
+            Set-Cookie:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                example: id=; Path=v1; Max-Age=-1; HttpOnly; Secure
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /accounts/verification:
+    put:
+      tags:
+      - account
+      summary: Verify email
+      description: To verify email, code as query parameter should be provided
+      operationId: accountVerifyEmail
+      parameters:
+      - name: code
+        in: query
+        description: Verification code
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Email has been verified.
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized or expired session.
+        "403":
+          description: Invalid or expired security token.
+        "500":
+          description: Internal Server Error.
+    post:
+      tags:
+      - account
+      summary: Request email verification
+      description: Send email verification to email address linked to the account
+      operationId: accountRequestVerification
+      responses:
+        "202":
+          description: Email verification link sent.
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized or expired session.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /accounts/password:
+    put:
+      tags:
+      - account
+      summary: Set new password
+      description: To set new password, access token should be provided along side with new password
+      operationId: accountPasswordSet
+      parameters:
+      - name: token
+        in: query
+        description: Password reset token
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordSetRequest'
+        required: true
+      responses:
+        "204":
+          description: New password set.
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedError'
+        "403":
+          description: Invalid or expired access token.
+        "404":
+          description: Account not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
+    post:
+      tags:
+      - account
+      summary: Reset password
+      description: To request link to password reset, email or username should be provided. Email with code will be sent on success.
+      operationId: accountPasswordReset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+        required: true
+      responses:
+        "202":
+          description: Email with link sent.
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedError'
+        "404":
+          description: Account not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
+  /sessions:
+    get:
+      tags:
+      - session
+      summary: Get sessions
+      operationId: sessionGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "401":
+          description: Unauthorized.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - session
+      summary: Terminate all sessions
+      description: To terminate all account sessions, security token should be provided in query param, request it at `/auth/token`
+      operationId: sessionDeleteAll
+      parameters:
+      - name: token
+        in: query
+        description: Short live security token
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Successful operation.
+        "401":
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Invalid or expired security token.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /sessions/{sessionId}:
+    delete:
+      tags:
+      - session
+      summary: Terminate session
+      operationId: sessionDelete
+      parameters:
+      - name: sessionId
+        in: path
+        description: String ID of the session to terminate
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: token
+        in: query
+        description: Short live security token
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Successful operation.
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Invalid or expired security token.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /auth/login:
+    post:
+      tags:
+      - auth
+      summary: Login
+      description: Creates new session and sets its id in cookies. Login might be email or nickname.
+      operationId: sessionCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          headers:
+            Set-Cookie:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                example: id=XN6StCMLLT4Ijc1fGhZPj83PJ2gjHrPB; Path=v1; Max-Age=60; HttpOnly; Secure
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedError'
+        "401":
+          description: Incorrect email or password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
+  /auth/token:
+    post:
+      tags:
+      - auth
+      summary: Request security token
+      description: Request short live token which can be used to perform protected operations.
+      operationId: authToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityTokenRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityTokenResponse'
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+  /auth/logout:
+    post:
+      tags:
+      - auth
+      summary: Logout
+      description: Log out from current session
+      operationId: authLogout
+      responses:
+        "200":
+          description: Successful operation.
+          headers:
+            Set-Cookie:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                example: id=; Path=v1; Max-Age=-1; HttpOnly; Secure
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    DetailedError:
+      type: object
+      properties:
+        message:
+          type: string
+        details:
+          $ref: '#/components/schemas/ErrorDetails'
+    ErrorDetails:
+      type: object
+      properties:
+        field_name:
+          type: string
+    AccountCreateRequest:
+      required:
+      - email
+      - nickname
+      - password
+      type: object
+      properties:
+        nickname:
+          maxLength: 25
+          minLength: 4
+          type: string
+        email:
+          maxLength: 255
+          type: string
+          format: email
+        password:
+          maxLength: 128
+          minLength: 10
+          type: string
+          format: password
+    PasswordResetRequest:
+      required:
+      - login
+      type: object
+      properties:
+        login:
+          type: string
+          format: email or username
+    PasswordSetRequest:
+      required:
+      - password
+      type: object
+      properties:
+        password:
+          maxLength: 128
+          minLength: 10
+          type: string
+          format: password
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+        user_agent:
+          type: string
+        ip:
+          type: string
+          format: ipv4
+        created_at:
+          type: string
+          format: timestamp
+    SessionArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Session'
+    LoginRequest:
+      required:
+      - login
+      - password
+      type: object
+      properties:
+        login:
+          type: string
+          description: email or username
+        password:
+          type: string
+          format: password
+    SecurityTokenRequest:
+      required:
+      - password
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+    SecurityTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token contains Account Id as subject and audience in payload
+    inline_response_200:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/SessionArray'
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      name: id
+      in: cookie

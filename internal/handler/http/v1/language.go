@@ -2,12 +2,11 @@ package v1
 
 import (
 	"github.com/gofiber/fiber/v2"
-
-	"github.com/answersuck/vault/pkg/logging"
+	"go.uber.org/zap"
 )
 
 type languageHandler struct {
-	log     logging.Logger
+	log     *zap.Logger
 	service LanguageService
 }
 
@@ -30,7 +29,7 @@ func newLanguageRouter(d *Deps) *fiber.App {
 func (h *languageHandler) getAll(c *fiber.Ctx) error {
 	l, err := h.service.GetAll(c.Context())
 	if err != nil {
-		h.log.Error("http - v1 - language - getAll - h.service.GetAll: %w", err)
+		h.log.Error("http - v1 - language - getAll - h.service.GetAll: %w", zap.Error(err))
 		c.Status(fiber.StatusInternalServerError)
 		return nil
 	}

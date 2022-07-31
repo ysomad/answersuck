@@ -2,241 +2,222 @@ package v1
 
 import (
 	"errors"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
-
-	"github.com/answersuck/vault/pkg/logging"
 )
 
 type accountHandler struct {
-	cfg          *config.Aggregate
-	log          logging.Logger
-	v            ValidationModule
-	account      AccountService
-	verification VerificationService
+	cfg     *config.Session
+	log     *zap.Logger
+	v       ValidationModule
+	account AccountService
 }
 
-func newAccountHandler(d *Deps) *accountHandler {
-	return &accountHandler{
-		cfg:          d.Config,
-		log:          d.Logger,
-		v:            d.ValidationModule,
-		account:      d.AccountService,
-		verification: d.VerificationService,
+func newAccountHandler(d *Deps) http.Handler {
+	h := accountHandler{
+		cfg:     &d.Config.Session,
+		log:     d.Logger,
+		v:       d.ValidationModule,
+		account: d.AccountService,
 	}
-}
 
-func newAccountRouter(d *Deps) *fiber.App {
-	h := newAccountHandler(d)
+	r := chi.NewRouter()
 
-	r := fiber.New()
+	authenticator := mwAuthenticator(d.Logger, &d.Config.Session, d.SessionService)
+	tokenRequired := mwTokenRequired(d.Logger, d.TokenService)
 
 	r.Post("/", h.create)
-	r.Delete("/",
-		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
-		tokenMW(d.Logger, d.TokenService),
-		h.delete,
-	)
+	r.With(authenticator, tokenRequired).Delete("/", h.delete)
 
-	verification := r.Group("/verification")
-	verification.Post("/",
-		sessionMW(d.Logger, &d.Config.Session, d.SessionService),
-		h.requestVerification)
-	verification.Put("/", h.verify)
+	r.Route("/verification", func(r chi.Router) {
+		r.With(authenticator).Post("/", h.requestVerification)
+		r.Put("/", h.verify)
+	})
 
-	password := r.Group("/password")
-	password.Post("/", h.resetPassword)
-	password.Put("/", h.setPassword)
+	r.Route("/password", func(r chi.Router) {
+		r.Post("/", h.resetPassword)
+		r.Put("/", h.setPassword)
+	})
 
 	return r
 }
 
-func (h *accountHandler) create(c *fiber.Ctx) error {
-	c.Accepts(fiber.MIMEApplicationJSON)
+func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-	var r account.CreateReq
+	var req account.CreateReq
 
-	if err := c.BodyParser(&r); err != nil {
-		h.log.Info("http - v1 - account - create - c.BodyParser: %w", err)
-		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
+	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+		h.log.Info("http - v1 - account - create - ValidateRequestBody", zap.Error(err))
+		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		return
 	}
 
-	if err := h.v.ValidateStruct(r); err != nil {
-		h.log.Info("http - v1 - account - create - ValidateStruct: %w", err)
-		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
-	}
-
-	_, err := h.account.Create(c.Context(), r)
+	_, err := h.account.Create(r.Context(), req)
 	if err != nil {
-		h.log.Error("http - v1 - account - create - h.account.Create: %w", err)
+		h.log.Error("http - v1 - account - create - h.account.Create", zap.Error(err))
 
 		switch {
 		case errors.Is(err, account.ErrAlreadyExist):
-			return errorResp(c, fiber.StatusConflict, account.ErrAlreadyExist, "")
+			writeError(w, http.StatusConflict, account.ErrAlreadyExist)
+			return
 		case errors.Is(err, account.ErrForbiddenNickname):
-			return errorResp(c, fiber.StatusBadRequest, account.ErrForbiddenNickname, "")
+			writeError(w, http.StatusBadRequest, account.ErrForbiddenNickname)
+			return
 		}
 
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Status(fiber.StatusNoContent)
-	return nil
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *accountHandler) delete(c *fiber.Ctx) error {
-	accountId, err := getAccountId(c)
-	if err != nil {
-		h.log.Error("http - v1 - account - delete - getAccountId: %w", err)
+func (h *accountHandler) delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
 
-		c.Status(fiber.StatusUnauthorized)
-		return nil
+	accountId, err := getAccountId(ctx)
+	if err != nil {
+		h.log.Error("http - v1 - account - delete - getAccountId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
-	if err = h.account.Delete(c.Context(), accountId); err != nil {
-		h.log.Error("http - v1 - account - delete - h.account.Delete: %w", err)
+	if err = h.account.Delete(ctx, accountId); err != nil {
+		h.log.Error("http - v1 - account - delete - h.account.Delete", zap.Error(err))
 
 		if errors.Is(err, account.ErrNotDeleted) {
-			return errorResp(c, fiber.StatusBadRequest, account.ErrAlreadyArchived, "")
+			writeError(w, http.StatusBadRequest, account.ErrAlreadyArchived)
+			return
 		}
 
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     h.cfg.Session.CookieName,
+	http.SetCookie(w, &http.Cookie{
+		Name:     h.cfg.CookieName,
 		Value:    "",
+		Path:     h.cfg.CookiePath,
 		MaxAge:   -1,
-		Secure:   h.cfg.Session.CookieSecure,
-		HTTPOnly: h.cfg.Session.CookieHTTPOnly,
+		Secure:   h.cfg.CookieSecure,
+		HttpOnly: h.cfg.CookieHTTPOnly,
 	})
 
-	c.Status(fiber.StatusNoContent)
-	return nil
+	w.WriteHeader(http.StatusOK)
 }
 
-func (h *accountHandler) requestVerification(c *fiber.Ctx) error {
-	accountId, err := getAccountId(c)
+func (h *accountHandler) requestVerification(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
+
+	accountId, err := getAccountId(ctx)
 	if err != nil {
-		h.log.Error("http - v1 - account - requestVerification - getAccountId: %w", err)
-
-		c.Status(fiber.StatusUnauthorized)
-		return nil
+		h.log.Error("http - v1 - account - requestVerification - getAccountId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
-	if err = h.verification.Request(c.Context(), accountId); err != nil {
-		h.log.Error("http - v1 - account - requestVerification - h.verification.Request")
+	if err = h.account.RequestVerification(ctx, accountId); err != nil {
+		h.log.Error("http - v1 - account - requestVerification - h.account.RequestVerification")
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
-			return errorResp(c, fiber.StatusBadRequest, account.ErrAlreadyVerified, "")
+			writeError(w, http.StatusBadRequest, account.ErrAlreadyVerified)
+			return
 		}
 
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Status(fiber.StatusAccepted)
-	return nil
+	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *accountHandler) verify(c *fiber.Ctx) error {
-	code := c.Query("code")
+func (h *accountHandler) verify(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	code := r.URL.Query().Get("code")
 	if code == "" {
-		return errorResp(c, fiber.StatusBadRequest, account.ErrEmptyVerificationCode, "")
+		writeError(w, http.StatusBadRequest, account.ErrEmptyVerificationCode)
+		return
 	}
 
-	if err := h.verification.Verify(c.Context(), code); err != nil {
-		h.log.Error("http - v1 - account - verify - h.verification.Verify: %w", err)
+	if err := h.account.Verify(r.Context(), code); err != nil {
+		h.log.Error("http - v1 - account - verify - h.account.Verify", zap.Error(err))
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
-			return errorResp(c, fiber.StatusBadRequest, account.ErrAlreadyVerified, "")
+			writeError(w, http.StatusBadRequest, account.ErrAlreadyVerified)
+			return
 		}
 
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Status(fiber.StatusNoContent)
-	return nil
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *accountHandler) resetPassword(c *fiber.Ctx) error {
-	c.Accepts(fiber.MIMEApplicationJSON)
+func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-	var r account.ResetPasswordReq
+	var req account.ResetPasswordReq
 
-	if err := c.BodyParser(&r); err != nil {
-		h.log.Info("http - v1 - account - resetPassword - c.BodyParser: %w", err)
-		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
+	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+		h.log.Info("http - v1 - account - resetPassword - ValidateRequestBody", zap.Error(err))
+		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		return
 	}
 
-	if err := h.v.ValidateStruct(r); err != nil {
-		h.log.Info("http - v1 - account - resetPassword - ValidateStruct: %w", err)
-		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
-	}
-
-	if err := h.account.ResetPassword(c.Context(), r.Login); err != nil {
-		h.log.Error("http - v1 - account - resetPassword - h.password.Reset: %w", err)
+	if err := h.account.ResetPassword(r.Context(), req.Login); err != nil {
+		h.log.Error("http - v1 - account - resetPassword - h.account.ResetPassword", zap.Error(err))
 
 		if errors.Is(err, account.ErrNotFound) {
-			return errorResp(c, fiber.StatusNotFound, account.ErrNotFound, "")
+			writeError(w, http.StatusNotFound, account.ErrNotFound)
+			return
 		}
 
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Status(fiber.StatusAccepted)
-	return nil
+	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *accountHandler) setPassword(c *fiber.Ctx) error {
-	t := c.Query("token")
-	if t == "" {
-		return errorResp(c, fiber.StatusBadRequest, account.ErrEmptyPasswordResetToken, "")
+func (h *accountHandler) setPassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		writeError(w, http.StatusBadRequest, account.ErrEmptyPasswordToken)
+		return
 	}
 
-	c.Accepts(fiber.MIMEApplicationJSON)
+	var req account.SetPasswordReq
 
-	var r account.SetPasswordReq
-
-	if err := c.BodyParser(&r); err != nil {
-		h.log.Info("http - v1 - account - setPassword - c.BodyParser: %w", err)
-		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
+	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+		h.log.Info("http - v1 - account - setPassword - ValidateRequestBody", zap.Error(err))
+		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		return
 	}
 
-	if err := h.v.ValidateStruct(r); err != nil {
-		h.log.Info("http - v1 - account - setPassword - ValidateStruct: %w", err)
-		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
-	}
+	if err := h.account.SetPassword(r.Context(), token, req.Password); err != nil {
+		h.log.Error("http - v1 - account - setPassword - h.account.SetPassword", zap.Error(err))
 
-	if err := h.account.SetPassword(c.Context(), t, r.Password); err != nil {
-		h.log.Error("http - v1 - account - setPassword - h.account.SetPassword: %w", err)
-
-		if errors.Is(err, account.ErrPasswordResetTokenExpired) ||
+		if errors.Is(err, account.ErrPasswordTokenExpired) ||
 			errors.Is(err, account.ErrPasswordTokenNotFound) {
-
-			c.Status(fiber.StatusForbidden)
-			return nil
+			w.WriteHeader(http.StatusForbidden)
+			return
 		}
 
-		c.Status(fiber.StatusInternalServerError)
-		return nil
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     h.cfg.Session.CookieName,
-		Value:    "",
-		MaxAge:   -1,
-		Secure:   h.cfg.Session.CookieSecure,
-		HTTPOnly: h.cfg.Session.CookieHTTPOnly,
-	})
-
-	c.Status(fiber.StatusOK)
-	return nil
+	w.WriteHeader(http.StatusNoContent)
 }

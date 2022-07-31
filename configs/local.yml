@@ -6,8 +6,7 @@ web:
   url: "http://localhost:8000"
 
 http:
-  port: ":8080"
-  debug: true
+  port: "8080"
 
 logger:
   logLevel: "debug"
@@ -25,13 +24,14 @@ session:
   cookieName: "id"
   cookieSecure: false
   cookieHttpOnly: true
+  cookiePath: "/v1"
 
 securityToken:
   expiration: 1m
   signingKey: "secret"
 
 password:
-  resetTokenExpiration: 1m
+  resetTokenExpiration: 10m
 
 smtp:
   host: "smtp.yandex.ru"
@@ -42,7 +42,10 @@ fileStorage:
   bucket: "answersuck"
   ssl: true
 
-  # if true FILE_STORAGE_CDN_DOMAIN env must be set, 
+  domain: "697408.selcdn.ru"
+  cdnDomain: "cdn.answersuck.com"
+
+  # if true FILE_STORAGE_CDN_DOMAIN env must be set,
   # otherwise using FILE_STORAGE_DOMAIN env for generating uploaded file url
   cdn: false
 
