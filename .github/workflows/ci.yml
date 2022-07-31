@@ -29,6 +29,8 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: 1.18
+
+    - name: Build and run app
       run: go run ./cmd/app
       env:
         PG_URL: ${{ secrets.TEST_PG_URL }}
