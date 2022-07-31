@@ -1,4 +1,4 @@
-name: Go
+name: CI
 
 on:
   push:
@@ -22,5 +22,9 @@ jobs:
       run: go build ./cmd/app/
 
     - name: Run tests
-      run: INTEGRATION_TESTDB=true INTEGRATION_LOGLEVEL=debug go test -v -race -count=1 ./...
+      run: |
+        INTEGRATION_TESTDB=true
+        INTEGRATION_LOGLEVEL=debug
+        PG_URL=${{ secrets.TESTDB_URL }}
+        go test -v -race -count=1 ./...
 
