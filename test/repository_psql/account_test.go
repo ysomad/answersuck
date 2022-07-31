@@ -1,4 +1,4 @@
-package psql_test
+package repository_psql
 
 import (
 	"context"

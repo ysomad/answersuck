@@ -1,28 +1,12 @@
 name: CI
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: pull_request
 
 jobs:
 
-  ci:
+  tests:
+    name: runner / tests
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:14.4-alpine
-        env:
-          POSTGRES_USER: "user"
-          POSTGRES_PASSWORD: "pass"
-          POSTGRES_DB: "postgres"
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -30,15 +14,19 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.18.4
+        go-version: 1.18
 
-    - name: Build
-      run: go build ./cmd/app/
+    - name: Unit tests
+      run: make test
 
-    - name: Run tests
-      run: go test -v -race -count=1 ./...
+    - name: Upload coverage report
+      run: bash <(curl -s https://codecov.io/bash)
+
+    - name: Integration tests
+      run: make compose-up-integration-test
       env:
-        INTEGRATION_TESTDB: true
-        INTEGRATION_LOGLEVE: debug
-        PG_URL: ${{ secrets.TESTDB_URL }}
-
+        PG_URL: ${{ secrets.TEST_PG_URL }}
+        SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
+        SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
+        FILE_STORAGE_ACCESS_KEY: ${{ secrets.TEST_FILE_STORAGE_ACCESS_KEY }}
+        FILE_STORAGE_SECRET_KEY: ${{ secrets.TEST_FILE_STORAGE_SECRET_KEY }}

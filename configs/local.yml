@@ -42,6 +42,9 @@ fileStorage:
   bucket: "answersuck"
   ssl: true
 
+  domain: "697408.selcdn.ru"
+  cdnDomain: "cdn.answersuck.com"
+
   # if true FILE_STORAGE_CDN_DOMAIN env must be set,
   # otherwise using FILE_STORAGE_DOMAIN env for generating uploaded file url
   cdn: false

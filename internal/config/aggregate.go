@@ -12,7 +12,6 @@ type (
 		Log           Log           `yaml:"logger"`
 		PG            PG            `yaml:"postgres"`
 		Cache         Cache         `yaml:"cache"`
-		Redis         Redis         `yaml:"redis"`
 		SecurityToken SecurityToken `yaml:"securityToken"`
 		Session       Session       `yaml:"session"`
 		FileStorage   FileStorage   `yaml:"fileStorage"`
@@ -50,11 +49,6 @@ type (
 		DB         int           `yaml:"db"`
 	}
 
-	Redis struct {
-		Addr     string `env-required:"true" env:"REDIS_ADDR"`
-		Password string `env-required:"true" env:"REDIS_PASSWORD"`
-	}
-
 	Session struct {
 		Expiration     time.Duration `env-required:"true" yaml:"expiration"`
 		CookieName     string        `env-required:"true" yaml:"cookieName"`
@@ -73,8 +67,8 @@ type (
 		Bucket    string `env-required:"true" yaml:"bucket" env:"FILE_STORAGE_BUCKET"`
 		AccessKey string `env-required:"true" env:"FILE_STORAGE_ACCESS_KEY"`
 		SecretKey string `env-required:"true" env:"FILE_STORAGE_SECRET_KEY"`
-		Domain    string `env-required:"true" env:"FILE_STORAGE_DOMAIN"`
-		CDNDomain string `env-required:"true" env:"FILE_STORAGE_CDN_DOMAIN"`
+		Domain    string `yaml:"domain" env-required:"true"`
+		CDNDomain string `yaml:"cdnDomain" env-required:"true"`
 		CDN       bool   `yaml:"cdn" env:"FILE_STORAGE_CDN"`
 		SSL       bool   `yaml:"ssl" env:"FILE_STORAGE_SSL"`
 	}

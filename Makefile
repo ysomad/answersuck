@@ -5,7 +5,7 @@ MIGRATE := migrate -path migrations -database "$(PG_URL)?sslmode=disable"
 
 .PHONY: compose-up
 compose-up:
-	docker compose up --build -d postgres redis && docker compose logs -f
+	docker compose up --build -d postgres && docker compose logs -f
 
 .PHONY: compose-down
 compose-down:
@@ -19,6 +19,18 @@ run:
 .PHONY: build
 build:
 	go build ./cmd/app
+
+.PHONY: test
+test:
+	go test -v -cover -race -count 1 ./internal/... ./pkg/...
+
+.PHONY: compose-up-integration-test
+compose-up-integration-test:
+	docker-compose up --build --abort-on-container-exit --exit-code-from integration
+
+.PHONY: integration-test
+integration-test:
+	go test -v -race -count 1 ./test/...
 
 .PHONY: migrate-new
 migrate-new:
@@ -37,8 +49,7 @@ migrate-drop:
 
 .PHONY: migrate-down
 migrate-down:
+	@echo "Running all down database migrations..."
 	@$(MIGRATE) down
 
-.PHONY: test
-test:
-	INTEGRATION_TESTDB=true INTEGRATION_LOGLEVEL=debug go test -v -race -count=1 ./...
+

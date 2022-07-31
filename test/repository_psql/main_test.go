@@ -1,4 +1,4 @@
-package psql_test
+package repository_psql
 
 import (
 	"log"
@@ -14,18 +14,13 @@ import (
 
 var postgresClient *postgres.Client
 
-func initRepos(logLevel string) {
-	logger := logger.New(os.Stdout, logLevel)
+func initRepos() {
+	logger := logger.New(os.Stdout, "info")
 	accountRepo = psql.NewAccountRepo(logger, postgresClient)
 }
 
 func TestMain(m *testing.M) {
-	if os.Getenv("INTEGRATION_TESTDB") != "true" {
-		log.Printf("Skipping tests that require database connection")
-		return
-	}
-
-	u := "../../../../migrations"
+	u := "../../migrations"
 	migrate.Down(u)
 	migrate.Up(u)
 
@@ -40,8 +35,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Error initializing Postgres test client: %v", err)
 	}
 
-	initRepos(os.Getenv("INTEGRATION_LOGLEVEL"))
+	initRepos()
 
-	c := m.Run()
-	os.Exit(c)
+	os.Exit(m.Run())
 }
