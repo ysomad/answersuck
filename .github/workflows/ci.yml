@@ -22,20 +22,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      app:
-        image: app
-        build: .
-        environment:
-          - PG_URL=${{ secrets.TEST_PG_URL }}
-          - SMTP_FROM=${{ secrets.TEST_SMTP_FROM }}
-          - SMTP_PASSWORD=${{ secrets.TEST_SMTP_PASSWORD }}
-          - FILE_STORAGE_ACCESS_KEY=${{ secrets.TEST_FILE_STORAGE_ACCESS_KEY }}
-          - FILE_STORAGE_SECRET_KEY=${{ secrets.TEST_FILE_STORAGE_SECRET_KEY }}
-        ports:
-          - "8080:8080"
-        depends_on:
-          - postgres
-
     steps:
     - uses: actions/checkout@v3
 
