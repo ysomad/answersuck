@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/answersuck/vault/internal/adapter/repository/psql"
-	"github.com/answersuck/vault/internal/pkg/logger"
-	"github.com/answersuck/vault/internal/pkg/migrate"
-	"github.com/answersuck/vault/internal/pkg/postgres"
+	"github.com/answersuck/host/internal/adapter/repository/psql"
+	"github.com/answersuck/host/internal/pkg/logger"
+	"github.com/answersuck/host/internal/pkg/migrate"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 var postgresClient *postgres.Client

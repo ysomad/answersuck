@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/session"
+	"github.com/answersuck/host/internal/domain/session"
 )
 
 type sessionHandler struct {

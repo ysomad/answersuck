@@ -6,9 +6,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/session"
+	"github.com/answersuck/host/internal/config"
+	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/domain/session"
 )
 
 // mwAuthenticator check if request is authenticated and sets accountId and sessionId to locals (context)

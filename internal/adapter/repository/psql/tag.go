@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/tag"
-	"github.com/answersuck/vault/internal/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/tag"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 type tagRepo struct {

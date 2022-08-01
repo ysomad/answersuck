@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/host/internal/config"
 )
 
 type tokenService struct {

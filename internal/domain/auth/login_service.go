@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/session"
+	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/domain/session"
 )
 
 type loginService struct {

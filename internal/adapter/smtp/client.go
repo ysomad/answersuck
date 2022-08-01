@@ -7,9 +7,9 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/answersuck/vault/internal/domain/email"
-
 	smail "github.com/xhit/go-simple-mail/v2"
+
+	"github.com/answersuck/host/internal/domain/email"
 )
 
 const (

@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/answersuck/vault/internal/adapter/repository/psql"
-	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/session"
-	"github.com/answersuck/vault/internal/pkg/strings"
+	"github.com/answersuck/host/internal/adapter/repository/psql"
+	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/domain/session"
+	"github.com/answersuck/host/internal/pkg/strings"
 )
 
 var sessionRepo *psql.SessionRepo

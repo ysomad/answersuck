@@ -3,14 +3,14 @@ package v1
 import (
 	"context"
 
-	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/answer"
-	"github.com/answersuck/vault/internal/domain/language"
-	"github.com/answersuck/vault/internal/domain/media"
-	"github.com/answersuck/vault/internal/domain/question"
-	"github.com/answersuck/vault/internal/domain/session"
-	"github.com/answersuck/vault/internal/domain/tag"
-	"github.com/answersuck/vault/internal/domain/topic"
+	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/domain/answer"
+	"github.com/answersuck/host/internal/domain/language"
+	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/domain/question"
+	"github.com/answersuck/host/internal/domain/session"
+	"github.com/answersuck/host/internal/domain/tag"
+	"github.com/answersuck/host/internal/domain/topic"
 )
 
 type AccountService interface {

@@ -7,8 +7,8 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
-	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain/media"
+	"github.com/answersuck/host/internal/config"
+	"github.com/answersuck/host/internal/domain/media"
 )
 
 type provider struct {

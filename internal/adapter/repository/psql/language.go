@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/language"
-	"github.com/answersuck/vault/internal/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/language"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 const languageTable = "language"

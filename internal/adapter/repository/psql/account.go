@@ -11,8 +11,8 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 type AccountRepo struct {
