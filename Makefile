@@ -52,5 +52,5 @@ migrate-down:
 	@echo "Running all down database migrations..."
 	@$(MIGRATE) down
 migrateup:
-	migrate -path db/migration -database "$(DB_SOURCE)" -verbose up
+	migrate -path migrations -database "$(DB_SOURCE)" -verbose up
 
