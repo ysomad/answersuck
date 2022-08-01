@@ -10,6 +10,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"go.uber.org/zap"
 
+	v1 "github.com/answersuck/host/internal/adapter/handler/http/v1"
 	"github.com/answersuck/host/internal/adapter/repository/psql"
 	"github.com/answersuck/host/internal/adapter/smtp"
 	"github.com/answersuck/host/internal/config"
@@ -17,7 +18,6 @@ import (
 	"github.com/answersuck/host/internal/domain/auth"
 	"github.com/answersuck/host/internal/domain/email"
 	"github.com/answersuck/host/internal/domain/session"
-	v1 "github.com/answersuck/host/internal/handler/http/v1"
 	"github.com/answersuck/host/internal/pkg/blocklist"
 	"github.com/answersuck/host/internal/pkg/crypto"
 	"github.com/answersuck/host/internal/pkg/httpserver"
