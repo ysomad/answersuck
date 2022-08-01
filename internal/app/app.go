@@ -11,7 +11,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
-	"github.com/answersuck/vault/internal/adapter/smtp"
 	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
@@ -24,6 +23,7 @@ import (
 	"github.com/answersuck/vault/internal/pkg/logger"
 	"github.com/answersuck/vault/internal/pkg/migrate"
 	"github.com/answersuck/vault/internal/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/smtp"
 	"github.com/answersuck/vault/internal/pkg/token"
 	"github.com/answersuck/vault/internal/pkg/validation"
 )
