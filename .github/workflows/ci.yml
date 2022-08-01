@@ -44,7 +44,7 @@ jobs:
           sudo mv migrate.linux-amd64 /usr/bin/migrate
           which migrate
       - name: Run migrations
-        run: make migrateup
+        run: make migrate-up
 
       - name: CI
         run: make test
