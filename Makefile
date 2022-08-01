@@ -2,7 +2,7 @@ include .env
 export
 
 MIGRATE := migrate -path migrations -database "$(PG_URL)?sslmode=disable"
-
+DB_SOURCE=postgresql://user:pass@localhost:5432/postgres?sslmode=disable
 .PHONY: compose-up
 compose-up:
 	docker compose up --build -d postgres && docker compose logs -f
@@ -51,5 +51,6 @@ migrate-drop:
 migrate-down:
 	@echo "Running all down database migrations..."
 	@$(MIGRATE) down
-
+migrateup:
+	migrate -path db/migration -database "$(DB_SOURCE)" -verbose up
 
