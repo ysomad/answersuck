@@ -22,8 +22,8 @@ services:
     container_name: app
     image: app
     restart: always
-    env_file:
-      - .env
+    environment:
+      - DB_SOURCE=postgresql://user:pass@postgres:5432/postgres?sslmode=disable
     ports:
       - "8080:8080"
     depends_on:
