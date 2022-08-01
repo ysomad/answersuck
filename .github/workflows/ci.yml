@@ -48,3 +48,6 @@ jobs:
 
       - name: CI
         run: make test
+
+      -   name: Run tests
+          run: go test ./...
