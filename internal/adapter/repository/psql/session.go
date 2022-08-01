@@ -10,28 +10,26 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/session"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
-type sessionRepo struct {
+type SessionRepo struct {
 	l *zap.Logger
 	c *postgres.Client
 }
 
-func NewSessionRepo(l *zap.Logger, c *postgres.Client) *sessionRepo {
-	return &sessionRepo{
+func NewSessionRepo(l *zap.Logger, c *postgres.Client) *SessionRepo {
+	return &SessionRepo{
 		l: l,
 		c: c,
 	}
 }
 
-func (r *sessionRepo) Save(ctx context.Context, s *session.Session) error {
+func (r *SessionRepo) Save(ctx context.Context, s *session.Session) error {
 	sql := `
-		INSERT INTO session (id, account_id, max_age, user_agent, ip, expires_at, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`
+INSERT INTO session (id, account_id, max_age, user_agent, ip, expires_at, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	r.l.Debug("psql - session - Save", zap.String("sql", sql), zap.Any("session", s))
 
@@ -62,23 +60,12 @@ func (r *sessionRepo) Save(ctx context.Context, s *session.Session) error {
 	return nil
 }
 
-func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*session.Session, error) {
-	sql := `
-		SELECT
-			account_id,
-			user_agent,
-			ip,
-			max_age,
-			expires_at,
-			created_at
-		FROM session
-		WHERE id = $1
-	`
+func (r *SessionRepo) FindById(ctx context.Context, sessionId string) (*session.Session, error) {
+	sql := `SELECT account_id, user_agent, ip, max_age, expires_at, created_at FROM session WHERE id = $1`
 
 	r.l.Debug("psql - session - FindById", zap.String("sql", sql), zap.String("sessionId", sessionId))
 
 	var s session.Session
-
 	if err := r.c.Pool.QueryRow(ctx, sql, sessionId).Scan(
 		&s.AccountId,
 		&s.UserAgent,
@@ -99,21 +86,13 @@ func (r *sessionRepo) FindById(ctx context.Context, sessionId string) (*session.
 	return &s, nil
 }
 
-func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId string) (*session.WithAccountDetails, error) {
+func (r *SessionRepo) FindWithAccountDetails(ctx context.Context, sessionId string) (*session.WithAccountDetails, error) {
 	sql := `
-		SELECT
-			s.account_id,
-			s.user_agent,
-			s.ip,
-			s.max_age,
-			s.expires_at,
-			s.created_at,
-			a.is_verified
-		FROM session s
-		INNER JOIN account a
-		ON s.account_id = a.id
-		WHERE s.id = $1
-	`
+SELECT s.account_id, s.user_agent, s.ip, s.max_age, s.expires_at, s.created_at, a.is_verified
+FROM session s
+INNER JOIN account a
+ON s.account_id = a.id
+WHERE s.id = $1`
 
 	r.l.Debug("psql - session - FindWithAccountDetails", zap.String("sql", sql), zap.String("sessionId", sessionId))
 
@@ -121,7 +100,6 @@ func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId stri
 		s session.Session
 		d session.WithAccountDetails
 	)
-
 	err := r.c.Pool.QueryRow(ctx, sql, sessionId).Scan(
 		&s.AccountId,
 		&s.UserAgent,
@@ -129,10 +107,9 @@ func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId stri
 		&s.MaxAge,
 		&s.ExpiresAt,
 		&s.CreatedAt,
-		&d.Verified,
+		&d.AccountVerified,
 	)
 	if err != nil {
-
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("psql - session - FindWithAccountDetails - r.c.Pool.QueryRow.Scan: %w", session.ErrNotFound)
 		}
@@ -140,24 +117,17 @@ func (r *sessionRepo) FindWithAccountDetails(ctx context.Context, sessionId stri
 		return nil, fmt.Errorf("psql - session - FindWithAccountDetails - r.c.Pool.QueryRow.Scan: %w", err)
 	}
 
+	s.Id = sessionId
 	d.Session = s
 
 	return &d, nil
 }
 
-func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session.Session, error) {
+func (r *SessionRepo) FindAll(ctx context.Context, accountId string) ([]*session.Session, error) {
 	sql := `
-		SELECT
-			id,
-			account_id,
-			max_age,
-			user_agent,
-   			ip,
-   			expires_at,
-			created_at
-		FROM session
-		WHERE account_id = $1
-	`
+SELECT id, account_id, max_age, user_agent, ip, expires_at, created_at
+FROM session
+WHERE account_id = $1`
 
 	r.l.Debug("psql - session - FindAll", zap.String("sql", sql), zap.String("accountId", accountId))
 
@@ -195,7 +165,7 @@ func (r *sessionRepo) FindAll(ctx context.Context, accountId string) ([]*session
 	return sessions, nil
 }
 
-func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
+func (r *SessionRepo) Delete(ctx context.Context, sessionId string) error {
 	sql := "DELETE FROM session WHERE id = $1"
 
 	r.l.Debug("psql - session - Delete", zap.String("sql", sql), zap.String("sessionId", sessionId))
@@ -205,15 +175,14 @@ func (r *sessionRepo) Delete(ctx context.Context, sessionId string) error {
 		return fmt.Errorf("psql - session - Delete - r.c.Pool.Exec: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - session - Delete - r.c.Pool.Exec: %w", session.ErrNotDeleted)
+		return fmt.Errorf("psql - session - Delete - r.c.Pool.Exec: %w", session.ErrNotFound)
 	}
 
 	return nil
 }
 
-func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
+func (r *SessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
 	sql := "DELETE FROM session WHERE account_id = $1 AND id != $2"
-
 	r.l.Debug(
 		"psql - session - DeleteWithExcept",
 		zap.String("sql", sql),
@@ -226,13 +195,13 @@ func (r *sessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId
 		return fmt.Errorf("psql - session - DeleteWithExcept - r.c.Pool.Exec: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - session - DeleteWithExcept - r.c.Pool.Exec: %w", session.ErrNotDeleted)
+		return fmt.Errorf("psql - session - DeleteWithExcept - r.c.Pool.Exec: %w", session.ErrAccountNotFound)
 	}
 
 	return nil
 }
 
-func (r *sessionRepo) DeleteAll(ctx context.Context, accountId string) error {
+func (r *SessionRepo) DeleteAll(ctx context.Context, accountId string) error {
 	sql := "DELETE FROM session WHERE account_id = $1"
 	r.l.Debug("psql - session - DeleteAll", zap.String("sql", sql), zap.String("accountId", accountId))
 
@@ -241,7 +210,7 @@ func (r *sessionRepo) DeleteAll(ctx context.Context, accountId string) error {
 		return fmt.Errorf("psql - session - DeleteAll - r.c.Pool.Exec: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - session - DeleteAll - r.c.Pool.Exec: %w", session.ErrNotDeleted)
+		return fmt.Errorf("psql - session - DeleteAll - r.c.Pool.Exec: %w", session.ErrAccountNotFound)
 	}
 
 	return nil

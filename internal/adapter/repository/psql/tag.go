@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/domain/tag"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/tag"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 type tagRepo struct {

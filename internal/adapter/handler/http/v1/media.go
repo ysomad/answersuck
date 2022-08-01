@@ -3,7 +3,7 @@ package v1
 import (
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/host/internal/config"
 )
 
 type mediaHandler struct {

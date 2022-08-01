@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/internal/domain/account"
+	"github.com/answersuck/host/internal/config"
+	"github.com/answersuck/host/internal/domain/account"
 )
 
 type accountHandler struct {

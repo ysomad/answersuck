@@ -36,12 +36,13 @@ jobs:
       run: "go test \
         -v \
         -race \
-        -covermode atomic \
-        -coverprofile=coverage.txt \
-        ./internal/... \
-        ./pkg/..."
-    - name: Upload coverage report
-      run: bash <(curl -s https://codecov.io/bash)
+        -covermode=atomic \
+        -coverprofile=coverage.out \
+        ./internal/..."
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Integration tests
       run: go test -v -race -count 1 ./test/...

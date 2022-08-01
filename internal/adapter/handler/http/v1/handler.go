@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/host/internal/config"
 )
 
 type Deps struct {

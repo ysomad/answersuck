@@ -22,7 +22,7 @@ build:
 
 .PHONY: test
 test:
-	go test -v -cover -race -count 1 ./internal/... ./pkg/...
+	go test -v -cover -race -count 1 ./internal/...
 
 .PHONY: compose-up-integration-test
 compose-up-integration-test:
@@ -30,7 +30,7 @@ compose-up-integration-test:
 
 .PHONY: integration-test
 integration-test:
-	go test -v -race -count 1 ./test/...
+	LOG_LEVEL=debug go test -v -race -count 1 ./test/...
 
 .PHONY: migrate-new
 migrate-new:

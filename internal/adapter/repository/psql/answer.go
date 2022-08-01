@@ -9,8 +9,8 @@ import (
 	"github.com/jackc/pgerrcode"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/answer"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/answer"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 const (

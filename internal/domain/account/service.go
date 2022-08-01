@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/answersuck/vault/internal/config"
-	"github.com/answersuck/vault/pkg/strings"
+	"github.com/answersuck/host/internal/config"
+	"github.com/answersuck/host/internal/pkg/strings"
 )
 
 type service struct {

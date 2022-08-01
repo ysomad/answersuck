@@ -7,8 +7,8 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/player"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/player"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 type playerRepo struct {

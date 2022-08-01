@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/config"
+	"github.com/answersuck/host/internal/config"
 )
 
 type Repository interface {
@@ -51,8 +51,8 @@ func (s *service) GetById(ctx context.Context, sessionId string) (*Session, erro
 	return sess, nil
 }
 
-func (s *service) GetAll(ctx context.Context, nickname string) ([]*Session, error) {
-	sessions, err := s.repo.FindAll(ctx, nickname)
+func (s *service) GetAll(ctx context.Context, accountId string) ([]*Session, error) {
+	sessions, err := s.repo.FindAll(ctx, accountId)
 	if err != nil {
 		return nil, fmt.Errorf("sessionService - GetAll - s.repo.FindAll: %w", err)
 	}

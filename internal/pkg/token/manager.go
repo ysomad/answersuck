@@ -37,7 +37,6 @@ func (tm manager) Create(subject string, expiration time.Duration) (string, erro
 }
 
 func (tm manager) Parse(token string) (string, error) {
-
 	t, err := jwt.Parse(token, func(t *jwt.Token) (i interface{}, err error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrUnexpectedSignMethod

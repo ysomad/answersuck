@@ -10,26 +10,22 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/config"
-
-	v1 "github.com/answersuck/vault/internal/handler/http/v1"
-
-	"github.com/answersuck/vault/internal/adapter/repository/psql"
-	"github.com/answersuck/vault/internal/adapter/smtp"
-
-	"github.com/answersuck/vault/internal/domain/account"
-	"github.com/answersuck/vault/internal/domain/auth"
-	"github.com/answersuck/vault/internal/domain/email"
-	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/blocklist"
-	"github.com/answersuck/vault/pkg/crypto"
-	"github.com/answersuck/vault/pkg/httpserver"
-	"github.com/answersuck/vault/pkg/logger"
-	"github.com/answersuck/vault/pkg/migrate"
-	"github.com/answersuck/vault/pkg/postgres"
-	"github.com/answersuck/vault/pkg/token"
-	"github.com/answersuck/vault/pkg/validation"
+	v1 "github.com/answersuck/host/internal/adapter/handler/http/v1"
+	"github.com/answersuck/host/internal/adapter/repository/psql"
+	"github.com/answersuck/host/internal/adapter/smtp"
+	"github.com/answersuck/host/internal/config"
+	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/domain/auth"
+	"github.com/answersuck/host/internal/domain/email"
+	"github.com/answersuck/host/internal/domain/session"
+	"github.com/answersuck/host/internal/pkg/blocklist"
+	"github.com/answersuck/host/internal/pkg/crypto"
+	"github.com/answersuck/host/internal/pkg/httpserver"
+	"github.com/answersuck/host/internal/pkg/logger"
+	"github.com/answersuck/host/internal/pkg/migrate"
+	"github.com/answersuck/host/internal/pkg/postgres"
+	"github.com/answersuck/host/internal/pkg/token"
+	"github.com/answersuck/host/internal/pkg/validation"
 )
 
 func init() { migrate.Up("migrations") }

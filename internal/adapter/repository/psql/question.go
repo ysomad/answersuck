@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/domain/question"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/host/internal/domain/question"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 type questionRepo struct {

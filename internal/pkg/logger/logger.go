@@ -11,8 +11,8 @@ import (
 func levelFromString(l string) zapcore.Level {
 	l = strings.ToLower(l)
 	switch l {
-	case "info":
-		return zapcore.InfoLevel
+	case "debug":
+		return zapcore.DebugLevel
 	case "warn":
 		return zapcore.WarnLevel
 	case "error":
@@ -24,7 +24,7 @@ func levelFromString(l string) zapcore.Level {
 	case "fatal":
 		return zapcore.FatalLevel
 	default:
-		return zapcore.DebugLevel
+		return zapcore.InfoLevel
 	}
 }
 

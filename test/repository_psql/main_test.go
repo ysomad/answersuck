@@ -5,18 +5,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/answersuck/vault/internal/adapter/repository/psql"
-
-	"github.com/answersuck/vault/pkg/logger"
-	"github.com/answersuck/vault/pkg/migrate"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/host/internal/adapter/repository/psql"
+	"github.com/answersuck/host/internal/pkg/logger"
+	"github.com/answersuck/host/internal/pkg/migrate"
+	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
 var postgresClient *postgres.Client
 
-func initRepos() {
-	logger := logger.New(os.Stdout, "info")
+func initRepos(logLevel string) {
+	logger := logger.New(os.Stdout, logLevel)
 	accountRepo = psql.NewAccountRepo(logger, postgresClient)
+	sessionRepo = psql.NewSessionRepo(logger, postgresClient)
 }
 
 func TestMain(m *testing.M) {
@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Error initializing Postgres test client: %v", err)
 	}
 
-	initRepos()
+	initRepos(os.Getenv("LOG_LEVEL"))
 
 	os.Exit(m.Run())
 }
