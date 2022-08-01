@@ -378,64 +378,127 @@ func (s *sessionRepoTestSuite) TestDelete() {
 	}
 }
 
-//
-// func Test_sessionRepo_DeleteWithExcept(t *testing.T) {
-// 	type fields struct {
-// 		l *zap.Logger
-// 		c *postgres.Client
-// 	}
-// 	type args struct {
-// 		ctx       context.Context
-// 		accountId string
-// 		sessionId string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		wantErr bool
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			r := &sessionRepo{
-// 				l: tt.fields.l,
-// 				c: tt.fields.c,
-// 			}
-// 			if err := r.DeleteWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId); (err != nil) != tt.wantErr {
-// 				t.Errorf("sessionRepo.DeleteWithExcept() error = %v, wantErr %v", err, tt.wantErr)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_sessionRepo_DeleteAll(t *testing.T) {
-// 	type fields struct {
-// 		l *zap.Logger
-// 		c *postgres.Client
-// 	}
-// 	type args struct {
-// 		ctx       context.Context
-// 		accountId string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		wantErr bool
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			r := &sessionRepo{
-// 				l: tt.fields.l,
-// 				c: tt.fields.c,
-// 			}
-// 			if err := r.DeleteAll(tt.args.ctx, tt.args.accountId); (err != nil) != tt.wantErr {
-// 				t.Errorf("sessionRepo.DeleteAll() error = %v, wantErr %v", err, tt.wantErr)
-// 			}
-// 		})
-// 	}
-// }
+func (s *sessionRepoTestSuite) TestDeleteWithExcept() {
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
+	var sessions []*session.Session
+	for i := 0; i < 10; i++ {
+		sess, err := insertTestSession(&session.Session{AccountId: a.Id})
+		s.NoError(err)
+		sessions = append(sessions, sess)
+	}
+
+	type args struct {
+		ctx       context.Context
+		accountId string
+		sessionId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "account sessions successfully deleted",
+			args: args{
+				ctx:       context.Background(),
+				accountId: a.Id,
+				sessionId: sessions[0].Id, // do not delete first session
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "15850fba-961d-403e-a7c8-758d04188b26", // doesnt exist
+				sessionId: sessions[0].Id,
+			},
+			wantErr: true,
+			err:     session.ErrAccountNotFound,
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			err := sessionRepo.DeleteWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId)
+			if tt.wantErr {
+				assert.ErrorIs(t, err, tt.err)
+				return
+			}
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.NoError(t, err)
+
+			var sessionCount int
+			err = postgresClient.Pool.QueryRow(
+				context.Background(),
+				"SELECT COUNT(id) FROM session WHERE account_id = $1",
+				tt.args.accountId,
+			).Scan(&sessionCount)
+			assert.NoError(t, err)
+			assert.Equal(t, 1, sessionCount)
+		})
+	}
+}
+
+func (s *sessionRepoTestSuite) TestDeleteAll() {
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
+	for i := 0; i < 10; i++ {
+		_, err := insertTestSession(&session.Session{AccountId: a.Id})
+		s.NoError(err)
+	}
+
+	type args struct {
+		ctx       context.Context
+		accountId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "all account sessions deleted",
+			args: args{
+				ctx:       context.Background(),
+				accountId: a.Id,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "15850fba-961d-403e-a7c8-758d04188b26", // doesnt exist
+			},
+			wantErr: true,
+			err:     session.ErrAccountNotFound,
+		},
+	}
+	for _, tt := range tests {
+		s.T().Run(tt.name, func(t *testing.T) {
+			err := sessionRepo.DeleteAll(tt.args.ctx, tt.args.accountId)
+			if tt.wantErr {
+				assert.ErrorIs(t, err, tt.err)
+				return
+			}
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.NoError(t, err)
+
+			var sessionCount int
+			err = postgresClient.Pool.QueryRow(
+				context.Background(),
+				"SELECT COUNT(id) FROM session WHERE account_id = $1",
+				tt.args.accountId,
+			).Scan(&sessionCount)
+			assert.NoError(t, err)
+			assert.Equal(t, 0, sessionCount)
+		})
+	}
+}

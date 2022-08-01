@@ -125,7 +125,8 @@ WHERE s.id = $1`
 }
 
 func (r *SessionRepo) FindAll(ctx context.Context, accountId string) ([]*session.Session, error) {
-	sql := `SELECT id, account_id, max_age, user_agent, ip, expires_at, created_at
+	sql := `
+SELECT id, account_id, max_age, user_agent, ip, expires_at, created_at
 FROM session
 WHERE account_id = $1`
 
@@ -183,7 +184,6 @@ func (r *SessionRepo) Delete(ctx context.Context, sessionId string) error {
 
 func (r *SessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
 	sql := "DELETE FROM session WHERE account_id = $1 AND id != $2"
-
 	r.l.Debug(
 		"psql - session - DeleteWithExcept",
 		zap.String("sql", sql),
@@ -196,7 +196,7 @@ func (r *SessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId
 		return fmt.Errorf("psql - session - DeleteWithExcept - r.c.Pool.Exec: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - session - DeleteWithExcept - r.c.Pool.Exec: %w", session.ErrNotDeleted)
+		return fmt.Errorf("psql - session - DeleteWithExcept - r.c.Pool.Exec: %w", session.ErrAccountNotFound)
 	}
 
 	return nil
@@ -211,7 +211,7 @@ func (r *SessionRepo) DeleteAll(ctx context.Context, accountId string) error {
 		return fmt.Errorf("psql - session - DeleteAll - r.c.Pool.Exec: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - session - DeleteAll - r.c.Pool.Exec: %w", session.ErrNotDeleted)
+		return fmt.Errorf("psql - session - DeleteAll - r.c.Pool.Exec: %w", session.ErrAccountNotFound)
 	}
 
 	return nil
