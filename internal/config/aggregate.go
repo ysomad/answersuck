@@ -12,9 +12,9 @@ type (
 		Log           Log           `yaml:"logger"`
 		PG            PG            `yaml:"postgres"`
 		Cache         Cache         `yaml:"cache"`
-		SecurityToken SecurityToken `yaml:"securityToken"`
+		SecurityToken SecurityToken `yaml:"security_token"`
 		Session       Session       `yaml:"session"`
-		FileStorage   FileStorage   `yaml:"fileStorage"`
+		FileStorage   FileStorage   `yaml:"file_storage"`
 		Email         Email         `yaml:"email"`
 		SMTP          SMTP          `yaml:"smtp"`
 		Password      Password      `yaml:"password"`
@@ -35,13 +35,13 @@ type (
 	}
 
 	Log struct {
-		Level string `yaml:"logLevel" env-required:"true"`
+		Level string `yaml:"log_level" env-required:"true"`
 	}
 
 	PG struct {
-		PoolMax        int    `yaml:"poolMax" env-required:"true"`
+		PoolMax        int    `yaml:"pool_max" env-required:"true"`
 		URL            string `env:"PG_URL" env-required:"true"`
-		SimpleProtocol bool   `yaml:"simpleProtocol"`
+		SimpleProtocol bool   `yaml:"simple_protocol"`
 	}
 
 	Cache struct {
@@ -51,15 +51,15 @@ type (
 
 	Session struct {
 		Expiration     time.Duration `yaml:"expiration" env-required:"true"`
-		CookieName     string        `yaml:"cookieName" env-required:"true"`
-		CookieSecure   bool          `yaml:"cookieSecure"`
-		CookieHTTPOnly bool          `yaml:"cookieHttpOnly"`
-		CookiePath     string        `yaml:"cookiePath"`
+		CookieName     string        `yaml:"cookie_name" env-required:"true"`
+		CookieSecure   bool          `yaml:"cookie_secure"`
+		CookieHTTPOnly bool          `yaml:"cookie_http_only"`
+		CookiePath     string        `yaml:"cookie_path"`
 	}
 
 	SecurityToken struct {
 		Expiration time.Duration `yaml:"expiration" env-required:"true"`
-		Sign       string        `yaml:"signingKey" env:"ACCESS_TOKEN_SIGNING_KEY" env-required:"true"`
+		Sign       string        `yaml:"signing_key" env:"ACCESS_TOKEN_SIGNING_KEY" env-required:"true"`
 	}
 
 	FileStorage struct {
@@ -68,7 +68,7 @@ type (
 		AccessKey string `env:"FILE_STORAGE_ACCESS_KEY" env-required:"true"`
 		SecretKey string `env:"FILE_STORAGE_SECRET_KEY" env-required:"true"`
 		Host      string `yaml:"host" env-required:"true"`
-		CDNHost   string `yaml:"cdnHost" env-required:"true"`
+		CDNHost   string `yaml:"cdn_host" env-required:"true"`
 		CDN       bool   `yaml:"cdn"`
 		SSL       bool   `yaml:"ssl"`
 	}
@@ -80,18 +80,18 @@ type (
 	}
 
 	EmailTemplate struct {
-		AccountVerification  string `yaml:"accountVerification" env-required:"true"`
-		AccountPasswordReset string `yaml:"accountPasswordReset" env-required:"true"`
+		AccountVerification  string `yaml:"account_verification" env-required:"true"`
+		AccountPasswordReset string `yaml:"account_password_reset" env-required:"true"`
 	}
 
 	EmailSubject struct {
-		AccountVerification  string `yaml:"accountVerification" env-required:"true"`
-		AccountPasswordReset string `yaml:"accountPasswordReset" env-required:"true"`
+		AccountVerification  string `yaml:"account_verification" env-required:"true"`
+		AccountPasswordReset string `yaml:"account_password_reset" env-required:"true"`
 	}
 
 	EmailFormat struct {
-		AccountVerification  string `yaml:"accountVerification" env-required:"true"`
-		AccountPasswordReset string `yaml:"accountPasswordReset" env-required:"true"`
+		AccountVerification  string `yaml:"account_verification" env-required:"true"`
+		AccountPasswordReset string `yaml:"account_password_reset" env-required:"true"`
 	}
 
 	SMTP struct {
@@ -102,6 +102,6 @@ type (
 	}
 
 	Password struct {
-		ResetTokenExpiration time.Duration `yaml:"resetTokenExpiration" env-required:"true"`
+		ResetTokenExpiration time.Duration `yaml:"reset_token_expiration" env-required:"true"`
 	}
 )
