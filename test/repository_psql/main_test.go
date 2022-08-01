@@ -6,10 +6,9 @@ import (
 	"testing"
 
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
-
-	"github.com/answersuck/vault/pkg/logger"
-	"github.com/answersuck/vault/pkg/migrate"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/logger"
+	"github.com/answersuck/vault/internal/pkg/migrate"
+	"github.com/answersuck/vault/internal/pkg/postgres"
 )
 
 var postgresClient *postgres.Client

@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/player"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/postgres"
 )
 
 type playerRepo struct {

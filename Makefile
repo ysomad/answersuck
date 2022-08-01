@@ -22,7 +22,7 @@ build:
 
 .PHONY: test
 test:
-	go test -v -cover -race -count 1 ./internal/... ./pkg/...
+	go test -v -cover -race -count 1 ./internal/...
 
 .PHONY: compose-up-integration-test
 compose-up-integration-test:

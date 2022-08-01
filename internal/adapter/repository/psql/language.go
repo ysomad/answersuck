@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/vault/internal/domain/language"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/internal/domain/language"
+	"github.com/answersuck/vault/internal/pkg/postgres"
 )
 
 const languageTable = "language"

@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/question"
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/postgres"
 )
 
 type questionRepo struct {

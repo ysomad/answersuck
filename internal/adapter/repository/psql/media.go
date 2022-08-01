@@ -11,8 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/media"
-
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/postgres"
 )
 
 const (

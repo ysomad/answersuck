@@ -38,8 +38,7 @@ jobs:
         -race \
         -covermode atomic \
         -coverprofile=coverage.txt \
-        ./internal/... \
-        ./pkg/..."
+        ./internal/..."
     - name: Upload coverage report
       run: bash <(curl -s https://codecov.io/bash)
 

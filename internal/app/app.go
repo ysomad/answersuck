@@ -10,26 +10,22 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/vault/internal/config"
-
-	v1 "github.com/answersuck/vault/internal/handler/http/v1"
-
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
 	"github.com/answersuck/vault/internal/adapter/smtp"
-
+	"github.com/answersuck/vault/internal/config"
 	"github.com/answersuck/vault/internal/domain/account"
 	"github.com/answersuck/vault/internal/domain/auth"
 	"github.com/answersuck/vault/internal/domain/email"
 	"github.com/answersuck/vault/internal/domain/session"
-
-	"github.com/answersuck/vault/pkg/blocklist"
-	"github.com/answersuck/vault/pkg/crypto"
-	"github.com/answersuck/vault/pkg/httpserver"
-	"github.com/answersuck/vault/pkg/logger"
-	"github.com/answersuck/vault/pkg/migrate"
-	"github.com/answersuck/vault/pkg/postgres"
-	"github.com/answersuck/vault/pkg/token"
-	"github.com/answersuck/vault/pkg/validation"
+	v1 "github.com/answersuck/vault/internal/handler/http/v1"
+	"github.com/answersuck/vault/internal/pkg/blocklist"
+	"github.com/answersuck/vault/internal/pkg/crypto"
+	"github.com/answersuck/vault/internal/pkg/httpserver"
+	"github.com/answersuck/vault/internal/pkg/logger"
+	"github.com/answersuck/vault/internal/pkg/migrate"
+	"github.com/answersuck/vault/internal/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/token"
+	"github.com/answersuck/vault/internal/pkg/validation"
 )
 
 func init() { migrate.Up("migrations") }

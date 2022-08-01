@@ -10,8 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/vault/internal/domain/topic"
-
-	"github.com/answersuck/vault/pkg/postgres"
+	"github.com/answersuck/vault/internal/pkg/postgres"
 )
 
 const topicTable = "topic"

@@ -11,8 +11,7 @@ import (
 
 	"github.com/answersuck/vault/internal/adapter/repository/psql"
 	"github.com/answersuck/vault/internal/domain/account"
-
-	"github.com/answersuck/vault/pkg/strings"
+	"github.com/answersuck/vault/internal/pkg/strings"
 )
 
 var accountRepo *psql.AccountRepo
