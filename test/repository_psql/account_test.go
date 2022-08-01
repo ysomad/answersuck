@@ -2,6 +2,7 @@ package repository_psql
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -22,14 +23,21 @@ type accountRepoTestSuite struct {
 
 func TestAccountRepoTestSuite(t *testing.T) { suite.Run(t, new(accountRepoTestSuite)) }
 
-func (s *accountRepoTestSuite) insertTestAccount(a account.Account) account.Account {
+func insertTestAccount(a account.Account) (account.Account, error) {
+	u := strings.NewRandom(10)
+	a.Email = fmt.Sprintf("test%s@mail.com", u)
+	a.Nickname = "test" + u
+	a.Password = u
+	now := time.Now()
+	a.CreatedAt = now
+	a.UpdatedAt = now
+
 	err := postgresClient.Pool.QueryRow(
 		context.Background(),
 		"INSERT INTO account(email, nickname, password, is_verified, is_archived, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING id",
 		a.Email, a.Nickname, a.Password, a.Verified, a.Archived, a.CreatedAt, a.UpdatedAt,
 	).Scan(&a.Id)
-	s.NoError(err)
-	return a
+	return a, err
 }
 
 func (s *accountRepoTestSuite) insertTestVerifCode(accountId string) string {
@@ -110,6 +118,7 @@ func (s *accountRepoTestSuite) TestSave() {
 				return
 			}
 			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.NoError(t, err)
 			assert.NotEqual(t, "", got.Id)
 			assert.Equal(t, tt.args.a.Email, got.Email)
 			assert.Equal(t, tt.args.a.Nickname, got.Nickname)
@@ -130,25 +139,11 @@ func (s *accountRepoTestSuite) TestSave() {
 }
 
 func (s *accountRepoTestSuite) TestFindById() {
-	now := time.Now()
-	a := s.insertTestAccount(account.Account{
-		Email:     "findbyid@test.com",
-		Nickname:  "findbyid",
-		Password:  "secret",
-		Verified:  false,
-		Archived:  false,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
-	a2 := s.insertTestAccount(account.Account{
-		Email:     "findbyid1@test.com",
-		Nickname:  "findbyid1",
-		Password:  "secret",
-		Verified:  false,
-		Archived:  true,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
+	a1, err := insertTestAccount(account.Account{Archived: true})
+	s.NoError(err)
 
 	type args struct {
 		ctx       context.Context
@@ -184,7 +179,7 @@ func (s *accountRepoTestSuite) TestFindById() {
 			name: "archived account not found",
 			args: args{
 				ctx:       context.Background(),
-				accountId: a2.Id,
+				accountId: a1.Id,
 			},
 			wantErr: true,
 			err:     account.ErrNotFound,
@@ -213,25 +208,11 @@ func (s *accountRepoTestSuite) TestFindById() {
 }
 
 func (s *accountRepoTestSuite) TestFindByEmail() {
-	now := time.Now()
-	a := s.insertTestAccount(account.Account{
-		Email:     "findbyemail@test.com",
-		Nickname:  "findbyemail",
-		Password:  "secret",
-		Verified:  false,
-		Archived:  false,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
-	a1 := s.insertTestAccount(account.Account{
-		Email:     "findbyemail1@test.com",
-		Nickname:  "findbyemail1",
-		Password:  "secret",
-		Verified:  false,
-		Archived:  true,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
+	a1, err := insertTestAccount(account.Account{Archived: true})
+	s.NoError(err)
 
 	type args struct {
 		ctx   context.Context
@@ -295,25 +276,11 @@ func (s *accountRepoTestSuite) TestFindByEmail() {
 }
 
 func (s *accountRepoTestSuite) TestFindByNickname() {
-	now := time.Now()
-	a := s.insertTestAccount(account.Account{
-		Email:     "findbynickname@test.com",
-		Nickname:  "findbynickname",
-		Password:  "secret",
-		Verified:  false,
-		Archived:  false,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
-	a1 := s.insertTestAccount(account.Account{
-		Email:     "findbynickname1@test.com",
-		Nickname:  "findbynickname1",
-		Password:  "secret",
-		Verified:  false,
-		Archived:  true,
-		CreatedAt: now,
-		UpdatedAt: now,
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
+	a1, err := insertTestAccount(account.Account{Archived: true})
+	s.NoError(err)
 
 	type args struct {
 		ctx      context.Context
@@ -377,11 +344,8 @@ func (s *accountRepoTestSuite) TestFindByNickname() {
 }
 
 func (s *accountRepoTestSuite) TestArchive() {
-	a := s.insertTestAccount(account.Account{
-		Email:    "archivetest@test.com",
-		Nickname: "archivetest",
-		Archived: false,
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
 
 	type args struct {
 		ctx       context.Context
@@ -428,14 +392,11 @@ func (s *accountRepoTestSuite) TestArchive() {
 }
 
 func (s *accountRepoTestSuite) TestSavePasswordToken() {
-	a := s.insertTestAccount(account.Account{
-		Email:    "savetokentest@test.com",
-		Nickname: "savetokentest",
-	})
-	a1 := s.insertTestAccount(account.Account{
-		Email:    "savetokentest1@test.com",
-		Nickname: "savetokentest1",
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
+	a1, err := insertTestAccount(account.Account{})
+	s.NoError(err)
 
 	token, err := strings.NewUnique(account.PasswordTokenLen)
 	s.NoError(err)
@@ -546,13 +507,11 @@ WHERE account_id = (SELECT id FROM account WHERE email = $1 OR nickname = $2)`,
 }
 
 func (s *accountRepoTestSuite) TestFindPasswordToken() {
-	a := s.insertTestAccount(account.Account{
-		Email:     "findpaswordtoken@mail.com",
-		Nickname:  "findpasswordtoken",
-		CreatedAt: time.Now(),
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
 	now := time.Now()
-	t := s.insertTestPasswordToken(a.Id, now)
+	t := s.insertTestPasswordToken(a.Id, time.Now())
 
 	type args struct {
 		ctx   context.Context
@@ -606,11 +565,9 @@ func (s *accountRepoTestSuite) TestFindPasswordToken() {
 }
 
 func (s *accountRepoTestSuite) TestSetPassword() {
-	a := s.insertTestAccount(account.Account{
-		Email:    "setpasswordtest@mail.com",
-		Nickname: "setpasswordtest@mail.com",
-		Password: "forgotten",
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
 	t := s.insertTestPasswordToken(a.Id, time.Now())
 
 	type args struct {
@@ -685,18 +642,13 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 }
 
 func (s *accountRepoTestSuite) TestVerify() {
-	a := s.insertTestAccount(account.Account{
-		Email:    "testverify@mail.com",
-		Nickname: "testverify@mail.com",
-		Verified: false,
-	})
+	a, err := insertTestAccount(account.Account{})
+	s.NoError(err)
+
 	code := s.insertTestVerifCode(a.Id)
 
-	a1 := s.insertTestAccount(account.Account{
-		Email:    "testverify1@mail.com",
-		Nickname: "testverify1@mail.com",
-		Verified: true,
-	})
+	a1, err := insertTestAccount(account.Account{Verified: true})
+	s.NoError(err)
 	code1 := s.insertTestVerifCode(a1.Id)
 
 	type args struct {
@@ -758,11 +710,8 @@ func (s *accountRepoTestSuite) TestVerify() {
 }
 
 func (s *accountRepoTestSuite) TestFindVerification() {
-	a := s.insertTestAccount(account.Account{
-		Email:    "findverification@mail.com",
-		Nickname: "findverification",
-		Verified: true,
-	})
+	a, err := insertTestAccount(account.Account{Verified: true})
+	s.NoError(err)
 	code := s.insertTestVerifCode(a.Id)
 
 	type args struct {

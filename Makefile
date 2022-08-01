@@ -30,7 +30,7 @@ compose-up-integration-test:
 
 .PHONY: integration-test
 integration-test:
-	go test -v -race -count 1 ./test/...
+	LOG_LEVEL=debug go test -v -race -count 1 ./test/...
 
 .PHONY: migrate-new
 migrate-new:
