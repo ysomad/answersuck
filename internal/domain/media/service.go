@@ -3,6 +3,7 @@ package media
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 )
@@ -14,7 +15,7 @@ type (
 	}
 
 	Storage interface {
-		Upload(ctx context.Context, f File) (string, error)
+		Upload(ctx context.Context, f File) (url.URL, error)
 	}
 )
 
@@ -75,7 +76,7 @@ func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, err
 		return Media{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
 	}
 
-	m.URL = url
+	m.URL = url.String()
 
 	m, err = s.repo.Save(ctx, m)
 	if err != nil {
