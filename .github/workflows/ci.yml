@@ -49,11 +49,8 @@ jobs:
     #   env:
     #     PG_URL: ${{ secrets.TEST_PG_URL }}
     - name: Integration tests
-      run: "docker-compose up \
+      run: "PG_URL=${{ secrets.TEST_PG_URL }} docker-compose up \
         --build \
         --abort-on-container-exit \
         --exit-code-from integration"
-      env:
-        PG_URL: ${{ secrets.TEST_PG_URL }}
-
 
