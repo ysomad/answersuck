@@ -19,7 +19,9 @@ func insertTestAccount(a account.Account) (account.Account, error) {
 	u := strings.NewRandom(10)
 	a.Email = fmt.Sprintf("test%s@mail.com", u)
 	a.Nickname = "test" + u
-	a.Password = u
+	if a.Password == "" {
+		a.Password = u
+	}
 	now := time.Now()
 	a.CreatedAt = now
 	a.UpdatedAt = now
@@ -68,7 +70,7 @@ func insertTestPasswordToken(accountId string, createdAt time.Time) (string, err
 	return t, nil
 }
 
-func TestAccountRepoSave(t *testing.T) {
+func TestAccountRepo_Save(t *testing.T) {
 	t.Parallel()
 
 	code, err := strings.NewUnique(account.VerifCodeLen)
@@ -142,7 +144,7 @@ func TestAccountRepoSave(t *testing.T) {
 	}
 }
 
-func TestAccountRepoFindById(t *testing.T) {
+func TestAccountRepo_FindById(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -213,7 +215,7 @@ func TestAccountRepoFindById(t *testing.T) {
 	}
 }
 
-func TestAccountRepoFindByEmail(t *testing.T) {
+func TestAccountRepo_FindByEmail(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -283,7 +285,7 @@ func TestAccountRepoFindByEmail(t *testing.T) {
 	}
 }
 
-func TestAccountRepoFindByNickname(t *testing.T) {
+func TestAccountRepo_FindByNickname(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -353,7 +355,7 @@ func TestAccountRepoFindByNickname(t *testing.T) {
 	}
 }
 
-func TestAccountRepoSetArchived(t *testing.T) {
+func TestAccountRepo_SetArchived(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -430,7 +432,95 @@ func TestAccountRepoSetArchived(t *testing.T) {
 	}
 }
 
-func TestAccountRepoSavePasswordToken(t *testing.T) {
+func TestAccountRepo_FindPasswordById(t *testing.T) {
+	t.Parallel()
+
+	a, err := insertTestAccount(account.Account{Password: "password"})
+	assert.NoError(t, err)
+
+	type args struct {
+		ctx       context.Context
+		accountId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+		err     error
+	}{
+		{
+			name:    "account password found",
+			args:    args{ctx: context.Background(), accountId: a.Id},
+			want:    a.Password,
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "22e48a5a-aa64-42e7-9e23-335f77962555", // doesnt exist
+			},
+			want:    "",
+			wantErr: true,
+			err:     account.ErrNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := accountRepo.FindPasswordById(tt.args.ctx, tt.args.accountId)
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.ErrorIs(t, err, tt.err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestAccountRepo_UpdatePassword(t *testing.T) {
+	t.Parallel()
+
+	a, err := insertTestAccount(account.Account{Password: "test"})
+	assert.NoError(t, err)
+
+	type args struct {
+		ctx       context.Context
+		accountId string
+		password  string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name:    "account password successfully updated",
+			args:    args{ctx: context.Background(), accountId: a.Id, password: a.Password},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "22e48a5a-aa64-42e7-9e23-335f77962555", // doesnt exist
+				password:  "",
+			},
+			wantErr: true,
+			err:     account.ErrNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := accountRepo.UpdatePassword(tt.args.ctx, tt.args.accountId, tt.args.password)
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.ErrorIs(t, err, tt.err)
+		})
+	}
+}
+
+func TestAccountRepo_SavePasswordToken(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -548,7 +638,7 @@ WHERE account_id = (SELECT id FROM account WHERE email = $1 OR nickname = $2)`,
 	}
 }
 
-func TestAccountRepoFindPasswordToken(t *testing.T) {
+func TestAccountRepo_FindPasswordToken(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -609,7 +699,7 @@ func TestAccountRepoFindPasswordToken(t *testing.T) {
 	}
 }
 
-func TestAccountRepoSetPassword(t *testing.T) {
+func TestAccountRepo_SetPassword(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -689,7 +779,7 @@ func TestAccountRepoSetPassword(t *testing.T) {
 	}
 }
 
-func TestAccountRepoVerify(t *testing.T) {
+func TestAccountRepo_Verify(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -762,7 +852,7 @@ func TestAccountRepoVerify(t *testing.T) {
 	}
 }
 
-func TestAccountRepoFindVerification(t *testing.T) {
+func TestAccountRepo_FindVerification(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{Verified: true})

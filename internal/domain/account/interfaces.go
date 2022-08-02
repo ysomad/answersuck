@@ -15,6 +15,9 @@ type repository interface {
 	Verify(ctx context.Context, code string, updatedAt time.Time) error
 	FindVerification(ctx context.Context, nickname string) (Verification, error)
 
+	FindPasswordById(ctx context.Context, accountId string) (password string, err error)
+	UpdatePassword(ctx context.Context, accountId, password string) error
+
 	SavePasswordToken(ctx context.Context, dto SavePasswordTokenDTO) (email string, err error)
 	FindPasswordToken(ctx context.Context, token string) (PasswordToken, error)
 	SetPassword(ctx context.Context, dto SetPasswordDTO) error
@@ -33,6 +36,7 @@ type blockList interface {
 	Find(nickname string) (found bool)
 }
 
-type passwordHasher interface {
+type passwordManager interface {
 	Hash(plain string) (hash string, err error)
+	Verify(plain, hash string) (bool, error)
 }

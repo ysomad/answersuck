@@ -24,6 +24,7 @@ type accountService interface {
 	Delete(ctx context.Context, accountId string) error
 	RequestVerification(ctx context.Context, accountId string) error
 	Verify(ctx context.Context, code string) error
+	UpdatePassword(ctx context.Context, accountId, oldPwd, newPwd string) error
 	ResetPassword(ctx context.Context, login string) error
 	SetPassword(ctx context.Context, token, password string) error
 }

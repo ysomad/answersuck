@@ -54,18 +54,17 @@ func (s *service) send(ctx context.Context, dto sendEmailDTO) error {
 	}
 
 	url := fmt.Sprintf(dto.format, dto.formatArgs...)
-
 	err := e.setMessageFromTemplate(dto.template, withURL{url})
 	if err != nil {
 		return fmt.Errorf("e.SetMessageFromTemplate: %w", err)
 	}
 
 	if err := e.validate(); err != nil {
-		return fmt.Errorf("e.Validate: %w", err)
+		return fmt.Errorf("e.validate: %w", err)
 	}
 
 	if err := s.client.SendEmail(ctx, e); err != nil {
-		return fmt.Errorf("s.email.Send: %w", err)
+		return fmt.Errorf("s.client.SendEmail: %w", err)
 	}
 
 	return nil
