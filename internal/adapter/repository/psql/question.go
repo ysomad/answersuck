@@ -42,7 +42,6 @@ func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, err
 	`
 
 	var questionId int
-
 	err := r.c.Pool.QueryRow(
 		ctx,
 		sql,
