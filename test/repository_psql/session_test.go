@@ -42,7 +42,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 	return s, nil
 }
 
-func TestSessionRepoSave(t *testing.T) {
+func TestSessionRepo_Save(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -131,7 +131,7 @@ func TestSessionRepoSave(t *testing.T) {
 	}
 }
 
-func TestSessionRepoFindById(t *testing.T) {
+func TestSessionRepo_FindById(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -193,7 +193,7 @@ func TestSessionRepoFindById(t *testing.T) {
 	}
 }
 
-func TestSessionRepoFindWithAccountDetails(t *testing.T) {
+func TestSessionRepo_FindWithAccountDetails(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{Verified: true})
@@ -262,7 +262,7 @@ func TestSessionRepoFindWithAccountDetails(t *testing.T) {
 	}
 }
 
-func TestSessionRepoFindAll(t *testing.T) {
+func TestSessionRepo_FindAll(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -330,7 +330,7 @@ func TestSessionRepoFindAll(t *testing.T) {
 	}
 }
 
-func TestSessionRepoDelete(t *testing.T) {
+func TestSessionRepo_Delete(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -381,7 +381,7 @@ func TestSessionRepoDelete(t *testing.T) {
 	}
 }
 
-func TestSessionRepoDeleteWithExcept(t *testing.T) {
+func TestSessionRepo_DeleteWithExcept(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -448,7 +448,7 @@ func TestSessionRepoDeleteWithExcept(t *testing.T) {
 	}
 }
 
-func TestSessionRepoDeleteAll(t *testing.T) {
+func TestSessionRepo_DeleteAll(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
