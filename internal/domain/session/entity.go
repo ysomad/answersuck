@@ -65,6 +65,6 @@ type Device struct {
 }
 
 type WithAccountDetails struct {
-	Session         Session
+	Session
 	AccountVerified bool
 }

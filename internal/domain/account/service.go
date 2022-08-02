@@ -101,7 +101,7 @@ func (s *service) GetByNickname(ctx context.Context, nickname string) (Account, 
 }
 
 func (s *service) Delete(ctx context.Context, accountId string) error {
-	if err := s.repo.Archive(ctx, accountId, time.Now()); err != nil {
+	if err := s.repo.SetArchived(ctx, accountId, true, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Delete - s.repo.Archive: %w", err)
 	}
 

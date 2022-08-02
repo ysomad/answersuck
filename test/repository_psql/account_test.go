@@ -353,15 +353,19 @@ func TestAccountRepoFindByNickname(t *testing.T) {
 	}
 }
 
-func TestAccountRepoArchive(t *testing.T) {
+func TestAccountRepoSetArchived(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
 	assert.NoError(t, err)
 
+	a1, err := insertTestAccount(account.Account{Archived: true})
+	assert.NoError(t, err)
+
 	type args struct {
 		ctx       context.Context
 		accountId string
+		archived  bool
 		updatedAt time.Time
 	}
 	tests := []struct {
@@ -375,15 +379,38 @@ func TestAccountRepoArchive(t *testing.T) {
 			args: args{
 				ctx:       context.Background(),
 				accountId: a.Id,
+				archived:  true,
 				updatedAt: time.Now(),
 			},
 			wantErr: false,
 			err:     nil,
 		},
+		{
+			name: "account restored",
+			args: args{
+				ctx:       context.Background(),
+				accountId: a1.Id,
+				archived:  false,
+				updatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "1bede1cb-9d49-4eb9-b2d1-f053531c565a",
+				archived:  true,
+				updatedAt: time.Now(),
+			},
+			wantErr: true,
+			err:     account.ErrNotFound,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := accountRepo.Archive(tt.args.ctx, tt.args.accountId, tt.args.updatedAt)
+			err := accountRepo.SetArchived(tt.args.ctx, tt.args.accountId, tt.args.archived, tt.args.updatedAt)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -398,7 +425,7 @@ func TestAccountRepoArchive(t *testing.T) {
 				tt.args.accountId,
 			).Scan(&archived)
 			assert.NoError(t, err)
-			assert.Equal(t, true, archived)
+			assert.Equal(t, tt.args.archived, archived)
 		})
 	}
 }

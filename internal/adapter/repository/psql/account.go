@@ -156,21 +156,19 @@ WHERE nickname = $1 AND is_archived = $2`
 	return a, nil
 }
 
-func (r *AccountRepo) Archive(ctx context.Context, accountId string, updatedAt time.Time) error {
+func (r *AccountRepo) SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
 	sql := `
 UPDATE account SET is_archived = $1, updated_at = $2
 WHERE id = $3 AND is_archived = $4`
 
-	r.l.Debug("psql - account - Archive", zap.String("sql", sql), zap.String("accountId", accountId))
+	r.l.Debug("psql - account - SetArchived", zap.String("sql", sql), zap.String("accountId", accountId))
 
-	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, accountId, false)
-
+	ct, err := r.c.Pool.Exec(ctx, sql, archived, updatedAt, accountId, !archived)
 	if err != nil {
-		return fmt.Errorf("psql - account - Archive - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - account - SetArchived - r.c.Pool.Exec: %w", err)
 	}
-
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - account - Archive - r.c.Pool.Exec: %w", account.ErrNotDeleted)
+		return fmt.Errorf("psql - account - SetArchived - r.c.Pool.Exec: %w", account.ErrNotFound)
 	}
 
 	return nil

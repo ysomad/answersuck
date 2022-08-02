@@ -10,12 +10,11 @@ type repository interface {
 	FindById(ctx context.Context, accountId string) (Account, error)
 	FindByEmail(ctx context.Context, email string) (Account, error)
 	FindByNickname(ctx context.Context, nickname string) (Account, error)
-	Archive(ctx context.Context, accountId string, updatedAt time.Time) error
+	SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error
 
 	Verify(ctx context.Context, code string, updatedAt time.Time) error
 	FindVerification(ctx context.Context, nickname string) (Verification, error)
 
-	// SavePasswordToken saves password token for account with login, returns email
 	SavePasswordToken(ctx context.Context, dto SavePasswordTokenDTO) (email string, err error)
 	FindPasswordToken(ctx context.Context, token string) (PasswordToken, error)
 	SetPassword(ctx context.Context, dto SetPasswordDTO) error
@@ -31,9 +30,9 @@ type emailService interface {
 }
 
 type blockList interface {
-	Find(nickname string) bool
+	Find(nickname string) (found bool)
 }
 
 type passwordHasher interface {
-	Hash(plain string) (string, error)
+	Hash(plain string) (hash string, err error)
 }
