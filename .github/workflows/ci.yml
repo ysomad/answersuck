@@ -8,22 +8,6 @@ jobs:
     name: runner / tests
     runs-on: ubuntu-latest
 
-    # services:
-
-      # postgres:
-      #   image: "postgres:14-alpine"
-      #   env:
-      #     POSTGRES_USER: "user"
-      #     POSTGRES_PASSWORD: "pass"
-      #     POSTGRES_DB: "postgres"
-      #   ports:
-      #     - 5432:5432
-      #   options: >-
-      #     --health-cmd pg_isready
-      #     --health-interval 10s
-      #     --health-timeout 5s
-      #     --health-retries 5
-
     steps:
     - uses: actions/checkout@v3
 
@@ -44,12 +28,8 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 
-    # - name: Integration tests
-    #   run: go test -v -race -count 1 ./test/...
-    #   env:
-    #     PG_URL: ${{ secrets.TEST_PG_URL }}
     - name: Run containers
-      run: docker compose up --build -d app postgres && docker compose logs -f
+      run: "docker compose up --build -d app postgres && docker compose logs -f"
       env:
         PG_URL: ${{ secrets.TEST_PG_URL }}
         SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
@@ -61,9 +41,3 @@ jobs:
       run: go test -v -race -count 1 ./test/...
       env:
         PG_URL: ${{ secrets.TEST_PG_URL }}
-
-      # run: "docker-compose up \
-      #   --build \
-      #   --abort-on-container-exit \
-      #   --exit-code-from integration"
-
