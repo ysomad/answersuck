@@ -28,7 +28,7 @@ func TestNewUnique(t *testing.T) {
 			name:    "0 length",
 			args:    args{length: 0},
 			wantErr: true,
-			err:     ErrZeroLength,
+			err:     errZeroLength,
 		},
 	}
 	for _, tt := range tests {

@@ -11,15 +11,13 @@ const (
 	special = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 )
 
-var (
-	ErrZeroLength = errors.New("length should be greater than 0")
-)
+var errZeroLength = errors.New("length should be greater than 0")
 
 // NewUnique generates random string using
 // Cryptographically Secure Pseudorandom number
 func NewUnique(length uint) (string, error) {
 	if length == 0 {
-		return "", ErrZeroLength
+		return "", errZeroLength
 	}
 
 	bytes := make([]byte, length)
