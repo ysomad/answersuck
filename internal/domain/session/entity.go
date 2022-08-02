@@ -52,8 +52,8 @@ func newSession(accountId, userAgent, ip string, exp time.Duration) (*Session, e
 
 func (s *Session) Expired() bool { return time.Now().Unix() > s.ExpiresAt }
 
-func (s *Session) SameDevice(ip, ua string) bool {
-	if s.IP != ip || s.UserAgent != ua {
+func (s *Session) SameDevice(d Device) bool {
+	if s.IP != d.IP || s.UserAgent != d.UserAgent {
 		return false
 	}
 	return true

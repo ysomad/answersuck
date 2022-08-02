@@ -69,32 +69,32 @@ func mwVerificator(l *zap.Logger, cfg *config.Session, s sessionService) func(ht
 
 			ctx := r.Context()
 
-			res, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
+			sess, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
 			if err != nil {
 				l.Error("http - v1 - middleware - mwVerificator - s.GetById", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			if !res.AccountVerified {
+			if !sess.AccountVerified {
 				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
 				writeErr(w, http.StatusForbidden, account.ErrNotEnoughRights)
 				return
 			}
 
-			if res.Session.Expired() {
+			if sess.Expired() {
 				l.Info("http - v1 - middleware - mwVerificator", zap.Error(session.ErrExpired))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			if !res.Session.SameDevice(r.RemoteAddr, r.UserAgent()) {
+			if !sess.SameDevice(session.Device{IP: r.RemoteAddr, UserAgent: r.UserAgent()}) {
 				l.Error("http - v1 - middleware - mwVerificator", zap.Error(session.ErrDeviceMismatch))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			ctx = context.WithValue(ctx, sessionIdCtxKey{}, res.Session.Id)
-			ctx = context.WithValue(ctx, accountIdCtxKey{}, res.Session.AccountId)
+			ctx = context.WithValue(ctx, sessionIdCtxKey{}, sess.Id)
+			ctx = context.WithValue(ctx, accountIdCtxKey{}, sess.AccountId)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
