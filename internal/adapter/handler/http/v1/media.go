@@ -10,7 +10,7 @@ type mediaHandler struct {
 	cfg     *config.Aggregate
 	log     *zap.Logger
 	v       ValidationModule
-	service MediaService
+	service mediaService
 }
 
 // func newMediaHandler(d *Deps) *mediaHandler {

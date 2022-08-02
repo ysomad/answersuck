@@ -7,7 +7,7 @@ import (
 	"github.com/answersuck/host/internal/config"
 )
 
-type Repository interface {
+type repository interface {
 	Save(ctx context.Context, s *Session) error
 	FindById(ctx context.Context, sessionId string) (*Session, error)
 	FindWithAccountDetails(ctx context.Context, sessionId string) (*WithAccountDetails, error)
@@ -19,10 +19,10 @@ type Repository interface {
 
 type service struct {
 	cfg  *config.Session
-	repo Repository
+	repo repository
 }
 
-func NewService(cfg *config.Session, s Repository) *service {
+func NewService(cfg *config.Session, s repository) *service {
 	return &service{
 		cfg:  cfg,
 		repo: s,

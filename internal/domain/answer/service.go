@@ -6,21 +6,21 @@ import (
 )
 
 type (
-	Repository interface {
+	repository interface {
 		Save(ctx context.Context, a Answer) (Answer, error)
 	}
 
-	MediaService interface {
+	mediaService interface {
 		GetMimeTypeById(ctx context.Context, mediaId string) (string, error)
 	}
 )
 
 type service struct {
-	repo  Repository
-	media MediaService
+	repo  repository
+	media mediaService
 }
 
-func NewService(r Repository, m MediaService) *service {
+func NewService(r repository, m mediaService) *service {
 	return &service{
 		repo:  r,
 		media: m,

@@ -11,20 +11,20 @@ import (
 
 type service struct {
 	cfg       *config.Aggregate
-	repo      AccountRepo
-	password  Password
-	session   SessionService
-	email     EmailService
-	blockList BlockList
+	repo      repository
+	password  passwordHasher
+	session   sessionService
+	email     emailService
+	blockList blockList
 }
 
 type Deps struct {
 	Config         *config.Aggregate
-	AccountRepo    AccountRepo
-	BlockList      BlockList
-	Password       Password
-	SessionService SessionService
-	EmailService   EmailService
+	AccountRepo    repository
+	BlockList      blockList
+	Password       passwordHasher
+	SessionService sessionService
+	EmailService   emailService
 }
 
 func NewService(d *Deps) *service {
@@ -101,7 +101,7 @@ func (s *service) GetByNickname(ctx context.Context, nickname string) (Account, 
 }
 
 func (s *service) Delete(ctx context.Context, accountId string) error {
-	if err := s.repo.Archive(ctx, accountId, time.Now()); err != nil {
+	if err := s.repo.SetArchived(ctx, accountId, true, time.Now()); err != nil {
 		return fmt.Errorf("accountService - Delete - s.repo.Archive: %w", err)
 	}
 

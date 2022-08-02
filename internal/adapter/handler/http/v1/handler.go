@@ -14,16 +14,16 @@ type Deps struct {
 	Config           *config.Aggregate
 	Logger           *zap.Logger
 	ValidationModule ValidationModule
-	AccountService   AccountService
-	SessionService   SessionService
-	LoginService     LoginService
-	TokenService     TokenService
-	MediaService     MediaService
-	LanguageService  LanguageService
-	TagService       TagService
-	TopicService     TopicService
-	AnswerService    AnswerService
-	QuestionService  QuestionService
+	AccountService   accountService
+	SessionService   sessionService
+	LoginService     loginService
+	TokenService     tokenService
+	MediaService     mediaService
+	LanguageService  languageService
+	TagService       tagService
+	TopicService     topicService
+	AnswerService    answerService
+	QuestionService  questionService
 }
 
 func NewHandler(d *Deps) http.Handler {

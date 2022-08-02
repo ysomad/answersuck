@@ -16,12 +16,12 @@ import (
 )
 
 type AccountRepo struct {
-	l *zap.Logger
-	c *postgres.Client
+	*zap.Logger
+	*postgres.Client
 }
 
 func NewAccountRepo(l *zap.Logger, c *postgres.Client) *AccountRepo {
-	return &AccountRepo{l: l, c: c}
+	return &AccountRepo{l, c}
 }
 
 func (r *AccountRepo) Save(ctx context.Context, a account.Account, code string) (account.Account, error) {
@@ -39,9 +39,9 @@ WITH a AS (
 )
 SELECT account_id FROM a`
 
-	r.l.Debug("psql - account - Save", zap.String("sql", sql), zap.Any("account", a))
+	r.Debug("psql - account - Save", zap.String("sql", sql), zap.Any("account", a))
 
-	err := r.c.Pool.QueryRow(ctx, sql,
+	err := r.Pool.QueryRow(ctx, sql,
 		a.Email,
 		a.Nickname,
 		a.Password,
@@ -54,10 +54,10 @@ SELECT account_id FROM a`
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return account.Account{}, fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", account.ErrAlreadyExist)
+				return account.Account{}, fmt.Errorf("psql - account - Save - r.Pool.QueryRow.Scan: %w", account.ErrAlreadyExist)
 			}
 		}
-		return account.Account{}, fmt.Errorf("psql - account - Save - r.c.Pool.QueryRow.Scan: %w", err)
+		return account.Account{}, fmt.Errorf("psql - account - Save - r.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return a, nil
@@ -69,11 +69,11 @@ SELECT email, nickname, password, is_verified, created_at, updated_at
 FROM account
 WHERE id = $1 AND is_archived = $2`
 
-	r.l.Debug("psql - account - FindById", zap.String("sql", sql), zap.String("accountId", accountId))
+	r.Debug("psql - account - FindById", zap.String("sql", sql), zap.String("accountId", accountId))
 
 	var a account.Account
 
-	if err := r.c.Pool.QueryRow(ctx, sql, accountId, false).Scan(
+	if err := r.Pool.QueryRow(ctx, sql, accountId, false).Scan(
 		&a.Email,
 		&a.Nickname,
 		&a.Password,
@@ -82,10 +82,10 @@ WHERE id = $1 AND is_archived = $2`
 		&a.UpdatedAt,
 	); err != nil {
 		if err == pgx.ErrNoRows {
-			return account.Account{}, fmt.Errorf("psql - account - FindById - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+			return account.Account{}, fmt.Errorf("psql - account - FindById - r.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 		}
 
-		return account.Account{}, fmt.Errorf("psql - account - FindById - r.c.Pool.QueryRow.Scan: %w", err)
+		return account.Account{}, fmt.Errorf("psql - account - FindById - r.Pool.QueryRow.Scan: %w", err)
 	}
 
 	a.Id = accountId
@@ -99,11 +99,11 @@ SELECT id, nickname, password, created_at, updated_at, is_verified
 FROM account
 WHERE email = $1 AND is_archived = $2`
 
-	r.l.Debug("psql - account - FindByEmail", zap.String("sql", sql), zap.String("email", email))
+	r.Debug("psql - account - FindByEmail", zap.String("sql", sql), zap.String("email", email))
 
 	var a account.Account
 
-	if err := r.c.Pool.QueryRow(ctx, sql, email, false).Scan(
+	if err := r.Pool.QueryRow(ctx, sql, email, false).Scan(
 		&a.Id,
 		&a.Nickname,
 		&a.Password,
@@ -113,10 +113,10 @@ WHERE email = $1 AND is_archived = $2`
 	); err != nil {
 
 		if err == pgx.ErrNoRows {
-			return account.Account{}, fmt.Errorf("psql - account - FindByEmail - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+			return account.Account{}, fmt.Errorf("psql - account - FindByEmail - r.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 		}
 
-		return account.Account{}, fmt.Errorf("psql - account - FindByEmail - r.client.Pool.QueryRow.Scan: %w", err)
+		return account.Account{}, fmt.Errorf("psql - account - FindByEmail - r.Pool.QueryRow.Scan: %w", err)
 	}
 
 	a.Email = email
@@ -130,11 +130,11 @@ SELECT id, email, password, created_at, updated_at, is_verified
 FROM account
 WHERE nickname = $1 AND is_archived = $2`
 
-	r.l.Debug("psql - account - FindByNickname", zap.String("sql", sql), zap.String("nickname", nickname))
+	r.Debug("psql - account - FindByNickname", zap.String("sql", sql), zap.String("nickname", nickname))
 
 	var a account.Account
 
-	err := r.c.Pool.QueryRow(ctx, sql, nickname, false).Scan(
+	err := r.Pool.QueryRow(ctx, sql, nickname, false).Scan(
 		&a.Id,
 		&a.Email,
 		&a.Password,
@@ -145,10 +145,10 @@ WHERE nickname = $1 AND is_archived = $2`
 	if err != nil {
 
 		if err == pgx.ErrNoRows {
-			return account.Account{}, fmt.Errorf("psql - account - FindByNickname - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+			return account.Account{}, fmt.Errorf("psql - account - FindByNickname - r.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 		}
 
-		return account.Account{}, fmt.Errorf("psql - account - FindByNickname - r.c.Pool.QueryRow.Scan: %w", err)
+		return account.Account{}, fmt.Errorf("psql - account - FindByNickname - r.Pool.QueryRow.Scan: %w", err)
 	}
 
 	a.Nickname = nickname
@@ -156,21 +156,19 @@ WHERE nickname = $1 AND is_archived = $2`
 	return a, nil
 }
 
-func (r *AccountRepo) Archive(ctx context.Context, accountId string, updatedAt time.Time) error {
+func (r *AccountRepo) SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
 	sql := `
 UPDATE account SET is_archived = $1, updated_at = $2
 WHERE id = $3 AND is_archived = $4`
 
-	r.l.Debug("psql - account - Archive", zap.String("sql", sql), zap.String("accountId", accountId))
+	r.Debug("psql - account - SetArchived", zap.String("sql", sql), zap.String("accountId", accountId))
 
-	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, accountId, false)
-
+	ct, err := r.Pool.Exec(ctx, sql, archived, updatedAt, accountId, !archived)
 	if err != nil {
-		return fmt.Errorf("psql - account - Archive - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - account - SetArchived - r.Pool.Exec: %w", err)
 	}
-
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - account - Archive - r.c.Pool.Exec: %w", account.ErrNotDeleted)
+		return fmt.Errorf("psql - account - SetArchived - r.Pool.Exec: %w", account.ErrNotFound)
 	}
 
 	return nil
@@ -187,7 +185,7 @@ WITH e AS (
 )
 SELECT account_email FROM e`
 
-	r.l.Debug(
+	r.Debug(
 		"psql - account - SavePasswordToken",
 		zap.String("sql", sql),
 		zap.String("login", dto.Login),
@@ -196,19 +194,20 @@ SELECT account_email FROM e`
 	)
 
 	var email string
-
-	if err := r.c.Pool.QueryRow(ctx, sql, dto.Login, dto.Login, dto.Token).Scan(&email); err != nil {
+	if err := r.Pool.QueryRow(ctx, sql, dto.Login, dto.Login, dto.Token).Scan(&email); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return "", fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.QueryRow.Scan: %w", account.ErrPasswordTokenAlreadyExist)
+				return "",
+					fmt.Errorf("psql - account - SavePasswordToken - r.Pool.QueryRow.Scan: %w", account.ErrPasswordTokenAlreadyExist)
 			case pgerrcode.NotNullViolation:
-				return "", fmt.Errorf("psql - account - SavePasswordToken - r.c.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+				return "",
+					fmt.Errorf("psql - account - SavePasswordToken - r.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 			}
 		}
 
-		return "", fmt.Errorf("psql - account - SavePasswordToken - r.c.QueryRow.Scan: %w", err)
+		return "", fmt.Errorf("psql - account - SavePasswordToken - r.QueryRow.Scan: %w", err)
 	}
 
 	return email, nil
@@ -222,15 +221,14 @@ INNER JOIN account a
 ON a.id = t.account_id
 WHERE t.token = $1`
 
-	r.l.Debug("psql - account - FindPasswordToken", zap.String("sql", sql), zap.String("token", token))
+	r.Debug("psql - account - FindPasswordToken", zap.String("sql", sql), zap.String("token", token))
 
 	var t account.PasswordToken
 
-	if err := r.c.Pool.QueryRow(ctx, sql, token).Scan(&t.Token, &t.CreatedAt, &t.AccountId); err != nil {
-
+	if err := r.Pool.QueryRow(ctx, sql, token).Scan(&t.Token, &t.CreatedAt, &t.AccountId); err != nil {
 		if err == pgx.ErrNoRows {
 			return account.PasswordToken{},
-				fmt.Errorf("psql - account - FindPasswordToken - r.c.Pool.QueryRow.Scan: %w", account.ErrPasswordTokenNotFound)
+				fmt.Errorf("psql - account - FindPasswordToken - r.Pool.QueryRow.Scan: %w", account.ErrPasswordTokenNotFound)
 		}
 
 		return account.PasswordToken{},
@@ -250,9 +248,9 @@ WITH a AS (
 DELETE FROM password_token
 WHERE account_id = $4 AND token = $5`
 
-	r.l.Debug("psql - account - SetPassword", zap.String("sql", sql), zap.Any("args", dto))
+	r.Debug("psql - account - SetPassword", zap.String("sql", sql), zap.Any("args", dto))
 
-	ct, err := r.c.Pool.Exec(
+	ct, err := r.Pool.Exec(
 		ctx,
 		sql,
 		dto.Password,
@@ -262,11 +260,10 @@ WHERE account_id = $4 AND token = $5`
 		dto.Token,
 	)
 	if err != nil {
-		return fmt.Errorf("psql - account - SetPassword - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - account - SetPassword - r.Pool.Exec: %w", err)
 	}
-
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - account - SetPassword - r.c.Pool.Exec: %w", account.ErrPasswordNotSet)
+		return fmt.Errorf("psql - account - SetPassword - r.Pool.Exec: %w", account.ErrPasswordNotSet)
 	}
 
 	return nil
@@ -285,15 +282,14 @@ FROM (
 ) AS sq
 WHERE a.is_verified = $4 AND a.id = sq.account_id`
 
-	r.l.Debug("psql - account - Verify", zap.String("sql", sql), zap.String("code", code))
+	r.Debug("psql - account - Verify", zap.String("sql", sql), zap.String("code", code))
 
-	ct, err := r.c.Pool.Exec(ctx, sql, true, updatedAt, code, false)
+	ct, err := r.Pool.Exec(ctx, sql, true, updatedAt, code, false)
 	if err != nil {
-		return fmt.Errorf("psql - account - Verify - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - account - Verify - r.Pool.Exec: %w", err)
 	}
-
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - account - Verify - r.c.Pool.Exec: %w", account.ErrAlreadyVerified)
+		return fmt.Errorf("psql - account - Verify - r.Pool.Exec: %w", account.ErrAlreadyVerified)
 	}
 
 	return nil
@@ -307,21 +303,20 @@ LEFT JOIN verification v
 ON v.account_id = a.id
 WHERE a.id = $1`
 
-	r.l.Debug("psql - account - FindVerification", zap.String("sql", sql), zap.String("accountId", accountId))
+	r.Debug("psql - account - FindVerification", zap.String("sql", sql), zap.String("accountId", accountId))
 
 	var v account.Verification
-
-	if err := r.c.Pool.QueryRow(ctx, sql, accountId).Scan(
+	if err := r.Pool.QueryRow(ctx, sql, accountId).Scan(
 		&v.Email,
 		&v.Verified,
 		&v.Code,
 	); err != nil {
 		if err == pgx.ErrNoRows {
 			return account.Verification{},
-				fmt.Errorf("psql - account - FindVerification - r.c.Pool.QueryRow.Scan: %w", account.ErrVerificationNotFound)
+				fmt.Errorf("psql - account - FindVerification - r.Pool.QueryRow.Scan: %w", account.ErrVerificationNotFound)
 		}
 
-		return account.Verification{}, fmt.Errorf("psql - account - FindVerification - r.c.Pool.QueryRow.Scan: %w", err)
+		return account.Verification{}, fmt.Errorf("psql - account - FindVerification - r.Pool.QueryRow.Scan: %w", err)
 	}
 
 	return v, nil

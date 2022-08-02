@@ -7,18 +7,17 @@ import (
 	"github.com/answersuck/host/internal/config"
 )
 
-type SMTPClient interface {
+type smtpClient interface {
 	SendEmail(ctx context.Context, e Email) error
 }
 
 type service struct {
 	cfg    *config.Email
 	webURL string
-
-	client SMTPClient
+	client smtpClient
 }
 
-func NewService(cfg *config.Aggregate, s SMTPClient) *service {
+func NewService(cfg *config.Aggregate, s smtpClient) *service {
 	return &service{
 		cfg:    &cfg.Email,
 		webURL: cfg.Web.URL,

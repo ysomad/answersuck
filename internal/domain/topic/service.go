@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-type Repository interface {
+type repository interface {
 	Save(ctx context.Context, t Topic) (Topic, error)
 	FindAll(ctx context.Context) ([]*Topic, error)
 }
 
 type service struct {
-	repo Repository
+	repo repository
 }
 
-func NewService(r Repository) *service {
+func NewService(r repository) *service {
 	return &service{
 		repo: r,
 	}

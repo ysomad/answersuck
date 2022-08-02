@@ -16,8 +16,8 @@ type authHandler struct {
 	cfg     *config.Session
 	log     *zap.Logger
 	v       ValidationModule
-	service LoginService
-	token   TokenService
+	service loginService
+	token   tokenService
 }
 
 func newAuthHandler(d *Deps) http.Handler {
@@ -45,7 +45,7 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 
 	_, err := r.Cookie(h.cfg.CookieName)
 	if err == nil {
-		writeError(w, http.StatusBadRequest, auth.ErrAlreadyLoggedIn)
+		writeErr(w, http.StatusBadRequest, auth.ErrAlreadyLoggedIn)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 
 	if err = h.v.ValidateRequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - auth - login - h.v.ValidateRequestBody", zap.Error(err))
-		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 
 		if errors.Is(err, auth.ErrIncorrectAccountPassword) ||
 			errors.Is(err, account.ErrNotFound) {
-			writeError(w, http.StatusUnauthorized, auth.ErrIncorrectCredentials)
+			writeErr(w, http.StatusUnauthorized, auth.ErrIncorrectCredentials)
 			return
 		}
 
@@ -112,7 +112,7 @@ func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - auth - createToken - h.v.ValidateRequestBody", zap.Error(err))
-		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
 

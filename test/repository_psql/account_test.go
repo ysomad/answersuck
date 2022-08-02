@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 
 	"github.com/answersuck/host/internal/adapter/repository/psql"
 	"github.com/answersuck/host/internal/domain/account"
@@ -15,12 +14,6 @@ import (
 )
 
 var accountRepo *psql.AccountRepo
-
-type accountRepoTestSuite struct {
-	suite.Suite
-}
-
-func TestAccountRepoTestSuite(t *testing.T) { suite.Run(t, new(accountRepoTestSuite)) }
 
 func insertTestAccount(a account.Account) (account.Account, error) {
 	u := strings.NewRandom(10)
@@ -39,35 +32,47 @@ func insertTestAccount(a account.Account) (account.Account, error) {
 	return a, err
 }
 
-func (s *accountRepoTestSuite) insertTestVerifCode(accountId string) string {
+func insertTestVerifCode(accountId string) (string, error) {
 	code, err := strings.NewUnique(account.VerifCodeLen)
-	s.NoError(err)
+	if err != nil {
+		return "", err
+	}
 
 	_, err = postgresClient.Pool.Exec(
 		context.Background(),
 		"INSERT INTO verification(code, account_id) VALUES ($1, $2)",
 		code, accountId,
 	)
-	s.NoError(err)
-	return code
+	if err != nil {
+		return "", err
+	}
+
+	return code, nil
 }
 
-func (s *accountRepoTestSuite) insertTestPasswordToken(accountId string, createdAt time.Time) string {
+func insertTestPasswordToken(accountId string, createdAt time.Time) (string, error) {
 	t, err := strings.NewUnique(account.PasswordTokenLen)
-	s.NoError(err)
+	if err != nil {
+		return "", err
+	}
 
 	_, err = postgresClient.Pool.Exec(
 		context.Background(),
 		"INSERT INTO password_token(token, account_id, created_at) VALUES ($1, $2, $3)",
 		t, accountId, createdAt,
 	)
-	s.NoError(err)
-	return t
+	if err != nil {
+		return "", err
+	}
+
+	return t, nil
 }
 
-func (s *accountRepoTestSuite) TestSave() {
+func TestAccountRepoSave(t *testing.T) {
+	t.Parallel()
+
 	code, err := strings.NewUnique(account.VerifCodeLen)
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	now := time.Now()
 
@@ -110,7 +115,7 @@ func (s *accountRepoTestSuite) TestSave() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.Save(tt.args.ctx, tt.args.a, tt.args.code)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -137,12 +142,14 @@ func (s *accountRepoTestSuite) TestSave() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestFindById() {
+func TestAccountRepoFindById(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	a1, err := insertTestAccount(account.Account{Archived: true})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -185,7 +192,7 @@ func (s *accountRepoTestSuite) TestFindById() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.FindById(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -206,12 +213,14 @@ func (s *accountRepoTestSuite) TestFindById() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestFindByEmail() {
+func TestAccountRepoFindByEmail(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	a1, err := insertTestAccount(account.Account{Archived: true})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx   context.Context
@@ -254,7 +263,7 @@ func (s *accountRepoTestSuite) TestFindByEmail() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.FindByEmail(tt.args.ctx, tt.args.email)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -274,12 +283,14 @@ func (s *accountRepoTestSuite) TestFindByEmail() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestFindByNickname() {
+func TestAccountRepoFindByNickname(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	a1, err := insertTestAccount(account.Account{Archived: true})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx      context.Context
@@ -322,7 +333,7 @@ func (s *accountRepoTestSuite) TestFindByNickname() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.FindByNickname(tt.args.ctx, tt.args.nickname)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -342,13 +353,19 @@ func (s *accountRepoTestSuite) TestFindByNickname() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestArchive() {
+func TestAccountRepoSetArchived(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
+
+	a1, err := insertTestAccount(account.Account{Archived: true})
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
 		accountId string
+		archived  bool
 		updatedAt time.Time
 	}
 	tests := []struct {
@@ -362,15 +379,38 @@ func (s *accountRepoTestSuite) TestArchive() {
 			args: args{
 				ctx:       context.Background(),
 				accountId: a.Id,
+				archived:  true,
 				updatedAt: time.Now(),
 			},
 			wantErr: false,
 			err:     nil,
 		},
+		{
+			name: "account restored",
+			args: args{
+				ctx:       context.Background(),
+				accountId: a1.Id,
+				archived:  false,
+				updatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "account not found",
+			args: args{
+				ctx:       context.Background(),
+				accountId: "1bede1cb-9d49-4eb9-b2d1-f053531c565a",
+				archived:  true,
+				updatedAt: time.Now(),
+			},
+			wantErr: true,
+			err:     account.ErrNotFound,
+		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
-			err := accountRepo.Archive(tt.args.ctx, tt.args.accountId, tt.args.updatedAt)
+		t.Run(tt.name, func(t *testing.T) {
+			err := accountRepo.SetArchived(tt.args.ctx, tt.args.accountId, tt.args.archived, tt.args.updatedAt)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -385,22 +425,25 @@ func (s *accountRepoTestSuite) TestArchive() {
 				tt.args.accountId,
 			).Scan(&archived)
 			assert.NoError(t, err)
-			assert.Equal(t, true, archived)
+			assert.Equal(t, tt.args.archived, archived)
 		})
 	}
 }
 
-func (s *accountRepoTestSuite) TestSavePasswordToken() {
+func TestAccountRepoSavePasswordToken(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	a1, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	token, err := strings.NewUnique(account.PasswordTokenLen)
-	s.NoError(err)
+	assert.NoError(t, err)
+
 	token1, err := strings.NewUnique(account.PasswordTokenLen)
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -474,7 +517,7 @@ func (s *accountRepoTestSuite) TestSavePasswordToken() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.SavePasswordToken(tt.args.ctx, account.SavePasswordTokenDTO{
 				Login: tt.args.login,
 				Token: tt.args.token,
@@ -505,12 +548,15 @@ WHERE account_id = (SELECT id FROM account WHERE email = $1 OR nickname = $2)`,
 	}
 }
 
-func (s *accountRepoTestSuite) TestFindPasswordToken() {
+func TestAccountRepoFindPasswordToken(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	now := time.Now()
-	t := s.insertTestPasswordToken(a.Id, time.Now())
+	token, err := insertTestPasswordToken(a.Id, time.Now())
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx   context.Context
@@ -527,11 +573,11 @@ func (s *accountRepoTestSuite) TestFindPasswordToken() {
 			name: "password token found",
 			args: args{
 				ctx:   context.Background(),
-				token: t,
+				token: token,
 			},
 			want: account.PasswordToken{
 				AccountId: a.Id,
-				Token:     t,
+				Token:     token,
 				CreatedAt: now,
 			},
 			wantErr: false,
@@ -548,7 +594,7 @@ func (s *accountRepoTestSuite) TestFindPasswordToken() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.FindPasswordToken(tt.args.ctx, tt.args.token)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -563,11 +609,14 @@ func (s *accountRepoTestSuite) TestFindPasswordToken() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestSetPassword() {
-	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+func TestAccountRepoSetPassword(t *testing.T) {
+	t.Parallel()
 
-	t := s.insertTestPasswordToken(a.Id, time.Now())
+	a, err := insertTestAccount(account.Account{})
+	assert.NoError(t, err)
+
+	token, err := insertTestPasswordToken(a.Id, time.Now())
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx context.Context
@@ -586,7 +635,7 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 				dto: account.SetPasswordDTO{
 					AccountId: a.Id,
 					Password:  "newsecret",
-					Token:     t,
+					Token:     token,
 					UpdatedAt: time.Now(),
 				},
 			},
@@ -608,7 +657,7 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			err := accountRepo.SetPassword(tt.args.ctx, tt.args.dto)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -640,15 +689,20 @@ func (s *accountRepoTestSuite) TestSetPassword() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestVerify() {
-	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+func TestAccountRepoVerify(t *testing.T) {
+	t.Parallel()
 
-	code := s.insertTestVerifCode(a.Id)
+	a, err := insertTestAccount(account.Account{})
+	assert.NoError(t, err)
+
+	code, err := insertTestVerifCode(a.Id)
+	assert.NoError(t, err)
 
 	a1, err := insertTestAccount(account.Account{Verified: true})
-	s.NoError(err)
-	code1 := s.insertTestVerifCode(a1.Id)
+	assert.NoError(t, err)
+
+	code1, err := insertTestVerifCode(a1.Id)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -683,7 +737,7 @@ func (s *accountRepoTestSuite) TestVerify() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			err := accountRepo.Verify(tt.args.ctx, tt.args.code, tt.args.updatedAt)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -708,10 +762,14 @@ func (s *accountRepoTestSuite) TestVerify() {
 	}
 }
 
-func (s *accountRepoTestSuite) TestFindVerification() {
+func TestAccountRepoFindVerification(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{Verified: true})
-	s.NoError(err)
-	code := s.insertTestVerifCode(a.Id)
+	assert.NoError(t, err)
+
+	code, err := insertTestVerifCode(a.Id)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -754,7 +812,7 @@ func (s *accountRepoTestSuite) TestFindVerification() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := accountRepo.FindVerification(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)

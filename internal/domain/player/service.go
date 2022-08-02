@@ -6,16 +6,16 @@ import (
 )
 
 type (
-	Repository interface {
+	repository interface {
 		FindByNickname(ctx context.Context, nickname string) (Player, error)
 	}
 )
 
 type service struct {
-	repo Repository
+	repo repository
 }
 
-func NewService(r Repository) *service {
+func NewService(r repository) *service {
 	return &service{
 		repo: r,
 	}

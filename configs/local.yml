@@ -1,19 +1,19 @@
 app:
-  name: "answersuck-backend"
-  version: "0.0.2"
+  name: answersuck-backend
+  version: 0.0.2
 
 web:
-  url: "http://localhost:8000"
+  url: http://localhost:8000
 
 http:
-  port: "8080"
+  port: 8080
 
 logger:
-  logLevel: "debug"
+  log_level: debug
 
 postgres:
-  poolMax: 2
-  simpleProtocol: true # see pgx.ConnConfig.PreferSimpleProtocol
+  pool_max: 2
+  simple_protocol: true # see pgx.ConnConfig.PreferSimpleProtocol
 
 cache:
   expiration: 1h
@@ -21,41 +21,37 @@ cache:
 
 session:
   expiration: 4h
-  cookieName: "id"
-  cookieSecure: false
-  cookieHttpOnly: true
-  cookiePath: "/v1"
+  cookie_name: id
+  cookie_secure: false
+  cookie_http_only: true
+  cookie_path: /v1
 
-securityToken:
+security_token:
   expiration: 1m
-  signingKey: "secret"
+  signing_key: secret
 
 password:
-  resetTokenExpiration: 10m
+  reset_token_expiration: 10m
 
 smtp:
   host: "smtp.yandex.ru"
   port: 465
 
-fileStorage:
+file_storage:
   endpoint: "s3.storage.selcloud.ru"
   bucket: "answersuck"
-  ssl: true
-
-  domain: "697408.selcdn.ru"
-  cdnDomain: "cdn.answersuck.com"
-
-  # if true FILE_STORAGE_CDN_DOMAIN env must be set,
-  # otherwise using FILE_STORAGE_DOMAIN env for generating uploaded file url
+  host: "697408.selcdn.ru"
+  cdn_host: "cdn.answersuck.com"
   cdn: false
+  ssl: true
 
 email:
   templates:
-    accountVerification: "./web/account_verification.html"
-    accountPasswordReset: "./web/account_password_reset.html"
+    account_verification: "./web/account_verification.html"
+    account_password_reset: "./web/account_password_reset.html"
   subjects:
-    accountVerification: "Подтверждение аккаунта"
-    accountPasswordReset: "Сброс пароля"
+    account_verification: "Подтверждение аккаунта"
+    account_password_reset: "Сброс пароля"
   formats:
-    accountVerification: "%s/verify?code=%s"
-    accountPasswordReset: "%s/reset?token=%s"
+    account_verification: "%s/verify?code=%s"
+    account_password_reset: "%s/reset?token=%s"

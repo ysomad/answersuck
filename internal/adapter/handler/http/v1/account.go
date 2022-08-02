@@ -15,7 +15,7 @@ type accountHandler struct {
 	cfg     *config.Session
 	log     *zap.Logger
 	v       ValidationModule
-	account AccountService
+	account accountService
 }
 
 func newAccountHandler(d *Deps) http.Handler {
@@ -54,7 +54,7 @@ func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - create - ValidateRequestBody", zap.Error(err))
-		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
 
@@ -64,10 +64,10 @@ func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
 
 		switch {
 		case errors.Is(err, account.ErrAlreadyExist):
-			writeError(w, http.StatusConflict, account.ErrAlreadyExist)
+			writeErr(w, http.StatusConflict, account.ErrAlreadyExist)
 			return
 		case errors.Is(err, account.ErrForbiddenNickname):
-			writeError(w, http.StatusBadRequest, account.ErrForbiddenNickname)
+			writeErr(w, http.StatusBadRequest, account.ErrForbiddenNickname)
 			return
 		}
 
@@ -93,7 +93,7 @@ func (h *accountHandler) delete(w http.ResponseWriter, r *http.Request) {
 		h.log.Error("http - v1 - account - delete - h.account.Delete", zap.Error(err))
 
 		if errors.Is(err, account.ErrNotDeleted) {
-			writeError(w, http.StatusBadRequest, account.ErrAlreadyArchived)
+			writeErr(w, http.StatusBadRequest, account.ErrAlreadyArchived)
 			return
 		}
 
@@ -128,7 +128,7 @@ func (h *accountHandler) requestVerification(w http.ResponseWriter, r *http.Requ
 		h.log.Error("http - v1 - account - requestVerification - h.account.RequestVerification")
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
-			writeError(w, http.StatusBadRequest, account.ErrAlreadyVerified)
+			writeErr(w, http.StatusBadRequest, account.ErrAlreadyVerified)
 			return
 		}
 
@@ -144,7 +144,7 @@ func (h *accountHandler) verify(w http.ResponseWriter, r *http.Request) {
 
 	code := r.URL.Query().Get("code")
 	if code == "" {
-		writeError(w, http.StatusBadRequest, account.ErrEmptyVerificationCode)
+		writeErr(w, http.StatusBadRequest, account.ErrEmptyVerificationCode)
 		return
 	}
 
@@ -152,7 +152,7 @@ func (h *accountHandler) verify(w http.ResponseWriter, r *http.Request) {
 		h.log.Error("http - v1 - account - verify - h.account.Verify", zap.Error(err))
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
-			writeError(w, http.StatusBadRequest, account.ErrAlreadyVerified)
+			writeErr(w, http.StatusBadRequest, account.ErrAlreadyVerified)
 			return
 		}
 
@@ -170,7 +170,7 @@ func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - resetPassword - ValidateRequestBody", zap.Error(err))
-		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
 
@@ -178,7 +178,7 @@ func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
 		h.log.Error("http - v1 - account - resetPassword - h.account.ResetPassword", zap.Error(err))
 
 		if errors.Is(err, account.ErrNotFound) {
-			writeError(w, http.StatusNotFound, account.ErrNotFound)
+			writeErr(w, http.StatusNotFound, account.ErrNotFound)
 			return
 		}
 
@@ -194,7 +194,7 @@ func (h *accountHandler) setPassword(w http.ResponseWriter, r *http.Request) {
 
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		writeError(w, http.StatusBadRequest, account.ErrEmptyPasswordToken)
+		writeErr(w, http.StatusBadRequest, account.ErrEmptyPasswordToken)
 		return
 	}
 
@@ -202,7 +202,7 @@ func (h *accountHandler) setPassword(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - setPassword - ValidateRequestBody", zap.Error(err))
-		writeDetailedError(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
 		return
 	}
 

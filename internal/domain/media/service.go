@@ -3,27 +3,28 @@ package media
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 )
 
 type (
-	Repository interface {
+	repository interface {
 		Save(ctx context.Context, m Media) (Media, error)
 		FindMimeTypeById(ctx context.Context, mediaId string) (string, error)
 	}
 
-	Storage interface {
-		Upload(ctx context.Context, f File) (string, error)
+	fileUploader interface {
+		Upload(ctx context.Context, f File) (url.URL, error)
 	}
 )
 
 type service struct {
-	repo    Repository
-	storage Storage
+	repo    repository
+	storage fileUploader
 }
 
-func NewService(r Repository, s Storage) *service {
+func NewService(r repository, s fileUploader) *service {
 	return &service{
 		repo:    r,
 		storage: s,
@@ -75,7 +76,7 @@ func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, err
 		return Media{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
 	}
 
-	m.URL = url
+	m.URL = url.String()
 
 	m, err = s.repo.Save(ctx, m)
 	if err != nil {

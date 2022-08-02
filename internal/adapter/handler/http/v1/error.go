@@ -5,30 +5,26 @@ import (
 	"net/http"
 )
 
-type detailedErr[D string | map[string]string] struct {
-	Message string `json:"message"`
-	Details D      `json:"details"`
-}
-
-type msgResp struct {
-	Message string `json:"message"`
-}
-
-type detailedMsgResp struct {
+type validationErr struct {
 	Message string            `json:"message"`
-	Details map[string]string `json:"details"`
+	Detail  map[string]string `json:"detail"`
 }
 
-func writeError(w http.ResponseWriter, code int, err error) {
-	b, _ := json.Marshal(msgResp{Message: err.Error()})
+type apiErr struct {
+	Message string `json:"message"`
+	Detail  string `json:"detail"`
+}
+
+func writeErr(w http.ResponseWriter, code int, err error) {
+	b, _ := json.Marshal(apiErr{Message: err.Error()})
 	w.WriteHeader(code)
 	w.Write(b)
 }
 
-func writeDetailedError(w http.ResponseWriter, code int, err error, details map[string]string) {
-	b, _ := json.Marshal(detailedMsgResp{
+func writeValidationErr(w http.ResponseWriter, code int, err error, detail map[string]string) {
+	b, _ := json.Marshal(validationErr{
 		Message: err.Error(),
-		Details: details,
+		Detail:  detail,
 	})
 	w.WriteHeader(code)
 	w.Write(b)

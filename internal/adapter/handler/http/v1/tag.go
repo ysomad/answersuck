@@ -5,7 +5,7 @@ import "go.uber.org/zap"
 type tagHandler struct {
 	log     *zap.Logger
 	v       ValidationModule
-	service TagService
+	service tagService
 }
 
 // func newTagHandler(d *Deps) *tagHandler {

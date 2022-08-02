@@ -12,7 +12,7 @@ import (
 )
 
 // mwAuthenticator check if request is authenticated and sets accountId and sessionId to locals (context)
-func mwAuthenticator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+func mwAuthenticator(l *zap.Logger, cfg *config.Session, s sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
@@ -57,7 +57,7 @@ func mwAuthenticator(l *zap.Logger, cfg *config.Session, s SessionService) func(
 // aborts if not.
 //
 // should be used instead of sessionMW
-func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+func mwVerificator(l *zap.Logger, cfg *config.Session, s sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
@@ -69,32 +69,32 @@ func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(ht
 
 			ctx := r.Context()
 
-			res, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
+			sess, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
 			if err != nil {
 				l.Error("http - v1 - middleware - mwVerificator - s.GetById", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			if !res.AccountVerified {
+			if !sess.AccountVerified {
 				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
-				writeError(w, http.StatusForbidden, account.ErrNotEnoughRights)
+				writeErr(w, http.StatusForbidden, account.ErrNotEnoughRights)
 				return
 			}
 
-			if res.Session.Expired() {
+			if sess.Expired() {
 				l.Info("http - v1 - middleware - mwVerificator", zap.Error(session.ErrExpired))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			if !res.Session.SameDevice(r.RemoteAddr, r.UserAgent()) {
+			if !sess.SameDevice(session.Device{IP: r.RemoteAddr, UserAgent: r.UserAgent()}) {
 				l.Error("http - v1 - middleware - mwVerificator", zap.Error(session.ErrDeviceMismatch))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			ctx = context.WithValue(ctx, sessionIdCtxKey{}, res.Session.Id)
-			ctx = context.WithValue(ctx, accountIdCtxKey{}, res.Session.AccountId)
+			ctx = context.WithValue(ctx, sessionIdCtxKey{}, sess.Id)
+			ctx = context.WithValue(ctx, accountIdCtxKey{}, sess.AccountId)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
@@ -104,7 +104,7 @@ func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(ht
 }
 
 // mwTokenRequired parses and validates security token
-func mwTokenRequired(l *zap.Logger, token TokenService) func(http.Handler) http.Handler {
+func mwTokenRequired(l *zap.Logger, token tokenService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			accountId, err := getAccountId(r.Context())

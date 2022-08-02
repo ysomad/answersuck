@@ -2,7 +2,7 @@ package storage
 
 import (
 	"context"
-	"fmt"
+	"net/url"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -12,11 +12,11 @@ import (
 )
 
 type provider struct {
-	client        *minio.Client
-	bucket        string
-	storageDomain string
-	cdnDomain     string
-	useCDN        bool
+	client      *minio.Client
+	bucket      string
+	storageHost string
+	cdnHost     string
+	useCDN      bool
 }
 
 func NewProvider(cfg *config.FileStorage) (*provider, error) {
@@ -29,15 +29,15 @@ func NewProvider(cfg *config.FileStorage) (*provider, error) {
 	}
 
 	return &provider{
-		client:        c,
-		bucket:        cfg.Bucket,
-		cdnDomain:     cfg.CDNDomain,
-		storageDomain: cfg.Domain,
-		useCDN:        cfg.CDN,
+		client:      c,
+		bucket:      cfg.Bucket,
+		cdnHost:     cfg.CDNHost,
+		storageHost: cfg.Host,
+		useCDN:      cfg.CDN,
 	}, nil
 }
 
-func (p *provider) Upload(ctx context.Context, f media.File) (string, error) {
+func (p *provider) Upload(ctx context.Context, f media.File) (url.URL, error) {
 	opts := minio.PutObjectOptions{
 		ContentType:  f.ContentType,
 		UserMetadata: map[string]string{"x-amz-acl": "public-read"},
@@ -45,22 +45,30 @@ func (p *provider) Upload(ctx context.Context, f media.File) (string, error) {
 
 	res, err := p.client.PutObject(ctx, p.bucket, f.Name, f.Reader, f.Size, opts)
 	if err != nil {
-		return "", err
+		return url.URL{}, err
 	}
 
 	if p.useCDN {
-		return p.cdnURL(p.cdnDomain, res.Key), nil
+		return p.cdnURL(p.cdnHost, res.Key), nil
 	}
 
-	return p.storageURL(p.storageDomain, p.bucket, res.Key), nil
+	return p.storageURL(p.storageHost, p.bucket, res.Key), nil
 }
 
 // Private
 
-func (p *provider) cdnURL(domain, filename string) string {
-	return fmt.Sprintf("https://%s/%s", domain, filename)
+func (p *provider) cdnURL(host, filename string) url.URL {
+	return url.URL{
+		Scheme: "https",
+		Host:   host,
+		Path:   filename,
+	}
 }
 
-func (p *provider) storageURL(domain, bucket, filename string) string {
-	return fmt.Sprintf("https://%s/%s/%s", domain, bucket, filename)
+func (p *provider) storageURL(host, bucket, filename string) url.URL {
+	return url.URL{
+		Scheme: "https",
+		Host:   host,
+		Path:   bucket + "/" + filename,
+	}
 }

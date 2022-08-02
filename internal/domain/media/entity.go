@@ -18,9 +18,7 @@ var (
 	ErrNotFound        = errors.New("media not found")
 )
 
-const (
-	MaxUploadSize = 5 << 20 // 5 MB
-)
+const MaxUploadSize = 5 << 20 // 5 MB
 
 type MimeType string
 
