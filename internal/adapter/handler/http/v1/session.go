@@ -74,7 +74,7 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 
 	sessionId := chi.URLParam(r, "sessionId")
 	if currSessionId == sessionId {
-		writeError(w, http.StatusBadRequest, session.ErrCannotBeTerminated)
+		writeErr(w, http.StatusBadRequest, session.ErrCannotBeTerminated)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 		h.log.Error("http - v1 - session - terminate - h.service.Terminate", zap.Error(err))
 
 		if errors.Is(err, session.ErrNotFound) {
-			writeError(w, http.StatusNotFound, session.ErrNotFound)
+			writeErr(w, http.StatusNotFound, session.ErrNotFound)
 			return
 		}
 

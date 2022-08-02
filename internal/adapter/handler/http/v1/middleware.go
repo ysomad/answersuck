@@ -77,7 +77,7 @@ func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(ht
 			}
 			if !res.AccountVerified {
 				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
-				writeError(w, http.StatusForbidden, account.ErrNotEnoughRights)
+				writeErr(w, http.StatusForbidden, account.ErrNotEnoughRights)
 				return
 			}
 
