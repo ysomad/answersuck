@@ -10,19 +10,19 @@ jobs:
 
     services:
 
-      postgres:
-        image: "postgres:14-alpine"
-        env:
-          POSTGRES_USER: "user"
-          POSTGRES_PASSWORD: "pass"
-          POSTGRES_DB: "postgres"
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+      # postgres:
+      #   image: "postgres:14-alpine"
+      #   env:
+      #     POSTGRES_USER: "user"
+      #     POSTGRES_PASSWORD: "pass"
+      #     POSTGRES_DB: "postgres"
+      #   ports:
+      #     - 5432:5432
+      #   options: >-
+      #     --health-cmd pg_isready
+      #     --health-interval 10s
+      #     --health-timeout 5s
+      #     --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -44,7 +44,16 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 
+    # - name: Integration tests
+    #   run: go test -v -race -count 1 ./test/...
+    #   env:
+    #     PG_URL: ${{ secrets.TEST_PG_URL }}
     - name: Integration tests
-      run: go test -v -race -count 1 ./test/...
+      run: docker-compose up \
+        --build \
+        --abort-on-container-exit \
+        --exit-code-from integration
       env:
         PG_URL: ${{ secrets.TEST_PG_URL }}
+
+
