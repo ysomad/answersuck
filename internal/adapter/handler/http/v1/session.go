@@ -11,16 +11,16 @@ import (
 )
 
 type sessionHandler struct {
-	log     *zap.Logger
-	v       ValidationModule
-	session sessionService
+	log      *zap.Logger
+	validate validate
+	session  sessionService
 }
 
 func newSessionHandler(d *Deps) http.Handler {
 	h := sessionHandler{
-		log:     d.Logger,
-		v:       d.ValidationModule,
-		session: d.SessionService,
+		log:      d.Logger,
+		validate: d.Validate,
+		session:  d.SessionService,
 	}
 
 	r := chi.NewRouter()

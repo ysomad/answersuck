@@ -2,8 +2,11 @@ package v1
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 )
+
+var errInvalidRequestBody = errors.New("invalid request body")
 
 type validationErr struct {
 	Message string            `json:"message"`
