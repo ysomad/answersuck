@@ -58,6 +58,8 @@ func Test_newSession(t *testing.T) {
 }
 
 func TestSession_Expired(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		ExpiresAt int64
 		CreatedAt time.Time
@@ -89,6 +91,8 @@ func TestSession_Expired(t *testing.T) {
 }
 
 func TestSession_SameDevice(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		UserAgent string
 		IP        string
