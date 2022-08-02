@@ -12,7 +12,7 @@ import (
 )
 
 // mwAuthenticator check if request is authenticated and sets accountId and sessionId to locals (context)
-func mwAuthenticator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+func mwAuthenticator(l *zap.Logger, cfg *config.Session, s sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
@@ -57,7 +57,7 @@ func mwAuthenticator(l *zap.Logger, cfg *config.Session, s SessionService) func(
 // aborts if not.
 //
 // should be used instead of sessionMW
-func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(http.Handler) http.Handler {
+func mwVerificator(l *zap.Logger, cfg *config.Session, s sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
@@ -104,7 +104,7 @@ func mwVerificator(l *zap.Logger, cfg *config.Session, s SessionService) func(ht
 }
 
 // mwTokenRequired parses and validates security token
-func mwTokenRequired(l *zap.Logger, token TokenService) func(http.Handler) http.Handler {
+func mwTokenRequired(l *zap.Logger, token tokenService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			accountId, err := getAccountId(r.Context())

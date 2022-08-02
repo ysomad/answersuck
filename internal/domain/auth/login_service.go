@@ -10,12 +10,12 @@ import (
 )
 
 type loginService struct {
-	account  AccountService
-	session  SessionService
-	password PasswordVerifier
+	account  accountService
+	session  sessionService
+	password passwordVerifier
 }
 
-func NewLoginService(a AccountService, s SessionService, p PasswordVerifier) *loginService {
+func NewLoginService(a accountService, s sessionService, p passwordVerifier) *loginService {
 	return &loginService{
 		account:  a,
 		session:  s,

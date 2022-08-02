@@ -13,7 +13,7 @@ import (
 type sessionHandler struct {
 	log     *zap.Logger
 	v       ValidationModule
-	session SessionService
+	session sessionService
 }
 
 func newSessionHandler(d *Deps) http.Handler {

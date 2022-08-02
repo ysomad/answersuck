@@ -4,7 +4,7 @@ import "go.uber.org/zap"
 
 type languageHandler struct {
 	log     *zap.Logger
-	service LanguageService
+	service languageService
 }
 
 // func newLanguageHandler(d *Deps) *languageHandler {

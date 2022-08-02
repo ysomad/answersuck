@@ -9,16 +9,16 @@ import (
 
 type tokenService struct {
 	cfg      *config.SecurityToken
-	token    TokenManager
-	account  AccountService
-	password PasswordVerifier
+	token    tokenManager
+	account  accountService
+	password passwordVerifier
 }
 
 type TokenServiceDeps struct {
 	Config          *config.SecurityToken
-	TokenManager    TokenManager
-	AccountService  AccountService
-	PasswordMatcher PasswordVerifier
+	TokenManager    tokenManager
+	AccountService  accountService
+	PasswordMatcher passwordVerifier
 }
 
 func NewTokenService(d TokenServiceDeps) *tokenService {

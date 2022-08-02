@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type AccountRepo interface {
+type repository interface {
 	Save(ctx context.Context, a Account, code string) (Account, error)
 	FindById(ctx context.Context, accountId string) (Account, error)
 	FindByEmail(ctx context.Context, email string) (Account, error)
@@ -21,19 +21,19 @@ type AccountRepo interface {
 	SetPassword(ctx context.Context, dto SetPasswordDTO) error
 }
 
-type SessionService interface {
+type sessionService interface {
 	TerminateAll(ctx context.Context, accountId string) error
 }
 
-type EmailService interface {
+type emailService interface {
 	SendAccountVerificationEmail(ctx context.Context, to, code string) error
 	SendPasswordResetEmail(ctx context.Context, to, token string) error
 }
 
-type BlockList interface {
+type blockList interface {
 	Find(nickname string) bool
 }
 
-type Password interface {
+type passwordHasher interface {
 	Hash(plain string) (string, error)
 }

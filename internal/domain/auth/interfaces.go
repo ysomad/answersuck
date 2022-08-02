@@ -9,23 +9,23 @@ import (
 )
 
 type (
-	AccountService interface {
+	accountService interface {
 		GetById(ctx context.Context, accountId string) (account.Account, error)
 		GetByEmail(ctx context.Context, email string) (account.Account, error)
 		GetByNickname(ctx context.Context, nickname string) (account.Account, error)
 	}
 
-	SessionService interface {
+	sessionService interface {
 		Create(ctx context.Context, accountId string, d session.Device) (*session.Session, error)
 		Terminate(ctx context.Context, sessionId string) error
 	}
 
-	TokenManager interface {
+	tokenManager interface {
 		Create(subject string, expiration time.Duration) (string, error)
 		Parse(token string) (string, error)
 	}
 
-	PasswordVerifier interface {
+	passwordVerifier interface {
 		Verify(plain, hash string) (bool, error)
 	}
 )

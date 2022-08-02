@@ -5,7 +5,7 @@ import "go.uber.org/zap"
 type questionHandler struct {
 	log     *zap.Logger
 	v       ValidationModule
-	service QuestionService
+	service questionService
 }
 
 // func newQuestionHandler(d *Deps) *questionHandler {

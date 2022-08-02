@@ -9,22 +9,22 @@ import (
 )
 
 type (
-	Repository interface {
+	repository interface {
 		Save(ctx context.Context, m Media) (Media, error)
 		FindMimeTypeById(ctx context.Context, mediaId string) (string, error)
 	}
 
-	Storage interface {
+	fileUploader interface {
 		Upload(ctx context.Context, f File) (url.URL, error)
 	}
 )
 
 type service struct {
-	repo    Repository
-	storage Storage
+	repo    repository
+	storage fileUploader
 }
 
-func NewService(r Repository, s Storage) *service {
+func NewService(r repository, s fileUploader) *service {
 	return &service{
 		repo:    r,
 		storage: s,

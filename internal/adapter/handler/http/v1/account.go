@@ -15,7 +15,7 @@ type accountHandler struct {
 	cfg     *config.Session
 	log     *zap.Logger
 	v       ValidationModule
-	account AccountService
+	account accountService
 }
 
 func newAccountHandler(d *Deps) http.Handler {

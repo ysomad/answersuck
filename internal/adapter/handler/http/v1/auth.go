@@ -16,8 +16,8 @@ type authHandler struct {
 	cfg     *config.Session
 	log     *zap.Logger
 	v       ValidationModule
-	service LoginService
-	token   TokenService
+	service loginService
+	token   tokenService
 }
 
 func newAuthHandler(d *Deps) http.Handler {

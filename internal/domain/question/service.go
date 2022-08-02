@@ -5,17 +5,17 @@ import (
 	"fmt"
 )
 
-type Repository interface {
+type repository interface {
 	Save(ctx context.Context, q *Question) (int, error)
 	FindById(ctx context.Context, questionId int) (*Detailed, error)
 	FindAll(ctx context.Context) ([]Minimized, error)
 }
 
 type service struct {
-	repo Repository
+	repo repository
 }
 
-func NewService(r Repository) *service {
+func NewService(r repository) *service {
 	return &service{
 		repo: r,
 	}

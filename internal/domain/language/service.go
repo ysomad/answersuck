@@ -5,15 +5,15 @@ import (
 	"fmt"
 )
 
-type Repository interface {
+type repository interface {
 	FindAll(ctx context.Context) ([]*Language, error)
 }
 
 type service struct {
-	repo Repository
+	repo repository
 }
 
-func NewService(r Repository) *service {
+func NewService(r repository) *service {
 	return &service{
 		repo: r,
 	}

@@ -11,20 +11,20 @@ import (
 
 type service struct {
 	cfg       *config.Aggregate
-	repo      AccountRepo
-	password  Password
-	session   SessionService
-	email     EmailService
-	blockList BlockList
+	repo      repository
+	password  passwordHasher
+	session   sessionService
+	email     emailService
+	blockList blockList
 }
 
 type Deps struct {
 	Config         *config.Aggregate
-	AccountRepo    AccountRepo
-	BlockList      BlockList
-	Password       Password
-	SessionService SessionService
-	EmailService   EmailService
+	AccountRepo    repository
+	BlockList      blockList
+	Password       passwordHasher
+	SessionService sessionService
+	EmailService   emailService
 }
 
 func NewService(d *Deps) *service {
