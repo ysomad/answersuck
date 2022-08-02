@@ -1,0 +1,59 @@
+name: CI
+
+on: pull_request
+
+jobs:
+
+  tests:
+    name: runner / tests
+    runs-on: ubuntu-latest
+
+    # services:
+
+      # postgres:
+      #   image: "postgres:14-alpine"
+      #   env:
+      #     POSTGRES_USER: "user"
+      #     POSTGRES_PASSWORD: "pass"
+      #     POSTGRES_DB: "postgres"
+      #   ports:
+      #     - 5432:5432
+      #   options: >-
+      #     --health-cmd pg_isready
+      #     --health-interval 10s
+      #     --health-timeout 5s
+      #     --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+
+    - name: Unit tests
+      run: "go test \
+        -v \
+        -race \
+        -covermode=atomic \
+        -coverprofile=coverage.out \
+        ./internal/..."
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    # - name: Integration tests
+    #   run: go test -v -race -count 1 ./test/...
+    #   env:
+    #     PG_URL: ${{ secrets.TEST_PG_URL }}
+    - name: Run containers
+      run: docker compose up --build -d postgres && docker compose logs -f
+
+    - name: Integration tests
+      run: "PG_URL=${{ secrets.TEST_PG_URL }} docker-compose up \
+        --build \
+        --abort-on-container-exit \
+        --exit-code-from integration"
+

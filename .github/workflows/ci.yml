@@ -44,6 +44,15 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 
+    - name: Run app
+      run: go run ./cmd/app &
+      env:
+        PG_URL: ${{ secrets.TEST_PG_URL }}
+        SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
+        SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
+        FILE_STORAGE_ACCESS_KEY: ${{ secrets.TEST_FILE_STORAGE_ACCESS_KEY }}
+        FILE_STORAGE_SECRET_KEY: ${{ secrets.TEST_FILE_STORAGE_SECRET_KEY }}
+
     - name: Integration tests
       run: go test -v -race -count 1 ./test/...
       env:
