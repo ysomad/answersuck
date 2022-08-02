@@ -2,6 +2,7 @@ package strings
 
 import (
 	cryptoRand "crypto/rand"
+	"errors"
 	mathRand "math/rand"
 )
 
@@ -10,9 +11,15 @@ const (
 	special = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 )
 
+var errZeroLength = errors.New("length should be greater than 0")
+
 // NewUnique generates random string using
 // Cryptographically Secure Pseudorandom number
-func NewUnique(length int) (string, error) {
+func NewUnique(length uint) (string, error) {
+	if length == 0 {
+		return "", errZeroLength
+	}
+
 	bytes := make([]byte, length)
 	if _, err := cryptoRand.Read(bytes); err != nil {
 		return "", err
@@ -26,7 +33,7 @@ func NewUnique(length int) (string, error) {
 }
 
 // NewRandom generates random URL safe string
-func NewRandom(length int) string {
+func NewRandom(length uint) string {
 	bytes := make([]byte, length)
 
 	for i := range bytes {
@@ -37,7 +44,7 @@ func NewRandom(length int) string {
 }
 
 // NewSpecialRandom generates random string with special characters
-func NewSpecialRandom(length int) string {
+func NewSpecialRandom(length uint) string {
 	bytes := make([]byte, length)
 
 	c := chars + special

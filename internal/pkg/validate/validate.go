@@ -1,4 +1,4 @@
-package validation
+package validate
 
 import (
 	"encoding/json"
@@ -16,12 +16,12 @@ import (
 
 var errTranslatorNotFound = errors.New("translator not found")
 
-type module struct {
-	validate *validator.Validate
-	trans    ut.Translator
+type validate struct {
+	*validator.Validate
+	trans ut.Translator
 }
 
-func NewModule() (*module, error) {
+func New() (*validate, error) {
 	v := newValidate()
 
 	t, err := newTranslator()
@@ -33,10 +33,7 @@ func NewModule() (*module, error) {
 		return nil, fmt.Errorf("enTranslations.RegisterDefaultTranslations: %w", err)
 	}
 
-	return &module{
-		validate: v,
-		trans:    t,
-	}, nil
+	return &validate{v, t}, nil
 }
 
 func newTranslator() (ut.Translator, error) {
@@ -53,42 +50,32 @@ func newTranslator() (ut.Translator, error) {
 
 func newValidate() *validator.Validate {
 	v := validator.New()
-
 	v.RegisterTagNameFunc(tagName)
-
 	return v
 }
 
 func tagName(fld reflect.StructField) string {
 	name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-
 	if name == "-" {
 		return ""
 	}
-
 	return name
 }
 
-func (m *module) ValidateStruct(s any) error {
-	return m.validate.Struct(s)
-}
-
-func (m *module) TranslateError(err error) map[string]string {
+func (v *validate) TranslateError(err error) map[string]string {
 	errs := make(map[string]string)
-
 	for _, err := range err.(validator.ValidationErrors) {
-		errs[err.Field()] = err.Translate(m.trans)
+		errs[err.Field()] = err.Translate(v.trans)
 	}
-
 	return errs
 }
 
-func (m *module) ValidateRequestBody(b io.ReadCloser, dest any) error {
+func (v *validate) RequestBody(b io.ReadCloser, dest any) error {
 	if err := json.NewDecoder(b).Decode(dest); err != nil {
 		return err
 	}
 
-	if err := m.ValidateStruct(dest); err != nil {
+	if err := v.Struct(dest); err != nil {
 		return err
 	}
 

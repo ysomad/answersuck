@@ -33,11 +33,6 @@ Entrypoint for the project. Can contain multiple entrypoints for microservices f
 
 Private application code.
 
-### `pkg/`
-
-Public application code that's ok to use by external applications.
-Other projects will import these libraries expecting them to work, so think twice before you put something here :-)
-
 ### `migrations/`
 
 Database migrations.

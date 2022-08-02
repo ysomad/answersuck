@@ -25,7 +25,7 @@ import (
 	"github.com/answersuck/host/internal/pkg/migrate"
 	"github.com/answersuck/host/internal/pkg/postgres"
 	"github.com/answersuck/host/internal/pkg/token"
-	"github.com/answersuck/host/internal/pkg/validation"
+	"github.com/answersuck/host/internal/pkg/validate"
 )
 
 func init() { migrate.Up("migrations") }
@@ -51,9 +51,9 @@ func Run(configPath string) {
 	defer pg.Close()
 
 	// Service
-	validationModule, err := validation.NewModule()
+	validate, err := validate.New()
 	if err != nil {
-		l.Fatal("app - Run - validation.NewModule", zap.Error(err))
+		l.Fatal("app - Run - validate.New", zap.Error(err))
 	}
 
 	sessionRepo := psql.NewSessionRepo(l, pg)
@@ -127,13 +127,13 @@ func Run(configPath string) {
 	m := chi.NewMux()
 
 	m.Mount("/v1", v1.NewHandler(&v1.Deps{
-		Config:           &cfg,
-		Logger:           l,
-		ValidationModule: validationModule,
-		AccountService:   accountService,
-		SessionService:   sessionService,
-		LoginService:     loginService,
-		TokenService:     tokenService,
+		Config:         &cfg,
+		Logger:         l,
+		Validate:       validate,
+		AccountService: accountService,
+		SessionService: sessionService,
+		LoginService:   loginService,
+		TokenService:   tokenService,
 	}))
 
 	httpServer := httpserver.New(m, httpserver.Port(cfg.HTTP.Port))

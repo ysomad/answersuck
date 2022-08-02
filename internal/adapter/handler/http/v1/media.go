@@ -9,7 +9,7 @@ import (
 type mediaHandler struct {
 	cfg     *config.Aggregate
 	log     *zap.Logger
-	v       ValidationModule
+	v       validate
 	service mediaService
 }
 

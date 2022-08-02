@@ -4,7 +4,7 @@ import "go.uber.org/zap"
 
 type topicHandler struct {
 	log     *zap.Logger
-	v       ValidationModule
+	v       validate
 	service topicService
 }
 

@@ -13,20 +13,20 @@ import (
 )
 
 type authHandler struct {
-	cfg     *config.Session
-	log     *zap.Logger
-	v       ValidationModule
-	service loginService
-	token   tokenService
+	cfg      *config.Session
+	log      *zap.Logger
+	validate validate
+	service  loginService
+	token    tokenService
 }
 
 func newAuthHandler(d *Deps) http.Handler {
 	h := authHandler{
-		cfg:     &d.Config.Session,
-		log:     d.Logger,
-		v:       d.ValidationModule,
-		service: d.LoginService,
-		token:   d.TokenService,
+		cfg:      &d.Config.Session,
+		log:      d.Logger,
+		validate: d.Validate,
+		service:  d.LoginService,
+		token:    d.TokenService,
 	}
 
 	r := chi.NewRouter()
@@ -51,9 +51,9 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 
 	var req auth.LoginReq
 
-	if err = h.v.ValidateRequestBody(r.Body, &req); err != nil {
+	if err = h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - auth - login - h.v.ValidateRequestBody", zap.Error(err))
-		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
@@ -110,9 +110,9 @@ func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
 
 	var req auth.TokenCreateReq
 
-	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - auth - createToken - h.v.ValidateRequestBody", zap.Error(err))
-		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 

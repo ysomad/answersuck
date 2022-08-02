@@ -12,18 +12,18 @@ import (
 )
 
 type accountHandler struct {
-	cfg     *config.Session
-	log     *zap.Logger
-	v       ValidationModule
-	account accountService
+	cfg      *config.Session
+	log      *zap.Logger
+	validate validate
+	account  accountService
 }
 
 func newAccountHandler(d *Deps) http.Handler {
 	h := accountHandler{
-		cfg:     &d.Config.Session,
-		log:     d.Logger,
-		v:       d.ValidationModule,
-		account: d.AccountService,
+		cfg:      &d.Config.Session,
+		log:      d.Logger,
+		validate: d.Validate,
+		account:  d.AccountService,
 	}
 
 	r := chi.NewRouter()
@@ -52,9 +52,9 @@ func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
 
 	var req account.CreateReq
 
-	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - create - ValidateRequestBody", zap.Error(err))
-		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
@@ -168,9 +168,9 @@ func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
 
 	var req account.ResetPasswordReq
 
-	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - resetPassword - ValidateRequestBody", zap.Error(err))
-		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
@@ -200,9 +200,9 @@ func (h *accountHandler) setPassword(w http.ResponseWriter, r *http.Request) {
 
 	var req account.SetPasswordReq
 
-	if err := h.v.ValidateRequestBody(r.Body, &req); err != nil {
+	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - setPassword - ValidateRequestBody", zap.Error(err))
-		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 

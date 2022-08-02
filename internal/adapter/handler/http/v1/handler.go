@@ -11,19 +11,19 @@ import (
 )
 
 type Deps struct {
-	Config           *config.Aggregate
-	Logger           *zap.Logger
-	ValidationModule ValidationModule
-	AccountService   accountService
-	SessionService   sessionService
-	LoginService     loginService
-	TokenService     tokenService
-	MediaService     mediaService
-	LanguageService  languageService
-	TagService       tagService
-	TopicService     topicService
-	AnswerService    answerService
-	QuestionService  questionService
+	Config          *config.Aggregate
+	Logger          *zap.Logger
+	Validate        validate
+	AccountService  accountService
+	SessionService  sessionService
+	LoginService    loginService
+	TokenService    tokenService
+	MediaService    mediaService
+	LanguageService languageService
+	TagService      tagService
+	TopicService    topicService
+	AnswerService   answerService
+	QuestionService questionService
 }
 
 func NewHandler(d *Deps) http.Handler {

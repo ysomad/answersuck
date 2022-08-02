@@ -18,10 +18,10 @@ const (
 )
 
 var (
-	ErrEmptyHost     = errors.New("empty host")
-	ErrEmptyFrom     = errors.New("empty from")
-	ErrEmptyPassword = errors.New("empty password")
-	ErrInvalidPort   = errors.New("invalid client port")
+	errEmptyHost     = errors.New("empty host")
+	errEmptyFrom     = errors.New("empty from")
+	errEmptyPassword = errors.New("empty password")
+	errInvalidPort   = errors.New("invalid client port")
 )
 
 type client struct {
@@ -42,13 +42,13 @@ type ClientOptions struct {
 func (opt *ClientOptions) validate() error {
 	switch {
 	case opt.Host == "":
-		return ErrEmptyHost
+		return errEmptyHost
 	case opt.From == "":
-		return ErrEmptyFrom
+		return errEmptyFrom
 	case opt.Password == "":
-		return ErrEmptyPassword
+		return errEmptyPassword
 	case opt.Port == 0:
-		return ErrInvalidPort
+		return errInvalidPort
 	case opt.ConnectTimeout == 0:
 		opt.ConnectTimeout = defaultConnectTimeout
 	case opt.SendTimeout == 0:
