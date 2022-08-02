@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 
 	"github.com/answersuck/host/internal/adapter/repository/psql"
 	"github.com/answersuck/host/internal/domain/account"
@@ -15,10 +14,6 @@ import (
 )
 
 var sessionRepo *psql.SessionRepo
-
-type sessionRepoTestSuite struct {
-	suite.Suite
-}
 
 func insertTestSession(s *session.Session) (*session.Session, error) {
 	id, err := strings.NewUnique(session.SessionIdLen)
@@ -47,14 +42,14 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 	return s, nil
 }
 
-func TestSessionRepoTestSuite(t *testing.T) { suite.Run(t, new(sessionRepoTestSuite)) }
+func TestSessionRepoSave(t *testing.T) {
+	t.Parallel()
 
-func (s *sessionRepoTestSuite) TestSave() {
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	sessionId, err := strings.NewUnique(session.SessionIdLen)
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx context.Context
@@ -109,7 +104,7 @@ func (s *sessionRepoTestSuite) TestSave() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			err := sessionRepo.Save(tt.args.ctx, tt.args.s)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -136,12 +131,14 @@ func (s *sessionRepoTestSuite) TestSave() {
 	}
 }
 
-func (s *sessionRepoTestSuite) TestFindById() {
+func TestSessionRepoFindById(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	sess, err := insertTestSession(&session.Session{AccountId: a.Id})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -176,7 +173,7 @@ func (s *sessionRepoTestSuite) TestFindById() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := sessionRepo.FindById(tt.args.ctx, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -196,12 +193,14 @@ func (s *sessionRepoTestSuite) TestFindById() {
 	}
 }
 
-func (s *sessionRepoTestSuite) TestFindWithAccountDetails() {
+func TestSessionRepoFindWithAccountDetails(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{Verified: true})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	sess, err := insertTestSession(&session.Session{AccountId: a.Id})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -242,7 +241,7 @@ func (s *sessionRepoTestSuite) TestFindWithAccountDetails() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := sessionRepo.FindWithAccountDetails(tt.args.ctx, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -263,17 +262,19 @@ func (s *sessionRepoTestSuite) TestFindWithAccountDetails() {
 	}
 }
 
-func (s *sessionRepoTestSuite) TestFindAll() {
+func TestSessionRepoFindAll(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	a1, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	var sessions []*session.Session
 	for i := 0; i < 10; i++ {
 		sess, err := insertTestSession(&session.Session{AccountId: a.Id})
-		s.NoError(err)
+		assert.NoError(t, err)
 		sessions = append(sessions, sess)
 	}
 
@@ -310,7 +311,7 @@ func (s *sessionRepoTestSuite) TestFindAll() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got, err := sessionRepo.FindAll(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -329,12 +330,14 @@ func (s *sessionRepoTestSuite) TestFindAll() {
 	}
 }
 
-func (s *sessionRepoTestSuite) TestDelete() {
+func TestSessionRepoDelete(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	sess, err := insertTestSession(&session.Session{AccountId: a.Id})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	type args struct {
 		ctx       context.Context
@@ -366,7 +369,7 @@ func (s *sessionRepoTestSuite) TestDelete() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			err := sessionRepo.Delete(tt.args.ctx, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -378,14 +381,16 @@ func (s *sessionRepoTestSuite) TestDelete() {
 	}
 }
 
-func (s *sessionRepoTestSuite) TestDeleteWithExcept() {
+func TestSessionRepoDeleteWithExcept(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	var sessions []*session.Session
 	for i := 0; i < 10; i++ {
 		sess, err := insertTestSession(&session.Session{AccountId: a.Id})
-		s.NoError(err)
+		assert.NoError(t, err)
 		sessions = append(sessions, sess)
 	}
 
@@ -422,7 +427,7 @@ func (s *sessionRepoTestSuite) TestDeleteWithExcept() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			err := sessionRepo.DeleteWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
@@ -443,13 +448,15 @@ func (s *sessionRepoTestSuite) TestDeleteWithExcept() {
 	}
 }
 
-func (s *sessionRepoTestSuite) TestDeleteAll() {
+func TestSessionRepoDeleteAll(t *testing.T) {
+	t.Parallel()
+
 	a, err := insertTestAccount(account.Account{})
-	s.NoError(err)
+	assert.NoError(t, err)
 
 	for i := 0; i < 10; i++ {
 		_, err := insertTestSession(&session.Session{AccountId: a.Id})
-		s.NoError(err)
+		assert.NoError(t, err)
 	}
 
 	type args struct {
@@ -482,7 +489,7 @@ func (s *sessionRepoTestSuite) TestDeleteAll() {
 		},
 	}
 	for _, tt := range tests {
-		s.T().Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			err := sessionRepo.DeleteAll(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
