@@ -40,6 +40,7 @@ func newAccountHandler(d *Deps) http.Handler {
 	})
 
 	r.Route("/password", func(r chi.Router) {
+		r.With(authenticator).Patch("/", h.updatePassword)
 		r.Post("/", h.resetPassword)
 		r.Put("/", h.setPassword)
 	})
@@ -163,13 +164,47 @@ func (h *accountHandler) verify(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *accountHandler) updatePassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
+
+	accountId, err := getAccountId(ctx)
+	if err != nil {
+		h.log.Error("http - v1 - account - updatePassword - getAccountId", zap.Error(err))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req account.UpdatePasswordReq
+	if err = h.validate.RequestBody(r.Body, &req); err != nil {
+		h.log.Info("http - v1 - account - updatePassword - h.validate.RequestBody", zap.Error(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
+		return
+	}
+
+	err = h.account.UpdatePassword(ctx, accountId, req.OldPassword, req.NewPassword)
+	if err != nil {
+		h.log.Error("http - v1 - account - updatePassword - h.account.UpdatePassword", zap.Error(err))
+
+		if errors.Is(err, account.ErrInvalidPassword) {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var req account.ResetPasswordReq
 
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - account - resetPassword - ValidateRequestBody", zap.Error(err))
+		h.log.Info("http - v1 - account - resetPassword - h.validate.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
@@ -192,21 +227,21 @@ func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
 func (h *accountHandler) setPassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	token := r.URL.Query().Get("token")
-	if token == "" {
-		writeErr(w, http.StatusBadRequest, account.ErrEmptyPasswordToken)
-		return
-	}
-
 	var req account.SetPasswordReq
 
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - account - setPassword - ValidateRequestBody", zap.Error(err))
+		h.log.Info("http - v1 - account - setPassword - h.validate.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
-	if err := h.account.SetPassword(r.Context(), token, req.Password); err != nil {
+	if len(req.Token) != account.PasswordTokenLen {
+		h.log.Info("http - v1 - account - setPassword", zap.Error(account.ErrPasswordTokenInvalid))
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	if err := h.account.SetPassword(r.Context(), req.Token, req.Password); err != nil {
 		h.log.Error("http - v1 - account - setPassword - h.account.SetPassword", zap.Error(err))
 
 		if errors.Is(err, account.ErrPasswordTokenExpired) ||

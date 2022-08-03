@@ -6,23 +6,22 @@ import (
 )
 
 var (
-	ErrAlreadyExist      = errors.New("account with given email or nickname already exist")
-	ErrNotDeleted        = errors.New("account has not been deleted")
-	ErrAlreadyArchived   = errors.New("account already archived or not found")
-	ErrAlreadyVerified   = errors.New("current email already verified or verification code is expired")
-	ErrForbiddenNickname = errors.New("nickname contains forbidden words")
-	ErrNotFound          = errors.New("account not found")
-	ErrNotEnoughRights   = errors.New("account must be verified to perform this operation")
-
-	ErrEmptyVerificationCode = errors.New("empty account verification code")
-	ErrVerificationNotFound  = errors.New("account verification not found")
-
+	ErrAlreadyExist              = errors.New("account with given email or nickname already exist")
+	ErrNotDeleted                = errors.New("account has not been deleted")
+	ErrAlreadyArchived           = errors.New("account already archived or not found")
+	ErrAlreadyVerified           = errors.New("current email already verified or verification code is expired")
+	ErrForbiddenNickname         = errors.New("nickname contains forbidden words")
+	ErrNotFound                  = errors.New("account not found")
+	ErrNotEnoughRights           = errors.New("account must be verified to perform this operation")
+	ErrInvalidPassword           = errors.New("invalid password")
+	ErrEmptyVerificationCode     = errors.New("empty account verification code")
+	ErrVerificationNotFound      = errors.New("account verification not found")
 	ErrEmptyPasswordToken        = errors.New("empty password reset token")
 	ErrPasswordTokenNotFound     = errors.New("account password reset token not found or expired")
 	ErrPasswordTokenExpired      = errors.New("password reset token is expired")
 	ErrPasswordTokenAlreadyExist = errors.New("account password reset token already exist")
-
-	ErrPasswordNotSet = errors.New("account password is not set")
+	ErrPasswordTokenInvalid      = errors.New("invalid password token")
+	ErrPasswordNotSet            = errors.New("account password is not set")
 )
 
 type Account struct {

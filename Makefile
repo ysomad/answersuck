@@ -16,17 +16,9 @@ run:
 	go mod tidy && go mod download && \
 	go run ./cmd/app
 
-.PHONY: build
-build:
-	go build ./cmd/app
-
 .PHONY: test
 test:
 	go test -v -cover -race -count 1 ./internal/...
-
-.PHONY: compose-up-integration-test
-compose-up-integration-test:
-	docker-compose up --build --abort-on-container-exit --exit-code-from integration
 
 .PHONY: integration-test
 integration-test:

@@ -12,7 +12,7 @@ import (
 type service struct {
 	cfg       *config.Aggregate
 	repo      repository
-	password  passwordHasher
+	password  passwordManager
 	session   sessionService
 	email     emailService
 	blockList blockList
@@ -22,7 +22,7 @@ type Deps struct {
 	Config         *config.Aggregate
 	AccountRepo    repository
 	BlockList      blockList
-	Password       passwordHasher
+	Password       passwordManager
 	SessionService sessionService
 	EmailService   emailService
 }
@@ -109,6 +109,32 @@ func (s *service) Delete(ctx context.Context, accountId string) error {
 		// TODO: handle error
 		_ = s.session.TerminateAll(ctx, accountId)
 	}()
+
+	return nil
+}
+
+func (s *service) UpdatePassword(ctx context.Context, accountId, oldPwd, newPwd string) error {
+	oldHash, err := s.repo.FindPasswordById(ctx, accountId)
+	if err != nil {
+		return fmt.Errorf("accountService - UpdatePassword - s.repo.FindPasswordById: %w", err)
+	}
+
+	matches, err := s.password.Verify(oldPwd, oldHash)
+	if err != nil {
+		return fmt.Errorf("accountService - UpdatePassword - s.password.Verify: %w", err)
+	}
+	if !matches {
+		return fmt.Errorf("accountService - UpdatePassword - s.password.Verify :%w", ErrInvalidPassword)
+	}
+
+	phash, err := s.password.Hash(newPwd)
+	if err != nil {
+		return fmt.Errorf("accountService - UpdatePassword - s.password.Hash: %w", err)
+	}
+
+	if err = s.repo.UpdatePassword(ctx, accountId, phash); err != nil {
+		return fmt.Errorf("accountService - UpdatePassword - s.repo.UpdatePassword: %w", err)
+	}
 
 	return nil
 }

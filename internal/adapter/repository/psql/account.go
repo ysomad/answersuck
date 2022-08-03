@@ -143,7 +143,6 @@ WHERE nickname = $1 AND is_archived = $2`
 		&a.Verified,
 	)
 	if err != nil {
-
 		if err == pgx.ErrNoRows {
 			return account.Account{}, fmt.Errorf("psql - account - FindByNickname - r.Pool.QueryRow.Scan: %w", account.ErrNotFound)
 		}
@@ -169,6 +168,43 @@ WHERE id = $3 AND is_archived = $4`
 	}
 	if ct.RowsAffected() == 0 {
 		return fmt.Errorf("psql - account - SetArchived - r.Pool.Exec: %w", account.ErrNotFound)
+	}
+
+	return nil
+}
+
+func (r *AccountRepo) FindPasswordById(ctx context.Context, accountId string) (string, error) {
+	sql := "SELECT password FROM account WHERE id = $1"
+
+	r.Debug("psql - account - FindPasswordById", zap.String("accountId", accountId))
+
+	var password string
+	if err := r.Pool.QueryRow(ctx, sql, accountId).Scan(&password); err != nil {
+		if err == pgx.ErrNoRows {
+			return "", fmt.Errorf("psql - account - FindPasswordById - r.Pool.QueryRow.Scan: %w", account.ErrNotFound)
+		}
+
+		return "", fmt.Errorf("psql - account - FindPasswordById - r.Pool.QueryRow.Scan: %w", err)
+	}
+
+	return password, nil
+}
+
+func (r *AccountRepo) UpdatePassword(ctx context.Context, accountId, password string) error {
+	sql := "UPDATE account SET password = $1 WHERE id = $2"
+
+	r.Debug(
+		"psql - account - UpdatePassword",
+		zap.String("accountId", accountId),
+		zap.String("password", password),
+	)
+
+	ct, err := r.Pool.Exec(ctx, sql, password, accountId)
+	if err != nil {
+		return fmt.Errorf("psql - account - UpdatePassword - r.Pool.Exec: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("psql - account - UpdatePassword - r.Pool.Exec: %w", account.ErrNotFound)
 	}
 
 	return nil

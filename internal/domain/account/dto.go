@@ -11,11 +11,17 @@ type (
 		Password string `json:"password" validate:"required,gte=10,lte=128"`
 	}
 
+	UpdatePasswordReq struct {
+		OldPassword string `json:"old_password" validate:"required"`
+		NewPassword string `json:"new_password" validate:"required,gte=10,lte=128,nefield=OldPassword"`
+	}
+
 	ResetPasswordReq struct {
 		Login string `json:"login" validate:"required,email|alphanum"`
 	}
 
 	SetPasswordReq struct {
+		Token    string `json:"token" validate:"required"`
 		Password string `json:"password" validate:"required,gte=10,lte=128"`
 	}
 )
