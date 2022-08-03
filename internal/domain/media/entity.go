@@ -1,10 +1,8 @@
 package media
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"time"
 
@@ -12,69 +10,69 @@ import (
 )
 
 var (
-	ErrInvalidMimeType = errors.New("unsupported media format")
-	ErrAlreadyExist    = errors.New("media with given id already exist")
-	ErrAccountNotFound = errors.New("account with given account_id not found")
-	ErrNotFound        = errors.New("media not found")
+	ErrInvalidType      = errors.New("unsupported media format")
+	ErrAlreadyExist     = errors.New("media with given id already exist")
+	ErrAccountNotFound  = errors.New("account with given account_id not found")
+	ErrNotFound         = errors.New("media not found")
+	ErrEmptyFilename    = errors.New("empty filename")
+	ErrInvalidAccountId = errors.New("invalid account id")
 )
 
 const MaxUploadSize = 5 << 20 // 5 MB
 
-type MimeType string
+type Type string
 
 const (
-	TypeImageJPEG = MimeType("image/jpeg")
-	TypeImagePNG  = MimeType("image/png")
-	TypeAudioMP4  = MimeType("audio/mp4")
-	TypeAudioAAC  = MimeType("audio/aac")
-	TypeAudioMPEG = MimeType("audio/mpeg")
+	TypeImageJPEG = Type("image/jpeg")
+	TypeImagePNG  = Type("image/png")
+	TypeAudioMP4  = Type("audio/mp4")
+	TypeAudioAAC  = Type("audio/aac")
+	TypeAudioMPEG = Type("audio/mpeg")
 )
 
-func (t MimeType) valid() bool {
+func (t Type) valid() bool {
 	switch t {
 	case TypeImageJPEG, TypeImagePNG, TypeAudioAAC, TypeAudioMP4, TypeAudioMPEG:
 		return true
 	}
-
 	return false
 }
 
 type Media struct {
-	Id        string    `json:"id"`
-	URL       string    `json:"url"`
-	Type      MimeType  `json:"type"`
-	AccountId string    `json:"-"`
-	CreatedAt time.Time `json:"-"`
+	Id        string
+	Filename  string
+	Type      Type
+	AccountId string
+	CreatedAt time.Time
 }
 
-func (m *Media) generateId() error {
-	id, err := uuid.NewRandom()
+func New(filename, accountId string, t Type) (Media, error) {
+	if filename == "" {
+		return Media{}, ErrEmptyFilename
+	}
+
+	if !t.valid() {
+		return Media{}, ErrInvalidType
+	}
+
+	_, err := uuid.Parse(accountId)
 	if err != nil {
-		return err
+		return Media{}, ErrInvalidAccountId
 	}
 
-	m.Id = id.String()
-
-	return nil
-}
-
-func (m *Media) filenameFromId(fn string) string {
-	return fmt.Sprintf("%s-%s", m.Id, fn)
-}
-
-func (m *Media) newTempFile(filename string, buf []byte) (*os.File, error) {
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0o666)
+	uuid4, err := uuid.NewRandom()
 	if err != nil {
-		return nil, fmt.Errorf("os.OpenFile: %w", err)
+		return Media{}, err
 	}
+	id := uuid4.String()
 
-	if _, err = io.Copy(f, bytes.NewReader(buf)); err != nil {
-		return nil, fmt.Errorf("io.Copy: %w", err)
-	}
-
-	return f, nil
+	return Media{
+		Id:        id,
+		Filename:  fmt.Sprintf("%s-%s", id, filename),
+		Type:      t,
+		AccountId: accountId,
+		CreatedAt: time.Now(),
+	}, nil
 }
 
-func (m *Media) deleteTempFile(filename string) error {
-	return os.Remove(filename)
-}
+func (m Media) removeTmpFile() { os.Remove(m.Filename) }

@@ -42,7 +42,7 @@ file_storage:
   bucket: "answersuck"
   host: "697408.selcdn.ru"
   cdn_host: "cdn.answersuck.com"
-  cdn: false
+  cdn: true
   ssl: true
 
 email:

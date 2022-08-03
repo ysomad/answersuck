@@ -5,89 +5,67 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"time"
 )
 
 type (
 	repository interface {
-		Save(ctx context.Context, m Media) (Media, error)
-		FindMimeTypeById(ctx context.Context, mediaId string) (string, error)
+		Save(ctx context.Context, m Media) error
+		FindMediaTypeById(ctx context.Context, mediaId string) (string, error)
 	}
 
-	fileUploader interface {
-		Upload(ctx context.Context, f File) (url.URL, error)
+	fileStorage interface {
+		Upload(ctx context.Context, f *File) (filename string, err error)
+		URL(filename string) url.URL
 	}
 )
 
 type service struct {
 	repo    repository
-	storage fileUploader
+	storage fileStorage
 }
 
-func NewService(r repository, s fileUploader) *service {
+func NewService(r repository, s fileStorage) *service {
 	return &service{
 		repo:    r,
 		storage: s,
 	}
 }
 
-func (s *service) UploadAndSave(ctx context.Context, dto *UploadDTO) (Media, error) {
-	t := MimeType(dto.ContentType)
+func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithURL, error) {
+	defer m.removeTmpFile()
 
-	if !t.valid() {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave: %w", ErrInvalidMimeType)
-	}
-
-	m := Media{
-		AccountId: dto.AccountId,
-		Type:      t,
-		CreatedAt: time.Now(),
-	}
-
-	if err := m.generateId(); err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.generateId: %w", err)
-	}
-
-	filename := m.filenameFromId(dto.Filename)
-
-	tmp, err := m.newTempFile(filename, dto.Buf)
+	f, err := os.Open(m.Filename)
 	if err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - m.newTempFile: %w", err)
+		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - os.Open: %w", err)
 	}
-
-	defer m.deleteTempFile(filename)
-	defer tmp.Close()
-
-	f, err := os.Open(filename)
-	if err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - os.Open: %w", err)
-	}
-
 	defer f.Close()
 
-	url, err := s.storage.Upload(ctx, File{
+	filename, err := s.storage.Upload(ctx, &File{
 		Reader:      f,
-		Name:        filename,
-		Size:        dto.Size,
-		ContentType: dto.ContentType,
+		Name:        m.Filename,
+		Size:        size,
+		ContentType: string(m.Type),
 	})
-
 	if err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
+		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
 	}
 
-	m.URL = url.String()
+	m.Filename = filename
 
-	m, err = s.repo.Save(ctx, m)
-	if err != nil {
-		return Media{}, fmt.Errorf("mediaService - UploadAndSave - s.repo.Save: %w", err)
+	if err = s.repo.Save(ctx, m); err != nil {
+		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - s.repo.Save: %w", err)
 	}
 
-	return m, nil
+	url := s.storage.URL(m.Filename)
+	return WithURL{
+		Id:        m.Id,
+		URL:       url.String(),
+		MediaType: m.Type,
+	}, nil
 }
 
-func (s *service) GetMimeTypeById(ctx context.Context, mediaId string) (string, error) {
-	t, err := s.repo.FindMimeTypeById(ctx, mediaId)
+func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (string, error) {
+	t, err := s.repo.FindMediaTypeById(ctx, mediaId)
 	if err != nil {
 		return "", fmt.Errorf("mediaService - GetMimeTypeById - s.repo.FindMimeTypeById: %w", err)
 	}

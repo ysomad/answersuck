@@ -14,69 +14,62 @@ import (
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
-const (
-	mediaTable = "media"
-)
-
-type mediaRepo struct {
-	l *zap.Logger
-	c *postgres.Client
+type MediaRepo struct {
+	*zap.Logger
+	*postgres.Client
 }
 
-func NewMediaRepo(l *zap.Logger, c *postgres.Client) *mediaRepo {
-	return &mediaRepo{
-		l: l,
-		c: c,
-	}
+func NewMediaRepo(l *zap.Logger, c *postgres.Client) *MediaRepo {
+	return &MediaRepo{l, c}
 }
 
-func (r *mediaRepo) Save(ctx context.Context, m media.Media) (media.Media, error) {
-	sql := fmt.Sprintf(`
-		INSERT INTO %s(id, url, type, account_id, created_at)
-		VALUES ($1, $2, $3, $4, $5)
-	`, mediaTable)
+func (r *MediaRepo) Save(ctx context.Context, m media.Media) error {
+	sql := `
+INSERT INTO media(id, filename, type, account_id, created_at)
+VALUES ($1, $2, $3, $4, $5)`
 
-	_, err := r.c.Pool.Exec(
+	r.Debug("psql - media - Save", zap.String("sql", sql), zap.Any("media", m))
+
+	_, err := r.Pool.Exec(
 		ctx,
 		sql,
 		m.Id,
-		m.URL,
+		m.Filename,
 		m.Type,
 		m.AccountId,
 		m.CreatedAt,
 	)
-
 	if err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return media.Media{}, fmt.Errorf("psql - media - Save - r.c.Pool.Exec: %w", media.ErrAlreadyExist)
+				return fmt.Errorf("psql - media - Save - r.Pool.Exec: %w", media.ErrAlreadyExist)
 			case pgerrcode.ForeignKeyViolation:
-				return media.Media{}, fmt.Errorf("psql - media - Save - r.c.Pool.Exec: %w", media.ErrAccountNotFound)
+				return fmt.Errorf("psql - media - Save - r.Pool.Exec: %w", media.ErrAccountNotFound)
 			}
 		}
 
-		return media.Media{}, fmt.Errorf("psql - media - Save - r.c.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - media - Save - r.Pool.Exec: %w", err)
 	}
 
-	return m, nil
+	return nil
 }
 
-func (r *mediaRepo) FindMimeTypeById(ctx context.Context, mediaId string) (string, error) {
-	sql := fmt.Sprintf(`SELECT type FROM %s WHERE id = $1`, mediaTable)
+func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (string, error) {
+	sql := "SELECT type FROM media WHERE id = $1"
+	r.Debug("psql - media - FindMediaTypeById", zap.String("mediaId", mediaId))
 
-	var mimeType string
-
-	err := r.c.Pool.QueryRow(ctx, sql, mediaId).Scan(&mimeType)
+	var mediaType string
+	err := r.Pool.QueryRow(ctx, sql, mediaId).Scan(&mediaType)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return "", fmt.Errorf("psql - media - FindMimeTypeById - r.c.Pool.QueryRow.Scan: %w", media.ErrNotFound)
+			return "", fmt.Errorf("psql - media - FindMediaTypeById - r.Pool.QueryRow.Scan: %w", media.ErrNotFound)
 		}
 
-		return "", fmt.Errorf("psql - media - FindMimeTypeById - r.c.Pool.QueryRow.Scan: %w", err)
+		return "", fmt.Errorf("psql - media - FindMediaTypeById - r.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return mimeType, nil
+	return mediaType, nil
 }

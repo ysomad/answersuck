@@ -101,7 +101,6 @@ func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) {
 		Secure:   h.cfg.CookieSecure,
 		HttpOnly: h.cfg.CookieHTTPOnly,
 	})
-
 	w.WriteHeader(http.StatusOK)
 }
 

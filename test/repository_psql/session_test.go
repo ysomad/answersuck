@@ -13,7 +13,7 @@ import (
 	"github.com/answersuck/host/internal/pkg/strings"
 )
 
-var sessionRepo *psql.SessionRepo
+var _sessionRepo *psql.SessionRepo
 
 func insertTestSession(s *session.Session) (*session.Session, error) {
 	id, err := strings.NewUnique(session.SessionIdLen)
@@ -29,7 +29,7 @@ func insertTestSession(s *session.Session) (*session.Session, error) {
 	s.UserAgent = "ua"
 	s.IP = "192.0.0.1"
 
-	_, err = postgresClient.Pool.Exec(
+	_, err = _sessionRepo.Pool.Exec(
 		context.Background(),
 		`INSERT INTO session (id, account_id, max_age, user_agent, ip, expires_at, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -105,7 +105,7 @@ func TestSessionRepo_Save(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := sessionRepo.Save(tt.args.ctx, tt.args.s)
+			err := _sessionRepo.Save(tt.args.ctx, tt.args.s)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -114,7 +114,7 @@ func TestSessionRepo_Save(t *testing.T) {
 			assert.NoError(t, err)
 
 			var s session.Session
-			err = postgresClient.Pool.QueryRow(
+			err = _sessionRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT id, account_id, user_agent, ip, max_age, expires_at, created_at FROM session WHERE id = $1",
 				tt.args.s.Id,
@@ -174,7 +174,7 @@ func TestSessionRepo_FindById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := sessionRepo.FindById(tt.args.ctx, tt.args.sessionId)
+			got, err := _sessionRepo.FindById(tt.args.ctx, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -242,7 +242,7 @@ func TestSessionRepo_FindWithAccountDetails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := sessionRepo.FindWithAccountDetails(tt.args.ctx, tt.args.sessionId)
+			got, err := _sessionRepo.FindWithAccountDetails(tt.args.ctx, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -312,7 +312,7 @@ func TestSessionRepo_FindAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := sessionRepo.FindAll(tt.args.ctx, tt.args.accountId)
+			got, err := _sessionRepo.FindAll(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -370,7 +370,7 @@ func TestSessionRepo_Delete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := sessionRepo.Delete(tt.args.ctx, tt.args.sessionId)
+			err := _sessionRepo.Delete(tt.args.ctx, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -428,7 +428,7 @@ func TestSessionRepo_DeleteWithExcept(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := sessionRepo.DeleteWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId)
+			err := _sessionRepo.DeleteWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -437,7 +437,7 @@ func TestSessionRepo_DeleteWithExcept(t *testing.T) {
 			assert.NoError(t, err)
 
 			var sessionCount int
-			err = postgresClient.Pool.QueryRow(
+			err = _sessionRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT COUNT(id) FROM session WHERE account_id = $1",
 				tt.args.accountId,
@@ -490,7 +490,7 @@ func TestSessionRepo_DeleteAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := sessionRepo.DeleteAll(tt.args.ctx, tt.args.accountId)
+			err := _sessionRepo.DeleteAll(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -499,7 +499,7 @@ func TestSessionRepo_DeleteAll(t *testing.T) {
 			assert.NoError(t, err)
 
 			var sessionCount int
-			err = postgresClient.Pool.QueryRow(
+			err = _sessionRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT COUNT(id) FROM session WHERE account_id = $1",
 				tt.args.accountId,

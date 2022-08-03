@@ -49,7 +49,7 @@ type (
 )
 
 type mediaService interface {
-	UploadAndSave(ctx context.Context, dto *media.UploadDTO) (media.Media, error)
+	UploadAndSave(ctx context.Context, m media.Media, size int64) (media.WithURL, error)
 }
 
 type languageService interface {
