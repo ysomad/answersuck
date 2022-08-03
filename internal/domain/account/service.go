@@ -124,7 +124,7 @@ func (s *service) UpdatePassword(ctx context.Context, accountId, oldPwd, newPwd 
 		return fmt.Errorf("accountService - UpdatePassword - s.password.Verify: %w", err)
 	}
 	if !matches {
-		return fmt.Errorf("accountService - UpdatePassword - s.password.Verify :%w", ErrInvalidPassword)
+		return fmt.Errorf("accountService - UpdatePassword - s.password.Verify: %w", ErrInvalidPassword)
 	}
 
 	phash, err := s.password.Hash(newPwd)

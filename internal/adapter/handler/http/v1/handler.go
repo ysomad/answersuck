@@ -38,6 +38,7 @@ func NewHandler(d *Deps) http.Handler {
 	r.Mount("/accounts", newAccountHandler(d))
 	r.Mount("/sessions", newSessionHandler(d))
 	r.Mount("/auth", newAuthHandler(d))
+	r.Mount("/media", newMediaHandler(d))
 
 	return r
 }

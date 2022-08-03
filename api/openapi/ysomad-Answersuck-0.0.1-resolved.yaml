@@ -14,6 +14,8 @@ tags:
   description: Session operations
 - name: auth
   description: Auth operations
+- name: media
+  description: Media operations
 paths:
   /accounts:
     post:
@@ -412,6 +414,45 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
+  /media:
+    post:
+      tags:
+      - media
+      summary: Upload media
+      operationId: media_upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/media_body'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "413":
+          description: Media File Too Large.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
 components:
   schemas:
     Error:
@@ -531,11 +572,36 @@ components:
         token:
           type: string
           description: JWT token contains Account Id as subject and audience in payload
+    MediaType:
+      type: string
+      enum:
+      - image/jpeg
+      - image/png
+      - audio/mp4
+      - audio/aac
+      - audio/mpeg
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        type:
+          $ref: '#/components/schemas/MediaType'
     inline_response_200:
       type: object
       properties:
         result:
           $ref: '#/components/schemas/SessionArray'
+    media_body:
+      type: object
+      properties:
+        media:
+          type: string
+          format: binary
   securitySchemes:
     cookieAuth:
       type: apiKey

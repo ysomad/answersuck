@@ -13,10 +13,12 @@ import (
 	v1 "github.com/answersuck/host/internal/adapter/handler/http/v1"
 	"github.com/answersuck/host/internal/adapter/repository/psql"
 	"github.com/answersuck/host/internal/adapter/smtp"
+	"github.com/answersuck/host/internal/adapter/storage"
 	"github.com/answersuck/host/internal/config"
 	"github.com/answersuck/host/internal/domain/account"
 	"github.com/answersuck/host/internal/domain/auth"
 	"github.com/answersuck/host/internal/domain/email"
+	"github.com/answersuck/host/internal/domain/media"
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/pkg/blocklist"
 	"github.com/answersuck/host/internal/pkg/crypto"
@@ -96,6 +98,15 @@ func Run(configPath string) {
 		AccountService:  accountService,
 		PasswordMatcher: argon2Hasher,
 	})
+
+	storageProvider, err := storage.NewProvider(&cfg.FileStorage)
+	if err != nil {
+		l.Fatal("app - Run - storage.NewProvider", zap.Error(err))
+	}
+
+	mediaRepo := psql.NewMediaRepo(l, pg)
+	mediaService := media.NewService(mediaRepo, storageProvider)
+
 	//
 	// languageRepo := psql.NewLanguageRepo(l, pg)
 	// languageService := language.NewService(languageRepo)
@@ -109,13 +120,7 @@ func Run(configPath string) {
 	// questionRepo := psql.NewQuestionRepo(l, pg)
 	// questionService := question.NewService(questionRepo)
 	//
-	// storageProvider, err := storage.NewProvider(&cfg.FileStorage)
-	// if err != nil {
-	// 	l.Fatal("app - Run - storage.NewProvider: %w", err)
-	// }
-	//
-	// mediaRepo := psql.NewMediaRepo(l, pg)
-	// mediaService := media.NewService(mediaRepo, storageProvider)
+
 	//
 	// answerRepo := psql.NewAnswerRepo(l, pg)
 	// answerService := answer.NewService(l, answerRepo, mediaService)
@@ -134,6 +139,7 @@ func Run(configPath string) {
 		SessionService: sessionService,
 		LoginService:   loginService,
 		TokenService:   tokenService,
+		MediaService:   mediaService,
 	}))
 
 	httpServer := httpserver.New(m, httpserver.Port(cfg.HTTP.Port))

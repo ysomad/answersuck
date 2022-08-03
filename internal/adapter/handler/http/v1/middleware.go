@@ -12,7 +12,7 @@ import (
 )
 
 // mwAuthenticator check if request is authenticated and sets accountId and sessionId to locals (context)
-func mwAuthenticator(l *zap.Logger, cfg *config.Session, s sessionService) func(http.Handler) http.Handler {
+func mwAuthenticator(l *zap.Logger, cfg *config.Session, sess sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie(cfg.CookieName)
@@ -24,14 +24,14 @@ func mwAuthenticator(l *zap.Logger, cfg *config.Session, s sessionService) func(
 
 			ctx := r.Context()
 
-			sess, err := s.GetById(ctx, sessionCookie.Value)
+			s, err := sess.GetById(ctx, sessionCookie.Value)
 			if err != nil {
 				l.Error("http - v1 - middleware - mwAuthenticator - s.GetById", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			if sess.Expired() {
+			if s.Expired() {
 				l.Info("http - v1 - middleware - mwAuthenticator", zap.Error(session.ErrExpired))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
@@ -43,8 +43,8 @@ func mwAuthenticator(l *zap.Logger, cfg *config.Session, s sessionService) func(
 			// 	return
 			// }
 
-			ctx = context.WithValue(ctx, sessionIdCtxKey{}, sess.Id)
-			ctx = context.WithValue(ctx, accountIdCtxKey{}, sess.AccountId)
+			ctx = context.WithValue(ctx, sessionIdCtxKey{}, s.Id)
+			ctx = context.WithValue(ctx, accountIdCtxKey{}, s.AccountId)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
@@ -56,10 +56,12 @@ func mwAuthenticator(l *zap.Logger, cfg *config.Session, s sessionService) func(
 // mwVerificator is simillar to mwAuthenticator but also checks if account is verified,
 // aborts if not.
 //
-// should be used instead of sessionMW
-func mwVerificator(l *zap.Logger, cfg *config.Session, s sessionService) func(http.Handler) http.Handler {
+// should be used instead of mwAuthenticator
+func mwVerificator(l *zap.Logger, cfg *config.Session, sess sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
 			sessionCookie, err := r.Cookie(cfg.CookieName)
 			if err != nil {
 				l.Info("http - v1 - middleware - mwVerificator - r.Cookie", zap.Error(err))
@@ -69,32 +71,33 @@ func mwVerificator(l *zap.Logger, cfg *config.Session, s sessionService) func(ht
 
 			ctx := r.Context()
 
-			sess, err := s.GetByIdWithDetails(ctx, sessionCookie.Value)
+			s, err := sess.GetByIdWithDetails(ctx, sessionCookie.Value)
 			if err != nil {
 				l.Error("http - v1 - middleware - mwVerificator - s.GetById", zap.Error(err))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			if !sess.AccountVerified {
-				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
-				writeErr(w, http.StatusForbidden, account.ErrNotEnoughRights)
-				return
-			}
 
-			if sess.Expired() {
+			if s.Expired() {
 				l.Info("http - v1 - middleware - mwVerificator", zap.Error(session.ErrExpired))
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			if !sess.SameDevice(session.Device{IP: r.RemoteAddr, UserAgent: r.UserAgent()}) {
-				l.Error("http - v1 - middleware - mwVerificator", zap.Error(session.ErrDeviceMismatch))
-				w.WriteHeader(http.StatusUnauthorized)
+			// if !sess.SameDevice(session.Device{IP: r.RemoteAddr, UserAgent: r.UserAgent()}) {
+			// 	l.Error("http - v1 - middleware - mwVerificator", zap.Error(session.ErrDeviceMismatch))
+			// 	w.WriteHeader(http.StatusUnauthorized)
+			// 	return
+			// }
+
+			if !s.AccountVerified {
+				l.Info("http - v1 - middleware - mwVerificator - !res.Verified", zap.Error(account.ErrNotEnoughRights))
+				writeErr(w, http.StatusForbidden, account.ErrNotEnoughRights)
 				return
 			}
 
-			ctx = context.WithValue(ctx, sessionIdCtxKey{}, sess.Id)
-			ctx = context.WithValue(ctx, accountIdCtxKey{}, sess.AccountId)
+			ctx = context.WithValue(ctx, sessionIdCtxKey{}, s.Id)
+			ctx = context.WithValue(ctx, accountIdCtxKey{}, s.AccountId)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}

@@ -13,7 +13,7 @@ import (
 	"github.com/answersuck/host/internal/pkg/strings"
 )
 
-var accountRepo *psql.AccountRepo
+var _accountRepo *psql.AccountRepo
 
 func insertTestAccount(a account.Account) (account.Account, error) {
 	u := strings.NewRandom(10)
@@ -26,7 +26,7 @@ func insertTestAccount(a account.Account) (account.Account, error) {
 	a.CreatedAt = now
 	a.UpdatedAt = now
 
-	err := postgresClient.Pool.QueryRow(
+	err := _accountRepo.Pool.QueryRow(
 		context.Background(),
 		"INSERT INTO account(email, nickname, password, is_verified, is_archived, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING id",
 		a.Email, a.Nickname, a.Password, a.Verified, a.Archived, a.CreatedAt, a.UpdatedAt,
@@ -40,7 +40,7 @@ func insertTestVerifCode(accountId string) (string, error) {
 		return "", err
 	}
 
-	_, err = postgresClient.Pool.Exec(
+	_, err = _accountRepo.Pool.Exec(
 		context.Background(),
 		"INSERT INTO verification(code, account_id) VALUES ($1, $2)",
 		code, accountId,
@@ -58,7 +58,7 @@ func insertTestPasswordToken(accountId string, createdAt time.Time) (string, err
 		return "", err
 	}
 
-	_, err = postgresClient.Pool.Exec(
+	_, err = _accountRepo.Pool.Exec(
 		context.Background(),
 		"INSERT INTO password_token(token, account_id, created_at) VALUES ($1, $2, $3)",
 		t, accountId, createdAt,
@@ -118,7 +118,7 @@ func TestAccountRepo_Save(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.Save(tt.args.ctx, tt.args.a, tt.args.code)
+			got, err := _accountRepo.Save(tt.args.ctx, tt.args.a, tt.args.code)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -133,7 +133,7 @@ func TestAccountRepo_Save(t *testing.T) {
 			assert.Equal(t, now, got.UpdatedAt)
 
 			var code string
-			err = postgresClient.Pool.QueryRow(
+			err = _accountRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT code FROM verification WHERE account_id = $1",
 				got.Id,
@@ -195,7 +195,7 @@ func TestAccountRepo_FindById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.FindById(tt.args.ctx, tt.args.accountId)
+			got, err := _accountRepo.FindById(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -266,7 +266,7 @@ func TestAccountRepo_FindByEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.FindByEmail(tt.args.ctx, tt.args.email)
+			got, err := _accountRepo.FindByEmail(tt.args.ctx, tt.args.email)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -336,7 +336,7 @@ func TestAccountRepo_FindByNickname(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.FindByNickname(tt.args.ctx, tt.args.nickname)
+			got, err := _accountRepo.FindByNickname(tt.args.ctx, tt.args.nickname)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -412,7 +412,7 @@ func TestAccountRepo_SetArchived(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := accountRepo.SetArchived(tt.args.ctx, tt.args.accountId, tt.args.archived, tt.args.updatedAt)
+			err := _accountRepo.SetArchived(tt.args.ctx, tt.args.accountId, tt.args.archived, tt.args.updatedAt)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -421,7 +421,7 @@ func TestAccountRepo_SetArchived(t *testing.T) {
 			assert.NoError(t, err)
 
 			var archived bool
-			err = postgresClient.Pool.QueryRow(
+			err = _accountRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT is_archived FROM account WHERE id = $1",
 				tt.args.accountId,
@@ -469,7 +469,7 @@ func TestAccountRepo_FindPasswordById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.FindPasswordById(tt.args.ctx, tt.args.accountId)
+			got, err := _accountRepo.FindPasswordById(tt.args.ctx, tt.args.accountId)
 			assert.Equal(t, tt.wantErr, (err != nil))
 			assert.ErrorIs(t, err, tt.err)
 			assert.Equal(t, tt.want, got)
@@ -513,7 +513,7 @@ func TestAccountRepo_UpdatePassword(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := accountRepo.UpdatePassword(tt.args.ctx, tt.args.accountId, tt.args.password)
+			err := _accountRepo.UpdatePassword(tt.args.ctx, tt.args.accountId, tt.args.password)
 			assert.Equal(t, tt.wantErr, (err != nil))
 			assert.ErrorIs(t, err, tt.err)
 		})
@@ -608,7 +608,7 @@ func TestAccountRepo_SavePasswordToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.SavePasswordToken(tt.args.ctx, account.SavePasswordTokenDTO{
+			got, err := _accountRepo.SavePasswordToken(tt.args.ctx, account.SavePasswordTokenDTO{
 				Login: tt.args.login,
 				Token: tt.args.token,
 			})
@@ -624,7 +624,7 @@ func TestAccountRepo_SavePasswordToken(t *testing.T) {
 				tokenFromDB string
 				createdAt   time.Time
 			)
-			err = postgresClient.Pool.QueryRow(
+			err = _accountRepo.Pool.QueryRow(
 				context.Background(),
 				`SELECT token, created_at
 FROM password_token
@@ -685,7 +685,7 @@ func TestAccountRepo_FindPasswordToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.FindPasswordToken(tt.args.ctx, tt.args.token)
+			got, err := _accountRepo.FindPasswordToken(tt.args.ctx, tt.args.token)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -748,7 +748,7 @@ func TestAccountRepo_SetPassword(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := accountRepo.SetPassword(tt.args.ctx, tt.args.dto)
+			err := _accountRepo.SetPassword(tt.args.ctx, tt.args.dto)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -760,7 +760,7 @@ func TestAccountRepo_SetPassword(t *testing.T) {
 				password  string
 				updatedAt time.Time
 			)
-			err = postgresClient.Pool.QueryRow(
+			err = _accountRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT password, updated_at FROM account WHERE id = $1",
 				tt.args.dto.AccountId,
@@ -768,7 +768,7 @@ func TestAccountRepo_SetPassword(t *testing.T) {
 			assert.NoError(t, err)
 
 			var exists bool
-			err = postgresClient.Pool.QueryRow(
+			err = _accountRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT EXISTS(SELECT 1 FROM password_token WHERE token = $1)",
 				tt.args.dto.Token,
@@ -828,7 +828,7 @@ func TestAccountRepo_Verify(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := accountRepo.Verify(tt.args.ctx, tt.args.code, tt.args.updatedAt)
+			err := _accountRepo.Verify(tt.args.ctx, tt.args.code, tt.args.updatedAt)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return
@@ -840,7 +840,7 @@ func TestAccountRepo_Verify(t *testing.T) {
 				verified  bool
 				updatedAt time.Time
 			)
-			err = postgresClient.Pool.QueryRow(
+			err = _accountRepo.Pool.QueryRow(
 				context.Background(),
 				"SELECT is_verified, updated_at FROM account WHERE id = $1",
 				a.Id,
@@ -903,7 +903,7 @@ func TestAccountRepo_FindVerification(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := accountRepo.FindVerification(tt.args.ctx, tt.args.accountId)
+			got, err := _accountRepo.FindVerification(tt.args.ctx, tt.args.accountId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return

@@ -37,7 +37,7 @@ func NewProvider(cfg *config.FileStorage) (*provider, error) {
 	}, nil
 }
 
-func (p *provider) Upload(ctx context.Context, f media.File) (url.URL, error) {
+func (p *provider) Upload(ctx context.Context, f *media.File) (string, error) {
 	opts := minio.PutObjectOptions{
 		ContentType:  f.ContentType,
 		UserMetadata: map[string]string{"x-amz-acl": "public-read"},
@@ -45,30 +45,24 @@ func (p *provider) Upload(ctx context.Context, f media.File) (url.URL, error) {
 
 	res, err := p.client.PutObject(ctx, p.bucket, f.Name, f.Reader, f.Size, opts)
 	if err != nil {
-		return url.URL{}, err
+		return "", err
 	}
 
+	return res.Key, nil
+}
+
+func (p *provider) URL(filename string) url.URL {
 	if p.useCDN {
-		return p.cdnURL(p.cdnHost, res.Key), nil
+		return url.URL{
+			Scheme: "https",
+			Host:   p.cdnHost,
+			Path:   filename,
+		}
 	}
 
-	return p.storageURL(p.storageHost, p.bucket, res.Key), nil
-}
-
-// Private
-
-func (p *provider) cdnURL(host, filename string) url.URL {
 	return url.URL{
 		Scheme: "https",
-		Host:   host,
-		Path:   filename,
-	}
-}
-
-func (p *provider) storageURL(host, bucket, filename string) url.URL {
-	return url.URL{
-		Scheme: "https",
-		Host:   host,
-		Path:   bucket + "/" + filename,
+		Host:   p.storageHost,
+		Path:   p.bucket + "/" + filename,
 	}
 }

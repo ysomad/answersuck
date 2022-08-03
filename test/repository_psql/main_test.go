@@ -11,12 +11,11 @@ import (
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
-var postgresClient *postgres.Client
-
-func initRepos(logLevel string) {
+func initRepos(logLevel string, c *postgres.Client) {
 	logger := logger.New(os.Stdout, logLevel)
-	accountRepo = psql.NewAccountRepo(logger, postgresClient)
-	sessionRepo = psql.NewSessionRepo(logger, postgresClient)
+	_accountRepo = psql.NewAccountRepo(logger, c)
+	_sessionRepo = psql.NewSessionRepo(logger, c)
+	_mediaRepo = psql.NewMediaRepo(logger, c)
 }
 
 func TestMain(m *testing.M) {
@@ -29,13 +28,12 @@ func TestMain(m *testing.M) {
 		log.Fatal("Empty PG_URL environment variable")
 	}
 
-	var err error
-	postgresClient, err = postgres.NewClient(postgresURI)
+	postgresClient, err := postgres.NewClient(postgresURI)
 	if err != nil {
 		log.Fatalf("Error initializing Postgres test client: %v", err)
 	}
 
-	initRepos(os.Getenv("LOG_LEVEL"))
+	initRepos(os.Getenv("LOG_LEVEL"), postgresClient)
 
 	os.Exit(m.Run())
 }
