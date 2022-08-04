@@ -20,7 +20,7 @@ type authHandler struct {
 	token    tokenService
 }
 
-func newAuthHandler(d *Deps) http.Handler {
+func newAuthMux(d *Deps) *chi.Mux {
 	h := authHandler{
 		cfg:      &d.Config.Session,
 		log:      d.Logger,
@@ -29,15 +29,15 @@ func newAuthHandler(d *Deps) http.Handler {
 		token:    d.TokenService,
 	}
 
-	r := chi.NewRouter()
+	m := chi.NewMux()
 
 	authenticator := mwAuthenticator(d.Logger, &d.Config.Session, d.SessionService)
 
-	r.With(mwDeviceCtx).Post("/login", h.login)
-	r.With(authenticator).Post("/token", h.createToken)
-	r.Post("/logout", h.logout)
+	m.With(mwDeviceCtx).Post("/login", h.login)
+	m.With(authenticator).Post("/token", h.createToken)
+	m.Post("/logout", h.logout)
 
-	return r
+	return m
 }
 
 func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {

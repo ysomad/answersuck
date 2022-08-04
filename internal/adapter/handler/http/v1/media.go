@@ -17,19 +17,19 @@ type mediaHandler struct {
 	media    mediaService
 }
 
-func newMediaHandler(d *Deps) http.Handler {
+func newMediaMux(d *Deps) *chi.Mux {
 	h := mediaHandler{
 		log:      d.Logger,
 		validate: d.Validate,
 		media:    d.MediaService,
 	}
 
-	r := chi.NewRouter()
+	m := chi.NewMux()
 	verificator := mwVerificator(d.Logger, &d.Config.Session, d.SessionService)
 
-	r.With(verificator).Post("/", h.upload)
+	m.With(verificator).Post("/", h.upload)
 
-	return r
+	return m
 }
 
 func (h *mediaHandler) upload(w http.ResponseWriter, r *http.Request) {

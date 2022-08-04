@@ -16,27 +16,27 @@ type sessionHandler struct {
 	session  sessionService
 }
 
-func newSessionHandler(d *Deps) http.Handler {
+func newSessionMux(d *Deps) *chi.Mux {
 	h := sessionHandler{
 		log:      d.Logger,
 		validate: d.Validate,
 		session:  d.SessionService,
 	}
 
-	r := chi.NewRouter()
+	m := chi.NewMux()
 
 	authenticator := mwAuthenticator(d.Logger, &d.Config.Session, d.SessionService)
 	tokenRequired := mwTokenRequired(d.Logger, d.TokenService)
 
-	r.Route("/", func(r chi.Router) {
+	m.Route("/", func(r chi.Router) {
 		r.Use(authenticator)
 		r.Get("/", h.getAll)
 		r.With(tokenRequired).Delete("/", h.terminateAll)
 	})
 
-	r.With(authenticator, tokenRequired).Delete("/{sessionId}", h.terminate)
+	m.With(authenticator, tokenRequired).Delete("/{sessionId}", h.terminate)
 
-	return r
+	return m
 }
 
 func (h *sessionHandler) getAll(w http.ResponseWriter, r *http.Request) {

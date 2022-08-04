@@ -18,7 +18,7 @@ type accountHandler struct {
 	account  accountService
 }
 
-func newAccountHandler(d *Deps) http.Handler {
+func newAccountMux(d *Deps) *chi.Mux {
 	h := accountHandler{
 		cfg:      &d.Config.Session,
 		log:      d.Logger,
@@ -26,26 +26,26 @@ func newAccountHandler(d *Deps) http.Handler {
 		account:  d.AccountService,
 	}
 
-	r := chi.NewRouter()
+	m := chi.NewMux()
 
 	authenticator := mwAuthenticator(d.Logger, &d.Config.Session, d.SessionService)
 	tokenRequired := mwTokenRequired(d.Logger, d.TokenService)
 
-	r.Post("/", h.create)
-	r.With(authenticator, tokenRequired).Delete("/", h.delete)
+	m.Post("/", h.create)
+	m.With(authenticator, tokenRequired).Delete("/", h.delete)
 
-	r.Route("/verification", func(r chi.Router) {
+	m.Route("/verification", func(r chi.Router) {
 		r.With(authenticator).Post("/", h.requestVerification)
 		r.Put("/", h.verify)
 	})
 
-	r.Route("/password", func(r chi.Router) {
+	m.Route("/password", func(r chi.Router) {
 		r.With(authenticator).Patch("/", h.updatePassword)
 		r.Post("/", h.resetPassword)
 		r.Put("/", h.setPassword)
 	})
 
-	return r
+	return m
 }
 
 func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
