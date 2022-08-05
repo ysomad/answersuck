@@ -39,7 +39,7 @@ type tagGetAllResponse struct {
 }
 
 func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
-	var req pagination.CursorParams
+	var req pagination.Params
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.log.Info("http - v1 - tag - getAll - RequestBody", zap.Error(err))
 		writeErr(w, http.StatusBadRequest, err)

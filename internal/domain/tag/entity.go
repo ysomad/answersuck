@@ -18,14 +18,14 @@ type Tag struct {
 }
 
 type ListParams struct {
-	pagination.CursorParams
+	pagination.Params
 }
 
 func NewListParams(lastId uint32, limit uint64) ListParams {
 	if limit == 0 || limit > pagination.MaxLimit {
 		limit = pagination.DefaultLimit
 	}
-	return ListParams{pagination.CursorParams{
+	return ListParams{pagination.Params{
 		LastId: lastId,
 		Limit:  limit,
 	}}

@@ -5,7 +5,7 @@ const (
 	MaxLimit     = 50
 )
 
-type CursorParams struct {
+type Params struct {
 	Limit  uint64 `json:"limit"`
 	LastId uint32 `json:"last_id"`
 }
