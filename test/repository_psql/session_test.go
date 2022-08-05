@@ -381,7 +381,7 @@ func TestSessionRepo_Delete(t *testing.T) {
 	}
 }
 
-func TestSessionRepo_DeleteWithExcept(t *testing.T) {
+func TestSessionRepo_DeleteAllWithExcept(t *testing.T) {
 	t.Parallel()
 
 	a, err := insertTestAccount(account.Account{})
@@ -428,7 +428,7 @@ func TestSessionRepo_DeleteWithExcept(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := _sessionRepo.DeleteWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId)
+			err := _sessionRepo.DeleteAllWithExcept(tt.args.ctx, tt.args.accountId, tt.args.sessionId)
 			if tt.wantErr {
 				assert.ErrorIs(t, err, tt.err)
 				return

@@ -14,7 +14,7 @@ type repository interface {
 	FindAll(ctx context.Context, accountId string) ([]*Session, error)
 	Delete(ctx context.Context, sessionId string) error
 	DeleteAll(ctx context.Context, accountId string) error
-	DeleteWithExcept(ctx context.Context, accountId, sessionId string) error
+	DeleteAllWithExcept(ctx context.Context, accountId, sessionId string) error
 }
 
 type service struct {
@@ -68,9 +68,9 @@ func (s *service) Terminate(ctx context.Context, sessionId string) error {
 	return nil
 }
 
-func (s *service) TerminateWithExcept(ctx context.Context, nickname, sessionId string) error {
-	if err := s.repo.DeleteWithExcept(ctx, nickname, sessionId); err != nil {
-		return fmt.Errorf("sessionService - TerminateWithExcept - s.repo.DeleteWithExcept: %w", err)
+func (s *service) TerminateAllWithExcept(ctx context.Context, nickname, sessionId string) error {
+	if err := s.repo.DeleteAllWithExcept(ctx, nickname, sessionId); err != nil {
+		return fmt.Errorf("sessionService - TerminateAllWithExcept - s.repo.DeleteWithExcept: %w", err)
 	}
 
 	return nil

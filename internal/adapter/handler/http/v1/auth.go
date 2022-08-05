@@ -20,7 +20,7 @@ type authHandler struct {
 	token    tokenService
 }
 
-func newAuthHandler(d *Deps) http.Handler {
+func newAuthMux(d *Deps) *chi.Mux {
 	h := authHandler{
 		cfg:      &d.Config.Session,
 		log:      d.Logger,
@@ -29,44 +29,44 @@ func newAuthHandler(d *Deps) http.Handler {
 		token:    d.TokenService,
 	}
 
-	r := chi.NewRouter()
+	m := chi.NewMux()
 
 	authenticator := mwAuthenticator(d.Logger, &d.Config.Session, d.SessionService)
 
-	r.With(mwDeviceCtx).Post("/login", h.login)
-	r.With(authenticator).Post("/token", h.createToken)
-	r.Post("/logout", h.logout)
+	m.With(mwDeviceCtx).Post("/login", h.login)
+	m.With(authenticator).Post("/token", h.createToken)
+	m.Post("/logout", h.logout)
 
-	return r
+	return m
+}
+
+type loginReq struct {
+	Login    string `json:"login" validate:"required,email|alphanum"`
+	Password string `json:"password" validate:"required"`
 }
 
 func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	_, err := r.Cookie(h.cfg.CookieName)
 	if err == nil {
 		writeErr(w, http.StatusBadRequest, auth.ErrAlreadyLoggedIn)
 		return
 	}
 
-	var req auth.LoginReq
-
+	var req loginReq
 	if err = h.validate.RequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - auth - login - h.v.ValidateRequestBody", zap.Error(err))
+		h.log.Info("http - v1 - auth - login - h.v.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
-	ctx := r.Context()
-
-	d, err := getDevice(ctx)
+	d, err := getDevice(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - auth - login - getDevice", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	s, err := h.service.Login(ctx, req.Login, req.Password, d)
+	s, err := h.service.Login(r.Context(), req.Login, req.Password, d)
 	if err != nil {
 		h.log.Error("http - v1 - auth - login - h.service.Login", zap.Error(err))
 
@@ -88,7 +88,6 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 		Secure:   h.cfg.CookieSecure,
 		HttpOnly: h.cfg.CookieHTTPOnly,
 	})
-
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -104,27 +103,30 @@ func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+type tokenCreateReq struct {
+	Password string `json:"password" validate:"required"`
+}
+
+type tokenCreateResp struct {
+	Token string `json:"token"`
+}
+
 func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var req auth.TokenCreateReq
-
+	var req tokenCreateReq
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - auth - createToken - h.v.ValidateRequestBody", zap.Error(err))
+		h.log.Info("http - v1 - auth - createToken - h.v.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
-	ctx := r.Context()
-
-	accountId, err := getAccountId(ctx)
+	accountId, err := getAccountId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - auth - createToken - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	t, err := h.token.Create(ctx, accountId, req.Password)
+	t, err := h.token.Create(r.Context(), accountId, req.Password)
 	if err != nil {
 		h.log.Error("http - v1 - auth - createToken - h.token.Create", zap.Error(err))
 
@@ -137,6 +139,5 @@ func (h *authHandler) createToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, auth.TokenCreateResp{Token: t})
-	w.WriteHeader(http.StatusOK)
+	writeJSON(w, http.StatusOK, tokenCreateResp{Token: t})
 }

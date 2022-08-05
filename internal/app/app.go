@@ -131,7 +131,7 @@ func Run(configPath string) {
 	// http
 	m := chi.NewMux()
 
-	m.Mount("/v1", v1.NewHandler(&v1.Deps{
+	m.Mount("/v1", v1.NewMux(&v1.Deps{
 		Config:         &cfg,
 		Logger:         l,
 		Validate:       validate,

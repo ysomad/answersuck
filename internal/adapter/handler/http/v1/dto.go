@@ -9,12 +9,14 @@ type listResp struct {
 	Result any `json:"result"`
 }
 
-func writeJSON(w http.ResponseWriter, v any) {
-	b, _ := json.Marshal(v)
-	w.Write(b)
+func writeJSON(w http.ResponseWriter, code int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(v)
+	w.WriteHeader(code)
 }
 
-func writeList(w http.ResponseWriter, v any) {
-	b, _ := json.Marshal(listResp{Result: v})
-	w.Write(b)
+func writeList(w http.ResponseWriter, code int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(listResp{Result: v})
+	w.WriteHeader(code)
 }

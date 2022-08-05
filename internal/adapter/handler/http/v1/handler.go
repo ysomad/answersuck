@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
@@ -26,21 +24,21 @@ type Deps struct {
 	QuestionService questionService
 }
 
-func NewHandler(d *Deps) http.Handler {
-	r := chi.NewRouter()
-	r.Use(
+func NewMux(d *Deps) *chi.Mux {
+	m := chi.NewMux()
+	m.Use(
 		middleware.RequestID,
 		middleware.RealIP,
 		middleware.Logger,
 		middleware.Recoverer,
 	)
 
-	r.Mount("/accounts", newAccountHandler(d))
-	r.Mount("/sessions", newSessionHandler(d))
-	r.Mount("/auth", newAuthHandler(d))
-	r.Mount("/media", newMediaHandler(d))
+	m.Mount("/accounts", newAccountMux(d))
+	m.Mount("/sessions", newSessionMux(d))
+	m.Mount("/auth", newAuthMux(d))
+	m.Mount("/media", newMediaMux(d))
 
-	return r
+	return m
 }
 
 // func NewRouter(d *Deps) *fiber.App {

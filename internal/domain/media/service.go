@@ -10,11 +10,11 @@ import (
 type (
 	repository interface {
 		Save(ctx context.Context, m Media) error
-		FindMediaTypeById(ctx context.Context, mediaId string) (string, error)
+		FindMediaTypeById(ctx context.Context, mediaId string) (Type, error)
 	}
 
 	fileStorage interface {
-		Upload(ctx context.Context, f *File) (filename string, err error)
+		Upload(ctx context.Context, f File) (url url.URL, err error)
 		URL(filename string) url.URL
 	}
 )
@@ -40,7 +40,7 @@ func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithU
 	}
 	defer f.Close()
 
-	filename, err := s.storage.Upload(ctx, &File{
+	url, err := s.storage.Upload(ctx, File{
 		Reader:      f,
 		Name:        m.Filename,
 		Size:        size,
@@ -50,13 +50,10 @@ func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithU
 		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
 	}
 
-	m.Filename = filename
-
 	if err = s.repo.Save(ctx, m); err != nil {
 		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - s.repo.Save: %w", err)
 	}
 
-	url := s.storage.URL(m.Filename)
 	return WithURL{
 		Id:        m.Id,
 		URL:       url.String(),
@@ -64,7 +61,7 @@ func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithU
 	}, nil
 }
 
-func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (string, error) {
+func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (Type, error) {
 	t, err := s.repo.FindMediaTypeById(ctx, mediaId)
 	if err != nil {
 		return "", fmt.Errorf("mediaService - GetMimeTypeById - s.repo.FindMimeTypeById: %w", err)

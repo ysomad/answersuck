@@ -57,11 +57,11 @@ VALUES ($1, $2, $3, $4, $5)`
 	return nil
 }
 
-func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (string, error) {
+func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (media.Type, error) {
 	sql := "SELECT type FROM media WHERE id = $1"
 	r.Debug("psql - media - FindMediaTypeById", zap.String("mediaId", mediaId))
 
-	var mediaType string
+	var mediaType media.Type
 	err := r.Pool.QueryRow(ctx, sql, mediaId).Scan(&mediaType)
 	if err != nil {
 		if err == pgx.ErrNoRows {

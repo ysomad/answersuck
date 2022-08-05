@@ -20,7 +20,7 @@ type validate interface {
 }
 
 type accountService interface {
-	Create(ctx context.Context, r account.CreateReq) (account.Account, error)
+	Create(ctx context.Context, email, nickname, password string) (account.Account, error)
 	Delete(ctx context.Context, accountId string) error
 	RequestVerification(ctx context.Context, accountId string) error
 	Verify(ctx context.Context, code string) error
@@ -34,7 +34,7 @@ type sessionService interface {
 	GetById(ctx context.Context, sessionId string) (*session.Session, error)
 	GetAll(ctx context.Context, accountId string) ([]*session.Session, error)
 	Terminate(ctx context.Context, sessionId string) error
-	TerminateWithExcept(ctx context.Context, accountId, sessionId string) error
+	TerminateAllWithExcept(ctx context.Context, accountId, sessionId string) error
 }
 
 type (
