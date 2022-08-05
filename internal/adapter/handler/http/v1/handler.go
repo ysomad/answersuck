@@ -37,6 +37,7 @@ func NewMux(d *Deps) *chi.Mux {
 	m.Mount("/sessions", newSessionMux(d))
 	m.Mount("/auth", newAuthMux(d))
 	m.Mount("/media", newMediaMux(d))
+	m.Mount("/languages", newLanguageMux(d))
 
 	return m
 }

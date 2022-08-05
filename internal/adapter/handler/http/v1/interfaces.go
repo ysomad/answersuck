@@ -53,7 +53,7 @@ type mediaService interface {
 }
 
 type languageService interface {
-	GetAll(ctx context.Context) ([]*language.Language, error)
+	GetAll(ctx context.Context) ([]language.Language, error)
 }
 
 type tagService interface {

@@ -18,6 +18,7 @@ import (
 	"github.com/answersuck/host/internal/domain/account"
 	"github.com/answersuck/host/internal/domain/auth"
 	"github.com/answersuck/host/internal/domain/email"
+	"github.com/answersuck/host/internal/domain/language"
 	"github.com/answersuck/host/internal/domain/media"
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/pkg/blocklist"
@@ -107,10 +108,9 @@ func Run(configPath string) {
 	mediaRepo := psql.NewMediaRepo(l, pg)
 	mediaService := media.NewService(mediaRepo, storageProvider)
 
-	//
-	// languageRepo := psql.NewLanguageRepo(l, pg)
-	// languageService := language.NewService(languageRepo)
-	//
+	languageRepo := psql.NewLanguageRepo(l, pg)
+	languageService := language.NewService(languageRepo)
+
 	// tagRepo := psql.NewTagRepo(l, pg)
 	// tagService := tag.NewService(tagRepo)
 	//
@@ -132,14 +132,15 @@ func Run(configPath string) {
 	m := chi.NewMux()
 
 	m.Mount("/v1", v1.NewMux(&v1.Deps{
-		Config:         &cfg,
-		Logger:         l,
-		Validate:       validate,
-		AccountService: accountService,
-		SessionService: sessionService,
-		LoginService:   loginService,
-		TokenService:   tokenService,
-		MediaService:   mediaService,
+		Config:          &cfg,
+		Logger:          l,
+		Validate:        validate,
+		AccountService:  accountService,
+		SessionService:  sessionService,
+		LoginService:    loginService,
+		TokenService:    tokenService,
+		MediaService:    mediaService,
+		LanguageService: languageService,
 	}))
 
 	httpServer := httpserver.New(m, httpserver.Port(cfg.HTTP.Port))

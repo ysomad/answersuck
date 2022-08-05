@@ -1,36 +1,44 @@
 package v1
 
-import "go.uber.org/zap"
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
+)
 
 type languageHandler struct {
-	log     *zap.Logger
-	service languageService
+	log      *zap.Logger
+	language languageService
 }
 
-// func newLanguageHandler(d *Deps) *languageHandler {
-// 	return &languageHandler{
-// 		log:     d.Logger,
-// 		service: d.LanguageService,
-// 	}
-// }
+func newLanguageHandler(d *Deps) *languageHandler {
+	return &languageHandler{
+		log:      d.Logger,
+		language: d.LanguageService,
+	}
+}
 
-// func newLanguageRouter(d *Deps) *fiber.App {
-// 	h := newLanguageHandler(d)
-// 	r := fiber.New()
+func newLanguageMux(d *Deps) *chi.Mux {
+	h := languageHandler{
+		log:      d.Logger,
+		language: d.LanguageService,
+	}
 
-// 	r.Get("/", h.getAll)
+	m := chi.NewMux()
 
-// 	return r
-// }
+	m.Get("/", h.getAll)
 
-// func (h *languageHandler) getAll(c *fiber.Ctx) error {
-// 	l, err := h.service.GetAll(c.Context())
-// 	if err != nil {
-// 		h.log.Error("http - v1 - language - getAll - h.service.GetAll: %w", zap.Error(err))
-// 		c.Status(fiber.StatusInternalServerError)
-// 		return nil
-// 	}
+	return m
+}
 
-// 	c.Status(fiber.StatusOK).JSON(listResp{Result: l})
-// 	return nil
-// }
+func (h *languageHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	langs, err := h.language.GetAll(r.Context())
+	if err != nil {
+		h.log.Info("http - v1 - language - getAll - h.language.GetAll", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, listResponse{langs})
+}

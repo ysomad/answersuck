@@ -10,35 +10,26 @@ import (
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
-const languageTable = "language"
-
 type languageRepo struct {
-	l *zap.Logger
-	c *postgres.Client
+	*zap.Logger
+	*postgres.Client
 }
 
 func NewLanguageRepo(l *zap.Logger, c *postgres.Client) *languageRepo {
-	return &languageRepo{
-		l: l,
-		c: c,
-	}
+	return &languageRepo{l, c}
 }
 
-func (r *languageRepo) FindAll(ctx context.Context) ([]*language.Language, error) {
-	sql := fmt.Sprintf(`
-		SELECT id, name
-		FROM %s
-	`, languageTable)
+func (r *languageRepo) FindAll(ctx context.Context) ([]language.Language, error) {
+	sql := "SELECT id, name FROM language"
+	r.Debug("psql - language - FindAll", zap.String("sql", sql))
 
-	rows, err := r.c.Pool.Query(ctx, sql)
+	rows, err := r.Pool.Query(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("psql - language - FindAll - r.c.Pool.Query: %w", err)
 	}
-
 	defer rows.Close()
 
-	var langs []*language.Language
-
+	var langs []language.Language
 	for rows.Next() {
 		var l language.Language
 
@@ -46,7 +37,7 @@ func (r *languageRepo) FindAll(ctx context.Context) ([]*language.Language, error
 			return nil, fmt.Errorf("psql - language - FindAll - rows.Scan: %w", err)
 		}
 
-		langs = append(langs, &l)
+		langs = append(langs, l)
 	}
 
 	if rows.Err() != nil {
