@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -22,10 +23,11 @@ type Client struct {
 	connTimeout          time.Duration
 	preferSimpleProtocol bool
 
-	Pool *pgxpool.Pool
+	Builder squirrel.StatementBuilderType
+	Pool    *pgxpool.Pool
 }
 
-func NewClient(uri string, opts ...Option) (*Client, error) {
+func NewClient(url string, opts ...Option) (*Client, error) {
 	c := &Client{
 		maxPoolSize:  defaultMaxPoolSize,
 		connAttempts: defaultConnAttempts,
@@ -36,7 +38,7 @@ func NewClient(uri string, opts ...Option) (*Client, error) {
 		opt(c)
 	}
 
-	poolConfig, err := pgxpool.ParseConfig(uri)
+	poolConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		return nil, fmt.Errorf("postgres - NewPostgres - pgxpool.ParseConfig: %w", err)
 	}
@@ -57,9 +59,12 @@ func NewClient(uri string, opts ...Option) (*Client, error) {
 
 		c.connAttempts--
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("postgres - NewClient - connAttempts == 0: %w", err)
 	}
+
+	c.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 	return c, nil
 }

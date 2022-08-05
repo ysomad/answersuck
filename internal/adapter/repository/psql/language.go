@@ -25,7 +25,7 @@ func (r *languageRepo) FindAll(ctx context.Context) ([]language.Language, error)
 
 	rows, err := r.Pool.Query(ctx, sql)
 	if err != nil {
-		return nil, fmt.Errorf("psql - language - FindAll - r.c.Pool.Query: %w", err)
+		return nil, fmt.Errorf("psql - language - FindAll - r.Pool.Query: %w", err)
 	}
 	defer rows.Close()
 
