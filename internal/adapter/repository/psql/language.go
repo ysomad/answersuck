@@ -20,10 +20,14 @@ func NewLanguageRepo(l *zap.Logger, c *postgres.Client) *languageRepo {
 }
 
 func (r *languageRepo) FindAll(ctx context.Context) ([]language.Language, error) {
-	sql := "SELECT id, name FROM language"
-	r.Debug("psql - language - FindAll", zap.String("sql", sql))
+	sql, args, err := r.Builder.Select("id, name").From("language").ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("psql - language - FindAll - ToSql: %w", err)
+	}
 
-	rows, err := r.Pool.Query(ctx, sql)
+	r.Debug("psql - language - FindAll", zap.Any("args", args))
+
+	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("psql - language - FindAll - r.Pool.Query: %w", err)
 	}
