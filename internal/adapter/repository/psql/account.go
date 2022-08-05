@@ -16,11 +16,6 @@ import (
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
-const (
-	accountTable       = "account"
-	passwordTokenTable = "password_token"
-)
-
 type AccountRepo struct {
 	*zap.Logger
 	*postgres.Client
@@ -72,7 +67,7 @@ SELECT account_id FROM a`
 func (r *AccountRepo) FindById(ctx context.Context, accountId string) (account.Account, error) {
 	sql, args, err := r.Builder.
 		Select("email, nickname, password, is_verified, created_at, updated_at").
-		From(accountTable).
+		From("account").
 		Where(sq.And{
 			sq.Eq{"id": accountId},
 			sq.Eq{"is_archived": false},
@@ -107,7 +102,7 @@ func (r *AccountRepo) FindById(ctx context.Context, accountId string) (account.A
 func (r *AccountRepo) FindByEmail(ctx context.Context, email string) (account.Account, error) {
 	sql, args, err := r.Builder.
 		Select("id, nickname, password, is_verified, created_at, updated_at").
-		From(accountTable).
+		From("account").
 		Where(sq.And{
 			sq.Eq{"email": email},
 			sq.Eq{"is_archived": false},
@@ -142,7 +137,7 @@ func (r *AccountRepo) FindByEmail(ctx context.Context, email string) (account.Ac
 func (r *AccountRepo) FindByNickname(ctx context.Context, nickname string) (account.Account, error) {
 	sql, args, err := r.Builder.
 		Select("id, email, password, is_verified, created_at, updated_at").
-		From(accountTable).
+		From("account").
 		Where(sq.And{
 			sq.Eq{"nickname": nickname},
 			sq.Eq{"is_archived": false},
@@ -178,7 +173,7 @@ func (r *AccountRepo) FindByNickname(ctx context.Context, nickname string) (acco
 
 func (r *AccountRepo) SetArchived(ctx context.Context, accountId string, archived bool, updatedAt time.Time) error {
 	sql, args, err := r.Builder.
-		Update(accountTable).
+		Update("account").
 		Set("is_archived", archived).
 		Set("updated_at", updatedAt).
 		Where(sq.And{
@@ -206,7 +201,7 @@ func (r *AccountRepo) SetArchived(ctx context.Context, accountId string, archive
 func (r *AccountRepo) FindPasswordById(ctx context.Context, accountId string) (string, error) {
 	sql, args, err := r.Builder.
 		Select("password").
-		From(accountTable).
+		From("account").
 		Where(sq.Eq{"id": accountId}).
 		ToSql()
 	if err != nil {
@@ -230,7 +225,7 @@ func (r *AccountRepo) FindPasswordById(ctx context.Context, accountId string) (s
 
 func (r *AccountRepo) UpdatePassword(ctx context.Context, accountId, password string) error {
 	sql, args, err := r.Builder.
-		Update(accountTable).
+		Update("account").
 		Set("password", password).
 		Where(sq.Eq{"id": accountId}).
 		ToSql()
