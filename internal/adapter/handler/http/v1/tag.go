@@ -33,11 +33,6 @@ func newTagMux(d *Deps) *chi.Mux {
 	return m
 }
 
-type tagGetAllResponse struct {
-	Result  []tag.Tag `json:"result"`
-	HasNext bool      `json:"has_next"`
-}
-
 func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	var req pagination.Params
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

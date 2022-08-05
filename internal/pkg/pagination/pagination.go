@@ -6,8 +6,8 @@ const (
 )
 
 type Params struct {
-	Limit  uint64 `json:"limit"`
 	LastId uint32 `json:"last_id"`
+	Limit  uint64 `json:"limit"`
 }
 
 type List[T any] struct {
