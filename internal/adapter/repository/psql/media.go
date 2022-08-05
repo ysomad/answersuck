@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
@@ -24,22 +25,18 @@ func NewMediaRepo(l *zap.Logger, c *postgres.Client) *MediaRepo {
 }
 
 func (r *MediaRepo) Save(ctx context.Context, m media.Media) error {
-	sql := `
-INSERT INTO media(id, filename, type, account_id, created_at)
-VALUES ($1, $2, $3, $4, $5)`
-
-	r.Debug("psql - media - Save", zap.String("sql", sql), zap.Any("media", m))
-
-	_, err := r.Pool.Exec(
-		ctx,
-		sql,
-		m.Id,
-		m.Filename,
-		m.Type,
-		m.AccountId,
-		m.CreatedAt,
-	)
+	sql, args, err := r.Builder.
+		Insert("media").
+		Columns("id, filename, type, account_id, created_at").
+		Values(m.Id, m.Filename, m.Type, m.AccountId, m.CreatedAt).
+		ToSql()
 	if err != nil {
+		return fmt.Errorf("psql - media - Save - ToSql: %w", err)
+	}
+
+	r.Debug("psql - media - Save", zap.String("sql", sql), zap.Any("args", args))
+
+	if _, err = r.Pool.Exec(ctx, sql, args...); err != nil {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) {
@@ -58,11 +55,20 @@ VALUES ($1, $2, $3, $4, $5)`
 }
 
 func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (media.Type, error) {
-	sql := "SELECT type FROM media WHERE id = $1"
-	r.Debug("psql - media - FindMediaTypeById", zap.String("mediaId", mediaId))
+	sql, args, err := r.Builder.
+		Select("type").
+		From("media").
+		Where(sq.Eq{"id": mediaId}).
+		ToSql()
+	if err != nil {
+		return "", fmt.Errorf("psql - media - FindMediaTypeById - ToSql: %w", err)
+	}
+
+	r.Debug("psql - media - FindMediaTypeById", zap.Any("args", args))
 
 	var mediaType media.Type
-	err := r.Pool.QueryRow(ctx, sql, mediaId).Scan(&mediaType)
+
+	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&mediaType)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return "", fmt.Errorf("psql - media - FindMediaTypeById - r.Pool.QueryRow.Scan: %w", media.ErrNotFound)

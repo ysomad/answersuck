@@ -54,7 +54,7 @@ func (h *sessionHandler) getAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeList(w, http.StatusOK, s)
+	writeJSON(w, http.StatusOK, listResponse{s})
 }
 
 func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {

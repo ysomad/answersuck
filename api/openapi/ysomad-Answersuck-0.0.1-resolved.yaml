@@ -16,6 +16,8 @@ tags:
   description: Auth operations
 - name: media
   description: Media operations
+- name: language
+  description: Language operations
 paths:
   /accounts:
     post:
@@ -453,6 +455,21 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
+  /languages:
+    get:
+      tags:
+      - language
+      summary: Get languages
+      operationId: languageGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "500":
+          description: Internal Server Error.
 components:
   schemas:
     Error:
@@ -591,6 +608,17 @@ components:
           format: uri
         type:
           $ref: '#/components/schemas/MediaType'
+    Language:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    LanguageArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Language'
     inline_response_200:
       type: object
       properties:
@@ -602,6 +630,11 @@ components:
         media:
           type: string
           format: binary
+    inline_response_200_1:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/LanguageArray'
   securitySchemes:
     cookieAuth:
       type: apiKey

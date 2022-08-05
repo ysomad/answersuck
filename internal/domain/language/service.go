@@ -6,7 +6,7 @@ import (
 )
 
 type repository interface {
-	FindAll(ctx context.Context) ([]*Language, error)
+	FindAll(ctx context.Context) ([]Language, error)
 }
 
 type service struct {
@@ -19,7 +19,7 @@ func NewService(r repository) *service {
 	}
 }
 
-func (s *service) GetAll(ctx context.Context) ([]*Language, error) {
+func (s *service) GetAll(ctx context.Context) ([]Language, error) {
 	l, err := s.repo.FindAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("languageService - GetAll - s.repo.FindAll: %w", err)
