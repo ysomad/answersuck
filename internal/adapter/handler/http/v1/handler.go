@@ -33,10 +33,10 @@ func NewMux(d *Deps) *chi.Mux {
 		middleware.Recoverer,
 	)
 
-	m.Mount("/accounts", newAccountHandler(d))
-	m.Mount("/sessions", newSessionHandler(d))
-	m.Mount("/auth", newAuthHandler(d))
-	m.Mount("/media", newMediaHandler(d))
+	m.Mount("/accounts", newAccountMux(d))
+	m.Mount("/sessions", newSessionMux(d))
+	m.Mount("/auth", newAuthMux(d))
+	m.Mount("/media", newMediaMux(d))
 
 	return m
 }

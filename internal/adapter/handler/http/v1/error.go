@@ -19,16 +19,14 @@ type apiErr struct {
 }
 
 func writeErr(w http.ResponseWriter, code int, err error) {
-	b, _ := json.Marshal(apiErr{Message: err.Error()})
 	w.WriteHeader(code)
-	w.Write(b)
+	json.NewEncoder(w).Encode(apiErr{Message: err.Error()})
 }
 
 func writeValidationErr(w http.ResponseWriter, code int, err error, detail map[string]string) {
-	b, _ := json.Marshal(validationErr{
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(validationErr{
 		Message: err.Error(),
 		Detail:  detail,
 	})
-	w.WriteHeader(code)
-	w.Write(b)
 }

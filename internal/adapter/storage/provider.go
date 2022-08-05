@@ -37,7 +37,7 @@ func NewProvider(cfg *config.FileStorage) (*provider, error) {
 	}, nil
 }
 
-func (p *provider) Upload(ctx context.Context, f *media.File) (string, error) {
+func (p *provider) Upload(ctx context.Context, f *media.File) (url.URL, error) {
 	opts := minio.PutObjectOptions{
 		ContentType:  f.ContentType,
 		UserMetadata: map[string]string{"x-amz-acl": "public-read"},
@@ -45,10 +45,10 @@ func (p *provider) Upload(ctx context.Context, f *media.File) (string, error) {
 
 	res, err := p.client.PutObject(ctx, p.bucket, f.Name, f.Reader, f.Size, opts)
 	if err != nil {
-		return "", err
+		return url.URL{}, err
 	}
 
-	return res.Key, nil
+	return p.URL(res.Key), nil
 }
 
 func (p *provider) URL(filename string) url.URL {
