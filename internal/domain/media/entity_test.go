@@ -1,7 +1,6 @@
 package media
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -56,6 +55,8 @@ func TestType_valid(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		filename  string
 		accountId string
@@ -66,47 +67,104 @@ func TestNew(t *testing.T) {
 		args    args
 		want    Media
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "valid media png",
+			args: args{
+				filename:  "test",
+				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				t:         Type("image/png"),
+			},
+			want: Media{
+				Id:        "some generated id",
+				Filename:  "test",
+				Type:      Type("image/png"),
+				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				CreatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "valid media jpeg",
+			args: args{
+				filename:  "test",
+				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				t:         Type("image/jpeg"),
+			},
+			want: Media{
+				Id:        "some generated id",
+				Filename:  "test",
+				Type:      Type("image/jpeg"),
+				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				CreatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "valid media mp4",
+			args: args{
+				filename:  "test",
+				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				t:         Type("audio/mp4"),
+			},
+			want: Media{
+				Id:        "some generated id",
+				Filename:  "test",
+				Type:      Type("audio/mp4"),
+				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				CreatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "valid media aac",
+			args: args{
+				filename:  "test",
+				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				t:         Type("audio/aac"),
+			},
+			want: Media{
+				Id:        "some generated id",
+				Filename:  "test",
+				Type:      Type("audio/aac"),
+				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				CreatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "valid media mpeg",
+			args: args{
+				filename:  "test",
+				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				t:         Type("audio/mpeg"),
+			},
+			want: Media{
+				Id:        "some generated id",
+				Filename:  "test",
+				Type:      Type("audio/mpeg"),
+				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				CreatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := New(tt.args.filename, tt.args.accountId, tt.args.t)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestMedia_removeTmpFile(t *testing.T) {
-	type fields struct {
-		Id        string
-		Filename  string
-		Type      Type
-		AccountId string
-		CreatedAt time.Time
-	}
-	tests := []struct {
-		name   string
-		fields fields
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			m := Media{
-				Id:        tt.fields.Id,
-				Filename:  tt.fields.Filename,
-				Type:      tt.fields.Type,
-				AccountId: tt.fields.AccountId,
-				CreatedAt: tt.fields.CreatedAt,
-			}
-			m.removeTmpFile()
+			assert.ErrorIs(t, err, tt.err)
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.Equal(t, (tt.want.Id != ""), (got.Id != ""))
+			assert.Contains(t, got.Filename, tt.want.Filename)
+			assert.Equal(t, tt.want.Type, got.Type)
+			assert.Equal(t, tt.want.AccountId, got.AccountId)
+			assert.Equal(t, false, got.CreatedAt.IsZero())
 		})
 	}
 }

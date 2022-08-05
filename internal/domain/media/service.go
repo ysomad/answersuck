@@ -10,7 +10,7 @@ import (
 type (
 	repository interface {
 		Save(ctx context.Context, m Media) error
-		FindMediaTypeById(ctx context.Context, mediaId string) (string, error)
+		FindMediaTypeById(ctx context.Context, mediaId string) (Type, error)
 	}
 
 	fileStorage interface {
@@ -61,7 +61,7 @@ func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithU
 	}, nil
 }
 
-func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (string, error) {
+func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (Type, error) {
 	t, err := s.repo.FindMediaTypeById(ctx, mediaId)
 	if err != nil {
 		return "", fmt.Errorf("mediaService - GetMimeTypeById - s.repo.FindMimeTypeById: %w", err)
