@@ -33,10 +33,7 @@ func newMediaMux(d *Deps) *chi.Mux {
 }
 
 func (h *mediaHandler) upload(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx := r.Context()
-
-	accountId, err := getAccountId(ctx)
+	accountId, err := getAccountId(r.Context())
 	if err != nil {
 		h.log.Info("http - v1 - media - upload - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
@@ -85,15 +82,14 @@ func (h *mediaHandler) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.media.UploadAndSave(ctx, m, fileHeader.Size)
+	resp, err := h.media.UploadAndSave(r.Context(), m, fileHeader.Size)
 	if err != nil {
 		h.log.Error("http - v1 - media - upload - h.media.UploadAndSave", zap.Error(err))
-
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	writeJSON(w, resp)
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // func (h *mediaHandler) upload(c *fiber.Ctx) error {

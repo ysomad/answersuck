@@ -177,11 +177,11 @@ func (r *SessionRepo) Delete(ctx context.Context, sessionId string) error {
 	return nil
 }
 
-func (r *SessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId string) error {
+func (r *SessionRepo) DeleteAllWithExcept(ctx context.Context, accountId, sessionId string) error {
 	sql := "DELETE FROM session WHERE account_id = $1 AND id != $2"
 
 	r.Debug(
-		"psql - session - DeleteWithExcept",
+		"psql - session - DeleteAllWithExcept",
 		zap.String("sql", sql),
 		zap.String("sessionId", sessionId),
 		zap.String("accountId", accountId),
@@ -189,10 +189,10 @@ func (r *SessionRepo) DeleteWithExcept(ctx context.Context, accountId, sessionId
 
 	ct, err := r.Pool.Exec(ctx, sql, accountId, sessionId)
 	if err != nil {
-		return fmt.Errorf("psql - session - DeleteWithExcept - r.Pool.Exec: %w", err)
+		return fmt.Errorf("psql - session - DeleteAllWithExcept - r.Pool.Exec: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("psql - session - DeleteWithExcept - r.Pool.Exec: %w", session.ErrAccountNotFound)
+		return fmt.Errorf("psql - session - DeleteAllWithExcept - r.Pool.Exec: %w", session.ErrAccountNotFound)
 	}
 
 	return nil

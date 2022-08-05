@@ -40,32 +40,25 @@ func newSessionMux(d *Deps) *chi.Mux {
 }
 
 func (h *sessionHandler) getAll(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx := r.Context()
-
-	accountId, err := getAccountId(ctx)
+	accountId, err := getAccountId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - session - getAll - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	s, err := h.session.GetAll(ctx, accountId)
+	s, err := h.session.GetAll(r.Context(), accountId)
 	if err != nil {
 		h.log.Error("http - v1 - session - getAll - h.service.GetAll", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	writeList(w, s)
-	w.WriteHeader(http.StatusOK)
+	writeList(w, http.StatusOK, s)
 }
 
 func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx := r.Context()
-
-	currSessionId, err := getSessionId(ctx)
+	currSessionId, err := getSessionId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - session - terminate - getSessionId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
@@ -78,7 +71,7 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.session.Terminate(ctx, sessionId); err != nil {
+	if err := h.session.Terminate(r.Context(), sessionId); err != nil {
 		h.log.Error("http - v1 - session - terminate - h.service.Terminate", zap.Error(err))
 
 		if errors.Is(err, session.ErrNotFound) {
@@ -94,24 +87,21 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *sessionHandler) terminateAll(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx := r.Context()
-
-	accountId, err := getAccountId(ctx)
+	accountId, err := getAccountId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - session - terminateAll - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	sessionId, err := getSessionId(ctx)
+	currSessionId, err := getSessionId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - session - terminateAll - getSessionId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	if err = h.session.TerminateWithExcept(ctx, accountId, sessionId); err != nil {
+	if err = h.session.TerminateAllWithExcept(r.Context(), accountId, currSessionId); err != nil {
 		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return

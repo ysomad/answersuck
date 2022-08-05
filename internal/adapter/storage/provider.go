@@ -37,7 +37,7 @@ func NewProvider(cfg *config.FileStorage) (*provider, error) {
 	}, nil
 }
 
-func (p *provider) Upload(ctx context.Context, f *media.File) (url.URL, error) {
+func (p *provider) Upload(ctx context.Context, f media.File) (url.URL, error) {
 	opts := minio.PutObjectOptions{
 		ContentType:  f.ContentType,
 		UserMetadata: map[string]string{"x-amz-acl": "public-read"},

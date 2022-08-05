@@ -38,12 +38,12 @@ func NewService(d *Deps) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateReq) (Account, error) {
-	if s.blockList.Find(r.Nickname) {
+func (s *service) Create(ctx context.Context, email, nickname, password string) (Account, error) {
+	if s.blockList.Find(nickname) {
 		return Account{}, fmt.Errorf("accountService - Create - s.blockList.Find: %w", ErrForbiddenNickname)
 	}
 
-	phash, err := s.password.Hash(r.Password)
+	phash, err := s.password.Hash(password)
 	if err != nil {
 		return Account{}, fmt.Errorf("accountService - Create - s.password.Hash: %w", err)
 	}
@@ -54,9 +54,10 @@ func (s *service) Create(ctx context.Context, r CreateReq) (Account, error) {
 	}
 
 	now := time.Now()
+
 	a, err := s.repo.Save(ctx, Account{
-		Email:     r.Email,
-		Nickname:  r.Nickname,
+		Email:     email,
+		Nickname:  nickname,
 		Password:  phash,
 		CreatedAt: now,
 		UpdatedAt: now,

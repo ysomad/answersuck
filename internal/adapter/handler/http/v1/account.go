@@ -48,18 +48,21 @@ func newAccountMux(d *Deps) *chi.Mux {
 	return m
 }
 
+type accountCreateReq struct {
+	Email    string `json:"email" validate:"required,email,lte=255"`
+	Nickname string `json:"nickname" validate:"required,alphanum,gte=4,lte=25"`
+	Password string `json:"password" validate:"required,gte=10,lte=128"`
+}
+
 func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var req account.CreateReq
-
+	var req accountCreateReq
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - create - ValidateRequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
-	_, err := h.account.Create(r.Context(), req)
+	_, err := h.account.Create(r.Context(), req.Email, req.Nickname, req.Password)
 	if err != nil {
 		h.log.Error("http - v1 - account - create - h.account.Create", zap.Error(err))
 
@@ -80,17 +83,14 @@ func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *accountHandler) delete(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx := r.Context()
-
-	accountId, err := getAccountId(ctx)
+	accountId, err := getAccountId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - account - delete - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	if err = h.account.Delete(ctx, accountId); err != nil {
+	if err = h.account.Delete(r.Context(), accountId); err != nil {
 		h.log.Error("http - v1 - account - delete - h.account.Delete", zap.Error(err))
 
 		if errors.Is(err, account.ErrNotDeleted) {
@@ -110,22 +110,18 @@ func (h *accountHandler) delete(w http.ResponseWriter, r *http.Request) {
 		Secure:   h.cfg.CookieSecure,
 		HttpOnly: h.cfg.CookieHTTPOnly,
 	})
-
 	w.WriteHeader(http.StatusOK)
 }
 
 func (h *accountHandler) requestVerification(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx := r.Context()
-
-	accountId, err := getAccountId(ctx)
+	accountId, err := getAccountId(r.Context())
 	if err != nil {
 		h.log.Error("http - v1 - account - requestVerification - getAccountId", zap.Error(err))
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	if err = h.account.RequestVerification(ctx, accountId); err != nil {
+	if err = h.account.RequestVerification(r.Context(), accountId); err != nil {
 		h.log.Error("http - v1 - account - requestVerification - h.account.RequestVerification")
 
 		if errors.Is(err, account.ErrAlreadyVerified) {
@@ -141,8 +137,6 @@ func (h *accountHandler) requestVerification(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *accountHandler) verify(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	code := r.URL.Query().Get("code")
 	if code == "" {
 		writeErr(w, http.StatusBadRequest, account.ErrEmptyVerificationCode)
@@ -164,8 +158,12 @@ func (h *accountHandler) verify(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+type accountUpdatePasswordReq struct {
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,gte=10,lte=128,nefield=OldPassword"`
+}
+
 func (h *accountHandler) updatePassword(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	ctx := r.Context()
 
 	accountId, err := getAccountId(ctx)
@@ -175,15 +173,14 @@ func (h *accountHandler) updatePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var req account.UpdatePasswordReq
+	var req accountUpdatePasswordReq
 	if err = h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - updatePassword - h.validate.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
 
-	err = h.account.UpdatePassword(ctx, accountId, req.OldPassword, req.NewPassword)
-	if err != nil {
+	if err = h.account.UpdatePassword(ctx, accountId, req.OldPassword, req.NewPassword); err != nil {
 		h.log.Error("http - v1 - account - updatePassword - h.account.UpdatePassword", zap.Error(err))
 
 		if errors.Is(err, account.ErrInvalidPassword) {
@@ -198,11 +195,12 @@ func (h *accountHandler) updatePassword(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusNoContent)
 }
 
+type accountResetPasswordReq struct {
+	Login string `json:"login" validate:"required,email|alphanum"`
+}
+
 func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var req account.ResetPasswordReq
-
+	var req accountResetPasswordReq
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - resetPassword - h.validate.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
@@ -224,11 +222,13 @@ func (h *accountHandler) resetPassword(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
+type accountSetPasswordReq struct {
+	Token    string `json:"token" validate:"required"`
+	Password string `json:"password" validate:"required,gte=10,lte=128"`
+}
+
 func (h *accountHandler) setPassword(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var req account.SetPasswordReq
-
+	var req accountSetPasswordReq
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - account - setPassword - h.validate.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
