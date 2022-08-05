@@ -17,26 +17,11 @@ import (
 var errTranslatorNotFound = errors.New("translator not found")
 
 type validate struct {
-	*validator.Validate
+	v     *validator.Validate
 	trans ut.Translator
 }
 
 func New() (*validate, error) {
-	v := newValidate()
-
-	t, err := newTranslator()
-	if err != nil {
-		return nil, fmt.Errorf("newTranslator: %w", err)
-	}
-
-	if err = enTranslations.RegisterDefaultTranslations(v, t); err != nil {
-		return nil, fmt.Errorf("enTranslations.RegisterDefaultTranslations: %w", err)
-	}
-
-	return &validate{v, t}, nil
-}
-
-func newTranslator() (ut.Translator, error) {
 	eng := en.New()
 	uni := ut.New(eng, eng)
 
@@ -45,21 +30,20 @@ func newTranslator() (ut.Translator, error) {
 		return nil, errTranslatorNotFound
 	}
 
-	return t, nil
-}
-
-func newValidate() *validator.Validate {
 	v := validator.New()
-	v.RegisterTagNameFunc(tagName)
-	return v
-}
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
 
-func tagName(fld reflect.StructField) string {
-	name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-	if name == "-" {
-		return ""
+	if err := enTranslations.RegisterDefaultTranslations(v, t); err != nil {
+		return nil, fmt.Errorf("enTranslations.RegisterDefaultTranslations: %w", err)
 	}
-	return name
+
+	return &validate{v: v, trans: t}, nil
 }
 
 func (v *validate) TranslateError(err error) map[string]string {
@@ -75,7 +59,7 @@ func (v *validate) RequestBody(b io.ReadCloser, dest any) error {
 		return err
 	}
 
-	if err := v.Struct(dest); err != nil {
+	if err := v.v.Struct(dest); err != nil {
 		return err
 	}
 

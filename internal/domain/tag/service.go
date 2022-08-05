@@ -6,8 +6,8 @@ import (
 )
 
 type repository interface {
-	SaveMultiple(ctx context.Context, r []CreateReq) ([]*Tag, error)
-	FindAll(ctx context.Context) ([]*Tag, error)
+	SaveMultiple(ctx context.Context, r []Tag) ([]Tag, error)
+	FindAll(ctx context.Context) ([]Tag, error)
 }
 
 type service struct {
@@ -20,8 +20,8 @@ func NewService(r repository) *service {
 	}
 }
 
-func (s *service) CreateMultiple(ctx context.Context, r []CreateReq) ([]*Tag, error) {
-	t, err := s.repo.SaveMultiple(ctx, r)
+func (s *service) CreateMultiple(ctx context.Context, t []Tag) ([]Tag, error) {
+	t, err := s.repo.SaveMultiple(ctx, t)
 	if err != nil {
 		return nil, fmt.Errorf("tagService - CreateMultiple - s.repo.SaveMultiple: %w", err)
 	}
@@ -29,7 +29,7 @@ func (s *service) CreateMultiple(ctx context.Context, r []CreateReq) ([]*Tag, er
 	return t, nil
 }
 
-func (s *service) GetAll(ctx context.Context) ([]*Tag, error) {
+func (s *service) GetAll(ctx context.Context) ([]Tag, error) {
 	t, err := s.repo.FindAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("tagService - GetAll - s.repo.FindAll: %w", err)

@@ -18,6 +18,8 @@ tags:
   description: Media operations
 - name: language
   description: Language operations
+- name: tag
+  description: Tag operations
 paths:
   /accounts:
     post:
@@ -470,6 +472,54 @@ paths:
                 $ref: '#/components/schemas/inline_response_200_1'
         "500":
           description: Internal Server Error.
+  /tags:
+    get:
+      tags:
+      - tag
+      summary: Get tags
+      operationId: tagGetAll
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        "500":
+          description: Internal Server Error.
+    post:
+      tags:
+      - tag
+      summary: Create tags
+      description: To perform this operation account must be verified.
+      operationId: tag_create_multiple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tags_body'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Account not verified.
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
 components:
   schemas:
     Error:
@@ -619,6 +669,31 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Language'
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        language_id:
+          type: integer
+    TagArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Tag'
+    TagCreateRequest:
+      required:
+      - languageId
+      - name
+      type: object
+      properties:
+        name:
+          maximum: 32
+          minimum: 1
+          type: string
+        language_id:
+          type: integer
     inline_response_200:
       type: object
       properties:
@@ -635,6 +710,18 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/LanguageArray'
+    inline_response_200_2:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/TagArray'
+    tags_body:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagCreateRequest'
   securitySchemes:
     cookieAuth:
       type: apiKey
