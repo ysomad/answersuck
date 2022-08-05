@@ -12,6 +12,7 @@ import (
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/domain/tag"
 	"github.com/answersuck/host/internal/domain/topic"
+	"github.com/answersuck/host/internal/pkg/pagination"
 )
 
 type validate interface {
@@ -57,8 +58,8 @@ type languageService interface {
 }
 
 type tagService interface {
+	GetAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error)
 	CreateMultiple(ctx context.Context, r []tag.Tag) ([]tag.Tag, error)
-	GetAll(ctx context.Context) ([]tag.Tag, error)
 }
 
 type topicService interface {

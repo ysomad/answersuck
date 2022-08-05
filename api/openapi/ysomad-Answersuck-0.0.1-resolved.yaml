@@ -473,20 +473,6 @@ paths:
         "500":
           description: Internal Server Error.
   /tags:
-    get:
-      tags:
-      - tag
-      summary: Get tags
-      operationId: tagGetAll
-      responses:
-        "200":
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_200_2'
-        "500":
-          description: Internal Server Error.
     post:
       tags:
       - tag
@@ -520,6 +506,26 @@ paths:
           description: Internal Server Error.
       security:
       - cookieAuth: []
+  /tags/list:
+    post:
+      tags:
+      - tag
+      summary: Get tag list
+      operationId: tag_get_list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CursorListRequest'
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        "500":
+          description: Internal Server Error.
 components:
   schemas:
     Error:
@@ -539,6 +545,13 @@ components:
       properties:
         field_name:
           type: string
+    CursorListRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+        last_id:
+          type: integer
     AccountCreateRequest:
       required:
       - email
@@ -710,11 +723,6 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/LanguageArray'
-    inline_response_200_2:
-      type: object
-      properties:
-        result:
-          $ref: '#/components/schemas/TagArray'
     tags_body:
       type: object
       properties:
@@ -722,6 +730,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TagCreateRequest'
+    inline_response_200_2:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/TagArray'
   securitySchemes:
     cookieAuth:
       type: apiKey

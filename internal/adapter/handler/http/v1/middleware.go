@@ -60,8 +60,6 @@ func mwAuthenticator(l *zap.Logger, cfg *config.Session, sess sessionService) fu
 func mwVerificator(l *zap.Logger, cfg *config.Session, sess sessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
 			sessionCookie, err := r.Cookie(cfg.CookieName)
 			if err != nil {
 				l.Info("http - v1 - middleware - mwVerificator - r.Cookie", zap.Error(err))

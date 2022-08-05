@@ -57,7 +57,7 @@ func TestTagRepo_SaveMultiple(t *testing.T) {
 				tags: []tag.Tag{
 					{
 						Name:       "tag1",
-						LanguageId: 999999, // doesnt exist
+						LanguageId: 255, // doesnt exist
 					},
 					{
 						Name:       "tag2",

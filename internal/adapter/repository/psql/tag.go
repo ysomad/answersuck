@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 
+	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"go.uber.org/zap"
 
 	"github.com/answersuck/host/internal/domain/tag"
+	"github.com/answersuck/host/internal/pkg/pagination"
 	"github.com/answersuck/host/internal/pkg/postgres"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 )
 
 type TagRepo struct {
@@ -81,38 +83,40 @@ func (r *TagRepo) SaveMultiple(ctx context.Context, tags []tag.Tag) ([]tag.Tag, 
 	return tagList, nil
 }
 
-func (r *TagRepo) FindAll(ctx context.Context) ([]tag.Tag, error) {
-	sql, _, err := r.Builder.
+func (r *TagRepo) FindAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error) {
+	sql, args, err := r.Builder.
 		Select("id, name, language_id").
 		From("tag").
+		Where(sq.Gt{"id": p.LastId}).
+		Limit(p.Limit + 1).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("psql - tag - FindAll - ToSql: %w", err)
+		return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - ToSql: %w", err)
 	}
 
-	r.Debug("psql - tag - FindAll - ToSql", zap.String("sql", sql))
+	r.Debug("psql - tag - FindAll - ToSql", zap.String("sql", sql), zap.Any("args", args))
 
-	rows, err := r.Pool.Query(ctx, sql)
+	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, fmt.Errorf("psql - tag - FindAll - r.Pool.Query: %w", err)
+		return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - r.Pool.Query: %w", err)
 	}
 	defer rows.Close()
 
-	var tags []tag.Tag
+	tags := make([]tag.Tag, 0, p.Limit+1)
 
 	for rows.Next() {
 		var t tag.Tag
 
 		if err = rows.Scan(&t.Id, &t.Name, &t.LanguageId); err != nil {
-			return nil, fmt.Errorf("psql - tag - FindAll - rows.Scan: %w", err)
+			return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - rows.Scan: %w", err)
 		}
 
 		tags = append(tags, t)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("psql - tag - FindAll - rows.Err: %w", err)
+		return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - rows.Err: %w", err)
 	}
 
-	return tags, nil
+	return pagination.NewList(tags, p.Limit), nil
 }
