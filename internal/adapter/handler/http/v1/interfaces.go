@@ -18,6 +18,7 @@ import (
 type validate interface {
 	TranslateError(err error) map[string]string
 	RequestBody(b io.ReadCloser, dest any) error
+	Struct(s any) error
 }
 
 type accountService interface {
@@ -68,7 +69,7 @@ type topicService interface {
 }
 
 type answerService interface {
-	Create(ctx context.Context, r answer.CreateReq) (answer.Answer, error)
+	Create(ctx context.Context, text, mediaId string) (answer.Answer, error)
 }
 
 type questionService interface {

@@ -16,6 +16,7 @@ import (
 	"github.com/answersuck/host/internal/adapter/storage"
 	"github.com/answersuck/host/internal/config"
 	"github.com/answersuck/host/internal/domain/account"
+	"github.com/answersuck/host/internal/domain/answer"
 	"github.com/answersuck/host/internal/domain/auth"
 	"github.com/answersuck/host/internal/domain/email"
 	"github.com/answersuck/host/internal/domain/language"
@@ -115,6 +116,9 @@ func Run(configPath string) {
 	tagRepo := psql.NewTagRepo(l, pg)
 	tagService := tag.NewService(tagRepo)
 
+	answerRepo := psql.NewAnswerRepo(l, pg)
+	answerService := answer.NewService(answerRepo, mediaService)
+
 	//
 	// topicRepo := psql.NewTopicRepo(l, pg)
 	// topicService := topic.NewService(topicRepo)
@@ -123,9 +127,6 @@ func Run(configPath string) {
 	// questionService := question.NewService(questionRepo)
 	//
 
-	//
-	// answerRepo := psql.NewAnswerRepo(l, pg)
-	// answerService := answer.NewService(l, answerRepo, mediaService)
 	//
 	// playerRepo := psql.NewPlayerRepo(l, pg)
 	// playerService := player.NewService(playerRepo)
@@ -144,6 +145,7 @@ func Run(configPath string) {
 		MediaService:    mediaService,
 		LanguageService: languageService,
 		TagService:      tagService,
+		AnswerService:   answerService,
 	}))
 
 	httpServer := httpserver.New(m, httpserver.Port(cfg.HTTP.Port))

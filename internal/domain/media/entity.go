@@ -25,6 +25,7 @@ type Type string
 const (
 	TypeImageJPEG = Type("image/jpeg")
 	TypeImagePNG  = Type("image/png")
+	TypeImageWEBP = Type("image/webp")
 	TypeAudioMP4  = Type("audio/mp4")
 	TypeAudioAAC  = Type("audio/aac")
 	TypeAudioMPEG = Type("audio/mpeg")
@@ -32,7 +33,7 @@ const (
 
 func (t Type) valid() bool {
 	switch t {
-	case TypeImageJPEG, TypeImagePNG, TypeAudioAAC, TypeAudioMP4, TypeAudioMPEG:
+	case TypeImageJPEG, TypeImagePNG, TypeImageWEBP, TypeAudioMP4, TypeAudioMPEG:
 		return true
 	}
 	return false

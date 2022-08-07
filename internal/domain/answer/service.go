@@ -11,7 +11,7 @@ type (
 	}
 
 	mediaService interface {
-		GetMimeTypeById(ctx context.Context, mediaId string) (string, error)
+		GetMediaTypeById(ctx context.Context, mediaId string) (string, error)
 	}
 )
 
@@ -27,25 +27,22 @@ func NewService(r repository, m mediaService) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateReq) (Answer, error) {
-	a := Answer{Text: r.Text}
-
-	if r.MediaId != "" {
-		a.MediaId = &r.MediaId
-	}
-
-	if a.MediaId != nil {
-		mimeType, err := s.media.GetMimeTypeById(ctx, r.MediaId)
+func (s *service) Create(ctx context.Context, text, mediaId string) (Answer, error) {
+	if mediaId != "" {
+		mediaType, err := s.media.GetMediaTypeById(ctx, mediaId)
 		if err != nil {
 			return Answer{}, fmt.Errorf("answerService - Create - s.media.GetMimeTypeById: %w", err)
 		}
 
-		if !a.isMimeTypeAllowed(mimeType) {
-			return Answer{}, fmt.Errorf("answerService - Create - a.IsMimeTypeAllowed: %w", ErrMimeTypeNotAllowed)
+		if !mediaTypeAllowed(mediaType) {
+			return Answer{}, fmt.Errorf("answerService - Create - a.IsMimeTypeAllowed: %w", ErrMediaTypeNotAllowed)
 		}
 	}
 
-	a, err := s.repo.Save(ctx, a)
+	a, err := s.repo.Save(ctx, Answer{
+		Text:    text,
+		MediaId: &mediaId,
+	})
 	if err != nil {
 		return Answer{}, fmt.Errorf("answerService - Create - s.repo.Save: %w", err)
 	}

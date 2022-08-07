@@ -1,8 +1,10 @@
 package answer
 
+import "errors"
+
 var (
-	// see media.MimeType
-	allowedMimeTypes = [2]string{"image/jpeg", "image/png"}
+	ErrMediaTypeNotAllowed = errors.New("not allowed media type for answer")
+	ErrMediaNotFound       = errors.New("media with provided id not found")
 )
 
 type Answer struct {
@@ -11,16 +13,16 @@ type Answer struct {
 	MediaId *string `json:"mediaId"`
 }
 
-// isMimeTypeAllowed checks if media for answer is in allowed mime type array
-func (a Answer) isMimeTypeAllowed(mt string) bool {
-	var allowed bool
+var allowedMediaType = [3]string{"image/jpeg", "image/png", "image/webp"}
 
-	for _, t := range allowedMimeTypes {
+// mediaTypeAllowed checks if media for answer is in allowed media type array
+func mediaTypeAllowed(mt string) bool {
+	var allowed bool
+	for _, t := range allowedMediaType {
 		if mt == t {
 			allowed = true
 			break
 		}
 	}
-
 	return allowed
 }

@@ -526,6 +526,43 @@ paths:
                 $ref: '#/components/schemas/inline_response_200_2'
         "500":
           description: Internal Server Error.
+  /answers:
+    post:
+      tags:
+      - answer
+      summary: Create answer
+      operationId: answer_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerCreateRequest'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal Server Error.
+      security:
+      - cookieAuth: []
 components:
   schemas:
     Error:
@@ -682,13 +719,8 @@ components:
           type: integer
         name:
           type: string
-        nickname:
-          type: string
         language_id:
           type: integer
-        created_at:
-          type: string
-          format: timestamp
     TagArray:
       type: array
       items:
@@ -716,6 +748,28 @@ components:
         limit:
           type: integer
           description: amount of items on page
+    Answer:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        media_id:
+          type: string
+          format: uuid
+    AnswerCreateRequest:
+      required:
+      - text
+      type: object
+      properties:
+        text:
+          maximum: 100
+          minimum: 1
+          type: string
+        media_id:
+          type: string
+          format: uuid
     inline_response_200:
       type: object
       properties:
