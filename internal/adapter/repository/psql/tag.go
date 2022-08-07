@@ -26,19 +26,15 @@ func NewTagRepo(l *zap.Logger, c *postgres.Client) *TagRepo {
 }
 
 func (r *TagRepo) SaveMultiple(ctx context.Context, tags []tag.Tag) ([]tag.Tag, error) {
-	if len(tags) <= 0 {
-		return nil, tag.ErrEmptyTagList
-	}
-
-	insertBuilder := r.Builder.
+	ib := r.Builder.
 		Insert("tag").
 		Columns("name, language_id")
 
 	for _, t := range tags {
-		insertBuilder = insertBuilder.Values(t.Name, t.LanguageId)
+		ib = ib.Values(t.Name, t.LanguageId)
 	}
 
-	sql, args, err := insertBuilder.Suffix("RETURNING id, name, language_id").ToSql()
+	sql, args, err := ib.Suffix("RETURNING id, name, language_id").ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("psql - tag - SaveMultiple - ToSql: %w", err)
 	}

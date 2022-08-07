@@ -17,11 +17,12 @@ type List[T any] struct {
 
 func NewList[T any](objList []T, limit uint64) List[T] {
 	objLen := uint64(len(objList))
-	if objLen == limit+1 {
+	hasNext := objLen == limit+1
+	if hasNext {
 		objList = objList[:objLen-1]
 	}
 	return List[T]{
 		Result:  objList,
-		HasNext: objLen == limit+1,
+		HasNext: hasNext,
 	}
 }

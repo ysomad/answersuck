@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -26,14 +27,16 @@ func newAnswerMux(d *Deps) *chi.Mux {
 	m := chi.NewMux()
 	verificator := mwVerificator(d.Logger, &d.Config.Session, d.SessionService)
 
+	m.Post("/list", h.getAll)
 	m.With(verificator).Post("/", h.create)
 
 	return m
 }
 
 type answerCreateReq struct {
-	Text    string `json:"text" validate:"required,gte=1,lte=100"`
-	MediaId string `json:"media_id" validate:"omitempty,uuid4"`
+	Text       string `json:"text" validate:"required,gte=1,lte=100"`
+	MediaId    string `json:"media_id" validate:"omitempty,uuid4"`
+	LanguageId int    `json:"language_id" validate:"required,gte=1"`
 }
 
 func (h *answerHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +47,11 @@ func (h *answerHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a, err := h.answer.Create(r.Context(), req.Text, req.MediaId)
+	a, err := h.answer.Create(r.Context(), answer.Answer{
+		Text:       req.Text,
+		MediaId:    &req.MediaId,
+		LanguageId: uint(req.LanguageId),
+	})
 	if err != nil {
 		h.log.Error("http - v1 - answer - create - h.answer.Create", zap.Error(err))
 
@@ -52,9 +59,13 @@ func (h *answerHandler) create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, answer.ErrMediaTypeNotAllowed):
 			writeErr(w, http.StatusBadRequest, answer.ErrMediaTypeNotAllowed)
 			return
-		case errors.Is(err, media.ErrNotFound):
-			writeErr(w, http.StatusBadRequest, answer.ErrMediaNotFound)
+		case errors.Is(err, answer.ErrLanguageNotFound):
+			writeErr(w, http.StatusBadRequest, answer.ErrLanguageNotFound)
 			return
+		case errors.Is(err, media.ErrNotFound):
+			writeErr(w, http.StatusBadRequest, media.ErrNotFound)
+			return
+
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
@@ -62,4 +73,37 @@ func (h *answerHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, a)
+}
+
+type answerGetAllReq struct {
+	Filter struct {
+		Text       string `json:"text"`
+		LanguageId uint   `json:"language_id"`
+	} `json:"filter"`
+	LastId uint32 `json:"last_id"`
+	Limit  uint64 `json:"limit"`
+}
+
+func (h *answerHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	var req answerGetAllReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.log.Info("http - v1 - answer - getAll - Decode", zap.Error(err))
+		writeErr(w, http.StatusBadRequest, err)
+		return
+	}
+
+	answers, err := h.answer.GetAll(
+		r.Context(),
+		answer.NewListParams(req.LastId, req.Limit, answer.Filter{
+			Text:       req.Filter.Text,
+			LanguageId: req.Filter.LanguageId,
+		},
+		))
+	if err != nil {
+		h.log.Info("http - v1 - answer - getAll - h.answer.GetAll", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, answers)
 }

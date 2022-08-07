@@ -69,7 +69,8 @@ type topicService interface {
 }
 
 type answerService interface {
-	Create(ctx context.Context, text, mediaId string) (answer.Answer, error)
+	Create(ctx context.Context, a answer.Answer) (answer.Answer, error)
+	GetAll(ctx context.Context, p answer.ListParams) (pagination.List[answer.Answer], error)
 }
 
 type questionService interface {

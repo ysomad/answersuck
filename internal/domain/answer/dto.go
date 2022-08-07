@@ -1,3 +1,7 @@
 package answer
 
-type ()
+type CreateDTO struct {
+	Text       string
+	MediaId    string
+	LanguageId uint
+}

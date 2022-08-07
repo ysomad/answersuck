@@ -1,6 +1,6 @@
 app:
   name: answersuck-backend
-  version: 0.0.2
+  version: 0.0.3
 
 web:
   url: http://localhost:8000
