@@ -119,8 +119,8 @@ func (f Filter) getConditions() sq.Sqlizer {
 	return and(conditions)
 }
 
-// EnrichSelectBuilder adds filters to squirrel.SelectBuilder
-func (f Filter) EnrichSelectBuilder(b sq.SelectBuilder) sq.SelectBuilder {
+// UseSelectBuilder adds filters to squirrel.SelectBuilder
+func (f Filter) UseSelectBuilder(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(f.getConditions())
 }
 

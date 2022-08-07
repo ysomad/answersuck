@@ -85,16 +85,19 @@ func (r *TagRepo) SaveMultiple(ctx context.Context, tags []tag.Tag) ([]tag.Tag, 
 }
 
 func (r *TagRepo) FindAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error) {
-	selectBuilder := r.Builder.
+	sb := r.Builder.
 		Select("id, name, language_id").
 		From("tag").
 		Where(sq.Gt{"id": p.Pagination.LastId})
 
-	if !p.Filter.Empty() {
-		selectBuilder = filter.New("name", filter.TypeILike, p.Filter.Name).EnrichSelectBuilder(selectBuilder)
+	switch {
+	case p.Filter.Name != "":
+		sb = filter.New("name", filter.TypeILike, p.Filter.Name).UseSelectBuilder(sb)
+	case p.Filter.LanguageId != 0:
+		sb = filter.New("language_id", filter.TypeEQ, p.Filter.LanguageId).UseSelectBuilder(sb)
 	}
 
-	sql, args, err := selectBuilder.Limit(p.Pagination.Limit + 1).ToSql()
+	sql, args, err := sb.Limit(p.Pagination.Limit + 1).ToSql()
 	if err != nil {
 		return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - ToSql: %w", err)
 	}

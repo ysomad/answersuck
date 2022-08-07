@@ -23,7 +23,7 @@ func New(column, order string) Sort {
 	}
 }
 
-// EnrichSelectBuilder adds sort to squirrel.SelectBuilder
-func (s Sort) EnrichSelectBuilder(b sq.SelectBuilder) sq.SelectBuilder {
+// UseSelectBuilder adds sort to squirrel.SelectBuilder
+func (s Sort) UseSelectBuilder(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.OrderBy(s.Column + " " + s.Order)
 }

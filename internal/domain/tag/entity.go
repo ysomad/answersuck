@@ -20,10 +20,9 @@ type Tag struct {
 const maxLimit = 100
 
 type Filter struct {
-	Name string `json:"name"`
+	Name       string
+	LanguageId uint
 }
-
-func (f Filter) Empty() bool { return f == Filter{} }
 
 type ListParams struct {
 	Pagination pagination.Params

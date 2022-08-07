@@ -34,7 +34,8 @@ func newTagMux(d *Deps) *chi.Mux {
 
 type tagGetAllReq struct {
 	Filter struct {
-		Name string `json:"name"`
+		Name       string `json:"name"`
+		LanguageId uint   `json:"language_id"`
 	} `json:"filter"`
 	LastId uint32 `json:"last_id"`
 	Limit  uint64 `json:"limit"`
@@ -48,7 +49,11 @@ func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tagList, err := h.service.GetAll(r.Context(), tag.NewListParams(req.LastId, req.Limit, tag.Filter{Name: req.Filter.Name}))
+	f := tag.Filter{
+		Name:       req.Filter.Name,
+		LanguageId: req.Filter.LanguageId,
+	}
+	tagList, err := h.service.GetAll(r.Context(), tag.NewListParams(req.LastId, req.Limit, f))
 	if err != nil {
 		h.log.Error("http - v1 - tag - getAll - h.service.GetAll", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
