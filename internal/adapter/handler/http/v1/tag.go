@@ -60,9 +60,9 @@ func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
 
 type tagCreateMultipleReq struct {
 	Tags []struct {
-		Name       string `json:"name" binding:"required,gte=1,lte=32"`
-		LanguageId uint8  `json:"language_id" binding:"required"`
-	} `json:"tags" binding:"required,min=1,max=10"`
+		Name       string `json:"name" validate:"required,gte=1,lte=32"`
+		LanguageId uint8  `json:"language_id" validate:"required"`
+	} `json:"tags" validate:"required,min=1,max=10"`
 }
 
 func (h *tagHandler) createMultiple(w http.ResponseWriter, r *http.Request) {
