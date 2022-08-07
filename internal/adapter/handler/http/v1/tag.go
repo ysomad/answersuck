@@ -43,7 +43,7 @@ type tagGetAllReq struct {
 func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	var req tagGetAllReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.log.Info("http - v1 - tag - getAll - RequestBody", zap.Error(err))
+		h.log.Info("http - v1 - tag - getAll - Decode", zap.Error(err))
 		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
