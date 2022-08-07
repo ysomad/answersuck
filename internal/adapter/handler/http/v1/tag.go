@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/answersuck/host/internal/domain/tag"
-	"github.com/answersuck/host/internal/pkg/pagination"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
@@ -33,15 +32,23 @@ func newTagMux(d *Deps) *chi.Mux {
 	return m
 }
 
+type tagGetAllReq struct {
+	Filter struct {
+		Name string `json:"name"`
+	} `json:"filter"`
+	LastId uint32 `json:"last_id"`
+	Limit  uint64 `json:"limit"`
+}
+
 func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
-	var req pagination.Params
+	var req tagGetAllReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.log.Info("http - v1 - tag - getAll - RequestBody", zap.Error(err))
 		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 
-	tagList, err := h.service.GetAll(r.Context(), tag.NewListParams(req.LastId, req.Limit))
+	tagList, err := h.service.GetAll(r.Context(), tag.NewListParams(req.LastId, req.Limit, tag.Filter{Name: req.Filter.Name}))
 	if err != nil {
 		h.log.Error("http - v1 - tag - getAll - h.service.GetAll", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)

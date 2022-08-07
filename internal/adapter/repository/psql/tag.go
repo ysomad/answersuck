@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/host/internal/domain/tag"
+	"github.com/answersuck/host/internal/pkg/filter"
 	"github.com/answersuck/host/internal/pkg/pagination"
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
@@ -84,12 +85,16 @@ func (r *TagRepo) SaveMultiple(ctx context.Context, tags []tag.Tag) ([]tag.Tag, 
 }
 
 func (r *TagRepo) FindAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error) {
-	sql, args, err := r.Builder.
+	selectBuilder := r.Builder.
 		Select("id, name, language_id").
 		From("tag").
-		Where(sq.Gt{"id": p.LastId}).
-		Limit(p.Limit + 1).
-		ToSql()
+		Where(sq.Gt{"id": p.Pagination.LastId})
+
+	if !p.Filter.Empty() {
+		selectBuilder = filter.New("name", filter.TypeILike, p.Filter.Name).EnrichSelectBuilder(selectBuilder)
+	}
+
+	sql, args, err := selectBuilder.Limit(p.Pagination.Limit + 1).ToSql()
 	if err != nil {
 		return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - ToSql: %w", err)
 	}
@@ -102,7 +107,7 @@ func (r *TagRepo) FindAll(ctx context.Context, p tag.ListParams) (pagination.Lis
 	}
 	defer rows.Close()
 
-	tags := make([]tag.Tag, 0, p.Limit+1)
+	tags := make([]tag.Tag, 0, p.Pagination.Limit+1)
 
 	for rows.Next() {
 		var t tag.Tag
@@ -118,5 +123,5 @@ func (r *TagRepo) FindAll(ctx context.Context, p tag.ListParams) (pagination.Lis
 		return pagination.List[tag.Tag]{}, fmt.Errorf("psql - tag - FindAll - rows.Err: %w", err)
 	}
 
-	return pagination.NewList(tags, p.Limit), nil
+	return pagination.NewList(tags, p.Pagination.Limit), nil
 }

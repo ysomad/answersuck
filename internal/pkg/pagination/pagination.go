@@ -17,7 +17,7 @@ type List[T any] struct {
 
 func NewList[T any](objList []T, limit uint64) List[T] {
 	return List[T]{
-		Result:  objList[:len(objList)-1],
+		Result:  objList,
 		HasNext: uint64(len(objList)) == limit+1,
 	}
 }

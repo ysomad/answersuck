@@ -462,7 +462,7 @@ paths:
       tags:
       - language
       summary: Get languages
-      operationId: languageGetAll
+      operationId: language_get_all
       responses:
         "200":
           description: Successful operation.
@@ -516,7 +516,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CursorListRequest'
+              $ref: '#/components/schemas/TagListRequest'
       responses:
         "200":
           description: Successful operation.
@@ -545,13 +545,6 @@ components:
       properties:
         field_name:
           type: string
-    CursorListRequest:
-      type: object
-      properties:
-        limit:
-          type: integer
-        last_id:
-          type: integer
     AccountCreateRequest:
       required:
       - email
@@ -689,8 +682,13 @@ components:
           type: integer
         name:
           type: string
+        nickname:
+          type: string
         language_id:
           type: integer
+        created_at:
+          type: string
+          format: timestamp
     TagArray:
       type: array
       items:
@@ -707,6 +705,17 @@ components:
           type: string
         language_id:
           type: integer
+    TagListRequest:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/TagListRequest_filter'
+        last_id:
+          type: integer
+          description: id of last item on previous page
+        limit:
+          type: integer
+          description: amount of items on page
     inline_response_200:
       type: object
       properties:
@@ -735,6 +744,13 @@ components:
       properties:
         result:
           $ref: '#/components/schemas/TagArray'
+    TagListRequest_filter:
+      type: object
+      properties:
+        name:
+          type: string
+          description: tag name
+      example: null
   securitySchemes:
     cookieAuth:
       type: apiKey

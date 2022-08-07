@@ -17,16 +17,26 @@ type Tag struct {
 	LanguageId uint8  `json:"language_id"`
 }
 
-type ListParams struct {
-	pagination.Params
+type Filter struct {
+	Name string `json:"name"`
 }
 
-func NewListParams(lastId uint32, limit uint64) ListParams {
+func (f Filter) Empty() bool { return f == Filter{} }
+
+type ListParams struct {
+	Pagination pagination.Params
+	Filter     Filter
+}
+
+func NewListParams(lastId uint32, limit uint64, f Filter) ListParams {
 	if limit == 0 || limit > pagination.MaxLimit {
 		limit = pagination.DefaultLimit
 	}
-	return ListParams{pagination.Params{
-		LastId: lastId,
-		Limit:  limit,
-	}}
+	return ListParams{
+		Pagination: pagination.Params{
+			LastId: lastId,
+			Limit:  limit,
+		},
+		Filter: f,
+	}
 }
