@@ -54,12 +54,14 @@ func (v *validate) TranslateError(err error) map[string]string {
 	return errs
 }
 
+func (v *validate) Struct(s any) error { return v.v.Struct(s) }
+
 func (v *validate) RequestBody(b io.ReadCloser, dest any) error {
 	if err := json.NewDecoder(b).Decode(dest); err != nil {
 		return err
 	}
 
-	if err := v.v.Struct(dest); err != nil {
+	if err := v.Struct(dest); err != nil {
 		return err
 	}
 

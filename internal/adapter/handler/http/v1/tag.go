@@ -61,14 +61,29 @@ func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
 type tagCreateMultipleReq struct {
 	Tags []struct {
 		Name       string `json:"name" validate:"required,gte=1,lte=32"`
-		LanguageId uint8  `json:"language_id" validate:"required"`
+		LanguageId uint   `json:"language_id" validate:"required,lt=32766"`
 	} `json:"tags" validate:"required,min=1,max=10"`
+}
+
+func (r tagCreateMultipleReq) validate(v validate) error {
+	for _, reqTag := range r.Tags {
+		if err := v.Struct(reqTag); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (h *tagHandler) createMultiple(w http.ResponseWriter, r *http.Request) {
 	var req tagCreateMultipleReq
+
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - tag - createMultiple - RequestBody", zap.Error(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
+		return
+	}
+
+	if err := req.validate(h.validate); err != nil {
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
