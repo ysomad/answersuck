@@ -1,6 +1,10 @@
 package answer
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/answersuck/host/internal/domain/media"
+)
 
 var (
 	ErrMediaTypeNotAllowed = errors.New("not allowed media type for answer")
@@ -13,13 +17,13 @@ type Answer struct {
 	MediaId *string `json:"mediaId"`
 }
 
-var allowedMediaType = [3]string{"image/jpeg", "image/png", "image/webp"}
+var allowedMediaType = [3]media.Type{media.TypeImageJPEG, media.TypeImagePNG, media.TypeImageWEBP}
 
 // mediaTypeAllowed checks if media for answer is in allowed media type array
 func mediaTypeAllowed(mt string) bool {
 	var allowed bool
 	for _, t := range allowedMediaType {
-		if mt == t {
+		if media.Type(mt) == t {
 			allowed = true
 			break
 		}
