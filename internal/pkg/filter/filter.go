@@ -1,6 +1,8 @@
 package filter
 
-import sq "github.com/Masterminds/squirrel"
+import (
+	sq "github.com/Masterminds/squirrel"
+)
 
 type Type uint8
 
