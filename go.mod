@@ -3,6 +3,7 @@ module github.com/answersuck/host
 go 1.18
 
 require (
+	github.com/Masterminds/squirrel v1.5.3
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
@@ -11,7 +12,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.3.0
-	github.com/jackc/pgconn v1.12.1
+	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/minio/minio-go/v7 v7.0.32
@@ -23,7 +24,6 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.0 // indirect
-	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-test/deep v1.0.8 // indirect
@@ -32,7 +32,7 @@ require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
