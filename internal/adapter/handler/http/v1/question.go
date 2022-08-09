@@ -3,10 +3,12 @@ package v1
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
-	"github.com/answersuck/host/internal/domain/question"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
+
+	"github.com/answersuck/host/internal/domain/question"
 )
 
 type questionHandler struct {
@@ -26,6 +28,7 @@ func newQuestionMux(d *Deps) *chi.Mux {
 	verificator := mwVerificator(d.Logger, &d.Config.Session, d.SessionService)
 
 	m.With(verificator).Post("/", h.create)
+	m.Get("/{question_id}", h.get)
 
 	return m
 }
@@ -77,7 +80,36 @@ func (h *questionHandler) create(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, questionCreateRes{questionId})
 }
 
-//
+func (h *questionHandler) get(w http.ResponseWriter, r *http.Request) {
+	s := chi.URLParam(r, "question_id")
+	if s == "" {
+		writeErr(w, http.StatusNotFound, question.ErrNotFound)
+		return
+	}
+
+	questionId, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		h.log.Info("http - v1 - question - get - strconv.ParseUint", zap.Error(err))
+		writeErr(w, http.StatusNotFound, question.ErrNotFound)
+		return
+	}
+
+	q, err := h.question.GetById(r.Context(), uint32(questionId))
+	if err != nil {
+		h.log.Error("http - v1 - question - get - h.question.GetById", zap.Error(err))
+
+		if errors.Is(err, question.ErrNotFound) {
+			writeErr(w, http.StatusNotFound, question.ErrNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, q)
+}
+
 // func (h *questionHandler) getAll(c *fiber.Ctx) error {
 // 	qs, err := h.service.GetAll(c.Context())
 // 	if err != nil {

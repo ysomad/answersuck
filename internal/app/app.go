@@ -125,7 +125,7 @@ func Run(configPath string) {
 	topicService := topic.NewService(topicRepo)
 
 	questionRepo := psql.NewQuestionRepo(l, pg)
-	questionService := question.NewService(questionRepo)
+	questionService := question.NewService(questionRepo, storageProvider)
 
 	//
 	// playerRepo := psql.NewPlayerRepo(l, pg)

@@ -3,22 +3,29 @@ package question
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 )
 
 type repository interface {
 	Save(ctx context.Context, dto CreateDTO) (questionId uint32, err error)
-	FindById(ctx context.Context, questionId int) (*Detailed, error)
+	FindById(ctx context.Context, questionId uint32) (Detailed, error)
 	FindAll(ctx context.Context) ([]Minimized, error)
 }
 
-type service struct {
-	repo repository
+type mediaProvider interface {
+	URL(filename string) *url.URL
 }
 
-func NewService(r repository) *service {
+type service struct {
+	repo  repository
+	media mediaProvider
+}
+
+func NewService(r repository, p mediaProvider) *service {
 	return &service{
-		repo: r,
+		repo:  r,
+		media: p,
 	}
 }
 
@@ -33,19 +40,21 @@ func (s *service) Create(ctx context.Context, dto CreateDTO) (uint32, error) {
 	return questionId, nil
 }
 
+func (s *service) GetById(ctx context.Context, questionId uint32) (Detailed, error) {
+	d, err := s.repo.FindById(ctx, questionId)
+	if err != nil {
+		return Detailed{}, fmt.Errorf("questionService - GetById - s.repo.FindById: %w", err)
+	}
+
+	d.setURLsFromFilenames(s.media)
+
+	return d, nil
+}
+
 func (s *service) GetAll(ctx context.Context) ([]Minimized, error) {
 	q, err := s.repo.FindAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("questionService - GetAll - s.repo.FindAll: %w", err)
-	}
-
-	return q, nil
-}
-
-func (s *service) GetById(ctx context.Context, questionId int) (*Detailed, error) {
-	q, err := s.repo.FindById(ctx, questionId)
-	if err != nil {
-		return nil, fmt.Errorf("questionService - GetById - s.repo.FindById: %w", err)
 	}
 
 	return q, nil
