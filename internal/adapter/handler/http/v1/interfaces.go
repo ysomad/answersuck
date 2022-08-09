@@ -12,11 +12,13 @@ import (
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/domain/tag"
 	"github.com/answersuck/host/internal/domain/topic"
+	"github.com/answersuck/host/internal/pkg/pagination"
 )
 
 type validate interface {
 	TranslateError(err error) map[string]string
 	RequestBody(b io.ReadCloser, dest any) error
+	Struct(s any) error
 }
 
 type accountService interface {
@@ -57,17 +59,18 @@ type languageService interface {
 }
 
 type tagService interface {
-	CreateMultiple(ctx context.Context, r []tag.CreateReq) ([]*tag.Tag, error)
-	GetAll(ctx context.Context) ([]*tag.Tag, error)
+	CreateMultiple(ctx context.Context, r []tag.Tag) ([]tag.Tag, error)
+	GetAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error)
 }
 
 type topicService interface {
-	Create(ctx context.Context, req topic.CreateReq) (topic.Topic, error)
-	GetAll(ctx context.Context) ([]*topic.Topic, error)
+	Create(ctx context.Context, t topic.Topic) (topic.Topic, error)
+	GetAll(ctx context.Context, t topic.ListParams) (pagination.List[topic.Topic], error)
 }
 
 type answerService interface {
-	Create(ctx context.Context, r answer.CreateReq) (answer.Answer, error)
+	Create(ctx context.Context, a answer.Answer) (answer.Answer, error)
+	GetAll(ctx context.Context, p answer.ListParams) (pagination.List[answer.Answer], error)
 }
 
 type questionService interface {

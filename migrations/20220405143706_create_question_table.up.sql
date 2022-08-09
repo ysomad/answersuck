@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS question (
     text varchar(200) NOT NULL,
     answer_id int NOT NULL REFERENCES answer (id),
     account_id uuid NOT NULL REFERENCES account (id),
-    language_id int NOT NULL REFERENCES
+    language_id smallint NOT NULL REFERENCES
     LANGUAGE (id),
     media_id uuid REFERENCES media (id),
     created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,

@@ -1,6 +1,7 @@
 CREATE TYPE media_type AS enum (
     'image/jpeg',
     'image/png',
+    'image/webp',
     'audio/mp4',
     'audio/aac',
     'audio/mpeg'

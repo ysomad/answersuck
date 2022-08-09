@@ -57,7 +57,7 @@ type accountCreateReq struct {
 func (h *accountHandler) create(w http.ResponseWriter, r *http.Request) {
 	var req accountCreateReq
 	if err := h.validate.RequestBody(r.Body, &req); err != nil {
-		h.log.Info("http - v1 - account - create - ValidateRequestBody", zap.Error(err))
+		h.log.Info("http - v1 - account - create - h.validate.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
 		return
 	}
