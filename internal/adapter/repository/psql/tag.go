@@ -26,6 +26,10 @@ func NewTagRepo(l *zap.Logger, c *postgres.Client) *TagRepo {
 }
 
 func (r *TagRepo) SaveMultiple(ctx context.Context, tags []tag.Tag) ([]tag.Tag, error) {
+	if len(tags) < 1 {
+		return nil, tag.ErrEmptyTagList
+	}
+
 	ib := r.Builder.
 		Insert("tag").
 		Columns("name, language_id")
