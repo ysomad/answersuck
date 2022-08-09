@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
@@ -14,64 +15,94 @@ import (
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
-type questionRepo struct {
-	l *zap.Logger
-	c *postgres.Client
+type QuestionRepo struct {
+	*zap.Logger
+	*postgres.Client
 }
 
-func NewQuestionRepo(l *zap.Logger, c *postgres.Client) *questionRepo {
-	return &questionRepo{
-		l: l,
-		c: c,
-	}
+func NewQuestionRepo(l *zap.Logger, c *postgres.Client) *QuestionRepo {
+	return &QuestionRepo{l, c}
 }
 
-func (r *questionRepo) Save(ctx context.Context, q *question.Question) (int, error) {
-	sql := `
-		 INSERT INTO question(
-			  text,
-			  answer_id,
-			  account_id,
-			  media_id,
-			  language_id,
-			  created_at,
-			  updated_at
-		 )
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)
-		 RETURNING id
-	`
-
-	var questionId int
-	err := r.c.Pool.QueryRow(
-		ctx,
-		sql,
-		q.Text,
-		q.AnswerId,
-		q.AccountId,
-		q.MediaId,
-		q.LanguageId,
-		q.CreatedAt,
-		q.UpdatedAt,
-	).Scan(&questionId)
+func (r *QuestionRepo) Save(ctx context.Context, dto question.CreateDTO) (uint32, error) {
+	sql, args, err := r.Builder.
+		Insert("question").
+		Columns("text, answer_id, account_id, media_id, language_id, created_at").
+		Values(dto.Text, dto.AnswerId, dto.AccountId, dto.MediaId, dto.LanguageId, dto.CreatedAt).
+		Suffix("RETURNING id").
+		ToSql()
 	if err != nil {
-		var pgErr *pgconn.PgError
+		return 0, fmt.Errorf("psql - question - Save - ToSql: %w", err)
+	}
 
+	r.Debug("psql - question - Save", zap.String("sql", sql), zap.Any("args", args))
+
+	var questionId uint32
+
+	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(&questionId); err != nil {
+		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.ForeignKeyViolation {
-				return 0, fmt.Errorf("psql - question - Save - r.c.Pool.QueryRow.Scan: %w", question.ErrForeignKeyViolation)
+				return 0, fmt.Errorf("psql - question - Save - Scan: %w", question.ErrForeignKeyViolation)
 			}
 		}
 
-		return 0, fmt.Errorf("psql - question - Save - r.c.Pool.QueryRow.Scan: %w", err)
+		return 0, fmt.Errorf("psql - question - Save - Scan: %w", err)
 	}
 
 	return questionId, nil
 }
 
-func (r *questionRepo) FindAll(ctx context.Context) ([]question.Minimized, error) {
+func (r *QuestionRepo) FindById(ctx context.Context, questionId uint32) (question.Detailed, error) {
+	sql, args, err := r.Builder.
+		Select("q.text",
+			"answer.text",
+			"answer_media.filename",
+			"answer_media.type",
+			"account.nickname",
+			"question_media.filename",
+			"question_media.type",
+			"q.language_id",
+			"q.created_at").
+		From("question q").
+		InnerJoin("account on account.id = q.account_id").
+		InnerJoin("answer on answer.id = q.answer_id").
+		LeftJoin("media question_media on question_media.id = q.media_id").
+		LeftJoin("media answer_media on answer_media.id = answer.media_id").
+		Where(sq.Eq{"q.id": questionId}).
+		ToSql()
+	if err != nil {
+		return question.Detailed{}, fmt.Errorf("psql - question - FindById - ToSql: %w", err)
+	}
+
+	r.Debug("psql - question - FindById", zap.String("sql", sql), zap.Any("args", args))
+
+	q := question.Detailed{Id: questionId}
+	if err = r.Pool.QueryRow(ctx, sql, questionId).Scan(
+		&q.Text,
+		&q.Answer,
+		&q.AnswerMediaURL,
+		&q.AnswerMediaType,
+		&q.Author,
+		&q.MediaURL,
+		&q.MediaType,
+		&q.LanguageId,
+		&q.CreatedAt,
+	); err != nil {
+		if err == pgx.ErrNoRows {
+			return question.Detailed{}, fmt.Errorf("psql - question - FindById - Scan: %w", question.ErrNotFound)
+		}
+
+		return question.Detailed{}, fmt.Errorf("psql - question - FindById - Scan: %w", err)
+	}
+
+	return q, nil
+}
+
+func (r *QuestionRepo) FindAll(ctx context.Context) ([]question.Minimized, error) {
 	sql := "SELECT id, text, language_id FROM question"
 
-	rows, err := r.c.Pool.Query(ctx, sql)
+	rows, err := r.Pool.Query(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("psql - question - FindAll - r.c.Pool.Query: %w", err)
 	}
@@ -95,51 +126,4 @@ func (r *questionRepo) FindAll(ctx context.Context) ([]question.Minimized, error
 	}
 
 	return qs, nil
-}
-
-func (r *questionRepo) FindById(ctx context.Context, questionId int) (*question.Detailed, error) {
-	sql := `
-		SELECT
-			q.text,
-			ans.text AS answer,
-			am.url AS answer_image_url,
-			acc.nickname AS author,
-			qm.url AS media_url,
-			qm.type AS media_type,
-			q.language_id,
-			q.created_at,
-			q.updated_at
-		FROM question q
-		INNER JOIN account acc on acc.id = q.account_id
-		INNER JOIN answer ans on ans.id = q.answer_id
-		LEFT JOIN media qm on qm.id = q.media_id
-		LEFT JOIN media am on am.id = ans.image
-		WHERE q.id = $1
-	`
-
-	var q question.Detailed
-
-	err := r.c.Pool.QueryRow(ctx, sql, questionId).Scan(
-		&q.Text,
-		&q.Answer,
-		&q.AnswerMediaURL,
-		&q.Author,
-		&q.MediaURL,
-		&q.MediaType,
-		&q.LanguageId,
-		&q.CreatedAt,
-		&q.UpdatedAt,
-	)
-	if err != nil {
-
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("psql - question - FindById - r.c.Pool.QueryRow.Scan: %w", question.ErrNotFound)
-		}
-
-		return nil, fmt.Errorf("psql - question - FindById - r.c.Pool.QueryRow.Scan: %w", err)
-	}
-
-	q.Id = questionId
-
-	return &q, nil
 }

@@ -14,8 +14,8 @@ type (
 	}
 
 	fileStorage interface {
-		Upload(ctx context.Context, f File) (url url.URL, err error)
-		URL(filename string) url.URL
+		Upload(ctx context.Context, f File) (*url.URL, error)
+		URL(filename string) *url.URL
 	}
 )
 
