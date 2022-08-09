@@ -14,7 +14,7 @@ var (
 type Tag struct {
 	Id         int    `json:"id"`
 	Name       string `json:"name"`
-	LanguageId uint   `json:"language_id"`
+	LanguageId uint8  `json:"language_id"`
 }
 
 type Filter struct {

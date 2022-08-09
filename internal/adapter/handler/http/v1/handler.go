@@ -41,6 +41,7 @@ func NewMux(d *Deps) *chi.Mux {
 	m.Mount("/tags", newTagMux(d))
 	m.Mount("/answers", newAnswerMux(d))
 	m.Mount("/topics", newTopicMux(d))
+	m.Mount("/questions", newQuestionMux(d))
 
 	return m
 }

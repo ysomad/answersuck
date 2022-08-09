@@ -6,44 +6,36 @@ import (
 )
 
 var (
-	ErrForeignKeyViolation = errors.New("provided answer, author account, media or language are not exist")
+	ErrForeignKeyViolation = errors.New("provided answer, media or language does not exist")
 	ErrNotFound            = errors.New("question with provided id not found")
 )
 
 type Question struct {
-	Id         int       `json:"id"`
+	Id         uint32    `json:"id"`
 	Text       string    `json:"text"`
-	AnswerId   int       `json:"answerId"`
-	MediaId    *string   `json:"mediaId"`
-	AccountId  string    `json:"accountId"`
-	LanguageId int       `json:"languageId"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
-}
-
-func (q *Question) PrepareForSave() {
-	now := time.Now()
-	q.CreatedAt = now
-	q.UpdatedAt = now
+	AnswerId   uint32    `json:"answer_id"`
+	MediaId    *string   `json:"media_id"`
+	AccountId  string    `json:"account_id"`
+	LanguageId uint8     `json:"language_id"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // Detailed is question entity with joined tables associated with it
 type Detailed struct {
-	Id             int       `json:"id"`
+	Id             uint32    `json:"id"`
 	Text           string    `json:"text"`
 	Answer         string    `json:"answer"`
-	AnswerMediaURL *string   `json:"answerMediaUrl"`
+	AnswerMediaURL *string   `json:"answer_media_url"`
 	Author         string    `json:"author"`
-	MediaURL       *string   `json:"media"`
-	MediaType      *string   `json:"mediaType"`
-	LanguageId     int       `json:"languageId"`
-	CreatedAt      time.Time `json:"createdAt"`
-	UpdatedAt      time.Time `json:"updatedAt"`
+	MediaURL       *string   `json:"media_url"`
+	MediaType      *string   `json:"media_type"`
+	LanguageId     uint8     `json:"language_id"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 // Minimized is minimized question entity using for lists
 type Minimized struct {
-	Id         int    `json:"id"`
+	Id         uint32 `json:"id"`
 	Text       string `json:"text"`
-	LanguageId int    `json:"languageId"`
+	LanguageId uint8  `json:"languageId"`
 }

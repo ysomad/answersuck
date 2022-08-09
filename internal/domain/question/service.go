@@ -3,10 +3,11 @@ package question
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 type repository interface {
-	Save(ctx context.Context, q *Question) (int, error)
+	Save(ctx context.Context, dto CreateDTO) (questionId uint32, err error)
 	FindById(ctx context.Context, questionId int) (*Detailed, error)
 	FindAll(ctx context.Context) ([]Minimized, error)
 }
@@ -21,17 +22,15 @@ func NewService(r repository) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, q *Question) (*Question, error) {
-	q.PrepareForSave()
+func (s *service) Create(ctx context.Context, dto CreateDTO) (uint32, error) {
+	dto.CreatedAt = time.Now()
 
-	questionId, err := s.repo.Save(ctx, q)
+	questionId, err := s.repo.Save(ctx, dto)
 	if err != nil {
-		return nil, fmt.Errorf("questionService - Create - s.repo.Save: %w", err)
+		return 0, fmt.Errorf("questionService - Create - s.repo.Save: %w", err)
 	}
 
-	q.Id = questionId
-
-	return q, nil
+	return questionId, nil
 }
 
 func (s *service) GetAll(ctx context.Context) ([]Minimized, error) {

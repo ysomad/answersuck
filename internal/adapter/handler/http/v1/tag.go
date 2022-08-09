@@ -97,7 +97,7 @@ func (h *tagHandler) createMultiple(w http.ResponseWriter, r *http.Request) {
 	for _, rt := range req.Tags {
 		t = append(t, tag.Tag{
 			Name:       rt.Name,
-			LanguageId: rt.LanguageId,
+			LanguageId: uint8(rt.LanguageId),
 		})
 	}
 
