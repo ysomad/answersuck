@@ -154,6 +154,23 @@ func TestNew(t *testing.T) {
 			wantErr: false,
 			err:     nil,
 		},
+		{
+			name: "valid media image webp",
+			args: args{
+				filename:  "test",
+				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				t:         Type("image/webp"),
+			},
+			want: Media{
+				Id:        "some generated id",
+				Filename:  "test",
+				Type:      Type("image/webp"),
+				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
+				CreatedAt: time.Now(),
+			},
+			wantErr: false,
+			err:     nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

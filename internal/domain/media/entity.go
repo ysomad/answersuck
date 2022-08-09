@@ -33,7 +33,7 @@ const (
 
 func (t Type) valid() bool {
 	switch t {
-	case TypeImageJPEG, TypeImagePNG, TypeImageWEBP, TypeAudioMP4, TypeAudioMPEG:
+	case TypeImageJPEG, TypeImagePNG, TypeImageWEBP, TypeAudioMP4, TypeAudioMPEG, TypeAudioAAC:
 		return true
 	}
 	return false
