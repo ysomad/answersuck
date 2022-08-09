@@ -21,6 +21,8 @@ tags:
     description: Tag operations
   - name: answer
     description: Answer operations
+  - name: topic
+    description: Topic operations
 paths:
   /accounts:
     post:
@@ -281,14 +283,14 @@ paths:
           description: Internal Server Error.
       security:
         - cookieAuth: []
-  /sessions/{sessionId}:
+  /sessions/{session_id}:
     delete:
       tags:
         - session
       summary: Terminate session
       operationId: session_delete
       parameters:
-        - name: sessionId
+        - name: session_id
           in: path
           description: String ID of the session to terminate
           required: true
@@ -525,6 +527,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TagListResponse"
+        "400":
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "500":
           description: Internal Server Error.
   /answers:
@@ -575,30 +583,85 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/AnswerListRequest"
-        required: true
       responses:
         "200":
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnswerListRequest"
+                $ref: "#/components/schemas/AnswerListResponse"
         "400":
           description: Invalid request body.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-        "401":
-          description: Unauthorized.
-        "403":
-          description: Forbidden.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
         "500":
           description: Internal Server Error.
+  /topics/list:
+    post:
+      tags:
+        - topic
+      summary: Get topic list
+      operationId: topic_get_all
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicListRequest"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicListResponse"
+        400:
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server Error.
+  /topics:
+    post:
+      tags:
+        - topic
+      summary: Create topic
+      operationId: topic_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicCreateRequest"
+        required: true
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Topic"
+        400:
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        401:
+          description: Unauthorized.
+
+        403:
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server Error.
+      security:
+        - cookieAuth: []
 components:
   schemas:
     Error:
@@ -826,6 +889,7 @@ components:
           description: tag name
         language_id:
           type: integer
+          minimum: 0
     Answer:
       type: object
       properties:
@@ -874,6 +938,69 @@ components:
           description: answer text
         language_id:
           type: integer
+          minimum: 0
+    AnswerListResponse:
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/AnswerArray"
+        has_next:
+          type: boolean
+    Topic:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        language_id:
+          type: integer
+          minimum: 0
+    TopicArray:
+      type: array
+      items:
+        $ref: "#/components/schemas/Topic"
+    TopicCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        language_id:
+          type: integer
+          minimum: 0
+      required:
+        - languageId
+        - name
+    TopicListFilter:
+      type: object
+      properties:
+        name:
+          type: string
+          description: topic name
+        language_id:
+          type: integer
+          minimum: 0
+    TopicListRequest:
+      type: object
+      properties:
+        filter:
+          $ref: "#/components/schemas/TopicListFilter"
+        last_id:
+          type: integer
+          description: id of last item on previous page
+          minimum: 0
+        limit:
+          type: integer
+          description: amount of items on page
+          maximum: 100
+          minimum: 10
+    TopicListResponse:
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/TopicArray"
+        has_next:
+          type: boolean
   securitySchemes:
     cookieAuth:
       type: apiKey

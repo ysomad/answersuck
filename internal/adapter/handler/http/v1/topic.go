@@ -1,70 +1,95 @@
 package v1
 
-import "go.uber.org/zap"
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+
+	"github.com/answersuck/host/internal/domain/topic"
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
+)
 
 type topicHandler struct {
-	log     *zap.Logger
-	v       validate
-	service topicService
+	log      *zap.Logger
+	validate validate
+	topic    topicService
 }
 
-// func newTopicHandler(d *Deps) *topicHandler {
-// 	return &topicHandler{
-// 		log:     d.Logger,
-// 		v:       d.ValidationModule,
-// 		service: d.TopicService,
-// 	}
-// }
-//
-// func newTopicRouter(d *Deps) *fiber.App {
-// 	h := newTopicHandler(d)
-// 	r := fiber.New()
-//
-// 	r.Get("/", h.getAll)
-// 	r.Post("/",
-// 		mwVerificator(d.Logger, &d.Config.Session, d.SessionService),
-// 		h.create)
-//
-// 	return r
-// }
-//
-// func (h *topicHandler) create(c *fiber.Ctx) error {
-// 	var r topic.CreateReq
-//
-// 	if err := c.BodyParser(&r); err != nil {
-// 		h.log.Info("http - v1 - topic - create - c.BodyParser: %w", err)
-// 		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, err.Error())
-// 	}
-//
-// 	if err := h.v.ValidateStruct(r); err != nil {
-// 		h.log.Info("http - v1 - topic - create - ValidateStruct: %w", err)
-// 		return errorResp(c, fiber.StatusBadRequest, errInvalidRequestBody, h.v.TranslateError(err))
-// 	}
-//
-// 	t, err := h.service.Create(c.Context(), r)
-// 	if err != nil {
-// 		h.log.Error("http - v1 - topic - create - h.service.Create: %w", err)
-//
-// 		if errors.Is(err, topic.ErrLanguageNotFound) {
-// 			return errorResp(c, fiber.StatusBadRequest, topic.ErrLanguageNotFound, "")
-// 		}
-//
-// 		c.Status(fiber.StatusInternalServerError)
-// 		return nil
-// 	}
-//
-// 	c.Status(fiber.StatusOK).JSON(t)
-// 	return nil
-// }
-//
-// func (h *topicHandler) getAll(c *fiber.Ctx) error {
-// 	t, err := h.service.GetAll(c.Context())
-// 	if err != nil {
-// 		h.log.Error("http - v1 - topic - getAll - h.service.GetAll: %w", err)
-// 		c.Status(fiber.StatusInternalServerError)
-// 		return nil
-// 	}
-//
-// 	c.Status(fiber.StatusOK).JSON(listResp{Result: t})
-// 	return nil
-// }
+func newTopicMux(d *Deps) *chi.Mux {
+	h := topicHandler{
+		log:      d.Logger,
+		validate: d.Validate,
+		topic:    d.TopicService,
+	}
+
+	m := chi.NewMux()
+	verificator := mwVerificator(d.Logger, &d.Config.Session, d.SessionService)
+
+	m.With(verificator).Post("/", h.create)
+	m.Post("/list", h.getAll)
+
+	return m
+}
+
+type topicCreateReq struct {
+	Name       string `json:"name" binding:"required,gte=4,lte=50"`
+	LanguageId uint   `json:"language_id" binding:"required"`
+}
+
+func (h *topicHandler) create(w http.ResponseWriter, r *http.Request) {
+	var req topicCreateReq
+	if err := h.validate.RequestBody(r.Body, &req); err != nil {
+		h.log.Info("http - v1 - topic - create - h.validate.RequestBody", zap.Error(err))
+		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
+		return
+	}
+
+	t, err := h.topic.Create(r.Context(), topic.Topic{
+		Name:       req.Name,
+		LanguageId: req.LanguageId,
+	})
+	if err != nil {
+		h.log.Error("http - v1 - topic - create - h.topic.Create", zap.Error(err))
+
+		if errors.Is(err, topic.ErrLanguageNotFound) {
+			writeErr(w, http.StatusBadRequest, topic.ErrLanguageNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, t)
+}
+
+type topicGetAllReq struct {
+	Filter struct {
+		Name       string `json:"name"`
+		LanguageId uint   `json:"language_id"`
+	} `json:"filter"`
+	LastId uint32 `json:"last_id"`
+	Limit  uint64 `json:"limit"`
+}
+
+func (h *topicHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	var req topicGetAllReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.log.Info("http - v1 - topic - getAll - Decode", zap.Error(err))
+		writeErr(w, http.StatusBadRequest, err)
+		return
+	}
+
+	topicList, err := h.topic.GetAll(r.Context(), topic.NewListParams(req.LastId, req.Limit, topic.Filter{
+		Name:       req.Filter.Name,
+		LanguageId: req.Filter.LanguageId,
+	}))
+	if err != nil {
+		h.log.Error("http - v1 - topic - getAll - h.topic.GetAll", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, topicList)
+}

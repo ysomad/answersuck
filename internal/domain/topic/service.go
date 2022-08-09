@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/answersuck/host/internal/pkg/pagination"
 )
 
 type repository interface {
 	Save(ctx context.Context, t Topic) (Topic, error)
-	FindAll(ctx context.Context) ([]*Topic, error)
+	FindAll(ctx context.Context, p ListParams) (pagination.List[Topic], error)
 }
 
 type service struct {
@@ -21,15 +23,8 @@ func NewService(r repository) *service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, r CreateReq) (Topic, error) {
-	now := time.Now()
-
-	t := Topic{
-		Name:       r.Name,
-		LanguageId: r.LanguageId,
-		CreatedAt:  now,
-		UpdatedAt:  now,
-	}
+func (s *service) Create(ctx context.Context, t Topic) (Topic, error) {
+	t.CreatedAt = time.Now()
 
 	t, err := s.repo.Save(ctx, t)
 	if err != nil {
@@ -39,11 +34,11 @@ func (s *service) Create(ctx context.Context, r CreateReq) (Topic, error) {
 	return t, nil
 }
 
-func (s *service) GetAll(ctx context.Context) ([]*Topic, error) {
-	t, err := s.repo.FindAll(ctx)
+func (s *service) GetAll(ctx context.Context, p ListParams) (pagination.List[Topic], error) {
+	tokenList, err := s.repo.FindAll(ctx, p)
 	if err != nil {
-		return nil, fmt.Errorf("topicService - GetAll - s.repo.FindAll: %w", err)
+		return pagination.List[Topic]{}, fmt.Errorf("topicService - GetAll - s.repo.FindAll: %w", err)
 	}
 
-	return t, nil
+	return tokenList, nil
 }

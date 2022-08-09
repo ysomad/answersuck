@@ -2,7 +2,7 @@ package pagination
 
 const (
 	DefaultLimit = 10
-	MaxLimit     = 50
+	MaxLimit     = 100
 )
 
 type Params struct {

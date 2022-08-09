@@ -59,13 +59,13 @@ type languageService interface {
 }
 
 type tagService interface {
-	GetAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error)
 	CreateMultiple(ctx context.Context, r []tag.Tag) ([]tag.Tag, error)
+	GetAll(ctx context.Context, p tag.ListParams) (pagination.List[tag.Tag], error)
 }
 
 type topicService interface {
-	Create(ctx context.Context, req topic.CreateReq) (topic.Topic, error)
-	GetAll(ctx context.Context) ([]*topic.Topic, error)
+	Create(ctx context.Context, t topic.Topic) (topic.Topic, error)
+	GetAll(ctx context.Context, t topic.ListParams) (pagination.List[topic.Topic], error)
 }
 
 type answerService interface {

@@ -66,7 +66,7 @@ func (h *tagHandler) getAll(w http.ResponseWriter, r *http.Request) {
 type tagCreateMultipleReq struct {
 	Tags []struct {
 		Name       string `json:"name" validate:"required,gte=1,lte=32"`
-		LanguageId uint   `json:"language_id" validate:"required,lt=32766"`
+		LanguageId uint   `json:"language_id" validate:"required"`
 	} `json:"tags" validate:"required,min=1,max=10"`
 }
 

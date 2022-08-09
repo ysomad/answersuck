@@ -17,8 +17,6 @@ type Tag struct {
 	LanguageId uint   `json:"language_id"`
 }
 
-const maxLimit = 100
-
 type Filter struct {
 	Name       string
 	LanguageId uint
@@ -30,7 +28,7 @@ type ListParams struct {
 }
 
 func NewListParams(lastId uint32, limit uint64, f Filter) ListParams {
-	if limit == 0 || limit > maxLimit {
+	if limit == 0 || limit > pagination.MaxLimit {
 		limit = pagination.DefaultLimit
 	}
 	return ListParams{

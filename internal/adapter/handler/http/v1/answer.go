@@ -36,7 +36,7 @@ func newAnswerMux(d *Deps) *chi.Mux {
 type answerCreateReq struct {
 	Text       string `json:"text" validate:"required,gte=1,lte=100"`
 	MediaId    string `json:"media_id" validate:"omitempty,uuid4"`
-	LanguageId int    `json:"language_id" validate:"required,gte=1"`
+	LanguageId uint   `json:"language_id" validate:"required"`
 }
 
 func (h *answerHandler) create(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,6 @@ func (h *answerHandler) create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, media.ErrNotFound):
 			writeErr(w, http.StatusBadRequest, media.ErrNotFound)
 			return
-
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
