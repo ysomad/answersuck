@@ -34,7 +34,7 @@ func newSessionMux(d *Deps) *chi.Mux {
 		r.With(tokenRequired).Delete("/", h.terminateAll)
 	})
 
-	m.With(authenticator, tokenRequired).Delete("/{sessionId}", h.terminate)
+	m.With(authenticator, tokenRequired).Delete("/{session_id}", h.terminate)
 
 	return m
 }
@@ -65,7 +65,7 @@ func (h *sessionHandler) terminate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionId := chi.URLParam(r, "sessionId")
+	sessionId := chi.URLParam(r, "session_id")
 	if currSessionId == sessionId {
 		writeErr(w, http.StatusBadRequest, session.ErrCannotBeTerminated)
 		return
@@ -102,7 +102,7 @@ func (h *sessionHandler) terminateAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = h.session.TerminateAllWithExcept(r.Context(), accountId, currSessionId); err != nil {
-		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateWithExcept", zap.Error(err))
+		h.log.Error("http - v1 - session - terminateAll - h.service.TerminateAllWithExcept", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

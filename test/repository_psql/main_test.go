@@ -16,6 +16,7 @@ func initRepos(logLevel string, c *postgres.Client) {
 	_accountRepo = psql.NewAccountRepo(logger, c)
 	_sessionRepo = psql.NewSessionRepo(logger, c)
 	_mediaRepo = psql.NewMediaRepo(logger, c)
+	_tagRepo = psql.NewTagRepo(logger, c)
 }
 
 func TestMain(m *testing.M) {

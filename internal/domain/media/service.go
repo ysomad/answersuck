@@ -61,11 +61,11 @@ func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithU
 	}, nil
 }
 
-func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (Type, error) {
+func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (string, error) {
 	t, err := s.repo.FindMediaTypeById(ctx, mediaId)
 	if err != nil {
 		return "", fmt.Errorf("mediaService - GetMimeTypeById - s.repo.FindMimeTypeById: %w", err)
 	}
 
-	return t, nil
+	return string(t), nil
 }

@@ -38,22 +38,9 @@ func NewMux(d *Deps) *chi.Mux {
 	m.Mount("/auth", newAuthMux(d))
 	m.Mount("/media", newMediaMux(d))
 	m.Mount("/languages", newLanguageMux(d))
+	m.Mount("/tags", newTagMux(d))
+	m.Mount("/answers", newAnswerMux(d))
+	m.Mount("/topics", newTopicMux(d))
 
 	return m
 }
-
-// func NewRouter(d *Deps) *fiber.App {
-// 	r := fiber.New()
-
-// 	r.Mount("/sessions", newSessionRouter(d))
-// 	r.Mount("/accounts", newAccountRouter(d))
-// 	r.Mount("/auth", newAuthRouter(d))
-// 	r.Mount("/media", newMediaRouter(d))
-// 	r.Mount("/languages", newLanguageRouter(d))
-// 	r.Mount("/tags", newTagRouter(d))
-// 	r.Mount("/topics", newTopicRouter(d))
-// 	r.Mount("/answers", newAnswerRouter(d))
-// 	r.Mount("/questions", newQuestionRouter(d))
-
-// 	return r
-// }

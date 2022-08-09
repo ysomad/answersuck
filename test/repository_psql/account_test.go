@@ -140,6 +140,15 @@ func TestAccountRepo_Save(t *testing.T) {
 			).Scan(&code)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.args.code, code)
+
+			var playerId string
+			err = _accountRepo.Pool.QueryRow(
+				context.Background(),
+				"SELECT id FROM player WHERE account_id = $1",
+				got.Id,
+			).Scan(&playerId)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, playerId)
 		})
 	}
 }

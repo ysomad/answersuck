@@ -53,6 +53,7 @@ func (h *authHandler) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req loginReq
+
 	if err = h.validate.RequestBody(r.Body, &req); err != nil {
 		h.log.Info("http - v1 - auth - login - h.v.RequestBody", zap.Error(err))
 		writeValidationErr(w, http.StatusBadRequest, errInvalidRequestBody, h.validate.TranslateError(err))
