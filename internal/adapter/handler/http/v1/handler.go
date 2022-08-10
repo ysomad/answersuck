@@ -22,6 +22,7 @@ type Deps struct {
 	TopicService    topicService
 	AnswerService   answerService
 	QuestionService questionService
+	PlayerService   playerService
 }
 
 func NewMux(d *Deps) *chi.Mux {
@@ -42,6 +43,7 @@ func NewMux(d *Deps) *chi.Mux {
 	m.Mount("/answers", newAnswerMux(d))
 	m.Mount("/topics", newTopicMux(d))
 	m.Mount("/questions", newQuestionMux(d))
+	m.Mount("/players", newPlayerMux(d))
 
 	return m
 }

@@ -5,8 +5,6 @@ CREATE TABLE IF NOT EXISTS player (
 
 CREATE TABLE IF NOT EXISTS player_avatar (
     id serial NOT NULL PRIMARY KEY,
-    url varchar(2048) NOT NULL,
-    player_id uuid NOT NULL REFERENCES player (id),
-    created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL
+    filename text NOT NULL,
+    player_id uuid UNIQUE NOT NULL REFERENCES player (id)
 );
-

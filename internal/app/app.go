@@ -21,6 +21,7 @@ import (
 	"github.com/answersuck/host/internal/domain/email"
 	"github.com/answersuck/host/internal/domain/language"
 	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/domain/player"
 	"github.com/answersuck/host/internal/domain/question"
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/domain/tag"
@@ -127,9 +128,8 @@ func Run(configPath string) {
 	questionRepo := psql.NewQuestionRepo(l, pg)
 	questionService := question.NewService(questionRepo, storageProvider)
 
-	//
-	// playerRepo := psql.NewPlayerRepo(l, pg)
-	// playerService := player.NewService(playerRepo)
+	playerRepo := psql.NewPlayerRepo(l, pg)
+	playerService := player.NewService(playerRepo, storageProvider)
 
 	// http
 	m := chi.NewMux()
@@ -148,6 +148,7 @@ func Run(configPath string) {
 		AnswerService:   answerService,
 		TopicService:    topicService,
 		QuestionService: questionService,
+		PlayerService:   playerService,
 	}))
 
 	httpServer := httpserver.New(m, httpserver.Port(cfg.HTTP.Port))

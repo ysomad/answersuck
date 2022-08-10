@@ -7,5 +7,5 @@ INSERT INTO verification (code, account_id)
 INSERT INTO player (id, account_id)
     VALUES ('0daef6ba-490d-46f4-be7c-6702763632d2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600');
 
-INSERT INTO player_avatar (url, player_id)
-    VALUES ('https://avatars.dicebear.com/api/identicon/test.svg', '0daef6ba-490d-46f4-be7c-6702763632d2');
+INSERT INTO player_avatar (filename, player_id)
+    VALUES ('test.svg', '0daef6ba-490d-46f4-be7c-6702763632d2');

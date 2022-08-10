@@ -36,9 +36,9 @@ type Detailed struct {
 	CreatedAt       time.Time `json:"created_at"`
 }
 
-// setURLsFromFilenames in db storing media filenames and URL must be set
+// setMediaURLs adds url to media filenames as in db storing media filenames and URL must be set
 // manually before returning to end user
-func (d *Detailed) setURLsFromFilenames(p mediaProvider) {
+func (d *Detailed) setMediaURLs(p mediaProvider) {
 	switch {
 	case d.AnswerMediaURL != nil:
 		answerMediaURL := p.URL(*d.AnswerMediaURL).String()

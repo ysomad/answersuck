@@ -48,7 +48,7 @@ func (s *service) GetById(ctx context.Context, questionId uint32) (Detailed, err
 		return Detailed{}, fmt.Errorf("questionService - GetById - s.repo.FindById: %w", err)
 	}
 
-	d.setURLsFromFilenames(s.media)
+	d.setMediaURLs(s.media)
 
 	return d, nil
 }

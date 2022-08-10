@@ -8,6 +8,7 @@ import (
 	"github.com/answersuck/host/internal/domain/answer"
 	"github.com/answersuck/host/internal/domain/language"
 	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/domain/player"
 	"github.com/answersuck/host/internal/domain/question"
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/domain/tag"
@@ -49,6 +50,10 @@ type (
 		Parse(ctx context.Context, token string) (string, error)
 	}
 )
+
+type playerService interface {
+	GetByNickname(ctx context.Context, nickname string) (player.Player, error)
+}
 
 type mediaService interface {
 	UploadAndSave(ctx context.Context, m media.Media, size int64) (media.WithURL, error)
