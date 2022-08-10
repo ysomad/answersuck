@@ -76,5 +76,5 @@ type answerService interface {
 type questionService interface {
 	Create(ctx context.Context, dto question.CreateDTO) (questionId uint32, err error)
 	GetById(ctx context.Context, questionId uint32) (question.Detailed, error)
-	GetAll(ctx context.Context) ([]question.Minimized, error)
+	GetAll(ctx context.Context, p question.ListParams) (pagination.List[question.Minimized], error)
 }

@@ -23,6 +23,8 @@ tags:
     description: Answer operations
   - name: topic
     description: Topic operations
+  - name: question
+    description: Question operations
 paths:
   /accounts:
     post:
@@ -662,6 +664,95 @@ paths:
           description: Internal Server Error.
       security:
         - cookieAuth: []
+  /questions:
+    post:
+      tags:
+        - question
+      summary: Create question
+      operationId: question_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionCreateRequest"
+        required: true
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionCreateResponse"
+        400:
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        403:
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server Error.
+      security:
+        - cookieAuth: []
+  /questions/{question_id}:
+    get:
+      tags:
+        - question
+      summary: Get question
+      operationId: question_get
+      parameters:
+        - name: question_id
+          in: path
+          description: Integer ID of the question
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionDetailed"
+        404:
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server Error.
+  /questions/list:
+    post:
+      tags:
+        - question
+      summary: Get question list
+      operationId: question_get_all
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionListRequest"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionListResponse"
+        400:
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server Error.
 components:
   schemas:
     Error:
@@ -750,7 +841,7 @@ components:
           format: ipv4
         created_at:
           type: string
-          format: timestamp
+          format: date-time
     SessionArray:
       type: array
       items:
@@ -969,7 +1060,7 @@ components:
           type: integer
           minimum: 0
       required:
-        - languageId
+        - language_id
         - name
     TopicListFilter:
       type: object
@@ -1001,6 +1092,108 @@ components:
           $ref: "#/components/schemas/TopicArray"
         has_next:
           type: boolean
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        author:
+          type: string
+        language_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    QuestionDetailed:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        answer:
+          type: string
+        answer_media_url:
+          type: string
+          format: uri
+        answer_media_type:
+          $ref: "#/components/schemas/MediaType"
+        author:
+          type: string
+        media_url:
+          type: string
+          format: uri
+        media_type:
+          $ref: "#/components/schemas/MediaType"
+        language_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+    QuestionArray:
+      type: array
+      items:
+        $ref: "#/components/schemas/Question"
+    QuestionCreateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          maximum: 200
+          minimum: 1
+        answer_id:
+          type: integer
+          minimum: 0
+        media_id:
+          type: string
+          format: uuid
+        language_id:
+          type: integer
+          minimum: 0
+      required:
+        - text
+        - answer_id
+        - language_id
+    QuestionCreateResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+    QuestionListResponse:
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/QuestionArray"
+        has_next:
+          type: boolean
+    QuestionListRequest:
+      type: object
+      properties:
+        filter:
+          $ref: "#/components/schemas/QuestionListFilter"
+        last_id:
+          type: integer
+          description: id of last item on previous page
+          minimum: 0
+        limit:
+          type: integer
+          description: amount of items on page
+          maximum: 100
+          minimum: 10
+    QuestionListFilter:
+      type: object
+      properties:
+        text:
+          type: string
+          description: question text
+        author:
+          type: string
+          description: author nickname
+        language_id:
+          type: integer
+          minimum: 0
   securitySchemes:
     cookieAuth:
       type: apiKey
