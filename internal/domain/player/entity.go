@@ -7,10 +7,15 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("player not found")
+	ErrNotFound            = errors.New("player not found")
+	ErrEmptyAvatarFilename = errors.New("empty avatar filename")
+	ErrInvalidAccountId    = errors.New("invalid account id")
 )
 
-const MaxAvatarSize = 5 << 20 // 5mb
+const (
+	MaxAvatarSize = 5 << 20 // 5mb
+	dicebearFmt   = "https://avatars.dicebear.com/api/identicon/%s.svg"
+)
 
 type Player struct {
 	Id             string
@@ -25,8 +30,6 @@ type Detailed struct {
 	Verified  bool   `json:"verified"`
 	AvatarURL string `json:"avatar_url"`
 }
-
-const dicebearFmt = "https://avatars.dicebear.com/api/identicon/%s.svg"
 
 func NewDetailed(p Player, sp fileStorage) Detailed {
 	d := Detailed{
@@ -49,8 +52,3 @@ type Avatar struct {
 	Filename  string
 	UpdatedAt time.Time
 }
-
-var (
-	ErrEmptyAvatarFilename = errors.New("empty avatar filename")
-	ErrInvalidAccountId    = errors.New("invalid account id")
-)

@@ -10,6 +10,7 @@ import (
 	"github.com/answersuck/host/internal/adapter/repository/psql"
 	"github.com/answersuck/host/internal/domain/account"
 	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/pkg/mime"
 )
 
 var _mediaRepo *psql.MediaRepo
@@ -18,7 +19,7 @@ func insertTestMedia(m *media.Media) (*media.Media, error) {
 	m.CreatedAt = time.Now()
 	m.Filename = "test"
 	if m.Type == "" {
-		m.Type = media.TypeImageJPEG
+		m.Type = mime.Type("image/jpeg")
 	}
 	if err := _mediaRepo.Pool.QueryRow(
 		context.Background(),
@@ -53,7 +54,7 @@ func TestMediaRepo_Save(t *testing.T) {
 				m: media.Media{
 					Id:        "76db5e01-deee-414f-b4ee-8e649fd372b2",
 					Filename:  "filename",
-					Type:      media.TypeAudioMP4,
+					Type:      mime.Type("audio/mp4"),
 					AccountId: a.Id,
 					CreatedAt: time.Now(),
 				},
@@ -67,7 +68,7 @@ func TestMediaRepo_Save(t *testing.T) {
 				ctx: context.Background(),
 				m: media.Media{
 					Id:        "76db5e01-deee-414f-b4ee-8e649fd372b2",
-					Type:      media.TypeAudioMP4,
+					Type:      mime.Type("audio/mp4"),
 					AccountId: a.Id,
 				},
 			},
@@ -80,7 +81,7 @@ func TestMediaRepo_Save(t *testing.T) {
 				ctx: context.Background(),
 				m: media.Media{
 					Id:        "76db5e01-deee-414f-b4ee-8e649fd372b3",
-					Type:      media.TypeAudioMP4,
+					Type:      mime.Type("audio/mp4"),
 					AccountId: "76db5e01-deee-414f-b4ee-8e649fd372b2",
 				},
 			},
@@ -130,14 +131,14 @@ func Test_mediaRepo_FindMediaTypeById(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    media.Type
+		want    mime.Type
 		wantErr bool
 		err     error
 	}{
 		{
 			name:    "found",
 			args:    args{ctx: context.Background(), mediaId: m.Id},
-			want:    media.TypeImageJPEG,
+			want:    mime.Type("image/jpeg"),
 			wantErr: false,
 			err:     nil,
 		},
