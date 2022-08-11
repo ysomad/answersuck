@@ -8,6 +8,7 @@ import (
 	"github.com/answersuck/host/internal/domain/answer"
 	"github.com/answersuck/host/internal/domain/language"
 	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/domain/player"
 	"github.com/answersuck/host/internal/domain/question"
 	"github.com/answersuck/host/internal/domain/session"
 	"github.com/answersuck/host/internal/domain/tag"
@@ -50,8 +51,13 @@ type (
 	}
 )
 
+type playerService interface {
+	GetByNickname(ctx context.Context, nickname string) (player.Detailed, error)
+	UploadAvatar(ctx context.Context, dto player.UploadAvatarDTO) error
+}
+
 type mediaService interface {
-	UploadAndSave(ctx context.Context, m media.Media, size int64) (media.WithURL, error)
+	UploadAndSave(ctx context.Context, m media.Media, size int64) (media.UploadedMediaDTO, error)
 }
 
 type languageService interface {
@@ -76,5 +82,5 @@ type answerService interface {
 type questionService interface {
 	Create(ctx context.Context, dto question.CreateDTO) (questionId uint32, err error)
 	GetById(ctx context.Context, questionId uint32) (question.Detailed, error)
-	GetAll(ctx context.Context) ([]question.Minimized, error)
+	GetAll(ctx context.Context, p question.ListParams) (pagination.List[question.Minimized], error)
 }

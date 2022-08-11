@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/url"
 	"time"
+
+	"github.com/answersuck/host/internal/pkg/pagination"
 )
 
 type repository interface {
 	Save(ctx context.Context, dto CreateDTO) (questionId uint32, err error)
 	FindById(ctx context.Context, questionId uint32) (Detailed, error)
-	FindAll(ctx context.Context) ([]Minimized, error)
+	FindAll(ctx context.Context, p ListParams) (pagination.List[Minimized], error)
 }
 
 type mediaProvider interface {
@@ -46,15 +48,15 @@ func (s *service) GetById(ctx context.Context, questionId uint32) (Detailed, err
 		return Detailed{}, fmt.Errorf("questionService - GetById - s.repo.FindById: %w", err)
 	}
 
-	d.setURLsFromFilenames(s.media)
+	d.setMediaURLs(s.media)
 
 	return d, nil
 }
 
-func (s *service) GetAll(ctx context.Context) ([]Minimized, error) {
-	q, err := s.repo.FindAll(ctx)
+func (s *service) GetAll(ctx context.Context, p ListParams) (pagination.List[Minimized], error) {
+	q, err := s.repo.FindAll(ctx, p)
 	if err != nil {
-		return nil, fmt.Errorf("questionService - GetAll - s.repo.FindAll: %w", err)
+		return pagination.List[Minimized]{}, fmt.Errorf("questionService - GetAll - s.repo.FindAll: %w", err)
 	}
 
 	return q, nil

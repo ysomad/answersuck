@@ -3,6 +3,8 @@ package question
 import (
 	"errors"
 	"time"
+
+	"github.com/answersuck/host/internal/pkg/pagination"
 )
 
 var (
@@ -34,9 +36,9 @@ type Detailed struct {
 	CreatedAt       time.Time `json:"created_at"`
 }
 
-// setURLsFromFilenames in db storing media filenames and URL must be set
+// setMediaURLs adds url to media filenames as in db storing media filenames and URL must be set
 // manually before returning to end user
-func (d *Detailed) setURLsFromFilenames(p mediaProvider) {
+func (d *Detailed) setMediaURLs(p mediaProvider) {
 	switch {
 	case d.AnswerMediaURL != nil:
 		answerMediaURL := p.URL(*d.AnswerMediaURL).String()
@@ -49,7 +51,34 @@ func (d *Detailed) setURLsFromFilenames(p mediaProvider) {
 
 // Minimized is minimized question entity using for lists
 type Minimized struct {
-	Id         uint32 `json:"id"`
-	Text       string `json:"text"`
-	LanguageId uint8  `json:"language_id"`
+	Id         uint32    `json:"id"`
+	Text       string    `json:"text"`
+	Author     string    `json:"author"`
+	LanguageId uint8     `json:"language_id"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type Filter struct {
+	Text       string
+	Author     string
+	LanguageId uint
+}
+
+type ListParams struct {
+	Pagination pagination.Params
+	Filter     Filter
+	SortOrder  string
+}
+
+func NewListParams(lastId uint32, limit uint64, f Filter) ListParams {
+	if limit == 0 || limit > pagination.MaxLimit {
+		limit = pagination.DefaultLimit
+	}
+	return ListParams{
+		Pagination: pagination.Params{
+			LastId: lastId,
+			Limit:  limit,
+		},
+		Filter: f,
+	}
 }

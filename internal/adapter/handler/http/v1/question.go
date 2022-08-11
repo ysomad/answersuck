@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -29,6 +30,7 @@ func newQuestionMux(d *Deps) *chi.Mux {
 
 	m.With(verificator).Post("/", h.create)
 	m.Get("/{question_id}", h.get)
+	m.Post("/list", h.getAll)
 
 	return m
 }
@@ -110,35 +112,34 @@ func (h *questionHandler) get(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, q)
 }
 
-// func (h *questionHandler) getAll(c *fiber.Ctx) error {
-// 	qs, err := h.service.GetAll(c.Context())
-// 	if err != nil {
-// 		h.log.Error("http - v1 - question - getAll - h.service.GetAll: %w", err)
-// 		return c.SendStatus(fiber.StatusInternalServerError)
-// 	}
-//
-// 	return c.Status(fiber.StatusOK).JSON(listResp{Result: qs})
-// }
-//
-// func (h *questionHandler) getById(c *fiber.Ctx) error {
-// 	s := c.Params("questionId")
-//
-// 	questionId, err := strconv.Atoi(s)
-// 	if err != nil {
-// 		h.log.Error("http - v1 - question - getById: %w", err)
-// 		return c.SendStatus(fiber.StatusNotFound)
-// 	}
-//
-// 	q, err := h.service.GetById(c.Context(), questionId)
-// 	if err != nil {
-// 		h.log.Error("http - v1 - question - getById: %w", err)
-//
-// 		if errors.Is(err, question.ErrNotFound) {
-// 			return errorResp(c, fiber.StatusNotFound, question.ErrNotFound, "")
-// 		}
-//
-// 		return c.SendStatus(fiber.StatusInternalServerError)
-// 	}
-//
-// 	return c.Status(fiber.StatusOK).JSON(q)
-// }
+type questionGetAllReq struct {
+	Filter struct {
+		Text       string `json:"text"`
+		Author     string `json:"author"`
+		LanguageId uint   `json:"language_id"`
+	} `json:"filter"`
+	LastId uint32 `json:"last_id"`
+	Limit  uint64 `json:"limit"`
+}
+
+func (h *questionHandler) getAll(w http.ResponseWriter, r *http.Request) {
+	var req questionGetAllReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.log.Info("http - v1 - answer - getAll - Decode", zap.Error(err))
+		writeErr(w, http.StatusBadRequest, err)
+		return
+	}
+
+	questionList, err := h.question.GetAll(r.Context(), question.NewListParams(req.LastId, req.Limit, question.Filter{
+		Text:       req.Filter.Text,
+		Author:     req.Filter.Author,
+		LanguageId: req.Filter.LanguageId,
+	}))
+	if err != nil {
+		h.log.Error("http - v1 - question - getAll - h.question.GetAll", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, questionList)
+}

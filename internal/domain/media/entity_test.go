@@ -4,55 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/answersuck/host/internal/pkg/mime"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestType_valid(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		mt   Type
-		want bool
-	}{
-		{
-			name: "valid jpeg",
-			mt:   Type("image/jpeg"),
-			want: true,
-		},
-		{
-			name: "valid mp4",
-			mt:   Type("audio/mp4"),
-			want: true,
-		},
-		{
-			name: "valid png",
-			mt:   Type("image/png"),
-			want: true,
-		},
-		{
-			name: "valid aac",
-			mt:   Type("audio/aac"),
-			want: true,
-		},
-		{
-			name: "valid mpeg",
-			mt:   Type("audio/mpeg"),
-			want: true,
-		},
-		{
-			name: "invalid media type",
-			mt:   Type("invalid"),
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.mt.valid()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
 
 func TestNew(t *testing.T) {
 	t.Parallel()
@@ -60,7 +14,7 @@ func TestNew(t *testing.T) {
 	type args struct {
 		filename  string
 		accountId string
-		t         Type
+		t         mime.Type
 	}
 	tests := []struct {
 		name    string
@@ -74,12 +28,12 @@ func TestNew(t *testing.T) {
 			args: args{
 				filename:  "test",
 				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
-				t:         Type("image/png"),
+				t:         mime.Type("image/png"),
 			},
 			want: Media{
 				Id:        "some generated id",
 				Filename:  "test",
-				Type:      Type("image/png"),
+				Type:      mime.Type("image/png"),
 				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
 				CreatedAt: time.Now(),
 			},
@@ -91,12 +45,12 @@ func TestNew(t *testing.T) {
 			args: args{
 				filename:  "test",
 				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
-				t:         Type("image/jpeg"),
+				t:         mime.Type("image/jpeg"),
 			},
 			want: Media{
 				Id:        "some generated id",
 				Filename:  "test",
-				Type:      Type("image/jpeg"),
+				Type:      mime.Type("image/jpeg"),
 				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
 				CreatedAt: time.Now(),
 			},
@@ -108,12 +62,12 @@ func TestNew(t *testing.T) {
 			args: args{
 				filename:  "test",
 				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
-				t:         Type("audio/mp4"),
+				t:         mime.Type("audio/mp4"),
 			},
 			want: Media{
 				Id:        "some generated id",
 				Filename:  "test",
-				Type:      Type("audio/mp4"),
+				Type:      mime.Type("audio/mp4"),
 				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
 				CreatedAt: time.Now(),
 			},
@@ -125,12 +79,12 @@ func TestNew(t *testing.T) {
 			args: args{
 				filename:  "test",
 				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
-				t:         Type("audio/aac"),
+				t:         mime.Type("audio/aac"),
 			},
 			want: Media{
 				Id:        "some generated id",
 				Filename:  "test",
-				Type:      Type("audio/aac"),
+				Type:      mime.Type("audio/aac"),
 				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
 				CreatedAt: time.Now(),
 			},
@@ -142,12 +96,12 @@ func TestNew(t *testing.T) {
 			args: args{
 				filename:  "test",
 				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
-				t:         Type("audio/mpeg"),
+				t:         mime.Type("audio/mpeg"),
 			},
 			want: Media{
 				Id:        "some generated id",
 				Filename:  "test",
-				Type:      Type("audio/mpeg"),
+				Type:      mime.Type("audio/mpeg"),
 				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
 				CreatedAt: time.Now(),
 			},
@@ -159,12 +113,12 @@ func TestNew(t *testing.T) {
 			args: args{
 				filename:  "test",
 				accountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
-				t:         Type("image/webp"),
+				t:         mime.Type("image/webp"),
 			},
 			want: Media{
 				Id:        "some generated id",
 				Filename:  "test",
-				Type:      Type("image/webp"),
+				Type:      mime.Type("image/webp"),
 				AccountId: "58f0eb78-5080-46ee-8a6d-18950477bba0",
 				CreatedAt: time.Now(),
 			},

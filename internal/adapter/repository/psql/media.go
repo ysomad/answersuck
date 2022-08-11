@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/pkg/mime"
 	"github.com/answersuck/host/internal/pkg/postgres"
 )
 
@@ -54,7 +55,36 @@ func (r *MediaRepo) Save(ctx context.Context, m media.Media) error {
 	return nil
 }
 
-func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (media.Type, error) {
+func (r *MediaRepo) FindById(ctx context.Context, mediaId string) (media.Media, error) {
+	sql, args, err := r.Builder.
+		Select("filename, type, account_id, created_at").
+		From("media").
+		Where(sq.Eq{"id": mediaId}).
+		ToSql()
+	if err != nil {
+		return media.Media{}, fmt.Errorf("psql - media - FindById - ToSql: %w", err)
+	}
+
+	r.Debug("psql - media - FindById", zap.String("sql", sql), zap.Any("args", args))
+
+	m := media.Media{Id: mediaId}
+	if err = r.Pool.QueryRow(ctx, sql, args...).Scan(
+		&m.Filename,
+		&m.Type,
+		&m.AccountId,
+		&m.CreatedAt,
+	); err != nil {
+		if err == pgx.ErrNoRows {
+			return media.Media{}, fmt.Errorf("psql - media - FindById - Scan: %w", media.ErrNotFound)
+		}
+
+		return media.Media{}, fmt.Errorf("psql - media - FindById - Scan: %w", err)
+	}
+
+	return m, nil
+}
+
+func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (mime.Type, error) {
 	sql, args, err := r.Builder.
 		Select("type").
 		From("media").
@@ -66,8 +96,7 @@ func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (medi
 
 	r.Debug("psql - media - FindMediaTypeById", zap.Any("args", args))
 
-	var mediaType media.Type
-
+	var mediaType string
 	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&mediaType)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -77,5 +106,5 @@ func (r *MediaRepo) FindMediaTypeById(ctx context.Context, mediaId string) (medi
 		return "", fmt.Errorf("psql - media - FindMediaTypeById - r.Pool.QueryRow.Scan: %w", err)
 	}
 
-	return mediaType, nil
+	return mime.Type(mediaType), nil
 }
