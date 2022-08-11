@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/answersuck/host/internal/domain/media"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
+
+	"github.com/answersuck/host/internal/domain/media"
+	"github.com/answersuck/host/internal/pkg/mime"
 )
 
 type mediaHandler struct {
@@ -61,7 +63,13 @@ func (h *mediaHandler) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m, err := media.New(fileHeader.Filename, accountId, media.Type(http.DetectContentType(buf)))
+	mediaType, err := mime.NewType(http.DetectContentType(buf))
+	if err != nil {
+		writeErr(w, http.StatusBadRequest, err)
+		return
+	}
+
+	m, err := media.New(fileHeader.Filename, accountId, mediaType)
 	if err != nil {
 		h.log.Error("http - v1 - media - upload - media.NewMedia", zap.Error(err))
 		writeErr(w, http.StatusBadRequest, err)
@@ -91,59 +99,3 @@ func (h *mediaHandler) upload(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, resp)
 }
-
-// func (h *mediaHandler) upload(c *fiber.Ctx) error {
-
-// 	c.Accepts(fiber.MIMEMultipartForm)
-//
-// 	accountId, err := getAccountId(c)
-// 	if err != nil {
-// 		h.log.Info("http - v1 - media - upload - getAccountId: %w", err)
-// 		c.Status(fiber.StatusUnauthorized)
-// 		return nil
-// 	}
-//
-// 	fh, err := c.FormFile("media")
-// 	if err != nil {
-// 		h.log.Info("http - v1 - media - upload - c.FormFile: %w", err)
-// 		return errorResp(c, fiber.StatusBadRequest, err, "")
-// 	}
-//
-// 	f, err := fh.Open()
-// 	if err != nil {
-// 		h.log.Info("http - v1 - media - upload - c.FormFile: %w", err)
-// 		return errorResp(c, fiber.StatusBadRequest, err, "")
-// 	}
-//
-// 	defer f.Close()
-//
-// 	buf := make([]byte, fh.Size)
-//
-// 	if _, err := f.Read(buf); err != nil {
-// 		h.log.Info("http - v1 - media - upload - c.FormFile: %w", err)
-// 		return errorResp(c, fiber.StatusBadRequest, err, "")
-// 	}
-//
-// 	//c.SaveFile(f, fmt.Sprintf("./static/media/%s", f.Filename))
-//
-// 	m, err := h.service.UploadAndSave(c.Context(), &media.UploadDTO{
-// 		Filename:    fh.Filename,
-// 		ContentType: http.DetectContentType(buf),
-// 		Size:        fh.Size,
-// 		Buf:         buf,
-// 		AccountId:   accountId,
-// 	})
-// 	if err != nil {
-// 		h.log.Error("http - v1 - media - upload: %w", err)
-//
-// 		if errors.Is(err, media.ErrInvalidMimeType) {
-// 			return errorResp(c, fiber.StatusBadRequest, media.ErrInvalidMimeType, "")
-// 		}
-//
-// 		c.Status(fiber.StatusInternalServerError)
-// 		return nil
-// 	}
-//
-// 	c.Status(fiber.StatusOK).JSON(m)
-// 	return nil
-// }

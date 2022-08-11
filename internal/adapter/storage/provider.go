@@ -2,13 +2,13 @@ package storage
 
 import (
 	"context"
+	"io"
 	"net/url"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"github.com/answersuck/host/internal/config"
-	"github.com/answersuck/host/internal/domain/media"
 )
 
 type provider struct {
@@ -37,13 +37,13 @@ func NewProvider(cfg *config.FileStorage) (*provider, error) {
 	}, nil
 }
 
-func (p *provider) Upload(ctx context.Context, f media.File) (*url.URL, error) {
+func (p *provider) Upload(ctx context.Context, r io.Reader, name string, size int64, contentType string) (*url.URL, error) {
 	opts := minio.PutObjectOptions{
-		ContentType:  f.ContentType,
+		ContentType:  contentType,
 		UserMetadata: map[string]string{"x-amz-acl": "public-read"},
 	}
 
-	res, err := p.client.PutObject(ctx, p.bucket, f.Name, f.Reader, f.Size, opts)
+	res, err := p.client.PutObject(ctx, p.bucket, name, r, size, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/answersuck/host/internal/pkg/mime"
 	"github.com/answersuck/host/internal/pkg/pagination"
 )
 
@@ -14,7 +15,7 @@ type (
 	}
 
 	mediaService interface {
-		GetMediaTypeById(ctx context.Context, mediaId string) (string, error)
+		GetMediaTypeById(ctx context.Context, mediaId string) (mime.Type, error)
 	}
 )
 
@@ -37,8 +38,8 @@ func (s *service) Create(ctx context.Context, a Answer) (Answer, error) {
 			return Answer{}, fmt.Errorf("answerService - Create - s.media.GetMimeTypeById: %w", err)
 		}
 
-		if !mediaTypeAllowed(mediaType) {
-			return Answer{}, fmt.Errorf("answerService - Create - mediaTypeAllowed: %w", ErrMediaTypeNotAllowed)
+		if !mediaType.IsImage() {
+			return Answer{}, fmt.Errorf("answerService - Create - !mediaType.Image: %w", ErrMediaTypeNotAllowed)
 		}
 	}
 

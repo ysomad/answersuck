@@ -52,11 +52,12 @@ type (
 )
 
 type playerService interface {
-	GetByNickname(ctx context.Context, nickname string) (player.Player, error)
+	GetByNickname(ctx context.Context, nickname string) (player.Detailed, error)
+	UploadAvatar(ctx context.Context, dto player.UploadAvatarDTO) error
 }
 
 type mediaService interface {
-	UploadAndSave(ctx context.Context, m media.Media, size int64) (media.WithURL, error)
+	UploadAndSave(ctx context.Context, m media.Media, size int64) (media.UploadedMediaDTO, error)
 }
 
 type languageService interface {

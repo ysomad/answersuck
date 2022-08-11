@@ -23,10 +23,9 @@ func NewPlayerRepo(l *zap.Logger, c *postgres.Client) *PlayerRepo {
 
 func (r *PlayerRepo) FindByNickname(ctx context.Context, nickname string) (player.Player, error) {
 	sql, args, err := r.Builder.
-		Select("p.id, pa.filename").
+		Select("p.id, p.avatar_filename, a.is_verified").
 		From("player p").
 		InnerJoin("account a ON a.id = p.account_id").
-		LeftJoin("player_avatar pa ON p.id = pa.player_id").
 		Where(sq.And{
 			sq.Eq{"a.nickname": nickname},
 			sq.Eq{"a.is_archived": false},
@@ -39,7 +38,7 @@ func (r *PlayerRepo) FindByNickname(ctx context.Context, nickname string) (playe
 	r.Debug("psql - player - FindByNickname", zap.String("sql", sql), zap.Any("args", args))
 
 	p := player.Player{Nickname: nickname}
-	if err := r.Pool.QueryRow(ctx, sql, args...).Scan(&p.Id, &p.AvatarURL); err != nil {
+	if err := r.Pool.QueryRow(ctx, sql, args...).Scan(&p.Id, &p.AvatarFilename, &p.Verified); err != nil {
 		if err == pgx.ErrNoRows {
 			return player.Player{}, fmt.Errorf("psql - player - FindByNickname - r.c.Pool.QueryRow.Scan: %w", player.ErrNotFound)
 		}
@@ -48,4 +47,28 @@ func (r *PlayerRepo) FindByNickname(ctx context.Context, nickname string) (playe
 	}
 
 	return p, nil
+}
+
+func (r *PlayerRepo) SetAvatar(ctx context.Context, a player.Avatar) error {
+	sql, args, err := r.Builder.
+		Update("player").
+		Set("avatar_filename", a.Filename).
+		Set("updated_at", a.UpdatedAt).
+		Where(sq.Eq{"account_id": a.AccountId}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("psql - player - SetAvatar - ToSql: %w", err)
+	}
+
+	r.Debug("psql - player - SetAvatar", zap.String("sql", sql), zap.Any("args", args))
+
+	ct, err := r.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("psql - player - SetAvatar - Exec: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("psql - player - SetAvatar - Exec: %w", player.ErrNotFound)
+	}
+
+	return nil
 }

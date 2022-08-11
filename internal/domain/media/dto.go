@@ -1,6 +1,10 @@
 package media
 
-import "io"
+import (
+	"io"
+
+	"github.com/answersuck/host/internal/pkg/mime"
+)
 
 type (
 	File struct {
@@ -10,9 +14,9 @@ type (
 		ContentType string
 	}
 
-	WithURL struct {
-		Id        string `json:"id"`
-		URL       string `json:"url"`
-		MediaType Type   `json:"type"`
+	UploadedMediaDTO struct {
+		Id        string    `json:"id"`
+		URL       string    `json:"url"`
+		MediaType mime.Type `json:"type"`
 	}
 )

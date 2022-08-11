@@ -3,18 +3,22 @@ package media
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
+
+	"github.com/answersuck/host/internal/pkg/mime"
 )
 
 type (
 	repository interface {
 		Save(ctx context.Context, m Media) error
-		FindMediaTypeById(ctx context.Context, mediaId string) (Type, error)
+		FindById(ctx context.Context, mediaId string) (Media, error)
+		FindMediaTypeById(ctx context.Context, mediaId string) (mime.Type, error)
 	}
 
 	fileStorage interface {
-		Upload(ctx context.Context, f File) (*url.URL, error)
+		Upload(ctx context.Context, r io.Reader, name string, size int64, contentType string) (*url.URL, error)
 		URL(filename string) *url.URL
 	}
 )
@@ -31,41 +35,45 @@ func NewService(r repository, s fileStorage) *service {
 	}
 }
 
-func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (WithURL, error) {
-	defer m.removeTmpFile()
+func (s *service) UploadAndSave(ctx context.Context, m Media, size int64) (UploadedMediaDTO, error) {
+	defer os.Remove(m.Filename)
 
-	f, err := os.Open(m.Filename)
+	file, err := os.Open(m.Filename)
 	if err != nil {
-		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - os.Open: %w", err)
+		return UploadedMediaDTO{}, fmt.Errorf("mediaService - UploadAndSave - os.Open: %w", err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	url, err := s.storage.Upload(ctx, File{
-		Reader:      f,
-		Name:        m.Filename,
-		Size:        size,
-		ContentType: string(m.Type),
-	})
+	url, err := s.storage.Upload(ctx, file, m.Filename, size, string(m.Type))
 	if err != nil {
-		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
+		return UploadedMediaDTO{}, fmt.Errorf("mediaService - UploadAndSave - s.storage.Upload: %w", err)
 	}
 
 	if err = s.repo.Save(ctx, m); err != nil {
-		return WithURL{}, fmt.Errorf("mediaService - UploadAndSave - s.repo.Save: %w", err)
+		return UploadedMediaDTO{}, fmt.Errorf("mediaService - UploadAndSave - s.repo.Save: %w", err)
 	}
 
-	return WithURL{
+	return UploadedMediaDTO{
 		Id:        m.Id,
 		URL:       url.String(),
 		MediaType: m.Type,
 	}, nil
 }
 
-func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (string, error) {
+func (s *service) GetMediaTypeById(ctx context.Context, mediaId string) (mime.Type, error) {
 	t, err := s.repo.FindMediaTypeById(ctx, mediaId)
 	if err != nil {
 		return "", fmt.Errorf("mediaService - GetMimeTypeById - s.repo.FindMimeTypeById: %w", err)
 	}
 
-	return string(t), nil
+	return t, nil
+}
+
+func (s *service) GetById(ctx context.Context, mediaId string) (Media, error) {
+	m, err := s.repo.FindById(ctx, mediaId)
+	if err != nil {
+		return Media{}, fmt.Errorf("mediaService - GetById - s.repo.FindById: %w", err)
+	}
+
+	return m, nil
 }
