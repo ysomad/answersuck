@@ -55,8 +55,3 @@ func (t Type) IsImage() bool {
 	_, ok := imageTypes[t]
 	return ok
 }
-
-func IsImageFromString(s string) bool {
-	_, ok := imageTypes[Type(s)]
-	return ok
-}
