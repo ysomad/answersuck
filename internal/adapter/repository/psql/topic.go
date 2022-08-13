@@ -14,6 +14,7 @@ import (
 	"github.com/answersuck/host/internal/pkg/filter"
 	"github.com/answersuck/host/internal/pkg/pagination"
 	"github.com/answersuck/host/internal/pkg/postgres"
+	"github.com/answersuck/host/internal/pkg/sort"
 )
 
 type TopicRepo struct {
@@ -64,6 +65,8 @@ func (r *TopicRepo) FindAll(ctx context.Context, p topic.ListParams) (pagination
 	case p.Filter.LanguageId != 0:
 		sb = filter.New("language_id", filter.TypeEQ, p.Filter.LanguageId).UseSelectBuilder(sb)
 	}
+
+	sb = sort.New("id", "ASC").UseSelectBuilder(sb)
 
 	sql, args, err := sb.Limit(p.Pagination.Limit + 1).ToSql()
 	if err != nil {
