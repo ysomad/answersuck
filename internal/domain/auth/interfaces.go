@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/answersuck/host/internal/domain/account"
-	"github.com/answersuck/host/internal/domain/session"
+	"github.com/ysomad/answersuck-backend/internal/domain/account"
+	"github.com/ysomad/answersuck-backend/internal/domain/session"
 )
 
 type (

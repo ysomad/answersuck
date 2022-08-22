@@ -8,8 +8,6 @@ import (
 	"time"
 
 	smail "github.com/xhit/go-simple-mail/v2"
-
-	"github.com/answersuck/host/internal/domain/email"
 )
 
 const (
@@ -86,11 +84,11 @@ func NewClient(opt *ClientOptions) (*client, error) {
 	}, nil
 }
 
-func (c *client) SendEmail(ctx context.Context, e email.Email) error {
+func (c *client) SendEmail(ctx context.Context, to, subject, message string) error {
 	msg := smail.NewMSG()
 
-	msg.SetFrom(c.from).AddTo(e.To).SetSubject(e.Subject)
-	msg.SetBody(smail.TextHTML, e.Message())
+	msg.SetFrom(c.from).AddTo(to).SetSubject(subject)
+	msg.SetBody(smail.TextHTML, message)
 
 	cli, err := c.srv.Connect()
 	if err != nil {

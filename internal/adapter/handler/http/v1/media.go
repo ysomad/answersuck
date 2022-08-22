@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/host/internal/domain/media"
-	"github.com/answersuck/host/internal/pkg/mime"
+	"github.com/ysomad/answersuck-backend/internal/domain/media"
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
 )
 
 type mediaHandler struct {

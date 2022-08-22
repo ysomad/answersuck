@@ -10,11 +10,11 @@ import (
 	"github.com/jackc/pgerrcode"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/host/internal/domain/answer"
-	"github.com/answersuck/host/internal/pkg/filter"
-	"github.com/answersuck/host/internal/pkg/pagination"
-	"github.com/answersuck/host/internal/pkg/postgres"
-	"github.com/answersuck/host/internal/pkg/sort"
+	"github.com/ysomad/answersuck-backend/internal/domain/answer"
+	"github.com/ysomad/answersuck-backend/internal/pkg/filter"
+	"github.com/ysomad/answersuck-backend/internal/pkg/pagination"
+	"github.com/ysomad/answersuck-backend/internal/pkg/postgres"
+	"github.com/ysomad/answersuck-backend/internal/pkg/sort"
 )
 
 type AnswerRepo struct {

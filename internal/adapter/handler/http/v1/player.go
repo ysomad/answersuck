@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/answersuck/host/internal/domain/player"
-	"github.com/answersuck/host/internal/pkg/mime"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+
+	"github.com/ysomad/answersuck-backend/internal/domain/player"
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
 )
 
 type playerHandler struct {

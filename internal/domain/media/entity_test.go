@@ -4,8 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/answersuck/host/internal/pkg/mime"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
 )
 
 func TestNew(t *testing.T) {

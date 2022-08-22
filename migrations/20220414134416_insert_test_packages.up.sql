@@ -1,7 +1,7 @@
 INSERT INTO media (id, filename, type, account_id)
     VALUES ('7ceefef0-2a3e-4e47-a07d-0709c70d1cfa', 'viktorina.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600'), ('44c78b42-e931-4d8c-8451-cc59383e5af6', 'Viktorina.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600'), ('922d0089-ec67-47a7-ad25-dc8e36d7c93d', 'https://gameorg.ru/mviktorina_22.jpg', 'image/jpeg', 'd0fbc24f-5061-4d10-b92c-d386c8eba600');
 
-INSERT INTO package (name, account_id, is_published, language_id, cover)
+INSERT INTO package (name, account_id, is_published, language_id, cover_filename)
     VALUES ('Русский пакет 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, '7ceefef0-2a3e-4e47-a07d-0709c70d1cfa'), ('Русский пакет 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 1, '44c78b42-e931-4d8c-8451-cc59383e5af6'), ('Русский пакет 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 1, '922d0089-ec67-47a7-ad25-dc8e36d7c93d'), ('English package 1', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, '7ceefef0-2a3e-4e47-a07d-0709c70d1cfa'), ('English package 2', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', FALSE, 2, '44c78b42-e931-4d8c-8451-cc59383e5af6'), ('English package 3', 'd0fbc24f-5061-4d10-b92c-d386c8eba600', TRUE, 2, '922d0089-ec67-47a7-ad25-dc8e36d7c93d');
 
 INSERT INTO package_tag (package_id, tag_id)

@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/answersuck/host/internal/domain/language"
-	"github.com/answersuck/host/internal/pkg/postgres"
+	"github.com/ysomad/answersuck-backend/internal/domain/language"
+	"github.com/ysomad/answersuck-backend/internal/pkg/postgres"
 )
 
 type languageRepo struct {

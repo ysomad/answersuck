@@ -1,8 +1,6 @@
 package player
 
-import (
-	"github.com/answersuck/host/internal/pkg/mime"
-)
+import "github.com/ysomad/answersuck-backend/internal/pkg/mime"
 
 type UploadAvatarDTO struct {
 	AccountId   string

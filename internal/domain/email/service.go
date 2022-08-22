@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/host/internal/config"
+	"github.com/ysomad/answersuck-backend/internal/config"
 )
 
 type smtpClient interface {
-	SendEmail(ctx context.Context, e Email) error
+	SendEmail(ctx context.Context, to, subject, message string) error
 }
 
 type service struct {
@@ -49,8 +49,8 @@ func (s *service) SendPasswordResetEmail(ctx context.Context, to, token string) 
 
 func (s *service) send(ctx context.Context, dto sendEmailDTO) error {
 	e := Email{
-		To:      dto.to,
-		Subject: dto.subject,
+		to:      dto.to,
+		subject: dto.subject,
 	}
 
 	url := fmt.Sprintf(dto.format, dto.formatArgs...)
@@ -63,7 +63,7 @@ func (s *service) send(ctx context.Context, dto sendEmailDTO) error {
 		return fmt.Errorf("e.validate: %w", err)
 	}
 
-	if err := s.client.SendEmail(ctx, e); err != nil {
+	if err := s.client.SendEmail(ctx, e.to, e.subject, e.message); err != nil {
 		return fmt.Errorf("s.client.SendEmail: %w", err)
 	}
 

@@ -3,7 +3,7 @@ package media
 import (
 	"io"
 
-	"github.com/answersuck/host/internal/pkg/mime"
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
 )
 
 type (

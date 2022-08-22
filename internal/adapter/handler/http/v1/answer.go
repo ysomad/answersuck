@@ -5,10 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/answersuck/host/internal/domain/answer"
-	"github.com/answersuck/host/internal/domain/media"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
+
+	"github.com/ysomad/answersuck-backend/internal/domain/answer"
+	"github.com/ysomad/answersuck-backend/internal/domain/media"
 )
 
 type answerHandler struct {

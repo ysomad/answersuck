@@ -5,9 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/answersuck/host/internal/domain/tag"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
+
+	"github.com/ysomad/answersuck-backend/internal/domain/tag"
 )
 
 type tagHandler struct {

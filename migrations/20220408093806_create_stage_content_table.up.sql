@@ -6,12 +6,12 @@ CREATE TABLE IF NOT EXISTS stage_content
     question_id  int           NOT NULL REFERENCES question (id),
 
     type         question_type NOT NULL DEFAULT 'DEFAULT',
-    cost         int           NOT NULL,
-    interval     int           NOT NULL,
+    cost         smallint           NOT NULL,
+    interval     smallint           NOT NULL,
     comment      text,
 
     secret_topic varchar(64),
-    secret_cost  int,
+    secret_cost  smallint,
     is_keepable  boolean,
     is_visible   boolean
 );

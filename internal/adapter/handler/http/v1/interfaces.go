@@ -4,16 +4,18 @@ import (
 	"context"
 	"io"
 
-	"github.com/answersuck/host/internal/domain/account"
-	"github.com/answersuck/host/internal/domain/answer"
-	"github.com/answersuck/host/internal/domain/language"
-	"github.com/answersuck/host/internal/domain/media"
-	"github.com/answersuck/host/internal/domain/player"
-	"github.com/answersuck/host/internal/domain/question"
-	"github.com/answersuck/host/internal/domain/session"
-	"github.com/answersuck/host/internal/domain/tag"
-	"github.com/answersuck/host/internal/domain/topic"
-	"github.com/answersuck/host/internal/pkg/pagination"
+	"github.com/ysomad/answersuck-backend/internal/domain/account"
+	"github.com/ysomad/answersuck-backend/internal/domain/answer"
+	"github.com/ysomad/answersuck-backend/internal/domain/language"
+	"github.com/ysomad/answersuck-backend/internal/domain/media"
+	packages "github.com/ysomad/answersuck-backend/internal/domain/package"
+	"github.com/ysomad/answersuck-backend/internal/domain/player"
+	"github.com/ysomad/answersuck-backend/internal/domain/question"
+	"github.com/ysomad/answersuck-backend/internal/domain/session"
+	"github.com/ysomad/answersuck-backend/internal/domain/tag"
+	"github.com/ysomad/answersuck-backend/internal/domain/topic"
+
+	"github.com/ysomad/answersuck-backend/internal/pkg/pagination"
 )
 
 type validate interface {
@@ -83,4 +85,8 @@ type questionService interface {
 	Create(ctx context.Context, dto question.CreateDTO) (questionId uint32, err error)
 	GetById(ctx context.Context, questionId uint32) (question.Detailed, error)
 	GetAll(ctx context.Context, p question.ListParams) (pagination.List[question.Minimized], error)
+}
+
+type packageService interface {
+	Create(ctx context.Context, p packages.CreateParams) (packageId uint32, err error)
 }

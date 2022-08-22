@@ -1,40 +1,77 @@
 package repository_psql
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
 
-	"github.com/answersuck/host/internal/adapter/repository/psql"
-	"github.com/answersuck/host/internal/pkg/logger"
-	"github.com/answersuck/host/internal/pkg/migrate"
-	"github.com/answersuck/host/internal/pkg/postgres"
+	"github.com/ory/dockertest"
+	"github.com/ory/dockertest/docker"
+
+	"github.com/ysomad/answersuck-backend/internal/adapter/repository/psql"
+	"github.com/ysomad/answersuck-backend/internal/pkg/logger"
+	"github.com/ysomad/answersuck-backend/internal/pkg/migrate"
+	"github.com/ysomad/answersuck-backend/internal/pkg/postgres"
 )
 
-func initRepos(logLevel string, c *postgres.Client) {
-	logger := logger.New(os.Stdout, logLevel)
-	_accountRepo = psql.NewAccountRepo(logger, c)
-	_sessionRepo = psql.NewSessionRepo(logger, c)
-	_mediaRepo = psql.NewMediaRepo(logger, c)
-	_tagRepo = psql.NewTagRepo(logger, c)
+func initRepos(logLevel string) {
+	log := logger.New(os.Stdout, logLevel)
+	_accountRepo = psql.NewAccountRepo(log, db)
+	_sessionRepo = psql.NewSessionRepo(log, db)
+	_mediaRepo = psql.NewMediaRepo(log, db)
+	_tagRepo = psql.NewTagRepo(log, db)
 }
 
-func TestMain(m *testing.M) {
-	u := "../../migrations"
-	migrate.Down(u)
-	migrate.Up(u)
+var db *postgres.Client
 
-	postgresURI := os.Getenv("PG_URL")
-	if postgresURI == "" {
-		log.Fatal("Empty PG_URL environment variable")
+func TestMain(m *testing.M) {
+	var err error
+
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		log.Fatalf("Could not connect to docker: %s", err)
 	}
 
-	postgresClient, err := postgres.NewClient(postgresURI)
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "postgres",
+		Tag:        "14-alpine",
+		Env: []string{
+			"POSTGRES_PASSWORD=secret",
+			"POSTGRES_USER=test",
+			"POSTGRES_DB=test",
+			"listen_addresses = '*'",
+		},
+	}, func(config *docker.HostConfig) {
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
+	})
+	if err != nil {
+		log.Fatalf("Could not start resource: %s", err)
+	}
+
+	hostAndPort := resource.GetHostPort("5432/tcp")
+	databaseURL := fmt.Sprintf("postgres://test:secret@%s/test?sslmode=disable", hostAndPort)
+
+	log.Println("Connecting to database on url: ", databaseURL)
+
+	resource.Expire(120)
+
+	db, err = postgres.NewClient(databaseURL)
 	if err != nil {
 		log.Fatalf("Error initializing Postgres test client: %v", err)
 	}
+	defer db.Pool.Close()
 
-	initRepos(os.Getenv("LOG_LEVEL"), postgresClient)
+	migrate.Up("../../migrations")
 
-	os.Exit(m.Run())
+	initRepos(os.Getenv("LOG_LEVEL"))
+
+	code := m.Run()
+
+	if err := pool.Purge(resource); err != nil {
+		log.Fatalf("Could not purge resource: %s", err)
+	}
+
+	os.Exit(code)
 }

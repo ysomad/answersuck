@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/answersuck/host/internal/pkg/mime"
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
 )
 
 type (
@@ -19,7 +19,6 @@ type (
 
 	fileStorage interface {
 		Upload(ctx context.Context, r io.Reader, name string, size int64, contentType string) (*url.URL, error)
-		URL(filename string) *url.URL
 	}
 )
 

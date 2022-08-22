@@ -15,12 +15,10 @@ var (
 )
 
 type Email struct {
-	To      string
-	Subject string
+	to      string
+	subject string
 	message string
 }
-
-func (e *Email) Message() string { return e.message }
 
 func (e *Email) setMessageFromTemplate(filename string, data interface{}) error {
 	t, err := template.ParseFiles(filename)
@@ -39,16 +37,16 @@ func (e *Email) setMessageFromTemplate(filename string, data interface{}) error 
 }
 
 func (e *Email) validate() error {
-	if e.To == "" {
+	if e.to == "" {
 		return ErrEmptyTo
 	}
 
-	_, err := mail.ParseAddress(e.To)
+	_, err := mail.ParseAddress(e.to)
 	if err != nil {
 		return fmt.Errorf("mail.ParseAddress: %w", err)
 	}
 
-	if e.Subject == "" {
+	if e.subject == "" {
 		return ErrEmptySubject
 	}
 

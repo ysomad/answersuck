@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/answersuck/host/internal/pkg/mime"
 	"github.com/google/uuid"
+
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
 )
 
 var (

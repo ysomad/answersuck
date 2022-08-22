@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/answersuck/host/internal/pkg/strings"
+	"github.com/ysomad/answersuck-backend/internal/pkg/strings"
 )
 
 var (

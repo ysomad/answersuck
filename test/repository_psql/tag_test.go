@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/answersuck/host/internal/adapter/repository/psql"
-	"github.com/answersuck/host/internal/domain/tag"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ysomad/answersuck-backend/internal/adapter/repository/psql"
+	"github.com/ysomad/answersuck-backend/internal/domain/tag"
 )
 
 var _tagRepo *psql.TagRepo

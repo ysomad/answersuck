@@ -5,9 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/answersuck/host/internal/domain/topic"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
+
+	"github.com/ysomad/answersuck-backend/internal/domain/topic"
 )
 
 type topicHandler struct {
@@ -33,8 +34,8 @@ func newTopicMux(d *Deps) *chi.Mux {
 }
 
 type topicCreateReq struct {
-	Name       string `json:"name" binding:"required,gte=4,lte=50"`
-	LanguageId uint   `json:"language_id" binding:"required"`
+	Name       string `json:"name" validate:"required,gte=4,lte=50"`
+	LanguageId uint   `json:"language_id" validate:"required"`
 }
 
 func (h *topicHandler) create(w http.ResponseWriter, r *http.Request) {

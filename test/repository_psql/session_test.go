@@ -7,10 +7,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/answersuck/host/internal/adapter/repository/psql"
-	"github.com/answersuck/host/internal/domain/account"
-	"github.com/answersuck/host/internal/domain/session"
-	"github.com/answersuck/host/internal/pkg/strings"
+	"github.com/ysomad/answersuck-backend/internal/adapter/repository/psql"
+	"github.com/ysomad/answersuck-backend/internal/domain/account"
+	"github.com/ysomad/answersuck-backend/internal/domain/session"
+	"github.com/ysomad/answersuck-backend/internal/pkg/strings"
 )
 
 var _sessionRepo *psql.SessionRepo

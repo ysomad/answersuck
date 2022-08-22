@@ -11,11 +11,11 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/host/internal/domain/question"
-	"github.com/answersuck/host/internal/pkg/filter"
-	"github.com/answersuck/host/internal/pkg/pagination"
-	"github.com/answersuck/host/internal/pkg/postgres"
-	"github.com/answersuck/host/internal/pkg/sort"
+	"github.com/ysomad/answersuck-backend/internal/domain/question"
+	"github.com/ysomad/answersuck-backend/internal/pkg/filter"
+	"github.com/ysomad/answersuck-backend/internal/pkg/pagination"
+	"github.com/ysomad/answersuck-backend/internal/pkg/postgres"
+	"github.com/ysomad/answersuck-backend/internal/pkg/sort"
 )
 
 type QuestionRepo struct {

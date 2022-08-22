@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/answersuck/host/internal/domain/session"
+	"github.com/ysomad/answersuck-backend/internal/domain/session"
 )
 
 type (

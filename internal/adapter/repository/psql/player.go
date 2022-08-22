@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"github.com/answersuck/host/internal/domain/player"
-	"github.com/answersuck/host/internal/pkg/postgres"
+	"github.com/ysomad/answersuck-backend/internal/domain/player"
+	"github.com/ysomad/answersuck-backend/internal/pkg/postgres"
 )
 
 type PlayerRepo struct {

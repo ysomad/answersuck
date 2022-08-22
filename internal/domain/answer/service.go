@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/answersuck/host/internal/pkg/mime"
-	"github.com/answersuck/host/internal/pkg/pagination"
+	"github.com/ysomad/answersuck-backend/internal/pkg/mime"
+	"github.com/ysomad/answersuck-backend/internal/pkg/pagination"
 )
 
 type (

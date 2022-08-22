@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: "pass"
       POSTGRES_DB: "postgres"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     restart: always
     volumes:
       - pg-data:/var/lib/postgresql/data
