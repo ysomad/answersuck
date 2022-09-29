@@ -15,7 +15,7 @@ require (
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v4 v4.17.0
-	github.com/minio/minio-go/v7 v7.0.32
+	github.com/minio/minio-go/v7 v7.0.39
 	github.com/stretchr/testify v1.8.0
 	github.com/xhit/go-simple-mail/v2 v2.11.0
 	go.uber.org/zap v1.22.0
