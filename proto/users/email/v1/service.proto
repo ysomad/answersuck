@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package users.email.v1;
+option go_package = "email/v1;emailv1";
+
+import "google/protobuf/empty.proto";
+
+service EmailService {
+  // VerifyEmail verifies account email by provided code.
+  rpc VerifyEmail (VerifyEmailRequest) returns (google.protobuf.Empty);
+  
+  // SendEmailVerification sends email verification with new code.
+  rpc SendEmailVerification (SendEmailVerificationRequest) returns (google.protobuf.Empty);
+
+  // UpdateEmail updates account email.
+  rpc UpdateEmail (UpdateEmailRequest) returns (google.protobuf.Empty);
+}
+
+message SendEmailVerificationRequest {
+  string account_id = 1; // required
+}
+
+message UpdateEmailRequest {
+  string account_id = 1; // required
+  string new_email = 2; // required
+}
+
+message VerifyEmailRequest {
+  string verification_code = 1; // required
+}
+

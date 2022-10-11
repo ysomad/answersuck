@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package users.password.v1;
+option go_package = "password/v1;passwordv1";
+
+import "google/protobuf/empty.proto";
+
+service PasswordService {
+  // ResetPassword sends an email to account email with short-term token
+  // which may be used for updating account password.
+  rpc ResetPassword (ResetPasswordRequest) returns (google.protobuf.Empty);
+
+  // SetPassword sets new account password by using token from ResetPassword.
+  rpc SetPassword (SetPasswordRequest) returns (google.protobuf.Empty);
+
+  // UpdatePassword updates account password if old one is correct.
+  rpc UpdatePassword (UpdatePasswordRequest) returns (google.protobuf.Empty);
+}
+
+message ResetPasswordRequest {
+  string email_or_username = 1; // required
+}
+
+message SetPasswordRequest {
+  string token = 1; // required
+  string password = 2; // required
+}
+
+message UpdatePasswordRequest {
+  string account_id = 1; // required
+  string old_password = 2;
+  string new_password = 3;
+}

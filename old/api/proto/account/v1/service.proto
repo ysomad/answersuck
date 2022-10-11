@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package account.v1;
+option go_package = "api/account/v1";
+
+import "google/protobuf/empty.proto";
+
+service AccountService {
+  // CreateAccount creates new account.
+  rpc CreateAccount(CreateAccountRequest) returns (Account);
+
+  // ArchiveAccount archives account.
+  rpc ArchiveAccount(ArchiveAccountRequest) returns (google.protobuf.Empty);
+
+  // RequestEmailVerification sends an email with verification code.
+  rpc RequestEmailVerification(RequestEmailVerificationRequest) returns (google.protobuf.Empty);
+
+  // VerifyEmail verifies account email by provided code. Code creates 1 time on account creation.
+  rpc VerifyEmail (VerifyEmailRequest) returns (Account);
+
+  // ResetPassword sends an email to account email with short-term token
+  // which may be used for updating account password.
+  rpc ResetPassword (ResetPasswordRequest) returns (google.protobuf.Empty);
+
+  // SetPassword sets new account password by using token from ResetAccountPassword.
+  rpc SetPassword (SetPasswordRequest) returns (google.protobuf.Empty);
+
+  // UpdatePassword updates account password if old one is correct.
+  rpc UpdatePassword (UpdatePasswordRequest) returns (google.protobuf.Empty);
+}
+
+message Account {
+  string id = 1;
+  string email = 2;
+  string nickname = 3;
+  bool is_verified = 4;
+  bool is_archived = 5;
+  string created_at = 50; // RFC3339
+  string updated_at = 51; // RFC3339
+}
+
+message CreateAccountRequest {
+  string email = 1; // required
+  string nickname = 2; // required
+  string password = 3; // required
+}
+
+message ArchiveAccountRequest {
+  string account_id = 1; // required
+}
+
+message RequestEmailVerificationRequest {
+  string account_id = 1; // required
+}
+
+message VerifyEmailRequest {
+  string verification_code = 1; // required
+}
+
+message ResetPasswordRequest {
+  // might be email or nickname
+  string login = 1; // required
+}
+
+message SetPasswordRequest {
+  string token = 1; // required
+  string password = 2; // required
+}
+
+message UpdatePasswordRequest {
+  string account_id = 1; // required
+  string old_password = 2; // required
+  string new_password = 3; // required
+}
