@@ -45,7 +45,7 @@ var usernames = []string{
 	"superuser",
 	"sysadmin",
 	"user",
-	"users",
+	"accounts",
 	"usenet",
 	"webmaster",
 	"ajax",
