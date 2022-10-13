@@ -1,7 +1,8 @@
 package app
 
 import (
-	"log"
+	"github.com/ysomad/answersuck/internal/user/handler"
+	"github.com/ysomad/answersuck/pkg/logger"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,35 +13,29 @@ import (
 )
 
 func Run(conf *config.Config) {
-	accountServer := newAccountServiceServer()
-	emailServer := newEmailServiceServer()
-	passwordServer := newPasswordServiceServer()
+	log := logger.New(conf.App.Ver, logger.WithLevel(conf.Log.Level), logger.WithMoscowLocation())
 
-	mux := http.NewServeMux()
+	twirpMux := handler.NewTwirpMux(&conf.Twirp)
 
-	mux.Handle(accountServer.PathPrefix(), accountServer)
-	mux.Handle(emailServer.PathPrefix(), emailServer)
-	mux.Handle(passwordServer.PathPrefix(), passwordServer)
-
-	runHTTPServer(mux, &conf.HTTP)
+	runHTTPServer(twirpMux, log, conf.HTTP.Port)
 }
 
-func runHTTPServer(mux http.Handler, conf *config.HTTP) {
-	log.Printf("running http server at port %s", conf.Port)
+func runHTTPServer(mux http.Handler, log logger.Logger, port string) {
+	log.Infof("starting http server on port %s", port)
 
-	httpServer := httpserver.New(mux, httpserver.WithPort(conf.Port))
+	httpServer := httpserver.New(mux, httpserver.WithPort(port))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	select {
 	case s := <-interrupt:
-		log.Printf("app - Run - signal: %s", s.String())
+		log.Infof("received signal from httpserver: %s", s.String())
 	case err := <-httpServer.Notify():
-		log.Printf("app - Run - httpServer.Notify: %s", err.Error())
+		log.Infof("got error from http server notify %s", err.Error())
 	}
 
 	if err := httpServer.Shutdown(); err != nil {
-		log.Printf("app - Run - httpServer.Shutdown: %s", err.Error())
+		log.Infof("got error on http server shutdown %s", err.Error())
 	}
 }

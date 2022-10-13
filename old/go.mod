@@ -17,10 +17,13 @@ require (
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/minio/minio-go/v7 v7.0.32
 	github.com/ory/dockertest v3.3.5+incompatible
+	github.com/rs/zerolog v1.15.0
 	github.com/stretchr/testify v1.8.0
+	github.com/twitchtv/twirp v8.1.2+incompatible
 	github.com/xhit/go-simple-mail/v2 v2.11.0
 	go.uber.org/zap v1.22.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
@@ -70,7 +73,6 @@ require (
 	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462 // indirect
 	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect

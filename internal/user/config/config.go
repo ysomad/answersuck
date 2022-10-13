@@ -3,6 +3,7 @@ package config
 type Config struct {
 	App      App      `yaml:"app"`
 	HTTP     HTTP     `yaml:"http"`
+	Twirp    Twirp    `yaml:"twirp"`
 	Log      Log      `yaml:"log"`
 	Postgres Postgres `yaml:"postgres"`
 }
@@ -15,6 +16,10 @@ type (
 
 	HTTP struct {
 		Port string `yaml:"port" env-required:"true"`
+	}
+
+	Twirp struct {
+		Prefix string `yaml:"prefix" env-required:"true"`
 	}
 
 	Log struct {
