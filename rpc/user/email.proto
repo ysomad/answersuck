@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package users.email;
+package user;
 option go_package = "rpc/user";
 
 import "google/protobuf/empty.proto";
@@ -9,13 +9,13 @@ import "user/account.proto";
 
 service EmailService {
   // VerifyEmail verifies account email by provided code.
-  rpc VerifyEmail (VerifyEmailRequest) returns (account.Account);
+  rpc VerifyEmail (VerifyEmailRequest) returns (user.Account);
 
   // SendEmailVerification sends email verification with new code.
   rpc SendEmailVerification (SendEmailVerificationRequest) returns (google.protobuf.Empty);
 
   // UpdateEmail updates account email.
-  rpc UpdateEmail (UpdateEmailRequest) returns (account.Account);
+  rpc UpdateEmail (UpdateEmailRequest) returns (user.Account);
 }
 
 message SendEmailVerificationRequest {
