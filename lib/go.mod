@@ -1,4 +1,4 @@
-module github.com/ysomad/answersuck/pkg
+module github.com/ysomad/answersuck/lib
 
 go 1.19
 
