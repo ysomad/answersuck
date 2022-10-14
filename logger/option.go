@@ -29,19 +29,16 @@ func WithWriter(w io.Writer) Option {
 	}
 }
 
-func WithLocation(zoneinfo string) Option {
+func WithLocation(loc *time.Location) Option {
 	return func(l *logger) {
-		loc, err := time.LoadLocation(zoneinfo)
-		if err != nil {
+		if loc == nil {
 			l.location = defaultLocation
+			return
 		}
 
 		l.location = loc
 	}
 }
-
-// WithMoscowLocation is helper function for WithLocation.
-func WithMoscowLocation() Option { return WithLocation("Europe/Moscow") }
 
 func WithSkipFrameCount(c int) Option {
 	return func(l *logger) {

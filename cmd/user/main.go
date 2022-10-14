@@ -6,8 +6,8 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 
-	"github.com/ysomad/answersuck/user/internal/app"
-	"github.com/ysomad/answersuck/user/internal/config"
+	"github.com/ysomad/answersuck/internal/user/app"
+	"github.com/ysomad/answersuck/internal/user/config"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	flag.StringVar(
 		&confPath,
 		"config",
-		"./configs/local.yml",
+		"config/local.yml",
 		"path to yml config file",
 	)
 

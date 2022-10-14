@@ -1,9 +1,10 @@
 syntax = "proto3";
 
 package user.password.v1;
-option go_package = "github.com/ysomad/answersuck/gen/proto/user/password/v1;passwordv1";
+option go_package = "github.com/ysomad/answersuck/rpc/user/password/v1;passwordv1";
 
 import "validate/validate.proto";
+import "user/account/v1/account.proto";
 
 service PasswordService {
   // ResetPassword sends an email to account email with short-term token
@@ -32,7 +33,14 @@ message UpdatePasswordRequest {
   string new_password = 3 [(validate.rules).string = { min_len: 10, max_len: 128 }];
 }
 
-message UpdatePasswordResponse {}
-message SetPasswordResponse {}
-message ResetPasswordResponse {}
+message UpdatePasswordResponse {
+  user.account.v1.Account account = 1;
+}
+
+message SetPasswordResponse {
+  user.account.v1.Account account = 1;
+}
+message ResetPasswordResponse {
+  user.account.v1.Account account = 1;
+}
 

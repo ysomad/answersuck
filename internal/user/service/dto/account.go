@@ -1,7 +1,8 @@
 package dto
 
-type AccountCreateParams struct {
-	Email         string
-	Username      string
-	PlainPassword string
+type AccountSaveArgs struct {
+	Email           string
+	Username        string
+	EncodedPassword string
+	EmailVerifCode  string
 }

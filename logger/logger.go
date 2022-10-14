@@ -2,11 +2,12 @@ package logger
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
 	"io"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 type Logger interface {

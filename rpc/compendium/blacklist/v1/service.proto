@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package compendium.blacklist.v1;
-option go_package = "github.com/ysomad/answersuck/gen/proto/compendium/blacklist/v1;blacklistv1";
+option go_package = "github.com/ysomad/answersuck/rpc/compendium/blacklist/v1;blacklistv1";
 
 import "validate/validate.proto";
 

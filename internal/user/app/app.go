@@ -1,21 +1,23 @@
 package app
 
 import (
-	emailv1 "github.com/ysomad/answersuck/internal/user/handler/connect/email/v1"
-	"github.com/ysomad/answersuck/internal/user/postgres"
-	"github.com/ysomad/answersuck/internal/user/service"
-	"github.com/ysomad/answersuck/rpc/user/account/v1/accountv1connect"
-	"github.com/ysomad/answersuck/rpc/user/email/v1/emailv1connect"
-	"github.com/ysomad/answersuck/rpc/user/password/v1/passwordv1connect"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/ysomad/answersuck/internal/user/config"
-	accountv1 "github.com/ysomad/answersuck/internal/user/handler/connect/account/v1"
-	passwordv1 "github.com/ysomad/answersuck/internal/user/handler/connect/password/v1"
 	"github.com/ysomad/answersuck/internal/user/pkg/argon2"
+	"github.com/ysomad/answersuck/internal/user/postgres"
+	"github.com/ysomad/answersuck/internal/user/service"
+
+	"github.com/ysomad/answersuck/rpc/user/account/v1/accountv1connect"
+	"github.com/ysomad/answersuck/rpc/user/email/v1/emailv1connect"
+	"github.com/ysomad/answersuck/rpc/user/password/v1/passwordv1connect"
+
+	accountv1 "github.com/ysomad/answersuck/internal/user/handler/connect/account/v1"
+	emailv1 "github.com/ysomad/answersuck/internal/user/handler/connect/email/v1"
+	passwordv1 "github.com/ysomad/answersuck/internal/user/handler/connect/password/v1"
 
 	"github.com/ysomad/answersuck/httpserver"
 	"github.com/ysomad/answersuck/logger"
@@ -23,23 +25,29 @@ import (
 )
 
 func Run(conf *config.Config) {
-	log := logger.New(conf.App.Ver, logger.WithLevel(conf.Log.Level), logger.WithMoscowLocation())
+	log := logger.New(
+		conf.App.Ver,
+		logger.WithLevel(conf.Log.Level),
+		logger.WithLocation(conf.Log.TimeLoc),
+		logger.WithSkipFrameCount(1),
+	)
 
 	// dependencies
-	postgresClient, err := pgclient.New(conf.PG.URL, pgclient.WithMaxConns(conf.PG.MaxConns))
+	pg, err := pgclient.New(conf.PG.URL, pgclient.WithMaxConns(conf.PG.MaxConns))
 	if err != nil {
-		log.Fatalf("pgclient.New: %w", err)
+		log.Fatal(err.Error())
 	}
+	defer pg.Close()
 
 	passwordHasher := argon2.New()
 
 	// repositories
-	accountRepo := postgres.NewAccountRepository(postgresClient)
+	accountRepo := postgres.NewAccountRepository(pg)
 
 	// services
 	accountService := service.NewAccountService(accountRepo, passwordHasher)
 
-	// handlers
+	// http
 	mux := http.NewServeMux()
 
 	accountV1Server := accountv1.NewServer(log, accountService)

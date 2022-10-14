@@ -5,12 +5,12 @@ CREATE TABLE IF NOT EXISTS account (
     password text NOT NULL,
     is_email_verified boolean DEFAULT FALSE NOT NULL,
     is_archived boolean DEFAULT FALSE NOT NULL,
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS email_verification (
     account_id uuid NOT NULL REFERENCES account (id),
-    code char(64) UNIQUE NOT NULL,
-    expires_at timestamptz NOT NULL
+    code varchar(255) UNIQUE NOT NULL,
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

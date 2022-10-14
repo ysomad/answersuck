@@ -9,4 +9,4 @@ log:
   level: debug
 
 postgres:
-  max_connections: 2
+  max_connections: 1

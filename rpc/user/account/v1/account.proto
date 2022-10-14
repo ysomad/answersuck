@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package user.account.v1;
+option go_package = "github.com/ysomad/answersuck/rpc/user/account/v1;accountv1";
+
+import "google/protobuf/timestamp.proto";
+
+message Account {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  bool email_verified = 4;
+  bool archived = 5;
+  google.protobuf.Timestamp creation_time = 50;
+  google.protobuf.Timestamp update_time = 51;
+}

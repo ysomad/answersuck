@@ -10,8 +10,6 @@ var _ emailv1connect.EmailServiceHandler = &server{}
 
 type server struct {
 	log logger.Logger
-
-	emailv1connect.UnimplementedEmailServiceHandler
 }
 
 func NewServer(l logger.Logger) *server {

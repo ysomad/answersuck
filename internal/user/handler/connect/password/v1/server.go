@@ -10,8 +10,6 @@ var _ passwordv1connect.PasswordServiceHandler = &server{}
 
 type server struct {
 	log logger.Logger
-
-	passwordv1connect.UnimplementedPasswordServiceHandler
 }
 
 func NewServer(l logger.Logger) *server {

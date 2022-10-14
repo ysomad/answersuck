@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -14,13 +15,13 @@ const (
 	defaultConnTimeout  = time.Second
 )
 
-// Client is implementation of postgres client using pgx.
 type Client struct {
 	maxConns     int32
 	connAttempts uint8
 	connTimeout  time.Duration
 
-	Pool *pgxpool.Pool
+	Builder sq.StatementBuilderType
+	Pool    *pgxpool.Pool
 }
 
 func New(connString string, opts ...Option) (*Client, error) {
@@ -34,30 +35,33 @@ func New(connString string, opts ...Option) (*Client, error) {
 		opt(c)
 	}
 
-	poolConfig, err := pgxpool.ParseConfig(connString)
+	poolConf, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, err
 	}
 
-	poolConfig.MaxConns = c.maxConns
+	poolConf.MaxConns = c.maxConns
+
+	c.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConf)
+	if err != nil {
+		return nil, err
+	}
 
 	for c.connAttempts > 0 {
-		c.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
-		if err == nil {
+		if err = c.Pool.Ping(context.TODO()); err == nil {
 			break
 		}
-		defer c.Close()
 
 		log.Printf("trying connecting to postgres, attempts left: %d", c.connAttempts)
-
 		time.Sleep(c.connTimeout)
-
 		c.connAttempts--
 	}
 
 	if err != nil {
 		return nil, err
 	}
+
+	c.Builder = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	return c, nil
 }
