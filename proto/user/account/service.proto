@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package user.account;
+option go_package = "github.com/ysomad/answersuck/api/user/account";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+service AccountService {
+  rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse);
+  rpc GetAccountById (GetAccountByIdRequest) returns (GetAccountByIdResponse);
+  rpc GetAccountByEmail (GetAccountByEmailRequest) returns (GetAccountByEmailResponse);
+  rpc DeleteAccount (DeleteAccountRequest) returns (google.protobuf.Empty);
+}
+
+message Account {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  bool email_verified = 4;
+  bool archived = 5;
+  google.protobuf.Timestamp created_time = 50;
+  google.protobuf.Timestamp updated_time = 51;
+}
+
+message CreateAccountRequest {
+  string email = 1 [(validate.rules).string = { email: true, max_len: 320 }];
+  string username = 2 [(validate.rules).string.pattern = "^[a-zA-Z0-9][\\w]{3,24}$"];
+  string password = 3 [(validate.rules).string = { min_len: 10, max_len: 128 }];
+}
+
+message CreateAccountResponse {
+  Account account = 1;
+}
+
+message GetAccountByIdRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+}
+
+message GetAccountByIdResponse {
+  Account account = 1;
+}
+
+message GetAccountByEmailRequest {
+  string email = 1 [(validate.rules).string.email = true];
+}
+
+message GetAccountByEmailResponse {
+  Account account = 1;
+}
+
+message DeleteAccountRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+}

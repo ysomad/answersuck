@@ -18,6 +18,8 @@ type Logger interface {
 	Warnf(format string, args ...any)
 	Error(msg string)
 	Errorf(format string, args ...any)
+	Fatal(msg string)
+	Fatalf(format string, args ...any)
 }
 
 var _ Logger = &logger{}
@@ -118,4 +120,11 @@ func (l *logger) Error(msg string) {
 
 func (l *logger) Errorf(format string, args ...any) {
 	l.log(l.logger.Error()).Msg(fmt.Sprintf(format, args...))
+}
+
+func (l *logger) Fatal(msg string) {
+	l.log(l.logger.Fatal()).Msg(msg)
+}
+func (l *logger) Fatalf(format string, args ...any) {
+	l.log(l.logger.Fatal()).Msg(fmt.Sprintf(format, args...))
 }
