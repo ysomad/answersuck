@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package user.password.v1;
+option go_package = "github.com/ysomad/answersuck/gen/proto/user/password/v1;passwordv1";
+
+import "validate/validate.proto";
+
+service PasswordService {
+  // ResetPassword sends an email to account email with short-term token
+  // which may be used for updating account password.
+  rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+
+  // SetPassword sets new account password by using token from ResetPassword.
+  rpc SetPassword (SetPasswordRequest) returns (SetPasswordResponse);
+
+  // UpdatePassword updates account password if old one is correct.
+  rpc UpdatePassword (UpdatePasswordRequest) returns (UpdatePasswordResponse);
+}
+
+message ResetPasswordRequest {
+  string email_or_username = 1;
+}
+
+message SetPasswordRequest {
+  string token = 1;
+  string password = 2;
+}
+
+message UpdatePasswordRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+  string old_password = 2;
+  string new_password = 3 [(validate.rules).string = { min_len: 10, max_len: 128 }];
+}
+
+message UpdatePasswordResponse {}
+message SetPasswordResponse {}
+message ResetPasswordResponse {}
+

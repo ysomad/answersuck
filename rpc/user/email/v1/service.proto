@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package user.email.v1;
+option go_package = "github.com/ysomad/answersuck/gen/proto/user/email/v1;emailv1";
+
+import "validate/validate.proto";
+
+service EmailService {
+  // VerifyEmail verifies account email by provided code.
+  rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
+
+  // UpdateEmail updates account email.
+  rpc UpdateEmail (UpdateEmailRequest) returns (UpdateEmailResponse);
+
+  // SendVerification sends email verification with new code.
+  rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse);
+}
+
+message VerifyEmailRequest {
+  string verification_code = 1;
+}
+
+message VerifyEmailResponse {
+  bool account_email_verified = 1;
+}
+
+message UpdateEmailRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+  string new_email = 2 [(validate.rules).string.email = true];
+}
+
+message UpdateEmailResponse {
+  string new_email = 1;
+}
+
+message SendVerificationRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+}
+
+message SendVerificationResponse {}

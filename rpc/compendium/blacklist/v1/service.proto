@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package compendium.blacklist.v1;
+option go_package = "github.com/ysomad/answersuck/gen/proto/compendium/blacklist/v1;blacklistv1";
+
+import "validate/validate.proto";
+
+service BlackListService {
+  // FindBannedWord searches for a word in database of banned words and returns true if word is found.
+  rpc FindBannedWord (FindBannedWordRequest) returns (FindBannedWordResponse);
+}
+
+message FindBannedWordRequest {
+  string word = 1 [(validate.rules).string = { min_len: 1, max_len: 255 }];
+}
+
+message FindBannedWordResponse {
+  bool word_found = 1;
+}
