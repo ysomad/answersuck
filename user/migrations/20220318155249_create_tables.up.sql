@@ -9,10 +9,6 @@ CREATE TABLE IF NOT EXISTS account (
     updated_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS banned_(
-    username varchar(24) UNIQUE NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS email_verification (
     account_id uuid NOT NULL REFERENCES account (id),
     code char(64) UNIQUE NOT NULL,
