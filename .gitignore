@@ -1,4 +1,4 @@
 ../../.idea
 .DS_Store
 .vscode
-internal/account/.env
+internal/user/account/.env

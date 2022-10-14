@@ -15,7 +15,7 @@ import (
 func Run(conf *config.Config) {
 	log := logger.New(conf.App.Ver, logger.WithLevel(conf.Log.Level), logger.WithMoscowLocation())
 
-	twirpMux := handler.NewTwirpMux(&conf.Twirp)
+	twirpMux := handler.NewTwirpMux(log, &conf.Twirp)
 
 	runHTTPServer(twirpMux, log, conf.HTTP.Port)
 }

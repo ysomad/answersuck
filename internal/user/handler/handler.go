@@ -11,12 +11,21 @@ import (
 	"github.com/ysomad/answersuck/internal/user/handler/twirp/account"
 	"github.com/ysomad/answersuck/internal/user/handler/twirp/email"
 	"github.com/ysomad/answersuck/internal/user/handler/twirp/password"
+	"github.com/ysomad/answersuck/internal/user/postgres"
+	"github.com/ysomad/answersuck/internal/user/service"
+
+	"github.com/ysomad/answersuck/pkg/argon2"
+	"github.com/ysomad/answersuck/pkg/logger"
 )
 
-func NewTwirpMux(conf *config.Twirp) *http.ServeMux {
+func NewTwirpMux(log logger.Logger, conf *config.Twirp) *http.ServeMux {
 	handlerPrefix := twirp.WithServerPathPrefix(conf.Prefix)
 
-	accountServer := account.NewServer()
+	passwordHasher := argon2.New()
+
+	accountRepository := postgres.NewAccountRepository()
+	accountService := service.NewAccount(accountRepository, passwordHasher)
+	accountServer := account.NewServer(log, accountService)
 	accountHandler := pb.NewAccountServiceServer(accountServer, handlerPrefix)
 
 	emailServer := email.NewServer()
