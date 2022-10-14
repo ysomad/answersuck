@@ -24,8 +24,7 @@ func (s *server) CreateAccount(ctx context.Context, r *connect.Request[v1.Create
 	if err != nil {
 		s.log.Error(err.Error())
 
-		switch {
-		case errors.Is(err, domain.ErrAccountAlreadyExist):
+		if errors.Is(err, domain.ErrAccountAlreadyExist) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, domain.ErrAccountAlreadyExist)
 		}
 
@@ -33,7 +32,7 @@ func (s *server) CreateAccount(ctx context.Context, r *connect.Request[v1.Create
 	}
 
 	// using t as response for creation time and update time
-	// because on creation time is the same
+	// because on account create its the same
 	t := timestamppb.New(a.CreatedAt)
 
 	return connect.NewResponse(
