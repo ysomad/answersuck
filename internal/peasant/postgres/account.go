@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
+	"github.com/ysomad/answersuck/apperror"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
 
@@ -23,7 +24,9 @@ func NewAccountRepository(c *pgclient.Client) *accountRepository {
 	return &accountRepository{c}
 }
 
-func (r *accountRepository) Save(ctx context.Context, args dto.AccountSaveArgs) (*domain.Account, error) {
+func (r *accountRepository) Create(ctx context.Context, args dto.AccountSaveArgs) (*domain.Account, error) {
+	const errMsg = "accountRepository - Create"
+
 	accountSQL, accountArgs, err := r.Builder.
 		Insert("account").
 		Columns("email, username, password").
@@ -51,7 +54,14 @@ func (r *accountRepository) Save(ctx context.Context, args dto.AccountSaveArgs) 
 
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, errUniqueViolation("accountRepository - Save", pgErr)
+				switch pgErr.ConstraintName {
+				case constraintAccountEmail:
+					return nil, apperror.New(errMsg, err, domain.ErrEmailTaken)
+				case constraintAccountUsername:
+					return nil, apperror.New(errMsg, err, domain.ErrUsernameTaken)
+				}
+
+				return nil, err
 			}
 		}
 
@@ -79,7 +89,9 @@ func (r *accountRepository) Save(ctx context.Context, args dto.AccountSaveArgs) 
 	return &account, nil
 }
 
-func (r *accountRepository) FindByID(ctx context.Context, accountID string) (*domain.Account, error) {
+func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*domain.Account, error) {
+	const errMsg = "accountRepository - GetByID"
+
 	sql, args, err := r.Builder.
 		Select("id, username, email, is_email_verified, password, is_archived, created_at, updated_at").
 		From("account").
@@ -98,7 +110,7 @@ func (r *accountRepository) FindByID(ctx context.Context, accountID string) (*do
 	if err != nil {
 
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, newError("accountRepository - FindByID", err, domain.ErrAccountNotFound)
+			return nil, apperror.New(errMsg, err, domain.ErrAccountNotFound)
 		}
 
 		return nil, err
@@ -130,4 +142,70 @@ func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) er
 	}
 
 	return nil
+}
+
+func (r *accountRepository) GetPasswordByID(ctx context.Context, accountID string) (string, error) {
+	const errMsg = "accountRepository - GetPasswordByID"
+
+	sql, args, err := r.Builder.
+		Select("password").
+		From("account").
+		Where(sq.Eq{"id": accountID}).
+		ToSql()
+	if err != nil {
+		return "", err
+	}
+
+	var p string
+
+	if err := r.Pool.QueryRow(ctx, sql, args...).Scan(&p); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", apperror.New(errMsg, err, domain.ErrAccountNotFound)
+		}
+
+		return "", err
+	}
+
+	return p, nil
+}
+
+func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail string) (*domain.Account, error) {
+	const errMsg = "accountRepository - UpdateEmail"
+
+	sql, args, err := r.Builder.
+		Update("account").
+		Set("email", newEmail).
+		Set("is_email_verified", false).
+		Where(sq.And{
+			sq.Eq{"id": accountID},
+			sq.Eq{"is_archived": false},
+		}).
+		Suffix("RETURNING username, email, created_at, updated_at").
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	var account domain.Account
+
+	if err := r.Pool.QueryRow(ctx, sql, args...).Scan(
+		&account.Username,
+		&account.Email,
+		&account.CreatedAt,
+		&account.UpdatedAt,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperror.New(errMsg, err, domain.ErrAccountNotFound)
+		}
+
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.ConstraintName == constraintAccountEmail {
+			return nil, apperror.New(errMsg, pgErr, domain.ErrEmailTaken)
+		}
+
+		return nil, err
+	}
+
+	account.ID, account.Email = accountID, newEmail
+	return &account, nil
 }

@@ -31,7 +31,6 @@ func (s *server) CreateAccount(ctx context.Context, r *connect.Request[pb.Create
 			return nil, connect.NewError(connect.CodeAlreadyExists, domain.ErrEmailTaken)
 		case errors.Is(err, domain.ErrUsernameTaken):
 			return nil, connect.NewError(connect.CodeAlreadyExists, domain.ErrUsernameTaken)
-
 		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)

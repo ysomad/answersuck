@@ -43,7 +43,15 @@ func Run(conf *config.Config) {
 	accountRepo := postgres.NewAccountRepository(pg)
 
 	// services
-	accountService := service.NewAccountService(accountRepo, passwordHasher)
+	accountService, err := service.NewAccountService(accountRepo, passwordHasher)
+	if err != nil {
+		log.Fatalf("service.NewAccountService: %s", err.Error())
+	}
+
+	emailService, err := service.NewEmailService(accountRepo, passwordHasher)
+	if err != nil {
+		log.Fatalf("service.NewEmailService: %s", err.Error())
+	}
 
 	// http
 	mux := http.NewServeMux()
@@ -56,7 +64,7 @@ func Run(conf *config.Config) {
 	passwordV1Path, passwordV1Handler := v1connect.NewPasswordServiceHandler(passwordV1Server)
 	mux.Handle(passwordV1Path, passwordV1Handler)
 
-	emailV1Server := emailv1.NewServer(log)
+	emailV1Server := emailv1.NewServer(log, emailService)
 	emailV1Path, emailV1Handler := v1connect.NewEmailServiceHandler(emailV1Server)
 	mux.Handle(emailV1Path, emailV1Handler)
 
