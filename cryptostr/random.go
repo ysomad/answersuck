@@ -50,16 +50,17 @@ func RandomWithDigits(n int) (string, error)         { return RandomWithCharset(
 // Better to use `NewWithCharset` or `NewWith{{charset}}` functions for better perfomance
 // or `NewRandom` if all characters are needed.
 func RandomWithCharsets(n int, sets ...charset) (string, error) {
-	var chars charset
 	if len(sets) > 0 {
+		var chars charset
+
 		for _, set := range sets {
 			chars += set
 		}
-	} else {
-		chars = AlphabetDigits
+
+		return RandomWithCharset(n, chars)
 	}
 
-	return RandomWithCharset(n, charset(chars))
+	return RandomWithCharset(n, AlphabetDigits)
 }
 
 func generateRandomBytes(n int) ([]byte, error) {

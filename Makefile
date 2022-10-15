@@ -5,3 +5,7 @@ gen-proto:
 .PHONY: lint-proto
 lint-proto:
 	buf lint
+
+.PHONY: test
+test:
+	go test -v -cover -race -count 1 ./...

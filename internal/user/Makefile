@@ -23,7 +23,7 @@ run-migrate:
 
 .PHONY: test
 test:
-	go test -v -cover -race -count 1 ./internal/...
+	go test -v -cover -race -count 1 ./...
 
 .PHONY: integration-test
 integration-test:
