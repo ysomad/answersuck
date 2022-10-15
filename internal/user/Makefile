@@ -1,7 +1,7 @@
 include .env
 export
 
-MIGRATE := migrate -path migrations -database "$(PG_URL)?sslmode=disable"
+MIGRATE := migrate -path postgres/migrations -database "$(PG_URL)?sslmode=disable"
 
 .PHONY: compose-up
 compose-up:
