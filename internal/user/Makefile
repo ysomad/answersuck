@@ -16,6 +16,11 @@ run:
 	go mod tidy && go mod download && \
 	go run ../../cmd/user/
 
+.PHONY: run-migrate
+run-migrate:
+	go mod tidy && go mod download && \
+	go run -tags migrate ../../cmd/user/
+
 .PHONY: test
 test:
 	go test -v -cover -race -count 1 ./internal/...
