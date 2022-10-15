@@ -108,5 +108,26 @@ func (r *accountRepository) FindByID(ctx context.Context, accountID string) (*do
 }
 
 func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) error {
+	sql, args, err := r.Builder.
+		Update("account").
+		Set("is_archived", true).
+		Where(sq.And{
+			sq.Eq{"id": accountID},
+			sq.Eq{"is_archived": false},
+		}).
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	ct, err := r.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return err
+	}
+
+	if ct.RowsAffected() == 0 {
+		return domain.ErrAccountNotFound
+	}
+
 	return nil
 }

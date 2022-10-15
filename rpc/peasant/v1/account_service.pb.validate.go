@@ -643,10 +643,28 @@ func (m *DeleteAccountByIdRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	if err := m._validateUuid(m.GetAccountId()); err != nil {
+		err = DeleteAccountByIdRequestValidationError{
+			field:  "AccountId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return DeleteAccountByIdRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *DeleteAccountByIdRequest) _validateUuid(uuid string) error {
+	if matched := _account_service_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil

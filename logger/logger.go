@@ -88,7 +88,7 @@ func (l *logger) nowUnix() int64 {
 }
 
 func (l *logger) log(e *zerolog.Event) *zerolog.Event {
-	return e.Str("appver", l.appVer).Int64("time", l.nowUnix())
+	return e.Str("ver", l.appVer).Int64("time", l.nowUnix())
 }
 
 func (l *logger) Debug(msg string) {

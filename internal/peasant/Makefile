@@ -5,7 +5,7 @@ MIGRATE := migrate -path postgres/migrations -database "$(PG_URL)?sslmode=disabl
 
 .PHONY: compose-up
 compose-up:
-	docker compose up --build -d postgres && docker compose logs -f
+	docker compose up --build -d && docker compose logs -f
 
 .PHONY: compose-down
 compose-down:

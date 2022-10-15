@@ -10,5 +10,5 @@ import (
 )
 
 func init() {
-	migrate.Do(migrate.Up, "../user/postgres/migrations", os.Getenv("PG_URL"))
+	migrate.Do(migrate.Up, "../peasant/postgres/migrations", os.Getenv("PG_URL"))
 }
