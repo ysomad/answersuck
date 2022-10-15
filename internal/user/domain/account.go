@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrAccountAlreadyExist = errors.New("account with given email or username already exist")
+	ErrUsernameTaken = errors.New("username already in use")
+	ErrEmailTaken    = errors.New("email already in use")
 )
 
 type Account struct {

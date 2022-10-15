@@ -16,16 +16,16 @@ func (s *server) CreateAccount(ctx context.Context, r *connect.Request[v1.Create
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	a, err := s.service.Create(
-		ctx,
-		r.Msg.GetEmail(),
-		r.Msg.GetUsername(),
-		r.Msg.GetPassword())
+	a, err := s.service.Create(ctx, r.Msg.Email, r.Msg.Username, r.Msg.Password)
 	if err != nil {
 		s.log.Error(err.Error())
 
-		if errors.Is(err, domain.ErrAccountAlreadyExist) {
-			return nil, connect.NewError(connect.CodeAlreadyExists, domain.ErrAccountAlreadyExist)
+		switch {
+		case errors.Is(err, domain.ErrEmailTaken):
+			return nil, connect.NewError(connect.CodeAlreadyExists, domain.ErrEmailTaken)
+		case errors.Is(err, domain.ErrUsernameTaken):
+			return nil, connect.NewError(connect.CodeAlreadyExists, domain.ErrUsernameTaken)
+
 		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)

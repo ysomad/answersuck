@@ -48,7 +48,7 @@ func (r *accountRepository) Save(ctx context.Context, args dto.AccountSaveArgs) 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, domain.ErrAccountAlreadyExist
+				return nil, errUniqueViolation("account save error", pgErr)
 			}
 		}
 

@@ -32,7 +32,7 @@ integration-test:
 .PHONY: migrate-new
 migrate-new:
 	@read -p "Enter the name of the new migration: " name; \
-	$(MIGRATE) create -ext sql -dir migrations $${name// /_}
+	$(MIGRATE) create -ext sql -dir postgres/migrations $${name// /_}
 
 .PHONY: migrate-up
 migrate-up:
