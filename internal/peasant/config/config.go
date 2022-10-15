@@ -31,6 +31,6 @@ type (
 	}
 
 	Email struct {
-		VerifCodeLifetime time.Duration `yaml:"verification_code_lifetime" env-required:"true"`
+		VerifCodeLifetime time.Duration `yaml:"verification_code_lifetime" env-default:"24h"`
 	}
 )

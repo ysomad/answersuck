@@ -30,8 +30,6 @@ type Session struct {
 }
 
 func newSession(accountId, userAgent, ip string, exp time.Duration) (*Session, error) {
-	// TODO: add useragent validation
-	// TODO: add ip validation
 
 	sid, err := strings.NewUnique(SessionIdLen)
 	if err != nil {

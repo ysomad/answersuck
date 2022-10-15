@@ -67,7 +67,6 @@ func (s *service) Create(ctx context.Context, email, nickname, password string) 
 	}
 
 	go func() {
-		// TODO: handle error
 		_ = s.email.SendAccountVerificationEmail(ctx, a.Email, code)
 	}()
 
@@ -107,7 +106,6 @@ func (s *service) Delete(ctx context.Context, accountId string) error {
 	}
 
 	go func() {
-		// TODO: handle error
 		_ = s.session.TerminateAll(ctx, accountId)
 	}()
 
@@ -156,7 +154,6 @@ func (s *service) ResetPassword(ctx context.Context, login string) error {
 	}
 
 	go func() {
-		// TODO: handle error
 		_ = s.email.SendPasswordResetEmail(ctx, email, t)
 	}()
 
@@ -188,7 +185,6 @@ func (s *service) SetPassword(ctx context.Context, token, password string) error
 	}
 
 	go func() {
-		// TODO: handle error
 		_ = s.session.TerminateAll(ctx, t.AccountId)
 	}()
 
@@ -206,7 +202,6 @@ func (s *service) RequestVerification(ctx context.Context, accountId string) err
 	}
 
 	go func() {
-		// TODO: handle error
 		_ = s.email.SendAccountVerificationEmail(ctx, v.Email, v.Code)
 	}()
 
