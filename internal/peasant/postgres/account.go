@@ -211,5 +211,6 @@ func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail
 }
 
 func (r *accountRepository) VerifyEmail(ctx context.Context, verifCode string) (*domain.Account, error) {
+	// TODO: implement
 	return nil, nil
 }
