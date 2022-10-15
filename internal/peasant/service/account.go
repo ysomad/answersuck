@@ -32,9 +32,11 @@ func NewAccountService(r accountRepository, p passwordEncodeComparer) (*accountS
 }
 
 func (s *accountService) Create(ctx context.Context, args dto.AccountCreateArgs) (*domain.Account, error) {
+	// TODO: Check if password is not banned
+
 	// TODO: Check if username is not banned
 
-	// TODO: Check if email is real
+	// TODO: Check if email is real or not banned
 
 	encodedPass, err := s.password.Encode(args.PlainPassword)
 	if err != nil {

@@ -17,7 +17,7 @@ func (s *server) GetAccountById(ctx context.Context, r *connect.Request[pb.GetAc
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	a, err := s.account.GetByID(ctx, r.Msg.GetAccountId())
+	a, err := s.accountService.GetByID(ctx, r.Msg.GetAccountId())
 	if err != nil {
 		s.log.Error(err.Error())
 

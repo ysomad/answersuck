@@ -24,11 +24,11 @@ func New() *argon2ID {
 	return &argon2ID{
 		format:  "$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s",
 		version: argon2.Version,
-		time:    1,
-		memory:  64 * 1024,
+		time:    2,
+		memory:  15 * 1024, // 15 MB
 		keyLen:  32,
 		saltLen: 32,
-		threads: 4,
+		threads: 1,
 	}
 }
 

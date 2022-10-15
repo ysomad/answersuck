@@ -18,7 +18,7 @@ func (s *server) CreateAccount(ctx context.Context, r *connect.Request[pb.Create
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	a, err := s.account.Create(ctx, dto.AccountCreateArgs{
+	a, err := s.accountService.Create(ctx, dto.AccountCreateArgs{
 		Email:         r.Msg.GetEmail(),
 		Username:      r.Msg.GetUsername(),
 		PlainPassword: r.Msg.GetPassword(),

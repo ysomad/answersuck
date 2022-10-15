@@ -15,7 +15,7 @@ func (s *server) DeleteAccountById(ctx context.Context, r *connect.Request[pb.De
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	if err := s.account.DeleteByID(ctx, r.Msg.GetAccountId()); err != nil {
+	if err := s.accountService.DeleteByID(ctx, r.Msg.GetAccountId()); err != nil {
 		s.log.Error(err.Error())
 
 		if errors.Is(err, domain.ErrAccountNotFound) {

@@ -20,13 +20,13 @@ type accountService interface {
 }
 
 type server struct {
-	log     logger.Logger
-	account accountService
+	log            logger.Logger
+	accountService accountService
 }
 
 func NewServer(l logger.Logger, s accountService) *server {
 	return &server{
-		log:     l,
-		account: s,
+		log:            l,
+		accountService: s,
 	}
 }

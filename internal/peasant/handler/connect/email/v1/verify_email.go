@@ -14,7 +14,7 @@ func (s *server) VerifyEmail(ctx context.Context, r *connect.Request[pb.VerifyEm
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	a, err := s.accountEmail.Verify(ctx, r.Msg.GetVerificationCode())
+	a, err := s.emailService.Verify(ctx, r.Msg.GetVerificationCode())
 	if err != nil {
 		s.log.Error(err.Error())
 

@@ -17,7 +17,7 @@ func (s *server) UpdateEmail(ctx context.Context, r *connect.Request[pb.UpdateEm
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	a, err := s.accountEmail.Update(ctx, dto.UpdateEmailArgs{
+	a, err := s.emailService.Update(ctx, dto.UpdateEmailArgs{
 		AccountID:     r.Msg.GetAccountId(),
 		NewEmail:      r.Msg.GetNewEmail(),
 		PlainPassword: r.Msg.GetPlainPassword(),

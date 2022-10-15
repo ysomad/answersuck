@@ -282,12 +282,21 @@ func (m *UpdatePasswordRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for OldPassword
+	if utf8.RuneCountInString(m.GetOldPassword()) > 64 {
+		err := UpdatePasswordRequestValidationError{
+			field:  "OldPassword",
+			reason: "value length must be at most 64 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	if l := utf8.RuneCountInString(m.GetNewPassword()); l < 10 || l > 128 {
+	if l := utf8.RuneCountInString(m.GetNewPassword()); l < 8 || l > 64 {
 		err := UpdatePasswordRequestValidationError{
 			field:  "NewPassword",
-			reason: "value length must be between 10 and 128 runes, inclusive",
+			reason: "value length must be between 8 and 64 runes, inclusive",
 		}
 		if !all {
 			return err

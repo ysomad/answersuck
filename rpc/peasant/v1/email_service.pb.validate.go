@@ -60,7 +60,16 @@ func (m *VerifyEmailRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for VerificationCode
+	if l := utf8.RuneCountInString(m.GetVerificationCode()); l < 1 || l > 64 {
+		err := VerifyEmailRequestValidationError{
+			field:  "VerificationCode",
+			reason: "value length must be between 1 and 64 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return VerifyEmailRequestMultiError(errors)
@@ -307,11 +316,33 @@ func (m *UpdateEmailRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetNewEmail()) > 320 {
+		err := UpdateEmailRequestValidationError{
+			field:  "NewEmail",
+			reason: "value length must be at most 320 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if err := m._validateEmail(m.GetNewEmail()); err != nil {
 		err = UpdateEmailRequestValidationError{
 			field:  "NewEmail",
 			reason: "value must be a valid email address",
 			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPlainPassword()) > 64 {
+		err := UpdateEmailRequestValidationError{
+			field:  "PlainPassword",
+			reason: "value length must be at most 64 runes",
 		}
 		if !all {
 			return err

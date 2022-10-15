@@ -13,7 +13,7 @@ func (s *server) SendVerification(ctx context.Context, r *connect.Request[pb.Sen
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	if err := s.accountEmail.SendVerification(ctx, r.Msg.GetAccountId()); err != nil {
+	if err := s.emailService.SendVerification(ctx, r.Msg.GetAccountId()); err != nil {
 		s.log.Error(err.Error())
 
 		// TODO: handle specific errors
