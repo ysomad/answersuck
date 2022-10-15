@@ -46,10 +46,12 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 	return s.repo.UpdateEmail(ctx, args.AccountID, args.NewEmail)
 }
 
+// TODO: REFACTOR NAMING??!!
 func (s *emailService) SendVerification(ctx context.Context, accountID string) error {
 	return nil
 }
 
 func (s *emailService) Verify(ctx context.Context, code string) (*domain.Account, error) {
+
 	return nil, nil
 }

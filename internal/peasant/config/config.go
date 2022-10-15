@@ -3,10 +3,11 @@ package config
 import "time"
 
 type Config struct {
-	App  App  `yaml:"app"`
-	HTTP HTTP `yaml:"http"`
-	Log  Log  `yaml:"log"`
-	PG   PG   `yaml:"postgres"`
+	App   App   `yaml:"app"`
+	HTTP  HTTP  `yaml:"http"`
+	Log   Log   `yaml:"log"`
+	PG    PG    `yaml:"postgres"`
+	Email Email `yaml:"email"`
 }
 
 type (
@@ -27,5 +28,9 @@ type (
 	PG struct {
 		MaxConns int32  `yaml:"max_connections" env-required:"true"`
 		URL      string `env:"PG_URL" env-required:"true"`
+	}
+
+	Email struct {
+		VerifCodeLifetime time.Duration `yaml:"verification_code_lifetime" env-required:"true"`
 	}
 )

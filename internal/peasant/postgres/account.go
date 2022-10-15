@@ -24,13 +24,13 @@ func NewAccountRepository(c *pgclient.Client) *accountRepository {
 	return &accountRepository{c}
 }
 
-func (r *accountRepository) Create(ctx context.Context, args dto.AccountSaveArgs) (*domain.Account, error) {
+func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArgs, evargs dto.EmailVerifSaveArgs) (*domain.Account, error) {
 	const errMsg = "accountRepository - Create"
 
 	accountSQL, accountArgs, err := r.Builder.
 		Insert("account").
 		Columns("email, username, password").
-		Values(args.Email, args.Username, args.EncodedPassword).
+		Values(aargs.Email, aargs.Username, aargs.EncodedPassword).
 		Suffix("RETURNING id, created_at, updated_at").
 		ToSql()
 	if err != nil {
@@ -70,8 +70,8 @@ func (r *accountRepository) Create(ctx context.Context, args dto.AccountSaveArgs
 
 	verifSQL, verifArgs, err := r.Builder.
 		Insert("email_verification").
-		Columns("code, account_id").
-		Values(args.EmailVerifCode, account.ID).
+		Columns("account_id, code, expires_at").
+		Values(account.ID, evargs.Code, evargs.ExpiresAt).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (r *accountRepository) Create(ctx context.Context, args dto.AccountSaveArgs
 		return nil, err
 	}
 
-	account.Email, account.Username = args.Email, args.Username
+	account.Email, account.Username = aargs.Email, aargs.Username
 	return &account, nil
 }
 
@@ -208,4 +208,8 @@ func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail
 
 	account.ID, account.Email = accountID, newEmail
 	return &account, nil
+}
+
+func (r *accountRepository) VerifyEmail(ctx context.Context, verifCode string) (*domain.Account, error) {
+	return nil, nil
 }

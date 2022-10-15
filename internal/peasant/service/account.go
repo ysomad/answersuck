@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/ysomad/answersuck/apperror"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
@@ -18,16 +19,19 @@ type passwordEncodeComparer interface {
 type accountService struct {
 	repo     accountRepository
 	password passwordEncodeComparer
+
+	emailVerifCodeLifetime time.Duration
 }
 
-func NewAccountService(r accountRepository, p passwordEncodeComparer) (*accountService, error) {
-	if r == nil || p == nil {
+func NewAccountService(r accountRepository, p passwordEncodeComparer, emailVerifCodeLifetime time.Duration) (*accountService, error) {
+	if r == nil || p == nil || emailVerifCodeLifetime == 0 {
 		return nil, apperror.ErrNilArgs
 	}
 
 	return &accountService{
-		repo:     r,
-		password: p,
+		repo:                   r,
+		password:               p,
+		emailVerifCodeLifetime: emailVerifCodeLifetime,
 	}, nil
 }
 
@@ -43,17 +47,22 @@ func (s *accountService) Create(ctx context.Context, args dto.AccountCreateArgs)
 		return nil, err
 	}
 
-	verifCode, err := cryptostr.RandomBase64(32)
+	emailVerifCode, err := cryptostr.RandomBase64(32)
 	if err != nil {
 		return nil, err
 	}
 
-	a, err := s.repo.Create(ctx, dto.AccountSaveArgs{
-		Email:           args.Email,
-		Username:        args.Username,
-		EncodedPassword: encodedPass,
-		EmailVerifCode:  verifCode,
-	})
+	a, err := s.repo.Create(
+		ctx,
+		dto.AccountSaveArgs{
+			Email:           args.Email,
+			Username:        args.Username,
+			EncodedPassword: encodedPass,
+		},
+		dto.EmailVerifSaveArgs{
+			Code:      emailVerifCode,
+			ExpiresAt: time.Now().Add(s.emailVerifCodeLifetime),
+		})
 	if err != nil {
 		return nil, err
 	}

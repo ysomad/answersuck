@@ -37,18 +37,18 @@ func Run(conf *config.Config) {
 	}
 	defer pg.Close()
 
-	passwordHasher := argon2.New()
+	argon2id := argon2.New()
 
 	// repositories
 	accountRepo := postgres.NewAccountRepository(pg)
 
 	// services
-	accountService, err := service.NewAccountService(accountRepo, passwordHasher)
+	accountService, err := service.NewAccountService(accountRepo, argon2id, conf.Email.VerifCodeLifetime)
 	if err != nil {
 		log.Fatalf("service.NewAccountService: %s", err.Error())
 	}
 
-	emailService, err := service.NewEmailService(accountRepo, passwordHasher)
+	emailService, err := service.NewEmailService(accountRepo, argon2id)
 	if err != nil {
 		log.Fatalf("service.NewEmailService: %s", err.Error())
 	}
