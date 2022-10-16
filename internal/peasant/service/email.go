@@ -43,7 +43,14 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 		return nil, domain.ErrIncorrectPassword
 	}
 
-	return s.accountRepo.UpdateEmail(ctx, args.AccountID, args.NewEmail)
+	a, err := s.accountRepo.UpdateEmail(ctx, args.AccountID, args.NewEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: send email to verify email
+
+	return a, nil
 }
 
 func (s *emailService) Verify(ctx context.Context, verifCode string) (*domain.Account, error) {

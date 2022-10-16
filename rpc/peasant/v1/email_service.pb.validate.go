@@ -339,9 +339,9 @@ func (m *UpdateEmailRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetPlainPassword()) > 64 {
+	if utf8.RuneCountInString(m.GetPassword()) > 64 {
 		err := UpdateEmailRequestValidationError{
-			field:  "PlainPassword",
+			field:  "Password",
 			reason: "value length must be at most 64 runes",
 		}
 		if !all {

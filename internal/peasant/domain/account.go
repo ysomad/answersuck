@@ -10,8 +10,7 @@ var (
 	ErrEmailTaken        = errors.New("email already in use")
 	ErrAccountNotFound   = errors.New("account not found")
 	ErrIncorrectPassword = errors.New("incorrect password")
-
-	ErrEmailNotVerified = errors.New("email already verified or code expired")
+	ErrEmailNotVerified  = errors.New("email already verified or code expired")
 )
 
 type Account struct {

@@ -16,6 +16,8 @@ import (
 	"github.com/ysomad/answersuck/pgclient"
 )
 
+const accountReturnAll = "RETURNING id, username, email, is_email_verified, is_archived, created_at, updated_at"
+
 type accountRepository struct {
 	*pgclient.Client
 }
@@ -186,6 +188,27 @@ func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail
 		return nil, err
 	}
 
+	// TODO: rewrite it using CollectOneRow when issue is fixed
+	// https://github.com/jackc/pgx/issues/1334
+	// rows, err := r.Pool.Query(ctx, query, args...)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// account, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	// if err != nil {
+	// 	if errors.Is(err, pgx.ErrNoRows) {
+	// 		return nil, apperror.New(errMsg, err, domain.ErrAccountNotFound)
+	// 	}
+
+	// 	var pgErr *pgconn.PgError
+	// 	if errors.As(err, &pgErr) && pgErr.ConstraintName == constraintAccountEmail {
+	// 		return nil, apperror.New(errMsg, pgErr, domain.ErrEmailTaken)
+	// 	}
+
+	// 	return nil, err
+	// }
+
 	var account domain.Account
 
 	if err := r.Pool.QueryRow(ctx, query, args...).Scan(
@@ -226,7 +249,7 @@ AND v.expires_at < now()
 		Update("account").
 		Set("is_email_verified", true).
 		Where(subQuery).
-		Suffix("RETURNING id, username, email, is_email_verified, is_archived, created_at, updated_at").
+		Suffix(accountReturnAll).
 		ToSql()
 	if err != nil {
 		return nil, err

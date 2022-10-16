@@ -20,7 +20,7 @@ func (s *server) UpdateEmail(ctx context.Context, r *connect.Request[pb.UpdateEm
 	a, err := s.emailService.Update(ctx, dto.UpdateEmailArgs{
 		AccountID:     r.Msg.GetAccountId(),
 		NewEmail:      r.Msg.GetNewEmail(),
-		PlainPassword: r.Msg.GetPlainPassword(),
+		PlainPassword: r.Msg.GetPassword(),
 	})
 	if err != nil {
 		s.log.Error(err.Error())
