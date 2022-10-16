@@ -14,7 +14,7 @@ import (
 )
 
 func (s *server) CreateAccount(ctx context.Context, r *connect.Request[pb.CreateAccountRequest]) (*connect.Response[pb.CreateAccountResponse], error) {
-	if err := r.Msg.Validate(); err != nil {
+	if err := r.Msg.ValidateAll(); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
