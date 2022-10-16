@@ -2,10 +2,12 @@ package v1
 
 import (
 	"context"
+	"errors"
 
 	"github.com/bufbuild/connect-go"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/ysomad/answersuck/internal/peasant/domain"
 	pb "github.com/ysomad/answersuck/rpc/peasant/v1"
 )
 
@@ -18,7 +20,9 @@ func (s *server) VerifyEmail(ctx context.Context, r *connect.Request[pb.VerifyEm
 	if err != nil {
 		s.log.Error(err.Error())
 
-		// TODO: handle specific errors
+		if errors.Is(err, domain.ErrEmailNotVerified) {
+			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrEmailNotVerified)
+		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

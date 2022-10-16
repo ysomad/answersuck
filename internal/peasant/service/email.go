@@ -13,8 +13,8 @@ type passwordVerifier interface {
 }
 
 type emailService struct {
-	repo     accountRepository
-	password passwordVerifier
+	accountRepo accountRepository
+	password    passwordVerifier
 }
 
 func NewEmailService(r accountRepository, p passwordVerifier) (*emailService, error) {
@@ -23,13 +23,13 @@ func NewEmailService(r accountRepository, p passwordVerifier) (*emailService, er
 	}
 
 	return &emailService{
-		repo:     r,
-		password: p,
+		accountRepo: r,
+		password:    p,
 	}, nil
 }
 
 func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*domain.Account, error) {
-	encoded, err := s.repo.GetPasswordByID(ctx, args.AccountID)
+	encoded, err := s.accountRepo.GetPasswordByID(ctx, args.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,15 +43,15 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 		return nil, domain.ErrIncorrectPassword
 	}
 
-	return s.repo.UpdateEmail(ctx, args.AccountID, args.NewEmail)
+	return s.accountRepo.UpdateEmail(ctx, args.AccountID, args.NewEmail)
+}
+
+func (s *emailService) Verify(ctx context.Context, verifCode string) (*domain.Account, error) {
+	return s.accountRepo.VerifyEmail(ctx, verifCode)
 }
 
 // TODO: REFACTOR NAMING??!!
 func (s *emailService) SendVerification(ctx context.Context, accountID string) error {
+	// TODO: implement emailService.SendVerification
 	return nil
-}
-
-func (s *emailService) Verify(ctx context.Context, code string) (*domain.Account, error) {
-
-	return nil, nil
 }

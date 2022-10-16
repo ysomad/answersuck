@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   peasant_postgres:
-    container_name: postgres
+    container_name: peasant_postgres
     image: "postgres:14-alpine"
     environment:
       POSTGRES_USER: "user"

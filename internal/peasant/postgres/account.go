@@ -27,7 +27,7 @@ func NewAccountRepository(c *pgclient.Client) *accountRepository {
 func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArgs, evargs dto.EmailVerifSaveArgs) (*domain.Account, error) {
 	const errMsg = "accountRepository - Create"
 
-	accountSQL, accountArgs, err := r.Builder.
+	accQuery, accArgs, err := r.Builder.
 		Insert("account").
 		Columns("email, username, password").
 		Values(aargs.Email, aargs.Username, aargs.EncodedPassword).
@@ -45,7 +45,7 @@ func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArg
 
 	var account domain.Account
 
-	if err := tx.QueryRow(ctx, accountSQL, accountArgs...).Scan(
+	if err := tx.QueryRow(ctx, accQuery, accArgs...).Scan(
 		&account.ID,
 		&account.CreatedAt,
 		&account.UpdatedAt,
@@ -68,7 +68,7 @@ func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArg
 		return nil, err
 	}
 
-	verifSQL, verifArgs, err := r.Builder.
+	verifQuery, verifArgs, err := r.Builder.
 		Insert("email_verification").
 		Columns("account_id, code, expires_at").
 		Values(account.ID, evargs.Code, evargs.ExpiresAt).
@@ -77,7 +77,7 @@ func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArg
 		return nil, err
 	}
 
-	if _, err := tx.Exec(ctx, verifSQL, verifArgs...); err != nil {
+	if _, err := tx.Exec(ctx, verifQuery, verifArgs...); err != nil {
 		return nil, err
 	}
 
@@ -92,8 +92,8 @@ func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArg
 func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*domain.Account, error) {
 	const errMsg = "accountRepository - GetByID"
 
-	sql, args, err := r.Builder.
-		Select("id, username, email, is_email_verified, password, is_archived, created_at, updated_at").
+	query, args, err := r.Builder.
+		Select("id, username, email, is_email_verified, is_archived, created_at, updated_at").
 		From("account").
 		Where(sq.Eq{"id": accountID}).
 		ToSql()
@@ -101,7 +101,7 @@ func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*dom
 		return nil, err
 	}
 
-	rows, err := r.Pool.Query(ctx, sql, args...)
+	rows, err := r.Pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*dom
 }
 
 func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) error {
-	sql, args, err := r.Builder.
+	query, args, err := r.Builder.
 		Update("account").
 		Set("is_archived", true).
 		Where(sq.And{
@@ -132,7 +132,7 @@ func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) er
 		return err
 	}
 
-	ct, err := r.Pool.Exec(ctx, sql, args...)
+	ct, err := r.Pool.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) er
 func (r *accountRepository) GetPasswordByID(ctx context.Context, accountID string) (string, error) {
 	const errMsg = "accountRepository - GetPasswordByID"
 
-	sql, args, err := r.Builder.
+	query, args, err := r.Builder.
 		Select("password").
 		From("account").
 		Where(sq.Eq{"id": accountID}).
@@ -158,7 +158,7 @@ func (r *accountRepository) GetPasswordByID(ctx context.Context, accountID strin
 
 	var p string
 
-	if err := r.Pool.QueryRow(ctx, sql, args...).Scan(&p); err != nil {
+	if err := r.Pool.QueryRow(ctx, query, args...).Scan(&p); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", apperror.New(errMsg, err, domain.ErrAccountNotFound)
 		}
@@ -172,7 +172,7 @@ func (r *accountRepository) GetPasswordByID(ctx context.Context, accountID strin
 func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail string) (*domain.Account, error) {
 	const errMsg = "accountRepository - UpdateEmail"
 
-	sql, args, err := r.Builder.
+	query, args, err := r.Builder.
 		Update("account").
 		Set("email", newEmail).
 		Set("is_email_verified", false).
@@ -188,7 +188,7 @@ func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail
 
 	var account domain.Account
 
-	if err := r.Pool.QueryRow(ctx, sql, args...).Scan(
+	if err := r.Pool.QueryRow(ctx, query, args...).Scan(
 		&account.Username,
 		&account.Email,
 		&account.CreatedAt,
@@ -211,6 +211,42 @@ func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail
 }
 
 func (r *accountRepository) VerifyEmail(ctx context.Context, verifCode string) (*domain.Account, error) {
-	// TODO: implement accountRepository VerifyEmail
-	return nil, nil
+	const errMsg = "accountRepository - VerifyEmail"
+
+	// TODO: refactor verifyEmail query building
+	subQuery := `EXISTS((
+SELECT 1 
+FROM email_verification v
+WHERE v.code = $2
+AND v.account_id = account.id
+AND v.expires_at < now()
+)) AND account.is_email_verified = false`
+
+	query, args, err := r.Builder.
+		Update("account").
+		Set("is_email_verified", true).
+		Where(subQuery).
+		Suffix("RETURNING id, username, email, is_email_verified, is_archived, created_at, updated_at").
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	args = append(args, verifCode)
+
+	rows, err := r.Pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperror.New(errMsg, err, domain.ErrEmailNotVerified)
+		}
+
+		return nil, err
+	}
+
+	return &account, nil
 }
