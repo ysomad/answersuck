@@ -6,10 +6,9 @@ import (
 )
 
 var (
-	ErrUsernameTaken   = errors.New("username already in use")
-	ErrEmailTaken      = errors.New("email already in use")
-	ErrAccountNotFound = errors.New("account not found")
-
+	ErrUsernameTaken     = errors.New("username already in use")
+	ErrEmailTaken        = errors.New("email already in use")
+	ErrAccountNotFound   = errors.New("account not found")
 	ErrIncorrectPassword = errors.New("incorrect password")
 )
 
