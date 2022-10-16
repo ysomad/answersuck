@@ -38,11 +38,11 @@ func Do(op operation, dir, connString string) {
 	}
 
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("migrate: %s error: %s", string(op), err.Error())
+		log.Fatalf("migrate: %s error: %s", op, err.Error())
 	}
 
 	if errors.Is(err, migrate.ErrNoChange) {
-		log.Printf("migrate: %s no change", string(op))
+		log.Printf("migrate: %s no change", op)
 	}
 }
 
