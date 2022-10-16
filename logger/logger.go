@@ -126,6 +126,7 @@ func (l *logger) Errorf(format string, args ...any) {
 func (l *logger) Fatal(msg string) {
 	l.log(l.logger.Fatal()).Msg(msg)
 }
+
 func (l *logger) Fatalf(format string, args ...any) {
 	l.log(l.logger.Fatal()).Msg(fmt.Sprintf(format, args...))
 }
