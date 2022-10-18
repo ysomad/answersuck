@@ -763,6 +763,35 @@ func (m *SendVerificationResponse) validate(all bool) error {
 
 	var errors []error
 
+	if all {
+		switch v := interface{}(m.GetEmailVerification()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SendVerificationResponseValidationError{
+					field:  "EmailVerification",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SendVerificationResponseValidationError{
+					field:  "EmailVerification",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetEmailVerification()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SendVerificationResponseValidationError{
+				field:  "EmailVerification",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return SendVerificationResponseMultiError(errors)
 	}

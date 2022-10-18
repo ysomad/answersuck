@@ -8,7 +8,7 @@ import (
 )
 
 type accountRepository interface {
-	Create(ctx context.Context, arg1 dto.AccountSaveArgs, arg2 dto.EmailVerifSaveArgs) (*domain.Account, error)
+	Create(context.Context, dto.AccountCreateArgs, dto.EmailVerifCreateArgs) (*domain.Account, error)
 	GetByID(ctx context.Context, accountID string) (*domain.Account, error)
 	DeleteByID(ctx context.Context, accountID string) error
 
@@ -16,4 +16,8 @@ type accountRepository interface {
 
 	UpdateEmail(ctx context.Context, accountID, newEmail string) (*domain.Account, error)
 	VerifyEmail(ctx context.Context, verifCode string) (*domain.Account, error)
+}
+
+type emailVerificationRepository interface {
+	Save(context.Context, domain.EmailVerification) error
 }

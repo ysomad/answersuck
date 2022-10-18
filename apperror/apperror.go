@@ -12,6 +12,9 @@ var (
 	// ErrNil args error must be returned if one of interface arguments are nil,
 	// used to prevent panic.
 	ErrNilArgs = errors.New("one or more arguments are nil")
+
+	// ErrZeroRowsAffected must be used when ct.RowsAffected == 0 and wrapped with client error.
+	ErrZeroRowsAffected = errors.New("0 rows affected")
 )
 
 // New creates new wrapped erros in format: "{msg}: {original_error}, {error_for_client}".

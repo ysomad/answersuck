@@ -19,9 +19,9 @@ func (s *server) CreateAccount(ctx context.Context, r *connect.Request[pb.Create
 	}
 
 	a, err := s.accountService.Create(ctx, dto.AccountCreateArgs{
-		Email:         r.Msg.GetEmail(),
-		Username:      r.Msg.GetUsername(),
-		PlainPassword: r.Msg.GetPassword(),
+		Email:    r.Msg.GetEmail(),
+		Username: r.Msg.GetUsername(),
+		Password: r.Msg.GetPassword(),
 	})
 	if err != nil {
 		s.log.Error(err.Error())

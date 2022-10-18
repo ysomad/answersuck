@@ -35,34 +35,24 @@ func NewAccountService(r accountRepository, p passwordEncodeComparer, emailVerif
 	}, nil
 }
 
-func (s *accountService) Create(ctx context.Context, args dto.AccountCreateArgs) (*domain.Account, error) {
+func (s *accountService) Create(ctx context.Context, accArgs dto.AccountCreateArgs) (a *domain.Account, err error) {
 	// TODO: Check if password is not banned
 
 	// TODO: Check if username is not banned
 
 	// TODO: Check if email is real or not banned
 
-	encodedPass, err := s.password.Encode(args.PlainPassword)
+	accArgs.Password, err = s.password.Encode(accArgs.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	emailVerifCode, err := cryptostr.RandomBase64(32)
+	emailVerifCode, err := cryptostr.RandomBase64(domain.EmailVerifCodeLen)
 	if err != nil {
 		return nil, err
 	}
 
-	a, err := s.repo.Create(
-		ctx,
-		dto.AccountSaveArgs{
-			Email:           args.Email,
-			Username:        args.Username,
-			EncodedPassword: encodedPass,
-		},
-		dto.EmailVerifSaveArgs{
-			Code:      emailVerifCode,
-			ExpiresAt: time.Now().Add(s.emailVerifCodeLifetime),
-		})
+	a, err = s.repo.Create(ctx, accArgs, dto.NewEmailVerifCreateArgs(emailVerifCode, s.emailVerifCodeLifetime))
 	if err != nil {
 		return nil, err
 	}

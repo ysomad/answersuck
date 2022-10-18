@@ -15,7 +15,7 @@ var _ v1connect.EmailServiceHandler = &server{}
 type emailService interface {
 	Update(ctx context.Context, args dto.UpdateEmailArgs) (*domain.Account, error)
 	Verify(ctx context.Context, code string) (*domain.Account, error)
-	SendVerification(ctx context.Context, accountID string) error
+	CreateVerification(ctx context.Context, accountID string) (domain.EmailVerification, error)
 }
 
 type server struct {

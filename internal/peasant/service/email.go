@@ -2,29 +2,36 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/ysomad/answersuck/apperror"
+	"github.com/ysomad/answersuck/cryptostr"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
 )
 
-type passwordVerifier interface {
+type passwordComparer interface {
 	Compare(plain, encoded string) (bool, error)
 }
 
 type emailService struct {
 	accountRepo accountRepository
-	password    passwordVerifier
+	verifRepo   emailVerificationRepository
+	password    passwordComparer
+
+	verifCodeLifetime time.Duration
 }
 
-func NewEmailService(r accountRepository, p passwordVerifier) (*emailService, error) {
-	if r == nil || p == nil {
+func NewEmailService(ar accountRepository, vr emailVerificationRepository, p passwordComparer, lt time.Duration) (*emailService, error) {
+	if ar == nil || vr == nil || p == nil || lt == 0 {
 		return nil, apperror.ErrNilArgs
 	}
 
 	return &emailService{
-		accountRepo: r,
-		password:    p,
+		accountRepo:       ar,
+		verifRepo:         vr,
+		password:          p,
+		verifCodeLifetime: lt,
 	}, nil
 }
 
@@ -48,8 +55,6 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 		return nil, err
 	}
 
-	// TODO: send email to verify email
-
 	return a, nil
 }
 
@@ -57,8 +62,16 @@ func (s *emailService) Verify(ctx context.Context, verifCode string) (*domain.Ac
 	return s.accountRepo.VerifyEmail(ctx, verifCode)
 }
 
-// TODO: REFACTOR NAMING??!!
-func (s *emailService) SendVerification(ctx context.Context, accountID string) error {
-	// TODO: implement emailService.SendVerification
-	return nil
+func (s *emailService) CreateVerification(ctx context.Context, accountID string) (domain.EmailVerification, error) {
+	verifCode, err := cryptostr.RandomBase64(domain.EmailVerifCodeLen)
+	if err != nil {
+		return domain.EmailVerification{}, err
+	}
+
+	v := domain.NewEmailVerification(accountID, verifCode, s.verifCodeLifetime)
+	if err := s.verifRepo.Save(ctx, v); err != nil {
+		return domain.EmailVerification{}, err
+	}
+
+	return v, nil
 }

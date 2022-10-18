@@ -5,6 +5,7 @@ option go_package = "github.com/ysomad/answersuck/rpc/peasant/v1";
 
 import "validate/validate.proto";
 import "peasant/v1/account.proto";
+import "peasant/v1/email_verification.proto";
 
 // EmailService is a service for managing account email.
 service EmailService {
@@ -40,4 +41,6 @@ message SendVerificationRequest {
   string account_id = 1 [(validate.rules).string.uuid = true];
 }
 
-message SendVerificationResponse {}
+message SendVerificationResponse {
+  EmailVerification email_verification = 1;
+}

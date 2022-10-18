@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgerrcode"
@@ -26,13 +27,13 @@ func NewAccountRepository(c *pgclient.Client) *accountRepository {
 	return &accountRepository{c}
 }
 
-func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountSaveArgs, evargs dto.EmailVerifSaveArgs) (*domain.Account, error) {
+func (r *accountRepository) Create(ctx context.Context, aargs dto.AccountCreateArgs, evargs dto.EmailVerifCreateArgs) (*domain.Account, error) {
 	const errMsg = "accountRepository - Create"
 
 	accQuery, accArgs, err := r.Builder.
 		Insert("account").
 		Columns("email, username, password").
-		Values(aargs.Email, aargs.Username, aargs.EncodedPassword).
+		Values(aargs.Email, aargs.Username, aargs.Password).
 		Suffix("RETURNING id, created_at, updated_at").
 		ToSql()
 	if err != nil {
@@ -141,6 +142,7 @@ func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) er
 
 	if ct.RowsAffected() == 0 {
 		return domain.ErrAccountNotFound
+		return fmt.Errorf("0 rows affected")
 	}
 
 	return nil

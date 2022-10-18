@@ -41,6 +41,7 @@ func Run(conf *config.Config) {
 
 	// repositories
 	accountRepo := postgres.NewAccountRepository(pg)
+	emailVerificationRepo := postgres.NewEmailVerificationRepository(pg)
 
 	// services
 	accountService, err := service.NewAccountService(accountRepo, argon2id, conf.Email.VerifCodeLifetime)
@@ -48,7 +49,7 @@ func Run(conf *config.Config) {
 		log.Fatalf("service.NewAccountService: %s", err.Error())
 	}
 
-	emailService, err := service.NewEmailService(accountRepo, argon2id)
+	emailService, err := service.NewEmailService(accountRepo, emailVerificationRepo, argon2id, conf.Email.VerifCodeLifetime)
 	if err != nil {
 		log.Fatalf("service.NewEmailService: %s", err.Error())
 	}
