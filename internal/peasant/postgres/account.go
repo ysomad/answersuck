@@ -275,3 +275,33 @@ AND v.expires_at < now()
 
 	return &account, nil
 }
+
+func (r *accountRepository) UpdatePassword(ctx context.Context, accountID, newPassword string) (*domain.Account, error) {
+	const errMsg = "accountRepository - UpdatePassword"
+
+	query, queryArgs, err := r.Builder.
+		Update("account").
+		Set("password", newPassword).
+		Where(sq.Eq{"id": accountID}).
+		Suffix(accountReturnAll).
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Pool.Query(ctx, query, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperror.New(errMsg, err, domain.ErrAccountNotFound)
+		}
+
+		return nil, err
+	}
+
+	return &account, nil
+}

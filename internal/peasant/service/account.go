@@ -11,11 +11,6 @@ import (
 	"github.com/ysomad/answersuck/cryptostr"
 )
 
-type passwordEncodeComparer interface {
-	Encode(plain string) (string, error)
-	Compare(plain, encoded string) (bool, error)
-}
-
 type accountService struct {
 	repo     accountRepository
 	password passwordEncodeComparer

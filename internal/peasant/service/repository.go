@@ -13,6 +13,7 @@ type accountRepository interface {
 	DeleteByID(ctx context.Context, accountID string) error
 
 	GetPasswordByID(ctx context.Context, accountID string) (string, error)
+	UpdatePassword(ctx context.Context, accountID, newPassword string) (*domain.Account, error)
 
 	UpdateEmail(ctx context.Context, accountID, newEmail string) (*domain.Account, error)
 	VerifyEmail(ctx context.Context, verifCode string) (*domain.Account, error)

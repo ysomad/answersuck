@@ -10,10 +10,6 @@ import (
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
 )
 
-type passwordComparer interface {
-	Compare(plain, encoded string) (bool, error)
-}
-
 type emailService struct {
 	accountRepo accountRepository
 	verifRepo   emailVerificationRepository

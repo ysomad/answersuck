@@ -54,6 +54,11 @@ func Run(conf *config.Config) {
 		log.Fatalf("service.NewEmailService: %s", err.Error())
 	}
 
+	passwordService, err := service.NewPasswordService(accountRepo, argon2id)
+	if err != nil {
+		log.Fatalf("service.NewPasswordService: %s", err.Error())
+	}
+
 	// http
 	mux := http.NewServeMux()
 
@@ -61,7 +66,7 @@ func Run(conf *config.Config) {
 	accountV1Path, accountV1Handler := v1connect.NewAccountServiceHandler(accountV1Server)
 	mux.Handle(accountV1Path, accountV1Handler)
 
-	passwordV1Server := passwordv1.NewServer(log)
+	passwordV1Server := passwordv1.NewServer(log, passwordService)
 	passwordV1Path, passwordV1Handler := v1connect.NewPasswordServiceHandler(passwordV1Server)
 	mux.Handle(passwordV1Path, passwordV1Handler)
 
