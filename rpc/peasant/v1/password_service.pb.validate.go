@@ -175,7 +175,16 @@ func (m *SetPasswordRequest) validate(all bool) error {
 
 	// no validation rules for Token
 
-	// no validation rules for Password
+	if l := utf8.RuneCountInString(m.GetNewPassword()); l < 8 || l > 64 {
+		err := SetPasswordRequestValidationError{
+			field:  "NewPassword",
+			reason: "value length must be between 8 and 64 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return SetPasswordRequestMultiError(errors)

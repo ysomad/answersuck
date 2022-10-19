@@ -7,7 +7,7 @@ import (
 	"github.com/ysomad/answersuck/cryptostr"
 )
 
-const emailVerifCodeLen = 32
+const emailVerifCodeLen = 64
 
 var (
 	ErrAccountIDNotFound           = errors.New("account with given id not found")
@@ -28,4 +28,7 @@ func NewEmailVerification(accountID, code string, expiresIn time.Duration) Email
 	}
 }
 
-func GenEmailVerifCode() (string, error) { return cryptostr.RandomBase64(emailVerifCodeLen) }
+func GenEmailVerifCode() (string, error) {
+	//  return cryptostr.RandomBase64(emailVerifCodeLen)
+	return cryptostr.RandomWithAlphabetDigits(emailVerifCodeLen)
+}

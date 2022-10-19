@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS account (
 
 CREATE TABLE IF NOT EXISTS email_verification (
     account_id uuid NOT NULL REFERENCES account (id),
-    code varchar(64) UNIQUE NOT NULL,
+    code char(64) UNIQUE NOT NULL,
     expires_at timestamptz NOT NULL
 );
 

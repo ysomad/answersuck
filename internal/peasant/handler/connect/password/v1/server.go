@@ -13,8 +13,9 @@ import (
 var _ v1connect.PasswordServiceHandler = &server{}
 
 type passwordService interface {
-	Update(ctx context.Context, args dto.UpdatePasswordArgs) (*domain.Account, error)
+	Update(context.Context, dto.UpdatePasswordArgs) (*domain.Account, error)
 	CreateToken(ctx context.Context, emailOrUsername string) (domain.PasswordToken, error)
+	Set(ctx context.Context, token, newPassword string) (*domain.Account, error)
 }
 
 type server struct {

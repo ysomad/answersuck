@@ -55,3 +55,12 @@ func (s *passwordService) CreateToken(ctx context.Context, emailOrUsername strin
 
 	return s.passwordTokenRepo.Create(ctx, dto.NewCreatePasswordTokenArgs(emailOrUsername, t, s.tokenLifetime))
 }
+
+func (s *passwordService) Set(ctx context.Context, token, newPassword string) (*domain.Account, error) {
+	newEncodedPass, err := s.password.Encode(newPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.accountRepo.SetPassword(ctx, token, newEncodedPass)
+}
