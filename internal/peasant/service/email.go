@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/ysomad/answersuck/apperror"
-	"github.com/ysomad/answersuck/cryptostr"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
 )
@@ -19,10 +18,6 @@ type emailService struct {
 }
 
 func NewEmailService(ar accountRepository, vr emailVerificationRepository, p passwordComparer, lt time.Duration) (*emailService, error) {
-	if ar == nil || vr == nil || p == nil || lt == 0 {
-		return nil, apperror.ErrNilArgs
-	}
-
 	return &emailService{
 		accountRepo:       ar,
 		verifRepo:         vr,
@@ -59,7 +54,7 @@ func (s *emailService) Verify(ctx context.Context, verifCode string) (*domain.Ac
 }
 
 func (s *emailService) CreateVerification(ctx context.Context, accountID string) (domain.EmailVerification, error) {
-	verifCode, err := cryptostr.RandomBase64(domain.EmailVerifCodeLen)
+	verifCode, err := domain.GenEmailVerifCode()
 	if err != nil {
 		return domain.EmailVerification{}, err
 	}

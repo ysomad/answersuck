@@ -22,3 +22,7 @@ type accountRepository interface {
 type emailVerificationRepository interface {
 	Save(context.Context, domain.EmailVerification) error
 }
+
+type passwordTokenRepository interface {
+	Create(context.Context, dto.CreatePasswordTokenArgs) (domain.PasswordToken, error)
+}

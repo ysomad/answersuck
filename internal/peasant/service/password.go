@@ -2,46 +2,56 @@ package service
 
 import (
 	"context"
+	"time"
 
-	"github.com/ysomad/answersuck/apperror"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
 )
 
 type passwordService struct {
-	accountRepo accountRepository
-	password    passwordEncodeComparer
+	accountRepo       accountRepository
+	passwordTokenRepo passwordTokenRepository
+	password          passwordEncodeComparer
+
+	tokenLifetime time.Duration
 }
 
-func NewPasswordService(ar accountRepository, pe passwordEncodeComparer) (*passwordService, error) {
-	if ar == nil || pe == nil {
-		return nil, apperror.ErrNilArgs
-	}
-
+func NewPasswordService(ar accountRepository, pr passwordTokenRepository, pe passwordEncodeComparer, tl time.Duration) (*passwordService, error) {
 	return &passwordService{
-		accountRepo: ar,
-		password:    pe,
+		accountRepo:       ar,
+		passwordTokenRepo: pr,
+		password:          pe,
+		tokenLifetime:     tl,
 	}, nil
 }
 
 func (s *passwordService) Update(ctx context.Context, args dto.UpdatePasswordArgs) (*domain.Account, error) {
-	oldEncodedPassword, err := s.accountRepo.GetPasswordByID(ctx, args.AccountID)
+	oldEncodedPass, err := s.accountRepo.GetPasswordByID(ctx, args.AccountID)
 	if err != nil {
 		return nil, err
 	}
 
-	match, err := s.password.Compare(args.OldPassword, oldEncodedPassword)
+	ok, err := s.password.Compare(args.OldPassword, oldEncodedPass)
 	if err != nil {
 		return nil, err
 	}
-	if !match {
+	if !ok {
 		return nil, domain.ErrIncorrectPassword
 	}
 
-	newEncodedPassword, err := s.password.Encode(args.NewPassword)
+	newEncodedPass, err := s.password.Encode(args.NewPassword)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.accountRepo.UpdatePassword(ctx, args.AccountID, newEncodedPassword)
+	return s.accountRepo.UpdatePassword(ctx, args.AccountID, newEncodedPass)
+}
+
+func (s *passwordService) CreateToken(ctx context.Context, emailOrUsername string) (domain.PasswordToken, error) {
+	t, err := domain.GenPasswordToken()
+	if err != nil {
+		return domain.PasswordToken{}, err
+	}
+
+	return s.passwordTokenRepo.Create(ctx, dto.NewCreatePasswordTokenArgs(emailOrUsername, t, s.tokenLifetime))
 }

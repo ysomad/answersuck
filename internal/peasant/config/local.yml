@@ -12,4 +12,7 @@ postgres:
   max_connections: 1
 
 email:
-  verification_code_lifetime: 1m
+  verification_code_lifetime: 1h
+
+password:
+  token_lifetime: 10m

@@ -3,9 +3,11 @@ package domain
 import (
 	"errors"
 	"time"
+
+	"github.com/ysomad/answersuck/cryptostr"
 )
 
-const EmailVerifCodeLen = 32
+const emailVerifCodeLen = 32
 
 var (
 	ErrAccountIDNotFound           = errors.New("account with given id not found")
@@ -25,3 +27,5 @@ func NewEmailVerification(accountID, code string, expiresIn time.Duration) Email
 		ExpiresAt: time.Now().Add(expiresIn),
 	}
 }
+
+func GenEmailVerifCode() (string, error) { return cryptostr.RandomBase64(emailVerifCodeLen) }

@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgerrcode"
@@ -109,7 +108,7 @@ func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*dom
 		return nil, err
 	}
 
-	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	account, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByPos[domain.Account])
 	if err != nil {
 
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -119,7 +118,7 @@ func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*dom
 		return nil, err
 	}
 
-	return &a, nil
+	return account, nil
 }
 
 func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) error {
@@ -142,7 +141,6 @@ func (r *accountRepository) DeleteByID(ctx context.Context, accountID string) er
 
 	if ct.RowsAffected() == 0 {
 		return domain.ErrAccountNotFound
-		return fmt.Errorf("0 rows affected")
 	}
 
 	return nil
@@ -239,32 +237,41 @@ func (r *accountRepository) VerifyEmail(ctx context.Context, verifCode string) (
 	const errMsg = "accountRepository - VerifyEmail"
 
 	// TODO: refactor verifyEmail query building
-	subQuery := `EXISTS((
-SELECT 1 
-FROM email_verification v
-WHERE v.code = $2
+	// 	subQuery := `EXISTS((
+	// SELECT 1
+	// FROM email_verification v
+	// WHERE v.code = $2
+	// AND v.account_id = account.id
+	// AND v.expires_at < now()
+	// )) AND account.is_email_verified = false`
+
+	// 	query, args, err := r.Builder.
+	// 		Update("account").
+	// 		Set("is_email_verified", true).
+	// 		Where(subQuery).
+	// 		Suffix(accountReturnAll).
+	// 		ToSql()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	query := `
+UPDATE account SET is_email_verified = true
+WHERE EXISTS(
+(SELECT 1 FROM email_verification v
+WHERE v.code = $1
 AND v.account_id = account.id
-AND v.expires_at < now()
-)) AND account.is_email_verified = false`
+AND v.expires_at < now())
+) AND account.is_email_verified = false`
 
-	query, args, err := r.Builder.
-		Update("account").
-		Set("is_email_verified", true).
-		Where(subQuery).
-		Suffix(accountReturnAll).
-		ToSql()
+	// args = append(args, verifCode)
+
+	rows, err := r.Pool.Query(ctx, query, verifCode)
 	if err != nil {
 		return nil, err
 	}
 
-	args = append(args, verifCode)
-
-	rows, err := r.Pool.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	account, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	account, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByPos[domain.Account])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperror.New(errMsg, err, domain.ErrEmailNotVerified)
@@ -273,7 +280,7 @@ AND v.expires_at < now()
 		return nil, err
 	}
 
-	return &account, nil
+	return account, nil
 }
 
 func (r *accountRepository) UpdatePassword(ctx context.Context, accountID, newPassword string) (*domain.Account, error) {
@@ -294,7 +301,7 @@ func (r *accountRepository) UpdatePassword(ctx context.Context, accountID, newPa
 		return nil, err
 	}
 
-	account, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	account, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByPos[domain.Account])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperror.New(errMsg, err, domain.ErrAccountNotFound)
@@ -303,5 +310,5 @@ func (r *accountRepository) UpdatePassword(ctx context.Context, accountID, newPa
 		return nil, err
 	}
 
-	return &account, nil
+	return account, nil
 }

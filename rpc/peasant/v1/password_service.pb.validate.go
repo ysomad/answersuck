@@ -60,7 +60,16 @@ func (m *ResetPasswordRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for EmailOrUsername
+	if l := utf8.RuneCountInString(m.GetEmailOrUsername()); l < 4 || l > 320 {
+		err := ResetPasswordRequestValidationError{
+			field:  "EmailOrUsername",
+			reason: "value length must be between 4 and 320 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return ResetPasswordRequestMultiError(errors)
@@ -675,35 +684,6 @@ func (m *ResetPasswordResponse) validate(all bool) error {
 	}
 
 	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetAccount()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ResetPasswordResponseValidationError{
-					field:  "Account",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ResetPasswordResponseValidationError{
-					field:  "Account",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetAccount()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ResetPasswordResponseValidationError{
-				field:  "Account",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
 	if len(errors) > 0 {
 		return ResetPasswordResponseMultiError(errors)

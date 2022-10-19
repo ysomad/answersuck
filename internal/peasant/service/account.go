@@ -4,11 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/ysomad/answersuck/apperror"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
-
-	"github.com/ysomad/answersuck/cryptostr"
 )
 
 type accountService struct {
@@ -19,10 +16,6 @@ type accountService struct {
 }
 
 func NewAccountService(r accountRepository, p passwordEncodeComparer, emailVerifCodeLifetime time.Duration) (*accountService, error) {
-	if r == nil || p == nil || emailVerifCodeLifetime == 0 {
-		return nil, apperror.ErrNilArgs
-	}
-
 	return &accountService{
 		repo:                   r,
 		password:               p,
@@ -42,7 +35,7 @@ func (s *accountService) Create(ctx context.Context, accArgs dto.AccountCreateAr
 		return nil, err
 	}
 
-	emailVerifCode, err := cryptostr.RandomBase64(domain.EmailVerifCodeLen)
+	emailVerifCode, err := domain.GenEmailVerifCode()
 	if err != nil {
 		return nil, err
 	}

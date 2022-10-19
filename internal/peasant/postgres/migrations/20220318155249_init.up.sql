@@ -14,3 +14,4 @@ CREATE TABLE IF NOT EXISTS email_verification (
     code varchar(64) UNIQUE NOT NULL,
     expires_at timestamptz NOT NULL
 );
+

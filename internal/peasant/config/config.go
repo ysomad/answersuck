@@ -3,11 +3,12 @@ package config
 import "time"
 
 type Config struct {
-	App   App   `yaml:"app"`
-	HTTP  HTTP  `yaml:"http"`
-	Log   Log   `yaml:"log"`
-	PG    PG    `yaml:"postgres"`
-	Email Email `yaml:"email"`
+	App      App      `yaml:"app"`
+	HTTP     HTTP     `yaml:"http"`
+	Log      Log      `yaml:"log"`
+	PG       PG       `yaml:"postgres"`
+	Email    Email    `yaml:"email"`
+	Password Password `yaml:"password"`
 }
 
 type (
@@ -32,5 +33,9 @@ type (
 
 	Email struct {
 		VerifCodeLifetime time.Duration `yaml:"verification_code_lifetime" env-default:"24h"`
+	}
+
+	Password struct {
+		TokenLifetime time.Duration `yaml:"token_lifetime" env-default:"10m"`
 	}
 )
