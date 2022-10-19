@@ -1,6 +1,4 @@
 .DS_Store
-.vscode
-.idea
-.env
-oldservice/.env
-internal/peasant/.env
+.vscode/
+.idea/
+
