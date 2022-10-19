@@ -29,6 +29,5 @@ func NewEmailVerification(accountID, code string, expiresIn time.Duration) Email
 }
 
 func GenEmailVerifCode() (string, error) {
-	//  return cryptostr.RandomBase64(emailVerifCodeLen)
 	return cryptostr.RandomWithAlphabetDigits(emailVerifCodeLen)
 }
