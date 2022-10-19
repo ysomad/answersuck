@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package peasant.v1;
+option go_package = "github.com/ysomad/answersuck/rpc/peasant/v1";
+
+import "validate/validate.proto";
+import "peasant/v1/account.proto";
+import "peasant/v1/email_verification.proto";
+
+// EmailService is a service for managing account email.
+service EmailService {
+  // VerifyEmail verifies account email by provided code.
+  rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
+
+  // UpdateEmail updates account email.
+  rpc UpdateEmail (UpdateEmailRequest) returns (UpdateEmailResponse);
+
+  // SendVerification sends email verification with new code.
+  rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse);
+}
+
+message VerifyEmailRequest {
+  string verification_code = 1 [(validate.rules).string = { min_len: 1, max_len: 64 }];
+}
+
+message VerifyEmailResponse {
+  Account account = 1;
+}
+
+message UpdateEmailRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+  string new_email = 2 [(validate.rules).string = { email: true, max_len: 320 }];
+  string password = 3 [(validate.rules).string.max_len = 64];
+}
+
+message UpdateEmailResponse {
+  Account account = 1;
+}
+
+message SendVerificationRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+}
+
+message SendVerificationResponse {
+  EmailVerification email_verification = 1;
+}

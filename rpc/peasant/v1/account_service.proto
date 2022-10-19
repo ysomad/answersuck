@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package peasant.v1;
+option go_package = "github.com/ysomad/answersuck/rpc/peasant/v1";
+
+import "validate/validate.proto";
+import "peasant/v1/account.proto";
+
+service AccountService {
+  rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse);
+  rpc GetAccountById (GetAccountByIdRequest) returns (GetAccountByIdResponse);
+  rpc DeleteAccountById (DeleteAccountByIdRequest) returns (DeleteAccountByIdResponse);
+}
+
+message CreateAccountRequest {
+  string email = 1 [(validate.rules).string = { email: true, max_len: 320 }];
+  string username = 2 [(validate.rules).string.pattern = "^[a-zA-Z0-9][\\w]{3,24}$"];
+  string password = 3 [(validate.rules).string = { min_len: 8, max_len: 64 }];
+}
+
+message CreateAccountResponse {
+  Account account = 1;
+}
+
+message GetAccountByIdRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true];
+}
+
+message GetAccountByIdResponse {
+  Account account = 1;
+}
+
+message DeleteAccountByIdRequest {
+  string account_id = 1 [(validate.rules).string.uuid = true]; 
+}
+
+message DeleteAccountByIdResponse {}

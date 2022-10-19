@@ -1,0 +1,18 @@
+app:
+  name: answersuck-peasant-service
+  version: 0.0.1
+
+http:
+  port: 8080
+
+log:
+  level: debug
+
+postgres:
+  max_connections: 1
+
+email:
+  verification_code_lifetime: 1h
+
+password:
+  token_lifetime: 10m
