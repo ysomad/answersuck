@@ -20,8 +20,11 @@ func (s *server) VerifyEmail(ctx context.Context, r *connect.Request[pb.VerifyEm
 	if err != nil {
 		s.log.Error(err.Error())
 
-		if errors.Is(err, domain.ErrEmailNotVerified) {
-			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrEmailNotVerified)
+		switch {
+		case errors.Is(err, domain.ErrEmailAlreadyVerified):
+			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrEmailAlreadyVerified)
+		case errors.Is(err, domain.ErrEmailVerifTokenExpired):
+			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrEmailVerifTokenExpired)
 		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)

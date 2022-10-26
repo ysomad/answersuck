@@ -4,23 +4,28 @@ import (
 	"context"
 	"time"
 
+	"github.com/ysomad/answersuck/jwt"
+
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
 )
 
+// accountService encapsulates all logic for account CRUD.
 type accountService struct {
 	repo     accountRepository
 	password passwordEncodeComparer
 
-	verifTokenLtime time.Duration
+	emailVerifToken    basicJWTManager
+	emailVerifTokenExp time.Duration
 }
 
-func NewAccountService(r accountRepository, ec passwordEncodeComparer, tl time.Duration) (*accountService, error) {
+func NewAccountService(r accountRepository, p passwordEncodeComparer, m basicJWTManager, emailVerifTokenExp time.Duration) *accountService {
 	return &accountService{
-		repo:            r,
-		password:        ec,
-		verifTokenLtime: tl,
-	}, nil
+		repo:               r,
+		password:           p,
+		emailVerifToken:    m,
+		emailVerifTokenExp: emailVerifTokenExp,
+	}
 }
 
 func (s *accountService) Create(ctx context.Context, args dto.AccountCreateArgs) (a *domain.Account, err error) {
@@ -40,10 +45,12 @@ func (s *accountService) Create(ctx context.Context, args dto.AccountCreateArgs)
 		return nil, err
 	}
 
-	// TODO: create new email verification token
-	_ = domain.NewEmailVerifToken(a.ID)
-
 	// TODO: Send email with verification token
+	c := jwt.NewBasicClaims(a.ID, s.emailVerifToken.Issuer(), s.emailVerifTokenExp)
+	_, err = s.emailVerifToken.Encode(c)
+	if err != nil {
+		return nil, err
+	}
 
 	return a, nil
 }

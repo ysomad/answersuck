@@ -1,6 +1,6 @@
 app:
   name: peasant
-  version: 0.0.1
+  version: 0.0.2
 
 http:
   port: 8080
@@ -12,7 +12,7 @@ postgres:
   max_connections: 1
 
 email:
-  verification_code_lifetime: 1h
+  verif_token_expiration: 1h
 
 password:
-  token_lifetime: 10m
+  setter_token_expiration: 10m

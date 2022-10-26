@@ -1,5 +1,7 @@
 package service
 
+import "github.com/ysomad/answersuck/jwt"
+
 type passwordEncoder interface {
 	Encode(plain string) (string, error)
 }
@@ -13,4 +15,8 @@ type passwordEncodeComparer interface {
 	passwordComparer
 }
 
-type 
+type basicJWTManager interface {
+	Encode(jwt.BasicClaims) (jwt.Basic, error)
+	Decode(jwt.Basic) (jwt.BasicClaims, error)
+	Issuer() string
+}

@@ -7,21 +7,24 @@ import (
 	"github.com/ysomad/answersuck/apperror"
 	"github.com/ysomad/answersuck/internal/peasant/domain"
 	"github.com/ysomad/answersuck/internal/peasant/service/dto"
+	"github.com/ysomad/answersuck/jwt"
 )
 
 type emailService struct {
 	accountRepo accountRepository
 	password    passwordComparer
 
-	verifCodeLifetime time.Duration
+	verifToken    basicJWTManager
+	verifTokenExp time.Duration
 }
 
-func NewEmailService(ar accountRepository, p passwordComparer, lt time.Duration) (*emailService, error) {
+func NewEmailService(r accountRepository, p passwordComparer, m basicJWTManager, verifTokenExp time.Duration) *emailService {
 	return &emailService{
-		accountRepo:       ar,
-		password:          p,
-		verifCodeLifetime: lt,
-	}, nil
+		accountRepo:   r,
+		password:      p,
+		verifToken:    m,
+		verifTokenExp: verifTokenExp,
+	}
 }
 
 func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*domain.Account, error) {
@@ -47,20 +50,33 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 	return a, nil
 }
 
-// TODO: reimplement
+// Verify verifies account email if token is valid and contains account id,
+// account with already verified email cannot be verified.
 func (s *emailService) Verify(ctx context.Context, token string) (*domain.Account, error) {
-	// verify token and get account id from it
-	accountID := ""
-	return s.accountRepo.VerifyEmail(ctx, accountID)
+	c, err := s.verifToken.Decode(jwt.Basic(token))
+	if err != nil {
+		return nil, apperror.New("emailService - Verify", err, domain.ErrEmailVerifTokenExpired)
+	}
+
+	return s.accountRepo.VerifyEmail(ctx, c.Subject)
 }
 
 // NotifyWithToken creates new email verification token and notifies user with it in url, user must visit
 // the url to verify email.
 func (s *emailService) NotifyWithToken(ctx context.Context, accountID string) (domain.EmailVerifToken, error) {
-	t := domain.NewEmailVerifToken(accountID)
+	a, err := s.accountRepo.GetByID(ctx, accountID)
+	if err != nil {
+		return "", err
+	}
 
-	// TODO: create new email verif token
+	c := jwt.NewBasicClaims(a.ID, s.verifToken.Issuer(), s.verifTokenExp)
+	t, err := s.verifToken.Encode(c)
+	if err != nil {
+		return "", err
+	}
+
 	// TODO: send email verif token to user email
+	// emailInterctor.Send(a.Email)
 
-	return t, nil
+	return domain.NewEmailVerifToken(t), nil
 }

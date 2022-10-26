@@ -20,8 +20,8 @@ func (s *server) SetPassword(ctx context.Context, r *connect.Request[pb.SetPassw
 	if err != nil {
 		s.log.Error(err.Error())
 
-		if errors.Is(err, domain.ErrPasswordTokenExpired) {
-			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrPasswordTokenExpired)
+		if errors.Is(err, domain.ErrPasswordSetterTokenExpired) {
+			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrPasswordSetterTokenExpired)
 		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)

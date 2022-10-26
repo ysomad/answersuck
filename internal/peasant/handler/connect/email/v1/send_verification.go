@@ -2,9 +2,11 @@ package v1
 
 import (
 	"context"
+	"errors"
 
 	"github.com/bufbuild/connect-go"
 
+	"github.com/ysomad/answersuck/internal/peasant/domain"
 	pb "github.com/ysomad/answersuck/rpc/peasant/v1"
 )
 
@@ -18,6 +20,9 @@ func (s *server) SendVerification(ctx context.Context, r *connect.Request[pb.Sen
 		s.log.Error(err.Error())
 
 		// TODO: connect SendVerification handle specific errors
+		if errors.Is(err, domain.ErrAccountNotFound) {
+			return nil, connect.NewError(connect.CodeNotFound, domain.ErrAccountIDNotFound)
+		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

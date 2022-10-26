@@ -37,10 +37,12 @@ type (
 	}
 
 	Email struct {
-		VerifCodeLifetime time.Duration `yaml:"verification_code_lifetime" env-default:"24h"`
+		VerifTokenSecret string        `env:"EMAIL_VERIF_TOKEN_SECRET" env-required:"true"`
+		VerifTokenExp    time.Duration `yaml:"verif_token_expiration" env-required:"true"`
 	}
 
 	Password struct {
-		TokenLifetime time.Duration `yaml:"token_lifetime" env-default:"10m"`
+		SetterTokenSecret string        `env:"SETTER_PASSWORD_TOKEN_SECRET" env-required:"true"`
+		SetterTokenExp    time.Duration `yaml:"setter_token_expiration" env-required:"true"`
 	}
 )

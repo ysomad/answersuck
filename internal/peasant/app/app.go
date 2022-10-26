@@ -10,6 +10,7 @@ import (
 	"github.com/ysomad/answersuck/internal/peasant/config"
 	"github.com/ysomad/answersuck/internal/peasant/postgres"
 	"github.com/ysomad/answersuck/internal/peasant/service"
+	"github.com/ysomad/answersuck/jwt"
 
 	"github.com/ysomad/answersuck/rpc/peasant/v1/v1connect"
 
@@ -39,24 +40,24 @@ func Run(conf *config.Config) {
 
 	argon2id := argon2.New()
 
+	// jwt
+	emailVerifTokenManager, err := jwt.NewBasicManager(conf.Email.VerifTokenSecret, conf.App.Issuer())
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	passwordSetterTokenManager, err := jwt.NewBasicManager(conf.Password.SetterTokenSecret, conf.App.Issuer())
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	// repositories
 	accountRepo := postgres.NewAccountRepository(pg)
 
 	// services
-	accountService, err := service.NewAccountService(accountRepo, argon2id, conf.Email.VerifCodeLifetime)
-	if err != nil {
-		log.Fatalf("service.NewAccountService: %s", err.Error())
-	}
-
-	emailService, err := service.NewEmailService(accountRepo, argon2id, conf.Email.VerifCodeLifetime)
-	if err != nil {
-		log.Fatalf("service.NewEmailService: %s", err.Error())
-	}
-
-	passwordService, err := service.NewPasswordService(accountRepo, argon2id, conf.Password.TokenLifetime)
-	if err != nil {
-		log.Fatalf("service.NewPasswordService: %s", err.Error())
-	}
+	accountService := service.NewAccountService(accountRepo, argon2id, emailVerifTokenManager, conf.Email.VerifTokenExp)
+	emailService := service.NewEmailService(accountRepo, argon2id, emailVerifTokenManager, conf.Email.VerifTokenExp)
+	passwordService := service.NewPasswordService(accountRepo, argon2id, passwordSetterTokenManager, conf.Password.SetterTokenExp)
 
 	// http
 	mux := http.NewServeMux()

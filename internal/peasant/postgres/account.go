@@ -206,7 +206,7 @@ func (r *accountRepository) VerifyEmail(ctx context.Context, accountID string) (
 	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, apperror.New(errMsg, err, domain.ErrEmailNotVerified)
+			return nil, apperror.New(errMsg, err, domain.ErrEmailAlreadyVerified)
 		}
 
 		return nil, err
