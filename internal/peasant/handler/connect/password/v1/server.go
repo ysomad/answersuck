@@ -14,8 +14,8 @@ var _ v1connect.PasswordServiceHandler = &server{}
 
 type passwordService interface {
 	Update(context.Context, dto.UpdatePasswordArgs) (*domain.Account, error)
-	CreateToken(ctx context.Context, emailOrUsername string) (domain.PasswordToken, error)
 	Set(ctx context.Context, token, newPassword string) (*domain.Account, error)
+	NotifyWithToken(ctx context.Context, emailOrUsername string) (domain.PasswordToken, error)
 }
 
 type server struct {

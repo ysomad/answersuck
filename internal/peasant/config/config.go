@@ -11,12 +11,17 @@ type Config struct {
 	Password Password `yaml:"password"`
 }
 
-type (
-	App struct {
-		Name string `yaml:"name" env-required:"true"`
-		Ver  string `yaml:"version" env-required:"true"`
-	}
+type App struct {
+	Name string `yaml:"name" env-required:"true"`
+	Ver  string `yaml:"version" env-required:"true"`
+}
 
+// Issuer using in jwt tokens
+func (a App) Issuer() string {
+	return a.Name + "-" + a.Ver
+}
+
+type (
 	HTTP struct {
 		Port string `yaml:"port" env-required:"true"`
 	}

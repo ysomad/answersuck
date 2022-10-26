@@ -31,7 +31,8 @@ type EmailServiceClient interface {
 	VerifyEmail(context.Context, *connect_go.Request[v1.VerifyEmailRequest]) (*connect_go.Response[v1.VerifyEmailResponse], error)
 	// UpdateEmail updates account email.
 	UpdateEmail(context.Context, *connect_go.Request[v1.UpdateEmailRequest]) (*connect_go.Response[v1.UpdateEmailResponse], error)
-	// SendVerification sends email verification with new code.
+	// SendVerification sends creates verification token and notifies user with it in url,
+	// user must visit the url to verify email.
 	SendVerification(context.Context, *connect_go.Request[v1.SendVerificationRequest]) (*connect_go.Response[v1.SendVerificationResponse], error)
 }
 
@@ -91,7 +92,8 @@ type EmailServiceHandler interface {
 	VerifyEmail(context.Context, *connect_go.Request[v1.VerifyEmailRequest]) (*connect_go.Response[v1.VerifyEmailResponse], error)
 	// UpdateEmail updates account email.
 	UpdateEmail(context.Context, *connect_go.Request[v1.UpdateEmailRequest]) (*connect_go.Response[v1.UpdateEmailResponse], error)
-	// SendVerification sends email verification with new code.
+	// SendVerification sends creates verification token and notifies user with it in url,
+	// user must visit the url to verify email.
 	SendVerification(context.Context, *connect_go.Request[v1.SendVerificationRequest]) (*connect_go.Response[v1.SendVerificationResponse], error)
 }
 

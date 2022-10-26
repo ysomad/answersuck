@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/ysomad/answersuck/rpc/peasant/v1"
 )
@@ -14,7 +13,7 @@ func (s *server) SendVerification(ctx context.Context, r *connect.Request[pb.Sen
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	v, err := s.emailService.CreateVerification(ctx, r.Msg.GetAccountId())
+	t, err := s.emailService.NotifyWithToken(ctx, r.Msg.GetAccountId())
 	if err != nil {
 		s.log.Error(err.Error())
 
@@ -23,12 +22,5 @@ func (s *server) SendVerification(ctx context.Context, r *connect.Request[pb.Sen
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// TODO: send email verification
-
-	return connect.NewResponse(&pb.SendVerificationResponse{
-		EmailVerification: &pb.EmailVerification{
-			AccountId:        v.AccountID,
-			VerificationCode: v.Code,
-			ExpirationTime:   timestamppb.New(v.ExpiresAt),
-		}}), nil
+	return connect.NewResponse(&pb.SendVerificationResponse{Token: t.String()}), nil
 }

@@ -5,7 +5,6 @@ option go_package = "github.com/ysomad/answersuck/rpc/peasant/v1";
 
 import "validate/validate.proto";
 import "peasant/v1/account.proto";
-import "peasant/v1/email_verification.proto";
 
 // EmailService is a service for managing account email.
 service EmailService {
@@ -15,12 +14,13 @@ service EmailService {
   // UpdateEmail updates account email.
   rpc UpdateEmail (UpdateEmailRequest) returns (UpdateEmailResponse);
 
-  // SendVerification sends email verification with new code.
+  // SendVerification sends creates verification token and notifies user with it in url,
+  // user must visit the url to verify email.
   rpc SendVerification (SendVerificationRequest) returns (SendVerificationResponse);
 }
 
 message VerifyEmailRequest {
-  string verification_code = 1 [(validate.rules).string = { min_len: 1, max_len: 64 }];
+  string token = 1;
 }
 
 message VerifyEmailResponse {
@@ -42,5 +42,5 @@ message SendVerificationRequest {
 }
 
 message SendVerificationResponse {
-  EmailVerification email_verification = 1;
+  string token = 1;
 }

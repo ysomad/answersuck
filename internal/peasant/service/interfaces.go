@@ -12,3 +12,5 @@ type passwordEncodeComparer interface {
 	passwordEncoder
 	passwordComparer
 }
+
+type 

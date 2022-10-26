@@ -16,7 +16,7 @@ var _ v1connect.AccountServiceHandler = &server{}
 type accountService interface {
 	Create(ctx context.Context, args dto.AccountCreateArgs) (*domain.Account, error)
 	GetByID(ctx context.Context, accountID string) (*domain.Account, error)
-	DeleteByID(ctx context.Context, accountID string) error
+	DeleteByID(ctx context.Context, accountID, password string) error
 }
 
 type server struct {

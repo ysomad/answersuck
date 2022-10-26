@@ -9,19 +9,17 @@ import (
 )
 
 type passwordService struct {
-	accountRepo       accountRepository
-	passwordTokenRepo passwordTokenRepository
-	password          passwordEncodeComparer
+	accountRepo accountRepository
+	password    passwordEncodeComparer
 
-	tokenLifetime time.Duration
+	tokenLtime time.Duration
 }
 
-func NewPasswordService(ar accountRepository, pr passwordTokenRepository, pe passwordEncodeComparer, tl time.Duration) (*passwordService, error) {
+func NewPasswordService(ar accountRepository, ec passwordEncodeComparer, tl time.Duration) (*passwordService, error) {
 	return &passwordService{
-		accountRepo:       ar,
-		passwordTokenRepo: pr,
-		password:          pe,
-		tokenLifetime:     tl,
+		accountRepo: ar,
+		password:    ec,
+		tokenLtime:  tl,
 	}, nil
 }
 
@@ -47,20 +45,25 @@ func (s *passwordService) Update(ctx context.Context, args dto.UpdatePasswordArg
 	return s.accountRepo.UpdatePassword(ctx, args.AccountID, newEncodedPass)
 }
 
-func (s *passwordService) CreateToken(ctx context.Context, emailOrUsername string) (domain.PasswordToken, error) {
-	t, err := domain.GenPasswordToken()
-	if err != nil {
-		return domain.PasswordToken{}, err
-	}
+// NotifyWithToken finds account with email or username and creates password token with found account id,
+// then notifies user with token in url, user must to visit the url to set new password.
+func (s *passwordService) NotifyWithToken(ctx context.Context, emailOrUsername string) (domain.PasswordToken, error) {
+	// TODO: get account by email or username
+	// TODO: implement password service create token
 
-	return s.passwordTokenRepo.Create(ctx, dto.NewCreatePasswordTokenArgs(emailOrUsername, t, s.tokenLifetime))
+	t := domain.NewPasswordToken()
+
+	return t, nil
 }
 
 func (s *passwordService) Set(ctx context.Context, token, newPassword string) (*domain.Account, error) {
+	// TODO: verify token and get accountID from it
+	accountID := ""
+
 	newEncodedPass, err := s.password.Encode(newPassword)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.accountRepo.SetPassword(ctx, token, newEncodedPass)
+	return s.accountRepo.UpdatePassword(ctx, accountID, newEncodedPass)
 }

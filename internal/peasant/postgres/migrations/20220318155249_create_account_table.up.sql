@@ -8,10 +8,3 @@ CREATE TABLE IF NOT EXISTS account (
     created_at timestamptz DEFAULT now() NOT NULL,
     updated_at timestamptz DEFAULT now() NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS email_verification (
-    account_id uuid NOT NULL REFERENCES account (id),
-    code char(64) UNIQUE NOT NULL,
-    expires_at timestamptz NOT NULL
-);
-

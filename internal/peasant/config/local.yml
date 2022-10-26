@@ -1,5 +1,5 @@
 app:
-  name: answersuck-peasant-service
+  name: peasant
   version: 0.0.1
 
 http:

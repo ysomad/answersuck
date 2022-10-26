@@ -11,16 +11,14 @@ import (
 
 type emailService struct {
 	accountRepo accountRepository
-	verifRepo   emailVerificationRepository
 	password    passwordComparer
 
 	verifCodeLifetime time.Duration
 }
 
-func NewEmailService(ar accountRepository, vr emailVerificationRepository, p passwordComparer, lt time.Duration) (*emailService, error) {
+func NewEmailService(ar accountRepository, p passwordComparer, lt time.Duration) (*emailService, error) {
 	return &emailService{
 		accountRepo:       ar,
-		verifRepo:         vr,
 		password:          p,
 		verifCodeLifetime: lt,
 	}, nil
@@ -49,20 +47,20 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 	return a, nil
 }
 
-func (s *emailService) Verify(ctx context.Context, verifCode string) (*domain.Account, error) {
-	return s.accountRepo.VerifyEmail(ctx, verifCode)
+// TODO: reimplement
+func (s *emailService) Verify(ctx context.Context, token string) (*domain.Account, error) {
+	// verify token and get account id from it
+	accountID := ""
+	return s.accountRepo.VerifyEmail(ctx, accountID)
 }
 
-func (s *emailService) CreateVerification(ctx context.Context, accountID string) (domain.EmailVerification, error) {
-	verifCode, err := domain.GenEmailVerifCode()
-	if err != nil {
-		return domain.EmailVerification{}, err
-	}
+// NotifyWithToken creates new email verification token and notifies user with it in url, user must visit
+// the url to verify email.
+func (s *emailService) NotifyWithToken(ctx context.Context, accountID string) (domain.EmailVerifToken, error) {
+	t := domain.NewEmailVerifToken(accountID)
 
-	v := domain.NewEmailVerification(accountID, verifCode, s.verifCodeLifetime)
-	if err := s.verifRepo.Save(ctx, v); err != nil {
-		return domain.EmailVerification{}, err
-	}
+	// TODO: create new email verif token
+	// TODO: send email verif token to user email
 
-	return v, nil
+	return t, nil
 }

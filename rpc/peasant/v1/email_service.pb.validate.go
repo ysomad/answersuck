@@ -60,16 +60,7 @@ func (m *VerifyEmailRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetVerificationCode()); l < 1 || l > 64 {
-		err := VerifyEmailRequestValidationError{
-			field:  "VerificationCode",
-			reason: "value length must be between 1 and 64 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Token
 
 	if len(errors) > 0 {
 		return VerifyEmailRequestMultiError(errors)
@@ -763,34 +754,7 @@ func (m *SendVerificationResponse) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetEmailVerification()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, SendVerificationResponseValidationError{
-					field:  "EmailVerification",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, SendVerificationResponseValidationError{
-					field:  "EmailVerification",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetEmailVerification()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return SendVerificationResponseValidationError{
-				field:  "EmailVerification",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Token
 
 	if len(errors) > 0 {
 		return SendVerificationResponseMultiError(errors)

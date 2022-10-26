@@ -2,32 +2,20 @@ package domain
 
 import (
 	"errors"
-	"time"
 
-	"github.com/ysomad/answersuck/cryptostr"
+	"github.com/ysomad/answersuck/jwt"
 )
-
-const emailVerifCodeLen = 64
 
 var (
-	ErrAccountIDNotFound           = errors.New("account with given id not found")
-	ErrEmailVerificationNotCreated = errors.New("error occured on email verification create")
+	ErrAccountIDNotFound = errors.New("account with given id not found")
 )
 
-type EmailVerification struct {
-	AccountID string
-	Code      string
-	ExpiresAt time.Time
+// EmailVerifToken is a token which must be used to verify user email,
+// must be created via constructor only.
+type EmailVerifToken string
+
+func NewEmailVerifToken(b jwt.Basic) EmailVerifToken {
+	return EmailVerifToken(b)
 }
 
-func NewEmailVerification(accountID, code string, expiresIn time.Duration) EmailVerification {
-	return EmailVerification{
-		AccountID: accountID,
-		Code:      code,
-		ExpiresAt: time.Now().Add(expiresIn),
-	}
-}
-
-func GenEmailVerifCode() (string, error) {
-	return cryptostr.RandomWithAlphabetDigits(emailVerifCodeLen)
-}
+func (t EmailVerifToken) String() string { return string(t) }

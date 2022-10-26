@@ -38,7 +38,7 @@ func (m basicManager) Encode(claims BasicClaims) (Basic, error) {
 	return Basic(s), nil
 }
 
-func (m basicManager) Parse(token Basic) (BasicClaims, error) {
+func (m basicManager) Decode(token Basic) (BasicClaims, error) {
 	t, err := jwt.Parse(string(token), func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errUnexpectedSignMethod

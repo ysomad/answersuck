@@ -655,6 +655,17 @@ func (m *DeleteAccountByIdRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if l := utf8.RuneCountInString(m.GetPassword()); l < 8 || l > 64 {
+		err := DeleteAccountByIdRequestValidationError{
+			field:  "Password",
+			reason: "value length must be between 8 and 64 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return DeleteAccountByIdRequestMultiError(errors)
 	}

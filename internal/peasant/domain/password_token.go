@@ -2,25 +2,21 @@ package domain
 
 import (
 	"errors"
-	"time"
 
-	"github.com/ysomad/answersuck/cryptostr"
-)
-
-const (
-	passwordTokenLen = 128
+	"github.com/ysomad/answersuck/jwt"
 )
 
 var (
 	ErrPasswordTokenExpired = errors.New("token expired")
 )
 
-type PasswordToken struct {
-	AccountID string
-	Token     string
-	ExpiresAt time.Time
+// PasswordToken token must be used when user forgot his password,
+// using the token its possible to update the password,
+// must be created only via constructor.
+type PasswordToken string
+
+func NewPasswordToken(b jwt.Basic) PasswordToken {
+	return PasswordToken(b)
 }
 
-func GenPasswordToken() (string, error) {
-	return cryptostr.RandomWithAlphabetDigits(passwordTokenLen)
-}
+func (t PasswordToken) String() string { return string(t) }

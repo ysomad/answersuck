@@ -107,7 +107,7 @@ func Test_basicManager_Encode(t *testing.T) {
 	}
 }
 
-func Test_basicManager_Parse(t *testing.T) {
+func Test_basicManager_Decode(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -180,7 +180,7 @@ func Test_basicManager_Parse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := tt.m.Parse(tt.args.token)
+			got, err := tt.m.Decode(tt.args.token)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("subOnlyManager.Parse() error = %v, wantErr %v", err, tt.wantErr)
 				return
