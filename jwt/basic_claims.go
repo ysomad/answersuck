@@ -10,29 +10,29 @@ import (
 	"github.com/google/uuid"
 )
 
-type SubOnlyClaims struct {
+type BasicClaims struct {
 	ExpiresAt int64  `json:"exp"`
 	IssuedAt  int64  `json:"iat"`
 	Subject   string `json:"sub"`
 	Issuer    string `json:"iss"`
 }
 
-func NewSubOnlyClaims(subject, issuer string, exp time.Duration) (SubOnlyClaims, error) {
+func NewBasicClaims(subject, issuer string, exp time.Duration) (BasicClaims, error) {
 	if exp <= 0 {
-		return SubOnlyClaims{}, errInvalidExpiration
+		return BasicClaims{}, errInvalidExpiration
 	}
 
 	if issuer == "" {
-		return SubOnlyClaims{}, errInvalidIssuer
+		return BasicClaims{}, errInvalidIssuer
 	}
 
 	_, err := uuid.Parse(subject)
 	if err != nil {
-		return SubOnlyClaims{}, fmt.Errorf("%s: %w", err.Error(), errInvalidSubject)
+		return BasicClaims{}, fmt.Errorf("%s: %w", err.Error(), errInvalidSubject)
 	}
 
 	now := time.Now()
-	return SubOnlyClaims{
+	return BasicClaims{
 		ExpiresAt: now.Add(exp).Unix(),
 		IssuedAt:  now.Unix(),
 		Subject:   subject,
@@ -40,21 +40,21 @@ func NewSubOnlyClaims(subject, issuer string, exp time.Duration) (SubOnlyClaims,
 	}, nil
 }
 
-func newSubOnlyClaims(raw jwt.MapClaims) (SubOnlyClaims, error) {
+func newBasicClaims(raw jwt.MapClaims) (BasicClaims, error) {
 	b, err := json.Marshal(raw)
 	if err != nil {
-		return SubOnlyClaims{}, err
+		return BasicClaims{}, err
 	}
 
-	var c SubOnlyClaims
+	var c BasicClaims
 	if err := json.Unmarshal(b, &c); err != nil {
-		return SubOnlyClaims{}, err
+		return BasicClaims{}, err
 	}
 
 	return c, nil
 }
 
-func (c SubOnlyClaims) Valid() error {
+func (c BasicClaims) Valid() error {
 	vErr := new(jwt.ValidationError)
 	now := time.Now().Unix()
 
@@ -86,14 +86,14 @@ func (c SubOnlyClaims) Valid() error {
 	return vErr
 }
 
-func (c SubOnlyClaims) verifyExpiresAt(now int64) bool {
+func (c BasicClaims) verifyExpiresAt(now int64) bool {
 	if c.ExpiresAt == 0 {
 		return false
 	}
 	return now <= c.ExpiresAt
 }
 
-func (c SubOnlyClaims) verifySubject() bool {
+func (c BasicClaims) verifySubject() bool {
 	if c.Subject == "" {
 		return false
 	}
@@ -102,9 +102,9 @@ func (c SubOnlyClaims) verifySubject() bool {
 	return err == nil
 }
 
-func (c SubOnlyClaims) verifyIssuer() bool { return c.Issuer != "" }
+func (c BasicClaims) verifyIssuer() bool { return c.Issuer != "" }
 
-func (c SubOnlyClaims) verifyIssuedAt(now int64) bool {
+func (c BasicClaims) verifyIssuedAt(now int64) bool {
 	if c.IssuedAt == 0 {
 		return false
 	}

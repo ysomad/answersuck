@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewSubOnlyManager(t *testing.T) {
+func TestNewBasicManager(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -18,7 +18,7 @@ func TestNewSubOnlyManager(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    subOnlyManager
+		want    basicManager
 		wantErr bool
 	}{
 		{
@@ -27,7 +27,7 @@ func TestNewSubOnlyManager(t *testing.T) {
 				sign:   "test_sign",
 				issuer: "test_issuer",
 			},
-			want: subOnlyManager{
+			want: basicManager{
 				sign:   []byte("test_sign"),
 				Issuer: "test_issuer",
 			},
@@ -38,7 +38,7 @@ func TestNewSubOnlyManager(t *testing.T) {
 			args: args{
 				sign: "",
 			},
-			want:    subOnlyManager{},
+			want:    basicManager{},
 			wantErr: true,
 		},
 		{
@@ -46,7 +46,7 @@ func TestNewSubOnlyManager(t *testing.T) {
 			args: args{
 				issuer: "",
 			},
-			want:    subOnlyManager{},
+			want:    basicManager{},
 			wantErr: true,
 		},
 	}
@@ -54,7 +54,7 @@ func TestNewSubOnlyManager(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := NewSubOnlyManager(tt.args.sign, tt.args.issuer)
+			got, err := NewBasicManager(tt.args.sign, tt.args.issuer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewSubOnlyManager() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -66,23 +66,23 @@ func TestNewSubOnlyManager(t *testing.T) {
 	}
 }
 
-func Test_subOnlyManager_Encode(t *testing.T) {
+func Test_basicManager_Encode(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		claims SubOnlyClaims
+		claims BasicClaims
 	}
 	tests := []struct {
 		name    string
-		m       subOnlyManager
+		m       basicManager
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "success",
-			m:    subOnlyManager{sign: []byte("test_sign")},
+			m:    basicManager{sign: []byte("test_sign")},
 			args: args{
-				claims: SubOnlyClaims{
+				claims: BasicClaims{
 					Subject:   "8551023e-ef42-4fee-87dc-76093c888125",
 					ExpiresAt: time.Now().Add(time.Minute).Unix(),
 					IssuedAt:  time.Now().Unix(),
@@ -107,29 +107,29 @@ func Test_subOnlyManager_Encode(t *testing.T) {
 	}
 }
 
-func Test_subOnlyManager_Parse(t *testing.T) {
+func Test_basicManager_Parse(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		token SubOnly
+		token Basic
 	}
 	tests := []struct {
 		name    string
-		m       subOnlyManager
+		m       basicManager
 		args    args
-		want    SubOnlyClaims
+		want    BasicClaims
 		wantErr bool
 	}{
 		{
 			name: "success",
-			m: subOnlyManager{
+			m: basicManager{
 				sign:   []byte("test_sign"),
 				Issuer: "test_issuer",
 			},
 			args: args{
-				token: SubOnly("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
+				token: Basic("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
 			},
-			want: SubOnlyClaims{
+			want: BasicClaims{
 				ExpiresAt: 9223372036854775000,
 				IssuedAt:  1516239022,
 				Issuer:    "test_issuer",
@@ -139,40 +139,40 @@ func Test_subOnlyManager_Parse(t *testing.T) {
 		},
 		{
 			name: "unexpected signing method",
-			m: subOnlyManager{
+			m: basicManager{
 				sign:   []byte("test_sign"),
 				Issuer: "test_issuer",
 			},
 			args: args{
 				// used PS512 for the test
-				token: SubOnly("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.MehhCh5glFg5I0y5iHkRTswq_ZiPpMuh5Pl1GfQ2UbrAUpCh8aUcDtN6uQmMb5Oz_5mV75igFmSHVAsjA8QwIXMWfL6-URXIVo8-N5yYv4gxoqpIsuT81vZ8JJXIG4U4hhDjHHAiPeykZZp7WlDaycgB4IGRwcsC4WMo1cqvx_dUCqUhLvCcziI4Wamn4GhYek9_q95LvAiK126-1YnxPiG3NmsOkzro8M6v052f_Y_LTDA85-gGlOPnZAI08jfA9myXDXe5wBvMLXMrw_Jv94mE2gEIA4Iaze9TzBHn6oASMHotVJ5bIeEdOCOj8gW6XImOPHjLHDRpjqfqqx580g"),
+				token: Basic("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.MehhCh5glFg5I0y5iHkRTswq_ZiPpMuh5Pl1GfQ2UbrAUpCh8aUcDtN6uQmMb5Oz_5mV75igFmSHVAsjA8QwIXMWfL6-URXIVo8-N5yYv4gxoqpIsuT81vZ8JJXIG4U4hhDjHHAiPeykZZp7WlDaycgB4IGRwcsC4WMo1cqvx_dUCqUhLvCcziI4Wamn4GhYek9_q95LvAiK126-1YnxPiG3NmsOkzro8M6v052f_Y_LTDA85-gGlOPnZAI08jfA9myXDXe5wBvMLXMrw_Jv94mE2gEIA4Iaze9TzBHn6oASMHotVJ5bIeEdOCOj8gW6XImOPHjLHDRpjqfqqx580g"),
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: true,
 		},
 		{
 			name: "invalid token",
-			m: subOnlyManager{
+			m: basicManager{
 				sign:   []byte("test_sign"),
 				Issuer: "test_issuer",
 			},
 			args: args{
 				// used PS512 for the test
-				token: SubOnly("yeet"),
+				token: Basic("yeet"),
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: true,
 		},
 		{
 			name: "invalid sign",
-			m: subOnlyManager{
+			m: basicManager{
 				sign:   []byte("invalid_sign"),
 				Issuer: "test_issuer",
 			},
 			args: args{
-				token: SubOnly("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
+				token: Basic("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: true,
 		},
 	}
@@ -190,17 +190,17 @@ func Test_subOnlyManager_Parse(t *testing.T) {
 	}
 }
 
-func TestSubOnly_String(t *testing.T) {
+func TestBasic_String(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
-		tr   SubOnly
+		tr   Basic
 		want string
 	}{
 		{
 			name: "success",
-			tr:   SubOnly("yeet"),
+			tr:   Basic("yeet"),
 			want: "yeet",
 		},
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewSubOnlyClaims(t *testing.T) {
+func TestNewBasicClaims(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -20,7 +20,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    SubOnlyClaims
+		want    BasicClaims
 		wantErr error
 	}{
 		{
@@ -30,7 +30,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 				issuer:  "test_issuer",
 				exp:     time.Hour,
 			},
-			want: SubOnlyClaims{
+			want: BasicClaims{
 				Subject:   "8551023e-ef42-4fee-87dc-76093c888125",
 				Issuer:    "test_issuer",
 				IssuedAt:  time.Now().Unix(),
@@ -45,7 +45,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 				issuer:  "test_issuer",
 				exp:     time.Hour,
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: errInvalidSubject,
 		},
 		{
@@ -55,7 +55,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 				issuer:  "test_issuer",
 				exp:     time.Hour,
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: errInvalidSubject,
 		},
 		{
@@ -65,7 +65,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 				issuer:  "",
 				exp:     time.Hour,
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: errInvalidIssuer,
 		},
 		{
@@ -75,7 +75,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 				issuer:  "test_issuer",
 				exp:     0,
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: errInvalidExpiration,
 		},
 		{
@@ -85,7 +85,7 @@ func TestNewSubOnlyClaims(t *testing.T) {
 				issuer:  "test_issuer",
 				exp:     -1,
 			},
-			want:    SubOnlyClaims{},
+			want:    BasicClaims{},
 			wantErr: errInvalidExpiration,
 		},
 	}
@@ -93,24 +93,24 @@ func TestNewSubOnlyClaims(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := NewSubOnlyClaims(tt.args.subject, tt.args.issuer, tt.args.exp)
+			got, err := NewBasicClaims(tt.args.subject, tt.args.issuer, tt.args.exp)
 			assert.ErrorIs(t, err, tt.wantErr)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestSubOnlyClaims_Valid(t *testing.T) {
+func TestBasicClaims_Valid(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name    string
-		c       SubOnlyClaims
+		c       BasicClaims
 		wantErr bool
 	}{
 		{
 			name: "valid",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "8551023e-ef42-4fee-87dc-76093c888125",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
@@ -118,7 +118,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "invalid Subject, valid expiresAt",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "invalid_subject",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
@@ -126,7 +126,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "empty Subject, valid expiresAt",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
@@ -134,7 +134,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "empty Subject, empty ExpiresAt",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "",
 				ExpiresAt: 0,
 			},
@@ -142,7 +142,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "empty Subject, negative ExpiresAt",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "",
 				ExpiresAt: -1,
 			},
@@ -150,7 +150,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "valid Subject, negative ExpiresAt",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "8551023e-ef42-4fee-87dc-76093c888125",
 				ExpiresAt: -1,
 			},
@@ -158,7 +158,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "valid Subject, empty ExpiresAt",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "8551023e-ef42-4fee-87dc-76093c888125",
 				ExpiresAt: 0,
 			},
@@ -166,7 +166,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 		},
 		{
 			name: "expired",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject:   "8551023e-ef42-4fee-87dc-76093c888125",
 				ExpiresAt: time.Now().Add(-time.Minute).Unix(),
 			},
@@ -184,7 +184,7 @@ func TestSubOnlyClaims_Valid(t *testing.T) {
 	}
 }
 
-func TestSubOnlyClaims_verifyExpiresAt(t *testing.T) {
+func TestBasicClaims_verifyExpiresAt(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -192,13 +192,13 @@ func TestSubOnlyClaims_verifyExpiresAt(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		c    SubOnlyClaims
+		c    BasicClaims
 		args args
 		want bool
 	}{
 		{
 			name: "expired",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				ExpiresAt: time.Now().Add(-time.Hour).Unix(),
 			},
 			args: args{
@@ -208,7 +208,7 @@ func TestSubOnlyClaims_verifyExpiresAt(t *testing.T) {
 		},
 		{
 			name: "empty ExpiresAt",
-			c:    SubOnlyClaims{},
+			c:    BasicClaims{},
 			args: args{
 				now: time.Now().Unix(),
 			},
@@ -216,7 +216,7 @@ func TestSubOnlyClaims_verifyExpiresAt(t *testing.T) {
 		},
 		{
 			name: "verified",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
 			args: args{
@@ -236,31 +236,31 @@ func TestSubOnlyClaims_verifyExpiresAt(t *testing.T) {
 	}
 }
 
-func TestSubOnlyClaims_verifySubject(t *testing.T) {
+func TestBasicClaims_verifySubject(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
-		c    SubOnlyClaims
+		c    BasicClaims
 		want bool
 	}{
 		{
 			name: "valid subject",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject: "8551023e-ef42-4fee-87dc-76093c888125",
 			},
 			want: true,
 		},
 		{
 			name: "invalid subject",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject: "invalid_subject",
 			},
 			want: false,
 		},
 		{
 			name: "empty subject",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Subject: "",
 			},
 			want: false,
@@ -277,24 +277,24 @@ func TestSubOnlyClaims_verifySubject(t *testing.T) {
 	}
 }
 
-func TestSubOnlyClaims_verifyIssuer(t *testing.T) {
+func TestBasicClaims_verifyIssuer(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
-		c    SubOnlyClaims
+		c    BasicClaims
 		want bool
 	}{
 		{
 			name: "verified",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Issuer: "test_issuer",
 			},
 			want: true,
 		},
 		{
 			name: "invalid issuer",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				Issuer: "",
 			},
 			want: false,
@@ -311,7 +311,7 @@ func TestSubOnlyClaims_verifyIssuer(t *testing.T) {
 	}
 }
 
-func TestSubOnlyClaims_verifyIssuedAt(t *testing.T) {
+func TestBasicClaims_verifyIssuedAt(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -319,13 +319,13 @@ func TestSubOnlyClaims_verifyIssuedAt(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		c    SubOnlyClaims
+		c    BasicClaims
 		args args
 		want bool
 	}{
 		{
 			name: "verified",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				IssuedAt: time.Now().Add(-time.Minute).Unix(),
 			},
 			args: args{
@@ -335,7 +335,7 @@ func TestSubOnlyClaims_verifyIssuedAt(t *testing.T) {
 		},
 		{
 			name: "used before issued",
-			c: SubOnlyClaims{
+			c: BasicClaims{
 				IssuedAt: time.Now().Add(time.Minute).Unix(),
 			},
 			args: args{
@@ -355,7 +355,7 @@ func TestSubOnlyClaims_verifyIssuedAt(t *testing.T) {
 	}
 }
 
-func Test_newSubOnlyClaims(t *testing.T) {
+func Test_newBasicClaims(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -364,7 +364,7 @@ func Test_newSubOnlyClaims(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    SubOnlyClaims
+		want    BasicClaims
 		wantErr bool
 	}{
 		{
@@ -377,7 +377,7 @@ func Test_newSubOnlyClaims(t *testing.T) {
 					"iss": "test_issuer",
 				},
 			},
-			want: SubOnlyClaims{
+			want: BasicClaims{
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 				IssuedAt:  time.Now().Add(-time.Minute).Unix(),
 				Subject:   "test_subject",
@@ -390,7 +390,7 @@ func Test_newSubOnlyClaims(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := newSubOnlyClaims(tt.args.raw)
+			got, err := newBasicClaims(tt.args.raw)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newSubOnlyClaims() error = %v, wantErr %v", err, tt.wantErr)
 				return
