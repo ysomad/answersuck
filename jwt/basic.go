@@ -13,7 +13,7 @@ func (b Basic) String() string { return string(b) }
 
 type basicManager struct {
 	sign   []byte
-	Issuer string
+	issuer string
 }
 
 func NewBasicManager(sign, issuer string) (basicManager, error) {
@@ -24,7 +24,10 @@ func NewBasicManager(sign, issuer string) (basicManager, error) {
 		return basicManager{}, errInvalidIssuer
 	}
 
-	return basicManager{sign: []byte(sign)}, nil
+	return basicManager{
+		sign:   []byte(sign),
+		issuer: issuer,
+	}, nil
 }
 
 func (m basicManager) Encode(claims BasicClaims) (Basic, error) {
@@ -62,3 +65,5 @@ func (m basicManager) Decode(token Basic) (BasicClaims, error) {
 
 	return c, nil
 }
+
+func (m basicManager) Issuer() string { return m.issuer }

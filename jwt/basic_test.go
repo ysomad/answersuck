@@ -29,7 +29,7 @@ func TestNewBasicManager(t *testing.T) {
 			},
 			want: basicManager{
 				sign:   []byte("test_sign"),
-				Issuer: "test_issuer",
+				issuer: "test_issuer",
 			},
 			wantErr: false,
 		},
@@ -124,7 +124,7 @@ func Test_basicManager_Decode(t *testing.T) {
 			name: "success",
 			m: basicManager{
 				sign:   []byte("test_sign"),
-				Issuer: "test_issuer",
+				issuer: "test_issuer",
 			},
 			args: args{
 				token: Basic("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
@@ -141,7 +141,7 @@ func Test_basicManager_Decode(t *testing.T) {
 			name: "unexpected signing method",
 			m: basicManager{
 				sign:   []byte("test_sign"),
-				Issuer: "test_issuer",
+				issuer: "test_issuer",
 			},
 			args: args{
 				// used PS512 for the test
@@ -154,7 +154,7 @@ func Test_basicManager_Decode(t *testing.T) {
 			name: "invalid token",
 			m: basicManager{
 				sign:   []byte("test_sign"),
-				Issuer: "test_issuer",
+				issuer: "test_issuer",
 			},
 			args: args{
 				// used PS512 for the test
@@ -167,7 +167,7 @@ func Test_basicManager_Decode(t *testing.T) {
 			name: "invalid sign",
 			m: basicManager{
 				sign:   []byte("invalid_sign"),
-				Issuer: "test_issuer",
+				issuer: "test_issuer",
 			},
 			args: args{
 				token: Basic("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),

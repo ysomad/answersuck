@@ -18,10 +18,9 @@ func TestNewBasicClaims(t *testing.T) {
 		exp     time.Duration
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    BasicClaims
-		wantErr error
+		name string
+		args args
+		want BasicClaims
 	}{
 		{
 			name: "success",
@@ -36,65 +35,13 @@ func TestNewBasicClaims(t *testing.T) {
 				IssuedAt:  time.Now().Unix(),
 				ExpiresAt: time.Now().Add(time.Hour).Unix(),
 			},
-			wantErr: nil,
-		},
-		{
-			name: "invalid subject",
-			args: args{
-				subject: "invalid_sub",
-				issuer:  "test_issuer",
-				exp:     time.Hour,
-			},
-			want:    BasicClaims{},
-			wantErr: errInvalidSubject,
-		},
-		{
-			name: "empty subject",
-			args: args{
-				subject: "",
-				issuer:  "test_issuer",
-				exp:     time.Hour,
-			},
-			want:    BasicClaims{},
-			wantErr: errInvalidSubject,
-		},
-		{
-			name: "empty issuer",
-			args: args{
-				subject: "8551023e-ef42-4fee-87dc-76093c888125",
-				issuer:  "",
-				exp:     time.Hour,
-			},
-			want:    BasicClaims{},
-			wantErr: errInvalidIssuer,
-		},
-		{
-			name: "0 exp",
-			args: args{
-				subject: "8551023e-ef42-4fee-87dc-76093c888125",
-				issuer:  "test_issuer",
-				exp:     0,
-			},
-			want:    BasicClaims{},
-			wantErr: errInvalidExpiration,
-		},
-		{
-			name: "negative exp",
-			args: args{
-				subject: "8551023e-ef42-4fee-87dc-76093c888125",
-				issuer:  "test_issuer",
-				exp:     -1,
-			},
-			want:    BasicClaims{},
-			wantErr: errInvalidExpiration,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := NewBasicClaims(tt.args.subject, tt.args.issuer, tt.args.exp)
-			assert.ErrorIs(t, err, tt.wantErr)
+			got := NewBasicClaims(tt.args.subject, tt.args.issuer, tt.args.exp)
 			assert.Equal(t, tt.want, got)
 		})
 	}

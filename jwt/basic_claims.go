@@ -17,27 +17,14 @@ type BasicClaims struct {
 	Issuer    string `json:"iss"`
 }
 
-func NewBasicClaims(subject, issuer string, exp time.Duration) (BasicClaims, error) {
-	if exp <= 0 {
-		return BasicClaims{}, errInvalidExpiration
-	}
-
-	if issuer == "" {
-		return BasicClaims{}, errInvalidIssuer
-	}
-
-	_, err := uuid.Parse(subject)
-	if err != nil {
-		return BasicClaims{}, fmt.Errorf("%s: %w", err.Error(), errInvalidSubject)
-	}
-
+func NewBasicClaims(subject, issuer string, exp time.Duration) BasicClaims {
 	now := time.Now()
 	return BasicClaims{
 		ExpiresAt: now.Add(exp).Unix(),
 		IssuedAt:  now.Unix(),
 		Subject:   subject,
 		Issuer:    issuer,
-	}, nil
+	}
 }
 
 func newBasicClaims(raw jwt.MapClaims) (BasicClaims, error) {
