@@ -9,6 +9,8 @@ import (
 // SubOnly is the json web token contains only subject.
 type SubOnly string
 
+func (t SubOnly) String() string { return string(t) }
+
 type subOnlyManager struct {
 	sign   []byte
 	Issuer string

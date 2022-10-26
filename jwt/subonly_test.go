@@ -189,3 +189,28 @@ func Test_subOnlyManager_Parse(t *testing.T) {
 		})
 	}
 }
+
+func TestSubOnly_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		tr   SubOnly
+		want string
+	}{
+		{
+			name: "success",
+			tr:   SubOnly("yeet"),
+			want: "yeet",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tt.tr.String(); got != tt.want {
+				t.Errorf("SubOnly.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
