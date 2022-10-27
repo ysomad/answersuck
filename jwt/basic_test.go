@@ -111,7 +111,7 @@ func Test_basicManager_Decode(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		token Basic
+		token string
 	}
 	tests := []struct {
 		name    string
@@ -127,7 +127,7 @@ func Test_basicManager_Decode(t *testing.T) {
 				issuer: "test_issuer",
 			},
 			args: args{
-				token: Basic("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
+				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U",
 			},
 			want: BasicClaims{
 				ExpiresAt: 9223372036854775000,
@@ -145,7 +145,7 @@ func Test_basicManager_Decode(t *testing.T) {
 			},
 			args: args{
 				// used PS512 for the test
-				token: Basic("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.MehhCh5glFg5I0y5iHkRTswq_ZiPpMuh5Pl1GfQ2UbrAUpCh8aUcDtN6uQmMb5Oz_5mV75igFmSHVAsjA8QwIXMWfL6-URXIVo8-N5yYv4gxoqpIsuT81vZ8JJXIG4U4hhDjHHAiPeykZZp7WlDaycgB4IGRwcsC4WMo1cqvx_dUCqUhLvCcziI4Wamn4GhYek9_q95LvAiK126-1YnxPiG3NmsOkzro8M6v052f_Y_LTDA85-gGlOPnZAI08jfA9myXDXe5wBvMLXMrw_Jv94mE2gEIA4Iaze9TzBHn6oASMHotVJ5bIeEdOCOj8gW6XImOPHjLHDRpjqfqqx580g"),
+				token: "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.MehhCh5glFg5I0y5iHkRTswq_ZiPpMuh5Pl1GfQ2UbrAUpCh8aUcDtN6uQmMb5Oz_5mV75igFmSHVAsjA8QwIXMWfL6-URXIVo8-N5yYv4gxoqpIsuT81vZ8JJXIG4U4hhDjHHAiPeykZZp7WlDaycgB4IGRwcsC4WMo1cqvx_dUCqUhLvCcziI4Wamn4GhYek9_q95LvAiK126-1YnxPiG3NmsOkzro8M6v052f_Y_LTDA85-gGlOPnZAI08jfA9myXDXe5wBvMLXMrw_Jv94mE2gEIA4Iaze9TzBHn6oASMHotVJ5bIeEdOCOj8gW6XImOPHjLHDRpjqfqqx580g",
 			},
 			want:    BasicClaims{},
 			wantErr: true,
@@ -157,8 +157,7 @@ func Test_basicManager_Decode(t *testing.T) {
 				issuer: "test_issuer",
 			},
 			args: args{
-				// used PS512 for the test
-				token: Basic("yeet"),
+				token: "yeet",
 			},
 			want:    BasicClaims{},
 			wantErr: true,
@@ -170,7 +169,7 @@ func Test_basicManager_Decode(t *testing.T) {
 				issuer: "test_issuer",
 			},
 			args: args{
-				token: Basic("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U"),
+				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3N1YiIsImlzcyI6InRlc3RfaXNzdWVyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjkyMjMzNzIwMzY4NTQ3NzUwMDB9.OCSyzmIPejQl7iiQD8ZLFdFw0-xx-UYwYJfC-YGQc_U",
 			},
 			want:    BasicClaims{},
 			wantErr: true,
@@ -186,31 +185,6 @@ func Test_basicManager_Decode(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestBasic_String(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		tr   Basic
-		want string
-	}{
-		{
-			name: "success",
-			tr:   Basic("yeet"),
-			want: "yeet",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			if got := tt.tr.String(); got != tt.want {
-				t.Errorf("SubOnly.String() = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }

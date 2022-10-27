@@ -6,11 +6,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-// Basic is the json web token contains only sub, iat, iss and exp.
-type Basic string
-
-func (b Basic) String() string { return string(b) }
-
+// basicManager is the manager for token with BasicClaims.
 type basicManager struct {
 	sign   []byte
 	issuer string
@@ -30,7 +26,7 @@ func NewBasicManager(sign, issuer string) (basicManager, error) {
 	}, nil
 }
 
-func (m basicManager) Encode(claims BasicClaims) (Basic, error) {
+func (m basicManager) Encode(claims BasicClaims) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	s, err := t.SignedString(m.sign)
@@ -38,11 +34,11 @@ func (m basicManager) Encode(claims BasicClaims) (Basic, error) {
 		return "", err
 	}
 
-	return Basic(s), nil
+	return s, nil
 }
 
-func (m basicManager) Decode(token Basic) (BasicClaims, error) {
-	t, err := jwt.Parse(string(token), func(t *jwt.Token) (any, error) {
+func (m basicManager) Decode(token string) (BasicClaims, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errUnexpectedSignMethod
 		}
