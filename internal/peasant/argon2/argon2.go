@@ -12,70 +12,105 @@ import (
 )
 
 type argon2ID struct {
-	format  string
 	version int
-	time    uint32
-	memory  uint32
-	keyLen  uint32
-	saltLen uint32
-	threads uint8
+	params  *params
 }
 
-func New() *argon2ID {
+type params struct {
+	memory      uint32
+	iterations  uint32
+	saltLen     uint32
+	keyLen      uint32
+	parallelism uint8
+}
+
+var DefaultParams = &params{
+	memory:      64 * 1024,
+	iterations:  1,
+	parallelism: 2,
+	saltLen:     16,
+	keyLen:      32,
+}
+
+func NewID(p *params) *argon2ID {
 	return &argon2ID{
-		format:  "$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s",
 		version: argon2.Version,
-		time:    2,
-		memory:  15 * 1024, // 15 MB
-		keyLen:  32,
-		saltLen: 32,
-		threads: 1,
+		params:  p,
 	}
 }
 
 // Encode encodes plain text to argon2 hash
 func (a *argon2ID) Encode(plain string) (string, error) {
-	salt := make([]byte, a.saltLen)
+	salt := make([]byte, a.params.saltLen)
 	_, err := rand.Read(salt)
 	if err != nil {
 		return "", err
 	}
 
-	hash := argon2.IDKey([]byte(plain), salt, a.time, a.memory, a.threads, a.keyLen)
+	key := argon2.IDKey([]byte(plain), salt, a.params.iterations, a.params.memory, a.params.parallelism, a.params.keyLen)
 	return fmt.Sprintf(
-		a.format,
+		"$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s",
 		a.version,
-		a.memory,
-		a.time,
-		a.threads,
+		a.params.memory,
+		a.params.iterations,
+		a.params.parallelism,
 		base64.RawStdEncoding.EncodeToString(salt),
-		base64.RawStdEncoding.EncodeToString(hash),
+		base64.RawStdEncoding.EncodeToString(key),
 	), nil
 }
 
 // Compare compares plain text with hash and returns true, nil if it matches
 func (a *argon2ID) Compare(plain, encoded string) (bool, error) {
-	encodedParts := strings.Split(encoded, "$")
-	if len(encodedParts) != 6 {
-		return false, errors.New("invalid encoded string")
-	}
-
-	_, err := fmt.Sscanf(encodedParts[3], "m=%d,t=%d,p=%d", &a.memory, &a.time, &a.threads)
+	p, salt, key, err := decodeID(encoded)
 	if err != nil {
 		return false, err
 	}
 
-	salt, err := base64.RawStdEncoding.DecodeString(encodedParts[4])
-	if err != nil {
-		return false, err
+	keyToCompare := argon2.IDKey([]byte(plain), salt, p.iterations, p.memory, p.parallelism, p.keyLen)
+
+	if subtle.ConstantTimeEq(int32(len(key)), int32(len(keyToCompare))) == 0 {
+		return false, nil
 	}
 
-	decodedHash, err := base64.RawStdEncoding.DecodeString(encodedParts[5])
-	if err != nil {
-		return false, err
+	return subtle.ConstantTimeCompare(key, keyToCompare) == 1, nil
+}
+
+func decodeID(hash string) (p *params, salt, key []byte, err error) {
+	vals := strings.Split(hash, "$")
+	if len(vals) != 6 {
+		return nil, nil, nil, errors.New("invalid hash")
 	}
 
-	hashToCompare := argon2.IDKey([]byte(plain), salt, a.time, a.memory, a.threads, uint32(len(decodedHash)))
+	if vals[1] != "argon2id" {
+		return nil, nil, nil, errors.New("incompatible variant")
+	}
 
-	return subtle.ConstantTimeCompare(decodedHash, hashToCompare) == 1, nil
+	var version int
+	_, err = fmt.Sscanf(vals[2], "v=%d", &version)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if version != argon2.Version {
+		return nil, nil, nil, errors.New("incompatible version")
+	}
+
+	p = &params{}
+	_, err = fmt.Sscanf(vals[3], "m=%d,t=%d,p=%d", &p.memory, &p.iterations, &p.parallelism)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	salt, err = base64.RawStdEncoding.Strict().DecodeString(vals[4])
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	p.saltLen = uint32(len(salt))
+
+	key, err = base64.RawStdEncoding.Strict().DecodeString(vals[5])
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	p.keyLen = uint32(len(key))
+
+	return p, salt, key, nil
 }
