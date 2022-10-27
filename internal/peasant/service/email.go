@@ -37,7 +37,6 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 	if err != nil {
 		return nil, apperror.New("emailService - Update", err, domain.ErrIncorrectPassword)
 	}
-
 	if !ok {
 		return nil, domain.ErrIncorrectPassword
 	}

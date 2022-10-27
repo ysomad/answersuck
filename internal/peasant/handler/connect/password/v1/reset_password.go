@@ -13,7 +13,7 @@ func (s *server) ResetPassword(ctx context.Context, r *connect.Request[pb.ResetP
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	_, err := s.passwordService.NotifyWithToken(ctx, r.Msg.GetEmailOrUsername())
+	t, err := s.passwordService.NotifyWithToken(ctx, r.Msg.GetEmailOrUsername())
 	if err != nil {
 		s.log.Error(err.Error())
 
@@ -22,5 +22,7 @@ func (s *server) ResetPassword(ctx context.Context, r *connect.Request[pb.ResetP
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return &connect.Response[pb.ResetPasswordResponse]{}, nil
+	return connect.NewResponse(&pb.ResetPasswordResponse{
+		Token: t.String(),
+	}), nil
 }

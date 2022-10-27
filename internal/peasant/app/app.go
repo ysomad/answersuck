@@ -38,7 +38,7 @@ func Run(conf *config.Config) {
 	}
 	defer pg.Close()
 
-	argon2id := argon2.New()
+	argon2id := argon2.NewID(argon2.DefaultParams)
 
 	// jwt
 	emailVerifTokenManager, err := jwt.NewBasicManager(conf.Email.VerifTokenSecret, conf.App.Issuer())

@@ -127,8 +127,8 @@ func (r *accountRepository) GetPasswordByID(ctx context.Context, accountID strin
 	const errMsg = "accountRepository - GetPasswordByID"
 
 	sql, args, err := r.Builder.
-		Select(r.table).
-		From("account").
+		Select("password").
+		From(r.table).
 		Where(sq.Eq{"id": accountID}).
 		ToSql()
 	if err != nil {
@@ -192,7 +192,11 @@ func (r *accountRepository) VerifyEmail(ctx context.Context, accountID string) (
 	query, queryArgs, err := r.Builder.
 		Update(r.table).
 		Set("is_email_verified", true).
-		Where(sq.Eq{"id": accountID}).
+		Where(sq.And{
+			sq.Eq{"id": accountID},
+			sq.Eq{"is_email_verified": false},
+		}).
+		Suffix(r.returningAll).
 		ToSql()
 	if err != nil {
 		return nil, err

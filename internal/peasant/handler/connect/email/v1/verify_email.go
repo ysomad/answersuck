@@ -22,7 +22,7 @@ func (s *server) VerifyEmail(ctx context.Context, r *connect.Request[pb.VerifyEm
 
 		switch {
 		case errors.Is(err, domain.ErrEmailAlreadyVerified):
-			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrEmailAlreadyVerified)
+			return nil, connect.NewError(connect.CodeInvalidArgument, domain.ErrEmailAlreadyVerified)
 		case errors.Is(err, domain.ErrEmailVerifTokenExpired):
 			return nil, connect.NewError(connect.CodePermissionDenied, domain.ErrEmailVerifTokenExpired)
 		}

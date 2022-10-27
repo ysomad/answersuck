@@ -22,7 +22,7 @@ func (s *server) GetAccountById(ctx context.Context, r *connect.Request[pb.GetAc
 		s.log.Error(err.Error())
 
 		if errors.Is(err, domain.ErrAccountNotFound) {
-			return nil, connect.NewError(connect.CodeInternal, domain.ErrAccountNotFound)
+			return nil, connect.NewError(connect.CodeNotFound, domain.ErrAccountNotFound)
 		}
 
 		return nil, connect.NewError(connect.CodeInternal, err)

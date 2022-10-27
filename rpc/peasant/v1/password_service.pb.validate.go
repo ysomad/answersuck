@@ -694,6 +694,8 @@ func (m *ResetPasswordResponse) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Token
+
 	if len(errors) > 0 {
 		return ResetPasswordResponseMultiError(errors)
 	}
