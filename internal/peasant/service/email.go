@@ -52,7 +52,7 @@ func (s *emailService) Update(ctx context.Context, args dto.UpdateEmailArgs) (*d
 // Verify verifies account email if token is valid and contains account id,
 // account with already verified email cannot be verified.
 func (s *emailService) Verify(ctx context.Context, token string) (*domain.Account, error) {
-	c, err := s.verifToken.Decode(jwt.Basic(token))
+	c, err := s.verifToken.Decode(token)
 	if err != nil {
 		return nil, apperror.New("emailService - Verify", err, domain.ErrEmailVerifTokenExpired)
 	}
@@ -77,5 +77,5 @@ func (s *emailService) NotifyWithToken(ctx context.Context, accountID string) (d
 	// TODO: send email verif token to user email
 	// emailInterctor.Send(a.Email)
 
-	return domain.NewEmailVerifToken(t), nil
+	return domain.EmailVerifToken(t), nil
 }

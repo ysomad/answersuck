@@ -14,8 +14,8 @@ var (
 
 type Account struct {
 	ID            string
-	Username      string
 	Email         string
+	Username      string
 	EmailVerified bool
 	Archived      bool
 	CreatedAt     time.Time

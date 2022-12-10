@@ -16,7 +16,7 @@ type passwordEncodeComparer interface {
 }
 
 type basicJWTManager interface {
-	Encode(jwt.BasicClaims) (jwt.Basic, error)
-	Decode(jwt.Basic) (jwt.BasicClaims, error)
+	Encode(jwt.BasicClaims) (string, error)
+	Decode(string) (jwt.BasicClaims, error)
 	Issuer() string
 }

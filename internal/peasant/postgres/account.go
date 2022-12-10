@@ -19,15 +19,15 @@ import (
 type accountRepository struct {
 	*pgclient.Client
 
-	table        string
-	returningAll string
+	table   string
+	allCols string
 }
 
 func NewAccountRepository(c *pgclient.Client) *accountRepository {
 	return &accountRepository{
 		c,
 		"account",
-		"RETURNING id, username, email, is_email_verified, is_archived, created_at, updated_at",
+		"id, username, email, is_email_verified, is_archived, created_at, updated_at",
 	}
 }
 
@@ -38,7 +38,7 @@ func (r *accountRepository) Create(ctx context.Context, args dto.AccountCreateAr
 		Insert(r.table).
 		Columns("email, username, password").
 		Values(args.Email, args.Username, args.Password).
-		Suffix(r.returningAll).
+		Suffix("RETURNING " + r.allCols).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (r *accountRepository) GetByID(ctx context.Context, accountID string) (*dom
 	const errMsg = "accountRepository - GetByID"
 
 	sql, args, err := r.Builder.
-		Select("id, username, email, is_email_verified, is_archived, created_at, updated_at").
+		Select(r.allCols).
 		From(r.table).
 		Where(sq.Eq{"id": accountID}).
 		ToSql()
@@ -158,7 +158,7 @@ func (r *accountRepository) UpdateEmail(ctx context.Context, accountID, newEmail
 			sq.Eq{"id": accountID},
 			sq.Eq{"is_archived": false},
 		}).
-		Suffix(r.returningAll).
+		Suffix("RETURNING " + r.allCols).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (r *accountRepository) VerifyEmail(ctx context.Context, accountID string) (
 			sq.Eq{"id": accountID},
 			sq.Eq{"is_email_verified": false},
 		}).
-		Suffix(r.returningAll).
+		Suffix("RETURNING " + r.allCols).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -226,7 +226,39 @@ func (r *accountRepository) UpdatePassword(ctx context.Context, accountID, newPa
 		Update(r.table).
 		Set("password", newPassword).
 		Where(sq.Eq{"id": accountID}).
-		Suffix(r.returningAll).
+		Suffix("RETURNING " + r.allCols).
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Pool.Query(ctx, query, queryArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[domain.Account])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperror.New(errMsg, err, domain.ErrAccountNotFound)
+		}
+
+		return nil, err
+	}
+
+	return &a, nil
+}
+
+func (r *accountRepository) GetByEmailOrUsername(ctx context.Context, emailOrUsername string) (*domain.Account, error) {
+	const errMsg = "accountRepository - GetByEmailOrUsername"
+
+	query, queryArgs, err := r.Builder.
+		Select(r.allCols).
+		From(r.table).
+		Where(sq.Or{
+			sq.Eq{"email": emailOrUsername},
+			sq.Eq{"username": emailOrUsername},
+		}).
 		ToSql()
 	if err != nil {
 		return nil, err

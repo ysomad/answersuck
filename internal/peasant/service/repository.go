@@ -10,6 +10,7 @@ import (
 type accountRepository interface {
 	Create(context.Context, dto.AccountCreateArgs) (*domain.Account, error)
 	GetByID(ctx context.Context, accountID string) (*domain.Account, error)
+	GetByEmailOrUsername(ctx context.Context, emailOrUsername string) (*domain.Account, error)
 	DeleteByID(ctx context.Context, accountID string) error
 
 	GetPasswordByID(ctx context.Context, accountID string) (string, error)

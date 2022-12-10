@@ -51,18 +51,28 @@ func (s *passwordService) Update(ctx context.Context, args dto.UpdatePasswordArg
 	return s.accountRepo.UpdatePassword(ctx, args.AccountID, newEncodedPass)
 }
 
-// NotifyWithToken finds account with email or username and creates password setter token with found account id,
+// CreateSetterToken finds account with email or username and creates password setter token with found account id,
 // then send email to user with token in url, user must to visit the url to set new password.
-func (s *passwordService) NotifyWithToken(ctx context.Context, emailOrUsername string) (domain.PasswordSetterToken, error) {
-	// TODO: get account by email or username
-	// TODO: implement password service create token
+func (s *passwordService) CreateSetterToken(ctx context.Context, emailOrUsername string) (domain.PasswordSetterToken, error) {
+	a, err := s.accountRepo.GetByEmailOrUsername(ctx, emailOrUsername)
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	c := jwt.NewBasicClaims(a.ID, s.setterToken.Issuer(), s.setterTokenExp)
+	t, err := s.setterToken.Encode(c)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: send email with token to reset password
+
+	return domain.PasswordSetterToken(t), nil
 }
 
 // Set sets new password to account. Token must be valid not expired jwt with account id in payload.
 func (s *passwordService) Set(ctx context.Context, token, newPassword string) (*domain.Account, error) {
-	c, err := s.setterToken.Decode(jwt.Basic(token))
+	c, err := s.setterToken.Decode(token)
 	if err != nil {
 		return nil, apperror.New("passwordService - Set", err, domain.ErrPasswordSetterTokenExpired)
 	}
