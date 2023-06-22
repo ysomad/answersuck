@@ -19,7 +19,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/xhit/go-simple-mail/v2 v2.11.0
 	go.uber.org/zap v1.22.0
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/crypto v0.10.0
 )
 
 require (
@@ -54,9 +54,9 @@ require (
 	github.com/toorop/go-dkim v0.0.0-20201103131630-e1cd1a0a5208 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462 // indirect
-	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/text v0.10.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
