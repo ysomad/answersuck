@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package player.v1;
+option go_package = "player/v1;playerv1";
+
+import "google/protobuf/timestamp.proto";
+
+message Player {
+  string email = 1;
+  string nickname = 2;
+  string display_name = 3;
+  bool email_verified = 4;
+  google.protobuf.Timestamp created_time = 50;
+}

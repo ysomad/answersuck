@@ -1,47 +1,28 @@
-# Answersuck backend API application
+# Uniplay
 
 ## Local development
 
-1. Configure `.env` file
-2. Run services from docker compose
-```shell
+Swagger will be served at `localhost:8080/v1/docs`;
+Grafana - `localhost:3000`;
+Jaeger - `localhost:16686`.
+
+### Run service deps and app separately
+1. Run service deps
+```sh
 $ make compose-up
 ```
-3. Compile and run the app
-```shell
-$ make run
+2. Run the application
+```sh
+$ make run-migrate
 ```
 
-## Run tests locally
+### Run service and deps in docker
+- Run only required for development services
+```sh
+$ make compose-min
+```
 
-- Run unit tests `make test`
-- Run integration tests `make integration-test`
-
-Make sure required services for integration tests are running in docker-compose.
-
-## Directories description
-
-### `api/`
-
-Directory for API documentation.
-
-### `cmd/`
-
-Entrypoint for the project. Can contain multiple entrypoints for microservices for example.
-
-### `internal/`
-
-Private application code.
-
-### `migrations/`
-
-Database migrations.
-
-### `web/`
-
-Web templates.
-
-### `test/`
-
-Directory for integration tests. Rest of tests are better to keep next to code which is needed to be tested.
-
+- Run all services
+```sh
+$ make compose-all
+```

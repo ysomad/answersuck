@@ -1,4 +1,5 @@
-.idea
 .DS_Store
-.env
-.vscode
+test-data/
+.vscode/
+.idea/
+traces.txt

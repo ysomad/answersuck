@@ -7,49 +7,30 @@ import (
 type Type uint8
 
 const (
-	// TypeEQ value is equal
-	TypeEQ Type = iota
-
-	// TypeNotEQ value is not equal
+	TypeEQ Type = iota + 1
 	TypeNotEQ
-
-	// TypeGTE greater than value
 	TypeGTE
-
-	// TypeGT value greater
 	TypeGT
-
-	// TypeLT value less
 	TypeLT
-
-	// TypeLTE value less or equals
 	TypeLTE
-
-	// TypeLike value can contain
 	TypeLike
-
-	// TypeNotLike value cannot contain
 	TypeNotLike
-
-	// TypeILike value can contain (case insensitive)
 	TypeILike
-
-	// TypeNotILike value cannot contain (case insensitive)
 	TypeNotILike
 )
 
-type Operator uint8
+type Op uint8
 
 const (
-	OperatorAnd Operator = iota
-	OperatorOr
+	OpAnd Op = iota + 1
+	OpOr
 )
 
 type Filter struct {
 	column   string
 	ftype    Type
 	value    any
-	operator Operator
+	operator Op
 	filters  []Filter
 }
 
@@ -58,21 +39,31 @@ func New(column string, ftype Type, value any) Filter {
 		column:   column,
 		ftype:    ftype,
 		value:    value,
-		operator: OperatorAnd,
-		filters:  make([]Filter, 0),
+		operator: OpAnd,
+		filters:  []Filter{},
 	}
 }
 
-// SetOperator sets operator for linking filters
-func (f *Filter) SetOperator(operator Operator) *Filter {
+// SetOperator sets operator for linking filters.
+func (f *Filter) SetOperator(operator Op) *Filter {
 	f.operator = operator
+
 	return f
 }
 
-// WithFilter adds filters
+// WithFilter adds filters.
 func (f *Filter) WithFilters(filters ...Filter) *Filter {
 	f.filters = append(f.filters, filters...)
+
 	return f
+}
+
+func (f *Filter) Add(col string, ftype Type, val any) {
+	if col == "" || ftype == 0 || val == nil {
+		return
+	}
+
+	f.filters = append(f.filters, New(col, ftype, val))
 }
 
 func (f Filter) condition() sq.Sqlizer {
@@ -98,6 +89,7 @@ func (f Filter) condition() sq.Sqlizer {
 	case TypeNotILike:
 		return sq.NotILike{f.column: f.value}
 	}
+
 	return sq.Eq{f.column: f.value}
 }
 
@@ -114,30 +106,34 @@ func (f Filter) getConditions() sq.Sqlizer {
 		conditions = append(conditions, filter.getConditions())
 	}
 
-	if f.operator == OperatorOr {
+	if f.operator == OpOr {
 		return or(conditions)
 	}
 
 	return and(conditions)
 }
 
-// UseSelectBuilder adds filters to squirrel.SelectBuilder
-func (f Filter) UseSelectBuilder(b sq.SelectBuilder) sq.SelectBuilder {
+// Attach adds filters to squirrel.SelectBuilder.
+func (f Filter) Attach(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(f.getConditions())
 }
 
 func and(conditions []sq.Sqlizer) sq.And {
 	res := sq.And{}
+
 	for _, c := range conditions {
 		res = append(res, c)
 	}
+
 	return res
 }
 
 func or(conditions []sq.Sqlizer) sq.Or {
 	res := sq.Or{}
+
 	for _, c := range conditions {
 		res = append(res, c)
 	}
+
 	return res
 }
