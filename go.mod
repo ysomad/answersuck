@@ -3,7 +3,7 @@ module github.com/answersuck/host
 go 1.19
 
 require (
-	github.com/Masterminds/squirrel v1.5.3
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
