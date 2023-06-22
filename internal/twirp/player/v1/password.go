@@ -9,22 +9,22 @@ import (
 	pb "github.com/ysomad/answersuck/internal/gen/proto/player/v1"
 )
 
-var _ pb.PasswordService = &passwordHandler{}
+var _ pb.PasswordService = &PasswordHandler{}
 
-type passwordHandler struct{}
+type PasswordHandler struct{}
 
-func NewPasswordHandler() *passwordHandler {
-	return &passwordHandler{}
+func NewPasswordHandler() *PasswordHandler {
+	return &PasswordHandler{}
 }
 
-func (h *passwordHandler) ResetPassword(context.Context, *pb.ResetPasswordRequest) (*emptypb.Empty, error) {
+func (h *PasswordHandler) ResetPassword(context.Context, *pb.ResetPasswordRequest) (*emptypb.Empty, error) {
 	return new(emptypb.Empty), twirp.InternalError("not implemented")
 }
 
-func (h *passwordHandler) SetPassword(context.Context, *pb.SetPasswordRequest) (*emptypb.Empty, error) {
+func (h *PasswordHandler) SetPassword(context.Context, *pb.SetPasswordRequest) (*emptypb.Empty, error) {
 	return new(emptypb.Empty), twirp.InternalError("not implemented")
 }
 
-func (h *passwordHandler) UpdatePassword(context.Context, *pb.UpdatePasswordRequest) (*emptypb.Empty, error) {
+func (h *PasswordHandler) UpdatePassword(context.Context, *pb.UpdatePasswordRequest) (*emptypb.Empty, error) {
 	return new(emptypb.Empty), twirp.InternalError("not implemented")
 }

@@ -1,18 +1,17 @@
 package app
 
 import (
-	"context"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/IBM/pgxpoolprometheus"
-	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/exp/slog"
 
 	"github.com/ysomad/answersuck/internal/config"
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
 	"github.com/ysomad/answersuck/internal/pkg/pgclient"
+	"github.com/ysomad/answersuck/internal/player"
+	playerv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
 )
 
 func logFatal(msg string, args ...any) {
@@ -20,33 +19,33 @@ func logFatal(msg string, args ...any) {
 	os.Exit(1)
 }
 
+type handlerContainer struct {
+	playerV1   *playerv1.PlayerHandler
+	emailV1    *playerv1.EmailHandler
+	passwordV1 *playerv1.PasswordHandler
+}
+
 func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
-	otel, err := newOpenTelemetry(conf)
-	if err != nil {
-		logFatal("newOpenTelemetry", err)
-	}
-
-	defer otel.meterProvider.Shutdown(context.Background())
-	defer otel.tracerProvider.Shutdown(context.Background())
-
 	pgClient, err := pgclient.New(
 		conf.PG.URL,
 		pgclient.WithMaxConns(conf.PG.MaxConns),
-		pgclient.WithQueryTracer(otel.pgxTracer),
 	)
 	if err != nil {
 		logFatal("pgclient.New", err)
 	}
 
-	// pgx metrics
-	pgxCollector := pgxpoolprometheus.NewCollector(pgClient.Pool, map[string]string{"db_name": conf.PG.DBName})
-	if err = prometheus.Register(pgxCollector); err != nil {
-		logFatal("prometheus.Register", err)
-	}
+	// player
+	playerPG := player.NewPostgres(pgClient)
+	playerService := player.NewService(playerPG)
 
 	// http
-	mux := newServeMux("/rpc")
-	httpServer := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))
+	mux := newServeMux("/rpc", handlerContainer{
+		playerV1:   playerv1.NewPlayerHandler(playerService),
+		emailV1:    playerv1.NewEmailHandler(),
+		passwordV1: playerv1.NewPasswordHandler(),
+	})
+
+	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -54,11 +53,11 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	select {
 	case s := <-interrupt:
 		slog.Info("received signal from httpserver", slog.String("signal", s.String()))
-	case err := <-httpServer.Notify():
+	case err := <-srv.Notify():
 		slog.Info("got error from http server notify", slog.String("error", err.Error()))
 	}
 
-	if err := httpServer.Shutdown(); err != nil {
+	if err := srv.Shutdown(); err != nil {
 		slog.Info("got error on http server shutdown", slog.String("error", err.Error()))
 	}
 }

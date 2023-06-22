@@ -66,5 +66,4 @@ lint-proto:
 
 .PHONY: gen-proto
 gen-proto: lint-proto
-	rm -rf internal/gen/proto/* \
 	buf build && buf generate

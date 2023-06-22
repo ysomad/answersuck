@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package question.v1;
+option go_package = "question/v1;questionv1";
+
+import "question/v1/question.proto";
+import "validate/validate.proto";
+
+service QuestionService {
+    rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
+    rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse);
+}
+
+message CreateQuestionRequest {
+    message Answer {
+        string text = 1 [(validate.rules).string = { min_len: 3, max_len: 100 }];
+        string media_url = 2 [(validate.rules).string = { uri: true, max_len: 2048 }];
+    }
+
+    string question = 2 [(validate.rules).string = { min_len: 3, max_len: 200 }];
+    Answer answer = 3;
+    int32 language_id = 4;
+    string media_url = 5 [(validate.rules).string = { uri: true, max_len: 2048 }];
+}
+
+message CreateQuestionResponse {
+    Question question = 1;
+}
+
+message GetQuestionRequest {
+    int32 question_id = 1;
+}
+
+message GetQuestionResponse {
+    Question question = 1;
+}

@@ -9,17 +9,20 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/ysomad/answersuck/internal/gen/proto/player/v1"
+	"github.com/ysomad/answersuck/internal/player"
 )
 
-var _ pb.PlayerService = &playerHandler{}
+var _ pb.PlayerService = &PlayerHandler{}
 
-type playerHandler struct{}
-
-func NewPlayerHandler() *playerHandler {
-	return &playerHandler{}
+type PlayerHandler struct {
+	player *player.Service
 }
 
-func (h *playerHandler) CreatePlayer(ctx context.Context, r *pb.CreatePlayerRequest) (*emptypb.Empty, error) {
+func NewPlayerHandler(s *player.Service) *PlayerHandler {
+	return &PlayerHandler{player: s}
+}
+
+func (h *PlayerHandler) CreatePlayer(ctx context.Context, r *pb.CreatePlayerRequest) (*emptypb.Empty, error) {
 	if err := r.Validate(); err != nil {
 		if pberr, ok := err.(pb.CreatePlayerRequestValidationError); ok {
 			return nil, twirp.InvalidArgumentError(pberr.Field(), pberr.Error())
@@ -31,7 +34,7 @@ func (h *playerHandler) CreatePlayer(ctx context.Context, r *pb.CreatePlayerRequ
 	return new(emptypb.Empty), twirp.InternalError("not implemented")
 }
 
-func (h *playerHandler) GetPlayer(ctx context.Context, r *pb.GetPlayerRequest) (*pb.GetPlayerResponse, error) {
+func (h *PlayerHandler) GetPlayer(ctx context.Context, r *pb.GetPlayerRequest) (*pb.GetPlayerResponse, error) {
 	c := http.Cookie{
 		Name:     "sid",
 		Value:    "test",

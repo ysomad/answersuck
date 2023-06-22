@@ -57,6 +57,17 @@ func (m *CreatePlayerRequest) validate(all bool) error {
 
 	var errors []error
 
+	if !_CreatePlayerRequest_Nickname_Pattern.MatchString(m.GetNickname()) {
+		err := CreatePlayerRequestValidationError{
+			field:  "Nickname",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9][\\\\w]{3,24}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if utf8.RuneCountInString(m.GetEmail()) > 320 {
 		err := CreatePlayerRequestValidationError{
 			field:  "Email",
@@ -73,17 +84,6 @@ func (m *CreatePlayerRequest) validate(all bool) error {
 			field:  "Email",
 			reason: "value must be a valid email address",
 			cause:  err,
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if !_CreatePlayerRequest_Nickname_Pattern.MatchString(m.GetNickname()) {
-		err := CreatePlayerRequestValidationError{
-			field:  "Nickname",
-			reason: "value does not match regex pattern \"^[a-zA-Z0-9][\\\\w]{3,24}$\"",
 		}
 		if !all {
 			return err

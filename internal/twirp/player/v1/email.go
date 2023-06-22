@@ -9,22 +9,22 @@ import (
 	pb "github.com/ysomad/answersuck/internal/gen/proto/player/v1"
 )
 
-var _ pb.EmailService = &emailHandler{}
+var _ pb.EmailService = &EmailHandler{}
 
-type emailHandler struct{}
+type EmailHandler struct{}
 
-func NewEmailHandler() *emailHandler {
-	return &emailHandler{}
+func NewEmailHandler() *EmailHandler {
+	return &EmailHandler{}
 }
 
-func (h *emailHandler) UpdateEmail(ctx context.Context, r *pb.UpdateEmailRequest) (*pb.UpdateEmailResponse, error) {
+func (h *EmailHandler) UpdateEmail(ctx context.Context, r *pb.UpdateEmailRequest) (*pb.UpdateEmailResponse, error) {
 	return nil, twirp.InternalError("not implemented")
 }
 
-func (h *emailHandler) VerifyEmail(ctx context.Context, r *pb.VerifyEmailRequest) (*emptypb.Empty, error) {
+func (h *EmailHandler) VerifyEmail(ctx context.Context, r *pb.VerifyEmailRequest) (*emptypb.Empty, error) {
 	return new(emptypb.Empty), twirp.InternalError("not implemented")
 }
 
-func (h *emailHandler) SendVerification(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
+func (h *EmailHandler) SendVerification(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	return new(emptypb.Empty), twirp.InternalError("not implemented")
 }

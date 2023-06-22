@@ -14,8 +14,8 @@ service PlayerService {
 }
 
 message CreatePlayerRequest {
-  string email = 1 [(validate.rules).string = { email: true, max_len: 320 }];
-  string nickname = 2 [(validate.rules).string.pattern = "^[a-zA-Z0-9][\\w]{3,24}$"];
+  string nickname = 1 [(validate.rules).string.pattern = "^[a-zA-Z0-9][\\w]{3,24}$"];
+  string email = 2 [(validate.rules).string = { email: true, max_len: 320 }];
   string password = 3 [(validate.rules).string = { min_len: 10, max_len: 128 }];
 }
 
@@ -26,5 +26,3 @@ message GetPlayerRequest {
 message GetPlayerResponse {
   Player player = 1;
 }
-
-

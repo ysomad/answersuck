@@ -56,9 +56,9 @@ func (m *Player) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Email
-
 	// no validation rules for Nickname
+
+	// no validation rules for Email
 
 	// no validation rules for DisplayName
 
