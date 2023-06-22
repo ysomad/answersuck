@@ -66,4 +66,4 @@ lint-proto:
 
 .PHONY: gen-proto
 gen-proto: lint-proto
-	buf build && buf generate
+	buf generate --template buf.gen-go.yaml
