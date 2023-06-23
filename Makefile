@@ -65,5 +65,23 @@ lint-proto:
 	buf lint
 
 .PHONY: gen-proto
-gen-proto: lint-proto
-	buf generate --template buf.gen-go.yaml
+gen-proto: 
+	rm -rf internal/gen/proto/*
+	protoc \
+		-I proto \
+		-I proto/validate \
+		--go_out=internal/gen/proto \
+		--go_opt=paths=source_relative \
+		--twirp_out=internal/gen/proto \
+		--twirp_opt=paths=source_relative \
+		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
+		proto/question/v1/*.proto
+	protoc \
+		-I proto \
+		-I proto/validate \
+		--go_out=internal/gen/proto \
+		--go_opt=paths=source_relative \
+		--twirp_out=internal/gen/proto \
+		--twirp_opt=paths=source_relative \
+		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
+		proto/player/v1/*.proto
