@@ -90,7 +90,7 @@ func (m *Question) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for AuthorNickname
+	// no validation rules for Author
 
 	if all {
 		switch v := interface{}(m.GetMedia()).(type) {
@@ -120,8 +120,6 @@ func (m *Question) validate(all bool) error {
 			}
 		}
 	}
-
-	// no validation rules for Language
 
 	if all {
 		switch v := interface{}(m.GetCreatedTime()).(type) {
@@ -388,9 +386,7 @@ func (m *Question_Answer) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for Language
-
-	// no validation rules for AuthorNickname
+	// no validation rules for Author
 
 	if all {
 		switch v := interface{}(m.GetCreatedTime()).(type) {

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+import "package/v1/question_type.proto";
+
+message Question {
+    int32 id = 1;
+    string text = 2;
+    int32 cost = 3;
+    QuestionType type = 4;
+}

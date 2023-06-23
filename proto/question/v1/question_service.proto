@@ -9,6 +9,7 @@ import "validate/validate.proto";
 service QuestionService {
     rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
     rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse);
+    rpc ListQuestions(ListQuestionsRequest) returns (ListQuestionsResponse);
 }
 
 message CreateQuestionRequest {
@@ -19,8 +20,7 @@ message CreateQuestionRequest {
 
     string question = 2 [(validate.rules).string = { min_len: 3, max_len: 200 }];
     Answer answer = 3;
-    int32 language_id = 4;
-    string media_url = 5 [(validate.rules).string = { uri: true, max_len: 2048 }];
+    string media_url = 4 [(validate.rules).string = { uri: true, max_len: 2048 }];
 }
 
 message CreateQuestionResponse {
@@ -34,3 +34,10 @@ message GetQuestionRequest {
 message GetQuestionResponse {
     Question question = 1;
 }
+
+message ListQuestionsRequest {
+    int32 page_size = 1;
+    string page_token = 2;
+}
+
+message ListQuestionsResponse {}

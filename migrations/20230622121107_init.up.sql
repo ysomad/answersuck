@@ -18,33 +18,28 @@ CREATE TABLE IF NOT EXISTS media (
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS language (
-    id smallserial NOT NULL PRIMARY KEY,
-    name varchar(128) NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS package (
     id serial NOT NULL PRIMARY KEY,
     name varchar(64) NOT NULL,
     author varchar(25) NOT NULL REFERENCES player (nickname),
     is_published bool DEFAULT FALSE NOT NULL,
-    language_id smallint NOT NULL REFERENCES language (id),
     cover_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL,
     updated_at timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS tag (
+CREATE TABLE IF NOT EXISTS stage (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
-    language_id smallint NOT NULL REFERENCES language (id),
-    created_at timestamptz NOT NULL
+    "order" smallint NOT NULL,
+    package_id int NOT NULL REFERENCES package (id)
 );
 
-CREATE TABLE IF NOT EXISTS package_tag (
-    package_id int NOT NULL REFERENCES package (id),
-    tag_id int NOT NULL REFERENCES tag (id),
-    PRIMARY KEY (package_id, tag_id)
+CREATE TABLE IF NOT EXISTS topic (
+    id serial NOT NULL PRIMARY KEY,
+    name varchar(50) NOT NULL,
+    author varchar(25) NOT NULL REFERENCES player (nickname),
+    created_at timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS answer (
@@ -52,14 +47,6 @@ CREATE TABLE IF NOT EXISTS answer (
     text varchar(112) NOT NULL,
     author varchar(25) NOT NULL REFERENCES player (nickname),
     media_url varchar(2048) REFERENCES media (url),
-    language_id smallint NOT NULL REFERENCES language (id),
-    created_at timestamptz NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS topic (
-    id serial NOT NULL PRIMARY KEY,
-    name varchar(50) NOT NULL,
-    language_id smallint NOT NULL REFERENCES language (id),
     created_at timestamptz NOT NULL
 );
 
@@ -68,16 +55,36 @@ CREATE TABLE IF NOT EXISTS question (
     text varchar(200) NOT NULL,
     answer_id int NOT NULL REFERENCES answer (id),
     author varchar(25) NOT NULL REFERENCES player (nickname),
-    language_id smallint NOT NULL REFERENCES language (id),
     media_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS stage (
+CREATE TABLE IF NOT EXISTS package_stage_question (
+    stage_id int NOT NULL REFERENCES stage (id),
+    topic_id int NOT NULL REFERENCES topic (id),
+    question_id int NOT NULL REFERENCES question (id),
+
+    question_type smallint NOT NULL,
+    cost smallint NOT NULL,
+    interval smallint NOT NULL,
+    host_comment text,
+
+    secret_topic varchar(64),
+    secret_cost smallint,
+    is_keepable boolean,
+    is_visible boolean
+);
+
+CREATE TABLE IF NOT EXISTS tag (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
-    "order" smallint NOT NULL,
-    package_id int NOT NULL REFERENCES package (id)
+    created_at timestamptz NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS package_tag (
+    package_id int NOT NULL REFERENCES package (id),
+    tag_id int NOT NULL REFERENCES tag (id),
+    PRIMARY KEY (package_id, tag_id)
 );
 
 COMMIT;

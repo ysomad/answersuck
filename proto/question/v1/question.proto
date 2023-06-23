@@ -22,16 +22,14 @@ message Question {
         int32 id = 1;
         string text = 2;
         Media media = 3;
-        string language = 4;
-        string author_nickname = 5;
+        string author = 5;
         google.protobuf.Timestamp created_time = 50;
     }
 
     int32 id = 1;
     string text = 2;
     Answer answer = 3;
-    string author_nickname = 4;
+    string author = 4;
     Media media = 5;
-    string language = 6;
     google.protobuf.Timestamp created_time = 50;
 }

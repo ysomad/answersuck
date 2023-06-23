@@ -60,12 +60,8 @@ migrate-drop:
 .PHONY: dry-run
 dry-run: migrate-drop run-migrate
 
-.PHONY: lint-proto
-lint-proto:
-	buf lint
-
 .PHONY: gen-proto
-gen-proto: 
+gen-proto:
 	rm -rf internal/gen/proto/*
 	protoc \
 		-I proto \
@@ -85,3 +81,13 @@ gen-proto:
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
 		proto/player/v1/*.proto
+	protoc \
+		-I proto \
+		-I proto/validate \
+		--go_out=internal/gen/proto \
+		--go_opt=paths=source_relative \
+		--twirp_out=internal/gen/proto \
+		--twirp_opt=paths=source_relative \
+		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
+		proto/package/v1/*.proto
+

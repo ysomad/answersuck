@@ -97,8 +97,6 @@ func (m *CreateQuestionRequest) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for LanguageId
-
 	if utf8.RuneCountInString(m.GetMediaUrl()) > 2048 {
 		err := CreateQuestionRequestValidationError{
 			field:  "MediaUrl",
@@ -576,6 +574,214 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetQuestionResponseValidationError{}
+
+// Validate checks the field values on ListQuestionsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListQuestionsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListQuestionsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListQuestionsRequestMultiError, or nil if none found.
+func (m *ListQuestionsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListQuestionsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PageSize
+
+	// no validation rules for PageToken
+
+	if len(errors) > 0 {
+		return ListQuestionsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListQuestionsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListQuestionsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListQuestionsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListQuestionsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListQuestionsRequestMultiError) AllErrors() []error { return m }
+
+// ListQuestionsRequestValidationError is the validation error returned by
+// ListQuestionsRequest.Validate if the designated constraints aren't met.
+type ListQuestionsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListQuestionsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListQuestionsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListQuestionsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListQuestionsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListQuestionsRequestValidationError) ErrorName() string {
+	return "ListQuestionsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListQuestionsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListQuestionsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListQuestionsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListQuestionsRequestValidationError{}
+
+// Validate checks the field values on ListQuestionsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListQuestionsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListQuestionsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListQuestionsResponseMultiError, or nil if none found.
+func (m *ListQuestionsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListQuestionsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListQuestionsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListQuestionsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListQuestionsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListQuestionsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListQuestionsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListQuestionsResponseMultiError) AllErrors() []error { return m }
+
+// ListQuestionsResponseValidationError is the validation error returned by
+// ListQuestionsResponse.Validate if the designated constraints aren't met.
+type ListQuestionsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListQuestionsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListQuestionsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListQuestionsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListQuestionsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListQuestionsResponseValidationError) ErrorName() string {
+	return "ListQuestionsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListQuestionsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListQuestionsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListQuestionsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListQuestionsResponseValidationError{}
 
 // Validate checks the field values on CreateQuestionRequest_Answer with the
 // rules defined in the proto definition for this message. If any rules are

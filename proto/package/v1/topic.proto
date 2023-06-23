@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+import "package/v1/question.proto";
+
+message Topic {
+    int32 id = 1;
+    string name = 2;
+    repeated Question questions = 3;
+}

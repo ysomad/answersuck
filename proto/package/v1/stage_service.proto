@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+import "package/v1/package.proto";
+import "package/v1/topic.proto";
+
+import "validate/validate.proto";
+
+service StageService {
+    // CreateStage create new stage and adds it to package.
+    rpc CreateStage(CreateStageRequest) returns (CreateStageResponse);
+
+    // ListStages returns list of package stages.
+    rpc ListStages(ListStagesRequest) returns (ListStagesResponse);
+
+    // ListStageQuestions returns list of stage questions with their topics and extra data such as cost, interval etc.
+    rpc ListStageQuestions(ListStageQuestionsRequest) returns (ListStageQuestionsResponse);
+}
+
+message CreateStageRequest {
+    message QuestionTopic {
+        string name = 1 [(validate.rules).string = { min_len: 3, max_len: 30 }];
+        repeated int32 question_ids = 2 [(validate.rules).repeated = { min_items: 1, max_items: 10, unique: true }];
+    }
+
+    int32 package_id = 1;
+    string stage_name = 2 [(validate.rules).string = { min_len: 3, max_len: 30 } ];
+    int32 stage_order = 3;
+    repeated QuestionTopic question_topics = 4 [(validate.rules).repeated = { min_items: 3, max_items: 10 }];
+}
+
+message CreateStageResponse {
+    Package package = 1;
+}
+
+message ListStageQuestionsRequest {
+    int32 package_id = 1;
+    int32 stage_id = 2;
+}
+
+message ListStageQuestionsResponse {
+    string stage_name = 1;
+    repeated Topic topics = 2;
+}
+
+message ListStagesRequest {
+    int32 package_id = 1;
+}
+
+message ListStagesResponse {
+    message Stage {
+        int32 id = 1;
+        string name = 2;
+    }
+
+    repeated Stage stages = 1;
+}
