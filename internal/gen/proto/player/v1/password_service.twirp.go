@@ -30,9 +30,13 @@ const _ = twirp.TwirpPackageMinVersion_8_1_0
 
 // PasswordService is a service for managing player password.
 type PasswordService interface {
-	// ResetPassword sends an email to player email with short-term token
+	// ResetPasswordByNickname sends an email to player email with short-term token
 	// which may be used for updating the password.
-	ResetPassword(context.Context, *ResetPasswordRequest) (*google_protobuf3.Empty, error)
+	ResetPasswordByNickname(context.Context, *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error)
+
+	// ResetPasswordByEmail is the same method as ResetPasswordByNickname but using email
+	// to find a player.
+	ResetPasswordByEmail(context.Context, *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error)
 
 	// SetPassword sets new player password by using token from ResetPassword rpc method.
 	SetPassword(context.Context, *SetPasswordRequest) (*google_protobuf3.Empty, error)
@@ -47,7 +51,7 @@ type PasswordService interface {
 
 type passwordServiceProtobufClient struct {
 	client      HTTPClient
-	urls        [3]string
+	urls        [4]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -75,8 +79,9 @@ func NewPasswordServiceProtobufClient(baseURL string, client HTTPClient, opts ..
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "player.v1", "PasswordService")
-	urls := [3]string{
-		serviceURL + "ResetPassword",
+	urls := [4]string{
+		serviceURL + "ResetPasswordByNickname",
+		serviceURL + "ResetPasswordByEmail",
 		serviceURL + "SetPassword",
 		serviceURL + "UpdatePassword",
 	}
@@ -89,20 +94,20 @@ func NewPasswordServiceProtobufClient(baseURL string, client HTTPClient, opts ..
 	}
 }
 
-func (c *passwordServiceProtobufClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+func (c *passwordServiceProtobufClient) ResetPasswordByNickname(ctx context.Context, in *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "player.v1")
 	ctx = ctxsetters.WithServiceName(ctx, "PasswordService")
-	ctx = ctxsetters.WithMethodName(ctx, "ResetPassword")
-	caller := c.callResetPassword
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByNickname")
+	caller := c.callResetPasswordByNickname
 	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+		caller = func(ctx context.Context, req *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 			resp, err := c.interceptor(
 				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*ResetPasswordRequest)
+					typedReq, ok := req.(*ResetPasswordByNicknameRequest)
 					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordRequest) when calling interceptor")
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByNicknameRequest) when calling interceptor")
 					}
-					return c.callResetPassword(ctx, typedReq)
+					return c.callResetPasswordByNickname(ctx, typedReq)
 				},
 			)(ctx, req)
 			if resp != nil {
@@ -118,9 +123,55 @@ func (c *passwordServiceProtobufClient) ResetPassword(ctx context.Context, in *R
 	return caller(ctx, in)
 }
 
-func (c *passwordServiceProtobufClient) callResetPassword(ctx context.Context, in *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+func (c *passwordServiceProtobufClient) callResetPasswordByNickname(ctx context.Context, in *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 	out := new(google_protobuf3.Empty)
 	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *passwordServiceProtobufClient) ResetPasswordByEmail(ctx context.Context, in *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "player.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "PasswordService")
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByEmail")
+	caller := c.callResetPasswordByEmail
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetPasswordByEmailRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByEmailRequest) when calling interceptor")
+					}
+					return c.callResetPasswordByEmail(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*google_protobuf3.Empty)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*google_protobuf3.Empty) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *passwordServiceProtobufClient) callResetPasswordByEmail(ctx context.Context, in *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+	out := new(google_protobuf3.Empty)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -166,7 +217,7 @@ func (c *passwordServiceProtobufClient) SetPassword(ctx context.Context, in *Set
 
 func (c *passwordServiceProtobufClient) callSetPassword(ctx context.Context, in *SetPasswordRequest) (*google_protobuf3.Empty, error) {
 	out := new(google_protobuf3.Empty)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -212,7 +263,7 @@ func (c *passwordServiceProtobufClient) UpdatePassword(ctx context.Context, in *
 
 func (c *passwordServiceProtobufClient) callUpdatePassword(ctx context.Context, in *UpdatePasswordRequest) (*google_protobuf3.Empty, error) {
 	out := new(google_protobuf3.Empty)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[3], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -233,7 +284,7 @@ func (c *passwordServiceProtobufClient) callUpdatePassword(ctx context.Context, 
 
 type passwordServiceJSONClient struct {
 	client      HTTPClient
-	urls        [3]string
+	urls        [4]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -261,8 +312,9 @@ func NewPasswordServiceJSONClient(baseURL string, client HTTPClient, opts ...twi
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "player.v1", "PasswordService")
-	urls := [3]string{
-		serviceURL + "ResetPassword",
+	urls := [4]string{
+		serviceURL + "ResetPasswordByNickname",
+		serviceURL + "ResetPasswordByEmail",
 		serviceURL + "SetPassword",
 		serviceURL + "UpdatePassword",
 	}
@@ -275,20 +327,20 @@ func NewPasswordServiceJSONClient(baseURL string, client HTTPClient, opts ...twi
 	}
 }
 
-func (c *passwordServiceJSONClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+func (c *passwordServiceJSONClient) ResetPasswordByNickname(ctx context.Context, in *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "player.v1")
 	ctx = ctxsetters.WithServiceName(ctx, "PasswordService")
-	ctx = ctxsetters.WithMethodName(ctx, "ResetPassword")
-	caller := c.callResetPassword
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByNickname")
+	caller := c.callResetPasswordByNickname
 	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+		caller = func(ctx context.Context, req *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 			resp, err := c.interceptor(
 				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*ResetPasswordRequest)
+					typedReq, ok := req.(*ResetPasswordByNicknameRequest)
 					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordRequest) when calling interceptor")
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByNicknameRequest) when calling interceptor")
 					}
-					return c.callResetPassword(ctx, typedReq)
+					return c.callResetPasswordByNickname(ctx, typedReq)
 				},
 			)(ctx, req)
 			if resp != nil {
@@ -304,9 +356,55 @@ func (c *passwordServiceJSONClient) ResetPassword(ctx context.Context, in *Reset
 	return caller(ctx, in)
 }
 
-func (c *passwordServiceJSONClient) callResetPassword(ctx context.Context, in *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+func (c *passwordServiceJSONClient) callResetPasswordByNickname(ctx context.Context, in *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 	out := new(google_protobuf3.Empty)
 	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *passwordServiceJSONClient) ResetPasswordByEmail(ctx context.Context, in *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "player.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "PasswordService")
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByEmail")
+	caller := c.callResetPasswordByEmail
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetPasswordByEmailRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByEmailRequest) when calling interceptor")
+					}
+					return c.callResetPasswordByEmail(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*google_protobuf3.Empty)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*google_protobuf3.Empty) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *passwordServiceJSONClient) callResetPasswordByEmail(ctx context.Context, in *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+	out := new(google_protobuf3.Empty)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -352,7 +450,7 @@ func (c *passwordServiceJSONClient) SetPassword(ctx context.Context, in *SetPass
 
 func (c *passwordServiceJSONClient) callSetPassword(ctx context.Context, in *SetPasswordRequest) (*google_protobuf3.Empty, error) {
 	out := new(google_protobuf3.Empty)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -398,7 +496,7 @@ func (c *passwordServiceJSONClient) UpdatePassword(ctx context.Context, in *Upda
 
 func (c *passwordServiceJSONClient) callUpdatePassword(ctx context.Context, in *UpdatePasswordRequest) (*google_protobuf3.Empty, error) {
 	out := new(google_protobuf3.Empty)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[3], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -510,8 +608,11 @@ func (s *passwordServiceServer) ServeHTTP(resp http.ResponseWriter, req *http.Re
 	}
 
 	switch method {
-	case "ResetPassword":
-		s.serveResetPassword(ctx, resp, req)
+	case "ResetPasswordByNickname":
+		s.serveResetPasswordByNickname(ctx, resp, req)
+		return
+	case "ResetPasswordByEmail":
+		s.serveResetPasswordByEmail(ctx, resp, req)
 		return
 	case "SetPassword":
 		s.serveSetPassword(ctx, resp, req)
@@ -526,7 +627,7 @@ func (s *passwordServiceServer) ServeHTTP(resp http.ResponseWriter, req *http.Re
 	}
 }
 
-func (s *passwordServiceServer) serveResetPassword(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+func (s *passwordServiceServer) serveResetPasswordByNickname(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	header := req.Header.Get("Content-Type")
 	i := strings.Index(header, ";")
 	if i == -1 {
@@ -534,9 +635,9 @@ func (s *passwordServiceServer) serveResetPassword(ctx context.Context, resp htt
 	}
 	switch strings.TrimSpace(strings.ToLower(header[:i])) {
 	case "application/json":
-		s.serveResetPasswordJSON(ctx, resp, req)
+		s.serveResetPasswordByNicknameJSON(ctx, resp, req)
 	case "application/protobuf":
-		s.serveResetPasswordProtobuf(ctx, resp, req)
+		s.serveResetPasswordByNicknameProtobuf(ctx, resp, req)
 	default:
 		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
 		twerr := badRouteError(msg, req.Method, req.URL.Path)
@@ -544,9 +645,9 @@ func (s *passwordServiceServer) serveResetPassword(ctx context.Context, resp htt
 	}
 }
 
-func (s *passwordServiceServer) serveResetPasswordJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+func (s *passwordServiceServer) serveResetPasswordByNicknameJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "ResetPassword")
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByNickname")
 	ctx, err = callRequestRouted(ctx, s.hooks)
 	if err != nil {
 		s.writeError(ctx, resp, err)
@@ -559,23 +660,23 @@ func (s *passwordServiceServer) serveResetPasswordJSON(ctx context.Context, resp
 		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
 		return
 	}
-	reqContent := new(ResetPasswordRequest)
+	reqContent := new(ResetPasswordByNicknameRequest)
 	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
 	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
 		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
 		return
 	}
 
-	handler := s.PasswordService.ResetPassword
+	handler := s.PasswordService.ResetPasswordByNickname
 	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+		handler = func(ctx context.Context, req *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 			resp, err := s.interceptor(
 				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*ResetPasswordRequest)
+					typedReq, ok := req.(*ResetPasswordByNicknameRequest)
 					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordRequest) when calling interceptor")
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByNicknameRequest) when calling interceptor")
 					}
-					return s.PasswordService.ResetPassword(ctx, typedReq)
+					return s.PasswordService.ResetPasswordByNickname(ctx, typedReq)
 				},
 			)(ctx, req)
 			if resp != nil {
@@ -601,7 +702,7 @@ func (s *passwordServiceServer) serveResetPasswordJSON(ctx context.Context, resp
 		return
 	}
 	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *google_protobuf3.Empty and nil error while calling ResetPassword. nil responses are not supported"))
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *google_protobuf3.Empty and nil error while calling ResetPasswordByNickname. nil responses are not supported"))
 		return
 	}
 
@@ -627,9 +728,9 @@ func (s *passwordServiceServer) serveResetPasswordJSON(ctx context.Context, resp
 	callResponseSent(ctx, s.hooks)
 }
 
-func (s *passwordServiceServer) serveResetPasswordProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+func (s *passwordServiceServer) serveResetPasswordByNicknameProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "ResetPassword")
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByNickname")
 	ctx, err = callRequestRouted(ctx, s.hooks)
 	if err != nil {
 		s.writeError(ctx, resp, err)
@@ -641,22 +742,22 @@ func (s *passwordServiceServer) serveResetPasswordProtobuf(ctx context.Context, 
 		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
 		return
 	}
-	reqContent := new(ResetPasswordRequest)
+	reqContent := new(ResetPasswordByNicknameRequest)
 	if err = proto.Unmarshal(buf, reqContent); err != nil {
 		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
 		return
 	}
 
-	handler := s.PasswordService.ResetPassword
+	handler := s.PasswordService.ResetPasswordByNickname
 	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *ResetPasswordRequest) (*google_protobuf3.Empty, error) {
+		handler = func(ctx context.Context, req *ResetPasswordByNicknameRequest) (*google_protobuf3.Empty, error) {
 			resp, err := s.interceptor(
 				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*ResetPasswordRequest)
+					typedReq, ok := req.(*ResetPasswordByNicknameRequest)
 					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordRequest) when calling interceptor")
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByNicknameRequest) when calling interceptor")
 					}
-					return s.PasswordService.ResetPassword(ctx, typedReq)
+					return s.PasswordService.ResetPasswordByNickname(ctx, typedReq)
 				},
 			)(ctx, req)
 			if resp != nil {
@@ -682,7 +783,187 @@ func (s *passwordServiceServer) serveResetPasswordProtobuf(ctx context.Context, 
 		return
 	}
 	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *google_protobuf3.Empty and nil error while calling ResetPassword. nil responses are not supported"))
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *google_protobuf3.Empty and nil error while calling ResetPasswordByNickname. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *passwordServiceServer) serveResetPasswordByEmail(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveResetPasswordByEmailJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveResetPasswordByEmailProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *passwordServiceServer) serveResetPasswordByEmailJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByEmail")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ResetPasswordByEmailRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.PasswordService.ResetPasswordByEmail
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetPasswordByEmailRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByEmailRequest) when calling interceptor")
+					}
+					return s.PasswordService.ResetPasswordByEmail(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*google_protobuf3.Empty)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*google_protobuf3.Empty) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *google_protobuf3.Empty
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *google_protobuf3.Empty and nil error while calling ResetPasswordByEmail. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *passwordServiceServer) serveResetPasswordByEmailProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ResetPasswordByEmail")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ResetPasswordByEmailRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.PasswordService.ResetPasswordByEmail
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ResetPasswordByEmailRequest) (*google_protobuf3.Empty, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ResetPasswordByEmailRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ResetPasswordByEmailRequest) when calling interceptor")
+					}
+					return s.PasswordService.ResetPasswordByEmail(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*google_protobuf3.Empty)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*google_protobuf3.Empty) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *google_protobuf3.Empty
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *google_protobuf3.Empty and nil error while calling ResetPasswordByEmail. nil responses are not supported"))
 		return
 	}
 
@@ -1082,27 +1363,28 @@ func (s *passwordServiceServer) PathPrefix() string {
 }
 
 var twirpFileDescriptor1 = []byte{
-	// 339 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0x5f, 0x4b, 0x32, 0x41,
-	0x14, 0xc6, 0x51, 0xfc, 0xf3, 0x7a, 0xf4, 0x4d, 0x1b, 0xac, 0x16, 0x23, 0x12, 0xaf, 0x22, 0x62,
-	0x16, 0x0b, 0xba, 0xe9, 0x26, 0x96, 0x82, 0xe8, 0xc2, 0x62, 0x25, 0x88, 0x6e, 0x96, 0xd1, 0x3d,
-	0xc9, 0xe2, 0xb8, 0xb3, 0xce, 0x8e, 0x2b, 0x7e, 0xbb, 0xbe, 0x50, 0x5f, 0xc0, 0xab, 0x70, 0xc7,
-	0x31, 0x2d, 0x83, 0xba, 0x3b, 0x0f, 0xfb, 0xec, 0x6f, 0xe6, 0x3c, 0xcf, 0x40, 0x33, 0xe2, 0x6c,
-	0x86, 0xd2, 0x4e, 0xda, 0x76, 0xc4, 0xe2, 0x78, 0x2a, 0xa4, 0xef, 0xc5, 0x28, 0x93, 0xa0, 0x8f,
-	0x34, 0x92, 0x42, 0x09, 0x52, 0xd2, 0x0e, 0x9a, 0xb4, 0x1b, 0x07, 0x09, 0xe3, 0x81, 0xcf, 0x14,
-	0xda, 0x66, 0xd0, 0x9e, 0xc6, 0xe1, 0x40, 0x88, 0x01, 0x47, 0x3b, 0x55, 0xbd, 0xc9, 0xab, 0x8d,
-	0xa3, 0x48, 0xcd, 0xf4, 0xc7, 0x56, 0x07, 0xea, 0x2e, 0xc6, 0xa8, 0x1e, 0x97, 0x7c, 0x17, 0xc7,
-	0x13, 0x8c, 0x15, 0xb9, 0x84, 0x5d, 0x1c, 0xb1, 0x80, 0x7b, 0x42, 0x7a, 0x61, 0xd0, 0x1f, 0x86,
-	0x6c, 0x84, 0x56, 0xa6, 0x99, 0x39, 0x29, 0x39, 0x30, 0x77, 0x8a, 0x32, 0x5f, 0xcb, 0x59, 0x6f,
-	0x59, 0xb7, 0x9a, 0x9a, 0x1e, 0x64, 0x67, 0x69, 0x69, 0x3d, 0x03, 0xe9, 0x7e, 0xa7, 0xd5, 0x21,
-	0xaf, 0xc4, 0x10, 0x43, 0x4d, 0x70, 0xb5, 0x20, 0x67, 0x50, 0x09, 0x71, 0xea, 0x99, 0xd5, 0xac,
-	0x6c, 0x8a, 0x2f, 0xcd, 0x9d, 0x82, 0xcc, 0xd5, 0xfe, 0x59, 0xd7, 0x6e, 0x39, 0xc4, 0xa9, 0x41,
-	0xb5, 0xc6, 0xb0, 0xf7, 0x14, 0x2d, 0xd6, 0xfa, 0x0a, 0x3f, 0x85, 0x8a, 0xe0, 0xfe, 0x27, 0x46,
-	0xdf, 0xb2, 0x38, 0x77, 0x72, 0x32, 0xbb, 0x80, 0x08, 0xee, 0x9b, 0x5f, 0xfe, 0x76, 0xe4, 0xf9,
-	0x7b, 0x06, 0xaa, 0x46, 0x74, 0x75, 0xee, 0xe4, 0x0e, 0xfe, 0x6f, 0x04, 0x46, 0x8e, 0xe9, 0xaa,
-	0x03, 0xba, 0x2d, 0xca, 0xc6, 0x3e, 0xd5, 0x05, 0x50, 0x53, 0x00, 0xbd, 0x5d, 0x14, 0x40, 0x6e,
-	0xa0, 0xbc, 0x16, 0x15, 0x39, 0x5a, 0xe3, 0x74, 0x7f, 0x4f, 0xb9, 0x87, 0x9d, 0xcd, 0x58, 0x48,
-	0x73, 0x0d, 0xb4, 0x35, 0xb1, 0x9f, 0x58, 0x4e, 0xfd, 0x85, 0xac, 0x5e, 0xdc, 0x95, 0x9e, 0x92,
-	0x76, 0xaf, 0x90, 0xba, 0x2e, 0x3e, 0x02, 0x00, 0x00, 0xff, 0xff, 0x51, 0xda, 0xa9, 0xe5, 0x8e,
-	0x02, 0x00, 0x00,
+	// 368 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xcd, 0x4a, 0xeb, 0x40,
+	0x14, 0x80, 0xe9, 0xff, 0xed, 0x69, 0xb9, 0xb7, 0x0c, 0xbd, 0x36, 0xb4, 0xa8, 0x31, 0x82, 0x28,
+	0x48, 0x42, 0x75, 0x29, 0x88, 0x04, 0xbb, 0x71, 0x21, 0x32, 0x45, 0x17, 0x22, 0xd4, 0xb4, 0x39,
+	0xd6, 0xd0, 0x34, 0x13, 0x27, 0x69, 0x4a, 0x1f, 0xd5, 0xf7, 0x70, 0xd5, 0x95, 0xb4, 0x93, 0x69,
+	0x63, 0x6d, 0x04, 0x77, 0x73, 0xfe, 0xbe, 0x03, 0xe7, 0x63, 0x40, 0xf5, 0x5d, 0x6b, 0x86, 0xdc,
+	0x88, 0xda, 0x86, 0x6f, 0x05, 0xc1, 0x94, 0x71, 0xbb, 0x17, 0x20, 0x8f, 0x9c, 0x01, 0xea, 0x3e,
+	0x67, 0x21, 0x23, 0x65, 0xd1, 0xa1, 0x47, 0xed, 0x66, 0x23, 0xb2, 0x5c, 0xc7, 0xb6, 0x42, 0x34,
+	0xe4, 0x43, 0xf4, 0x34, 0x5b, 0x43, 0xc6, 0x86, 0x2e, 0x1a, 0xcb, 0xa8, 0x3f, 0x79, 0x31, 0x70,
+	0xec, 0x87, 0x33, 0x51, 0xd4, 0x3a, 0xb0, 0x47, 0x31, 0xc0, 0xf0, 0x2e, 0xe6, 0x9b, 0xb3, 0x5b,
+	0x67, 0x30, 0xf2, 0xac, 0x31, 0x52, 0x7c, 0x9b, 0x60, 0x10, 0x92, 0x43, 0xf8, 0xe3, 0xc5, 0x29,
+	0x25, 0xa3, 0x66, 0x8e, 0xcb, 0x66, 0x69, 0x6e, 0xe6, 0x79, 0xb6, 0x96, 0xa3, 0xab, 0x82, 0x76,
+	0x09, 0xad, 0x0d, 0x4c, 0x67, 0x6c, 0x39, 0xae, 0x64, 0xec, 0x43, 0x01, 0x17, 0x71, 0x0c, 0x28,
+	0xcf, 0xcd, 0x22, 0xcf, 0xd7, 0x72, 0xcf, 0x19, 0x2a, 0xf2, 0x9a, 0x0d, 0xa4, 0xbb, 0x9e, 0x96,
+	0x63, 0x2a, 0x14, 0x42, 0x36, 0x42, 0x2f, 0x1e, 0x83, 0xb9, 0x59, 0xe2, 0x85, 0x1a, 0x28, 0x1f,
+	0x39, 0x2a, 0x0a, 0xe4, 0x14, 0xaa, 0x1e, 0x4e, 0x7b, 0xf2, 0x3a, 0x4a, 0x36, 0xc9, 0x07, 0xe5,
+	0x8a, 0x56, 0x3c, 0x9c, 0x4a, 0xac, 0xf6, 0x0a, 0xff, 0xef, 0xfd, 0xc5, 0x65, 0x36, 0x17, 0x1d,
+	0x40, 0x95, 0xb9, 0xf6, 0x1a, 0xb3, 0xdc, 0x47, 0x2b, 0xcc, 0xb5, 0x65, 0xe7, 0xef, 0x36, 0x9d,
+	0xbd, 0x67, 0xe1, 0x9f, 0x0c, 0xba, 0xc2, 0x18, 0x79, 0x82, 0x46, 0xca, 0xa9, 0xc9, 0x89, 0xbe,
+	0xf2, 0xa8, 0xff, 0xac, 0xa3, 0xb9, 0xa3, 0x0b, 0x9d, 0xba, 0xd4, 0xa9, 0x77, 0x16, 0x3a, 0xc9,
+	0x03, 0xd4, 0xb7, 0x19, 0x20, 0x47, 0xe9, 0xe8, 0xa4, 0xa2, 0x54, 0xee, 0x35, 0x54, 0x12, 0x66,
+	0xc8, 0x6e, 0x02, 0xf7, 0xdd, 0x58, 0x2a, 0xe5, 0x06, 0xfe, 0x7e, 0xbd, 0x3c, 0x51, 0x13, 0xa0,
+	0xad, 0x52, 0xd2, 0x58, 0x66, 0xfd, 0x91, 0xac, 0xfe, 0xc5, 0x85, 0x78, 0x45, 0xed, 0x7e, 0x71,
+	0xd9, 0x75, 0xfe, 0x19, 0x00, 0x00, 0xff, 0xff, 0x29, 0x17, 0xc2, 0xee, 0x34, 0x03, 0x00, 0x00,
 }

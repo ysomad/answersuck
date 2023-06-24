@@ -57,7 +57,7 @@ func (m *GetPackageRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	// no validation rules for PackageId
 
 	if len(errors) > 0 {
 		return GetPackageRequestMultiError(errors)
@@ -296,17 +296,6 @@ func (m *CreatePackageRequest) validate(all bool) error {
 		err := CreatePackageRequestValidationError{
 			field:  "PackageName",
 			reason: "value length must be between 3 and 50 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetCoverUrl()) > 2048 {
-		err := CreatePackageRequestValidationError{
-			field:  "CoverUrl",
-			reason: "value length must be at most 2048 runes",
 		}
 		if !all {
 			return err

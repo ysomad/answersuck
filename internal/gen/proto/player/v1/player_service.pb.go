@@ -27,9 +27,9 @@ type CreatePlayerRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Nickname string `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	Email    string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	Nickname string `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"` // required
+	Email    string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`       // required
+	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"` // required
 }
 
 func (x *CreatePlayerRequest) Reset() {
@@ -90,7 +90,7 @@ type GetPlayerRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Nickname string `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Nickname string `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"` // required
 }
 
 func (x *GetPlayerRequest) Reset() {

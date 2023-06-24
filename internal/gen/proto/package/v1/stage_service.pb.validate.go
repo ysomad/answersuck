@@ -70,52 +70,7 @@ func (m *CreateStageRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for StageOrder
-
-	if l := len(m.GetQuestionTopics()); l < 3 || l > 10 {
-		err := CreateStageRequestValidationError{
-			field:  "QuestionTopics",
-			reason: "value must contain between 3 and 10 items, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	for idx, item := range m.GetQuestionTopics() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, CreateStageRequestValidationError{
-						field:  fmt.Sprintf("QuestionTopics[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, CreateStageRequestValidationError{
-						field:  fmt.Sprintf("QuestionTopics[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return CreateStageRequestValidationError{
-					field:  fmt.Sprintf("QuestionTopics[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
+	// no validation rules for StagePosition
 
 	if len(errors) > 0 {
 		return CreateStageRequestMultiError(errors)
@@ -328,184 +283,46 @@ var _ interface {
 	ErrorName() string
 } = CreateStageResponseValidationError{}
 
-// Validate checks the field values on ListStageQuestionsRequest with the rules
-// defined in the proto definition for this message. If any rules are
+// Validate checks the field values on UpdateStagePositionRequest with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListStageQuestionsRequest) Validate() error {
+func (m *UpdateStagePositionRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListStageQuestionsRequest with the
+// ValidateAll checks the field values on UpdateStagePositionRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListStageQuestionsRequestMultiError, or nil if none found.
-func (m *ListStageQuestionsRequest) ValidateAll() error {
+// UpdateStagePositionRequestMultiError, or nil if none found.
+func (m *UpdateStagePositionRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListStageQuestionsRequest) validate(all bool) error {
+func (m *UpdateStagePositionRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
-
-	// no validation rules for PackageId
 
 	// no validation rules for StageId
 
+	// no validation rules for StagePosition
+
 	if len(errors) > 0 {
-		return ListStageQuestionsRequestMultiError(errors)
+		return UpdateStagePositionRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListStageQuestionsRequestMultiError is an error wrapping multiple validation
-// errors returned by ListStageQuestionsRequest.ValidateAll() if the
-// designated constraints aren't met.
-type ListStageQuestionsRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListStageQuestionsRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListStageQuestionsRequestMultiError) AllErrors() []error { return m }
-
-// ListStageQuestionsRequestValidationError is the validation error returned by
-// ListStageQuestionsRequest.Validate if the designated constraints aren't met.
-type ListStageQuestionsRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ListStageQuestionsRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ListStageQuestionsRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ListStageQuestionsRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ListStageQuestionsRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ListStageQuestionsRequestValidationError) ErrorName() string {
-	return "ListStageQuestionsRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ListStageQuestionsRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sListStageQuestionsRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ListStageQuestionsRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ListStageQuestionsRequestValidationError{}
-
-// Validate checks the field values on ListStageQuestionsResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListStageQuestionsResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ListStageQuestionsResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ListStageQuestionsResponseMultiError, or nil if none found.
-func (m *ListStageQuestionsResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ListStageQuestionsResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for StageName
-
-	for idx, item := range m.GetTopics() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListStageQuestionsResponseValidationError{
-						field:  fmt.Sprintf("Topics[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ListStageQuestionsResponseValidationError{
-						field:  fmt.Sprintf("Topics[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return ListStageQuestionsResponseValidationError{
-					field:  fmt.Sprintf("Topics[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if len(errors) > 0 {
-		return ListStageQuestionsResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// ListStageQuestionsResponseMultiError is an error wrapping multiple
-// validation errors returned by ListStageQuestionsResponse.ValidateAll() if
+// UpdateStagePositionRequestMultiError is an error wrapping multiple
+// validation errors returned by UpdateStagePositionRequest.ValidateAll() if
 // the designated constraints aren't met.
-type ListStageQuestionsResponseMultiError []error
+type UpdateStagePositionRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListStageQuestionsResponseMultiError) Error() string {
+func (m UpdateStagePositionRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -514,11 +331,11 @@ func (m ListStageQuestionsResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListStageQuestionsResponseMultiError) AllErrors() []error { return m }
+func (m UpdateStagePositionRequestMultiError) AllErrors() []error { return m }
 
-// ListStageQuestionsResponseValidationError is the validation error returned
-// by ListStageQuestionsResponse.Validate if the designated constraints aren't met.
-type ListStageQuestionsResponseValidationError struct {
+// UpdateStagePositionRequestValidationError is the validation error returned
+// by UpdateStagePositionRequest.Validate if the designated constraints aren't met.
+type UpdateStagePositionRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -526,24 +343,24 @@ type ListStageQuestionsResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListStageQuestionsResponseValidationError) Field() string { return e.field }
+func (e UpdateStagePositionRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListStageQuestionsResponseValidationError) Reason() string { return e.reason }
+func (e UpdateStagePositionRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListStageQuestionsResponseValidationError) Cause() error { return e.cause }
+func (e UpdateStagePositionRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListStageQuestionsResponseValidationError) Key() bool { return e.key }
+func (e UpdateStagePositionRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListStageQuestionsResponseValidationError) ErrorName() string {
-	return "ListStageQuestionsResponseValidationError"
+func (e UpdateStagePositionRequestValidationError) ErrorName() string {
+	return "UpdateStagePositionRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ListStageQuestionsResponseValidationError) Error() string {
+func (e UpdateStagePositionRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -555,14 +372,14 @@ func (e ListStageQuestionsResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListStageQuestionsResponse.%s: %s%s",
+		"invalid %sUpdateStagePositionRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListStageQuestionsResponseValidationError{}
+var _ error = UpdateStagePositionRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -570,7 +387,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListStageQuestionsResponseValidationError{}
+} = UpdateStagePositionRequestValidationError{}
 
 // Validate checks the field values on ListStagesRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -812,87 +629,46 @@ var _ interface {
 	ErrorName() string
 } = ListStagesResponseValidationError{}
 
-// Validate checks the field values on CreateStageRequest_QuestionTopic with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the first error encountered is returned, or nil if there are
-// no violations.
-func (m *CreateStageRequest_QuestionTopic) Validate() error {
+// Validate checks the field values on AddTopicRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AddTopicRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CreateStageRequest_QuestionTopic with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// CreateStageRequest_QuestionTopicMultiError, or nil if none found.
-func (m *CreateStageRequest_QuestionTopic) ValidateAll() error {
+// ValidateAll checks the field values on AddTopicRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AddTopicRequestMultiError, or nil if none found.
+func (m *AddTopicRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CreateStageRequest_QuestionTopic) validate(all bool) error {
+func (m *AddTopicRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetName()); l < 3 || l > 30 {
-		err := CreateStageRequest_QuestionTopicValidationError{
-			field:  "Name",
-			reason: "value length must be between 3 and 30 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for StageId
 
-	if l := len(m.GetQuestionIds()); l < 1 || l > 10 {
-		err := CreateStageRequest_QuestionTopicValidationError{
-			field:  "QuestionIds",
-			reason: "value must contain between 1 and 10 items, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	_CreateStageRequest_QuestionTopic_QuestionIds_Unique := make(map[int32]struct{}, len(m.GetQuestionIds()))
-
-	for idx, item := range m.GetQuestionIds() {
-		_, _ = idx, item
-
-		if _, exists := _CreateStageRequest_QuestionTopic_QuestionIds_Unique[item]; exists {
-			err := CreateStageRequest_QuestionTopicValidationError{
-				field:  fmt.Sprintf("QuestionIds[%v]", idx),
-				reason: "repeated value must contain unique items",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		} else {
-			_CreateStageRequest_QuestionTopic_QuestionIds_Unique[item] = struct{}{}
-		}
-
-		// no validation rules for QuestionIds[idx]
-	}
+	// no validation rules for TopicId
 
 	if len(errors) > 0 {
-		return CreateStageRequest_QuestionTopicMultiError(errors)
+		return AddTopicRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// CreateStageRequest_QuestionTopicMultiError is an error wrapping multiple
-// validation errors returned by
-// CreateStageRequest_QuestionTopic.ValidateAll() if the designated
-// constraints aren't met.
-type CreateStageRequest_QuestionTopicMultiError []error
+// AddTopicRequestMultiError is an error wrapping multiple validation errors
+// returned by AddTopicRequest.ValidateAll() if the designated constraints
+// aren't met.
+type AddTopicRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CreateStageRequest_QuestionTopicMultiError) Error() string {
+func (m AddTopicRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -901,12 +677,11 @@ func (m CreateStageRequest_QuestionTopicMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CreateStageRequest_QuestionTopicMultiError) AllErrors() []error { return m }
+func (m AddTopicRequestMultiError) AllErrors() []error { return m }
 
-// CreateStageRequest_QuestionTopicValidationError is the validation error
-// returned by CreateStageRequest_QuestionTopic.Validate if the designated
-// constraints aren't met.
-type CreateStageRequest_QuestionTopicValidationError struct {
+// AddTopicRequestValidationError is the validation error returned by
+// AddTopicRequest.Validate if the designated constraints aren't met.
+type AddTopicRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -914,24 +689,22 @@ type CreateStageRequest_QuestionTopicValidationError struct {
 }
 
 // Field function returns field value.
-func (e CreateStageRequest_QuestionTopicValidationError) Field() string { return e.field }
+func (e AddTopicRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CreateStageRequest_QuestionTopicValidationError) Reason() string { return e.reason }
+func (e AddTopicRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CreateStageRequest_QuestionTopicValidationError) Cause() error { return e.cause }
+func (e AddTopicRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CreateStageRequest_QuestionTopicValidationError) Key() bool { return e.key }
+func (e AddTopicRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CreateStageRequest_QuestionTopicValidationError) ErrorName() string {
-	return "CreateStageRequest_QuestionTopicValidationError"
-}
+func (e AddTopicRequestValidationError) ErrorName() string { return "AddTopicRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e CreateStageRequest_QuestionTopicValidationError) Error() string {
+func (e AddTopicRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -943,14 +716,14 @@ func (e CreateStageRequest_QuestionTopicValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCreateStageRequest_QuestionTopic.%s: %s%s",
+		"invalid %sAddTopicRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CreateStageRequest_QuestionTopicValidationError{}
+var _ error = AddTopicRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -958,7 +731,113 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CreateStageRequest_QuestionTopicValidationError{}
+} = AddTopicRequestValidationError{}
+
+// Validate checks the field values on RemoveTopicRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RemoveTopicRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RemoveTopicRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// RemoveTopicRequestMultiError, or nil if none found.
+func (m *RemoveTopicRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RemoveTopicRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for StageId
+
+	// no validation rules for TopicId
+
+	if len(errors) > 0 {
+		return RemoveTopicRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// RemoveTopicRequestMultiError is an error wrapping multiple validation errors
+// returned by RemoveTopicRequest.ValidateAll() if the designated constraints
+// aren't met.
+type RemoveTopicRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RemoveTopicRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RemoveTopicRequestMultiError) AllErrors() []error { return m }
+
+// RemoveTopicRequestValidationError is the validation error returned by
+// RemoveTopicRequest.Validate if the designated constraints aren't met.
+type RemoveTopicRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RemoveTopicRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RemoveTopicRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RemoveTopicRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RemoveTopicRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RemoveTopicRequestValidationError) ErrorName() string {
+	return "RemoveTopicRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RemoveTopicRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRemoveTopicRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RemoveTopicRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RemoveTopicRequestValidationError{}
 
 // Validate checks the field values on ListStagesResponse_Stage with the rules
 // defined in the proto definition for this message. If any rules are

@@ -57,17 +57,6 @@ func (m *UpdateEmailRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetNewEmail()) > 320 {
-		err := UpdateEmailRequestValidationError{
-			field:  "NewEmail",
-			reason: "value length must be at most 320 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if err := m._validateEmail(m.GetNewEmail()); err != nil {
 		err = UpdateEmailRequestValidationError{
 			field:  "NewEmail",
@@ -365,7 +354,17 @@ func (m *VerifyEmailRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Token
+	if utf8.RuneCountInString(m.GetToken()) != 64 {
+		err := VerifyEmailRequestValidationError{
+			field:  "Token",
+			reason: "value length must be 64 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+
+	}
 
 	if len(errors) > 0 {
 		return VerifyEmailRequestMultiError(errors)
