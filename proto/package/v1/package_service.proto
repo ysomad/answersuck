@@ -13,6 +13,9 @@ service PackageService {
 
     // GetPackage returns package with stages.
     rpc GetPackage(GetPackageRequest) returns (GetPackageResponse);
+
+    // PublishPackage publishes package.
+    rpc PublishPackage(PublishPackageRequest) returns (PublishPackageResponse);
 }
 
 message GetPackageRequest {
@@ -29,5 +32,13 @@ message CreatePackageRequest {
 }
 
 message CreatePackageResponse {
+    Package package = 1;
+}
+
+message PublishPackageRequest {
+    int32 package_id = 1; // required
+}
+
+message PublishPackageResponse {
     Package package = 1;
 }
