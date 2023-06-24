@@ -31,14 +31,15 @@ CREATE TABLE IF NOT EXISTS package (
 CREATE TABLE IF NOT EXISTS stage (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
-    "order" smallint NOT NULL,
+    position smallint NOT NULL,
     package_id int NOT NULL REFERENCES package (id)
 );
 
 CREATE TABLE IF NOT EXISTS topic (
     id serial NOT NULL PRIMARY KEY,
-    name varchar(50) NOT NULL,
+    title varchar(50) NOT NULL,
     author varchar(25) NOT NULL REFERENCES player (nickname),
+    stage_id int NOT NULL REFERENCES stage (id),
     created_at timestamptz NOT NULL
 );
 
@@ -59,7 +60,13 @@ CREATE TABLE IF NOT EXISTS question (
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS package_stage_question (
+CREATE TABLE IF NOT EXISTS stage_topic (
+    stage_id int NOT NULL REFERENCES stage (id),
+    topic_id int NOT NULL REFERENCES topic (id),
+    PRIMARY KEY (stage_id, topic_id)
+);
+
+CREATE TABLE IF NOT EXISTS stage_topic_question (
     stage_id int NOT NULL REFERENCES stage (id),
     topic_id int NOT NULL REFERENCES topic (id),
     question_id int NOT NULL REFERENCES question (id),

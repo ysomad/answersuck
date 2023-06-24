@@ -3,11 +3,11 @@ syntax = "proto3";
 package package.v1;
 option go_package = "package/v1;packagev1";
 
-import "package/v1/question_type.proto";
-
-message Question {
-    int32 id = 1;
-    string text = 2;
-    int32 cost = 3;
-    QuestionType type = 4;
+enum QuestionType {
+    QUESTION_TYPE_UNSPECIFIED = 0;
+    QUESTION_TYPE_STANDARD = 1;
+    QUESTION_TYPE_SAFE = 2;
+    QUESTION_TYPE_SECRET = 3;
+    QUESTION_TYPE_SUPER_SECRET = 4;
+    QUESTION_TYPE_AUCTION = 5;
 }

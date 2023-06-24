@@ -21,8 +21,8 @@ service EmailService {
 }
 
 message UpdateEmailRequest {
-  string new_email = 1 [(validate.rules).string = { email: true, max_len: 320 }];
-  string password = 2;
+  string new_email = 1 [(validate.rules).string = { email: true }]; // required
+  string password = 2; // required
 }
 
 message UpdateEmailResponse {
@@ -30,5 +30,5 @@ message UpdateEmailResponse {
 }
 
 message VerifyEmailRequest {
-  string token = 1;
+  string token = 1 [(validate.rules).string = { len: 64 }]; // required
 }

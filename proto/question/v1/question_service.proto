@@ -9,18 +9,17 @@ import "validate/validate.proto";
 service QuestionService {
     rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
     rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse);
-    rpc ListQuestions(ListQuestionsRequest) returns (ListQuestionsResponse);
 }
 
 message CreateQuestionRequest {
     message Answer {
-        string text = 1 [(validate.rules).string = { min_len: 3, max_len: 100 }];
+        string text = 1 [(validate.rules).string = { min_len: 3, max_len: 100 }]; // required
         string media_url = 2 [(validate.rules).string = { uri: true, max_len: 2048 }];
     }
 
-    string question = 2 [(validate.rules).string = { min_len: 3, max_len: 200 }];
-    Answer answer = 3;
-    string media_url = 4 [(validate.rules).string = { uri: true, max_len: 2048 }];
+    string question = 1 [(validate.rules).string = { min_len: 3, max_len: 200 }]; // required
+    Answer answer = 2 [(validate.rules).message = { required: true }]; // required
+    string media_url = 3 [(validate.rules).string = { uri: true, max_len: 2048 }];
 }
 
 message CreateQuestionResponse {
@@ -28,16 +27,9 @@ message CreateQuestionResponse {
 }
 
 message GetQuestionRequest {
-    int32 question_id = 1;
+    int32 question_id = 1; // required
 }
 
 message GetQuestionResponse {
     Question question = 1;
 }
-
-message ListQuestionsRequest {
-    int32 page_size = 1;
-    string page_token = 2;
-}
-
-message ListQuestionsResponse {}
