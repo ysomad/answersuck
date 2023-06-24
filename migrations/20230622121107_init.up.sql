@@ -66,20 +66,21 @@ CREATE TABLE IF NOT EXISTS stage_topic (
     PRIMARY KEY (stage_id, topic_id)
 );
 
-CREATE TABLE IF NOT EXISTS stage_topic_question (
+CREATE TABLE IF NOT EXISTS stage_question (
+    id serial NOT NULL PRIMARY KEY,
     stage_id int NOT NULL REFERENCES stage (id),
     topic_id int NOT NULL REFERENCES topic (id),
     question_id int NOT NULL REFERENCES question (id),
 
     question_type smallint NOT NULL,
     cost smallint NOT NULL,
-    interval smallint NOT NULL,
+    answer_time smallint NOT NULL,
     host_comment text,
 
     secret_topic varchar(64),
     secret_cost smallint,
-    is_keepable boolean,
-    is_visible boolean
+    transfer_type smallint,
+    is_keepable boolean
 );
 
 CREATE TABLE IF NOT EXISTS tag (

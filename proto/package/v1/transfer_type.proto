@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+enum TransferType {
+    TRANSFER_TYPE_UNSPECIFIED = 0;
+    TRANSFER_TYPE_BEFORE = 1;
+    TRANSFER_TYPE_AFTER = 2;
+    TRANSFER_TYPE_NEVER = 3;
+}

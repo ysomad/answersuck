@@ -9,9 +9,6 @@ import (
 
 	"github.com/ysomad/answersuck/internal/config"
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
-	"github.com/ysomad/answersuck/internal/pkg/pgclient"
-	"github.com/ysomad/answersuck/internal/player"
-	playerv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
 )
 
 func logFatal(msg string, args ...any) {
@@ -20,30 +17,23 @@ func logFatal(msg string, args ...any) {
 }
 
 type handlerContainer struct {
-	playerV1   *playerv1.PlayerHandler
-	emailV1    *playerv1.EmailHandler
-	passwordV1 *playerv1.PasswordHandler
 }
 
 func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
-	pgClient, err := pgclient.New(
-		conf.PG.URL,
-		pgclient.WithMaxConns(conf.PG.MaxConns),
-	)
-	if err != nil {
-		logFatal("pgclient.New", err)
-	}
+	// pgClient, err := pgclient.New(
+	// 	conf.PG.URL,
+	// 	pgclient.WithMaxConns(conf.PG.MaxConns),
+	// )
+	// if err != nil {
+	// 	logFatal("pgclient.New", err)
+	// }
 
 	// player
-	playerPG := player.NewPostgres(pgClient)
-	playerService := player.NewService(playerPG)
+	// playerPG := player.NewPostgres(pgClient)
+	// playerService := player.NewService(playerPG)
 
 	// http
-	mux := newServeMux("/rpc", handlerContainer{
-		playerV1:   playerv1.NewPlayerHandler(playerService),
-		emailV1:    playerv1.NewEmailHandler(),
-		passwordV1: playerv1.NewPasswordHandler(),
-	})
+	mux := newServeMux("/rpc", handlerContainer{})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))
 
