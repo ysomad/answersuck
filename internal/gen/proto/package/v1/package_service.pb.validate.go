@@ -534,3 +534,238 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CreatePackageResponseValidationError{}
+
+// Validate checks the field values on PublishPackageRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PublishPackageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PublishPackageRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PublishPackageRequestMultiError, or nil if none found.
+func (m *PublishPackageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PublishPackageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PackageId
+
+	if len(errors) > 0 {
+		return PublishPackageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PublishPackageRequestMultiError is an error wrapping multiple validation
+// errors returned by PublishPackageRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PublishPackageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PublishPackageRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PublishPackageRequestMultiError) AllErrors() []error { return m }
+
+// PublishPackageRequestValidationError is the validation error returned by
+// PublishPackageRequest.Validate if the designated constraints aren't met.
+type PublishPackageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PublishPackageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PublishPackageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PublishPackageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PublishPackageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PublishPackageRequestValidationError) ErrorName() string {
+	return "PublishPackageRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PublishPackageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPublishPackageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PublishPackageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PublishPackageRequestValidationError{}
+
+// Validate checks the field values on PublishPackageResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PublishPackageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PublishPackageResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PublishPackageResponseMultiError, or nil if none found.
+func (m *PublishPackageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PublishPackageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPackage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PublishPackageResponseValidationError{
+					field:  "Package",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PublishPackageResponseValidationError{
+					field:  "Package",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPackage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PublishPackageResponseValidationError{
+				field:  "Package",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return PublishPackageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PublishPackageResponseMultiError is an error wrapping multiple validation
+// errors returned by PublishPackageResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PublishPackageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PublishPackageResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PublishPackageResponseMultiError) AllErrors() []error { return m }
+
+// PublishPackageResponseValidationError is the validation error returned by
+// PublishPackageResponse.Validate if the designated constraints aren't met.
+type PublishPackageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PublishPackageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PublishPackageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PublishPackageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PublishPackageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PublishPackageResponseValidationError) ErrorName() string {
+	return "PublishPackageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PublishPackageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPublishPackageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PublishPackageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PublishPackageResponseValidationError{}
