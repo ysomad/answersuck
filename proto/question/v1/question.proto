@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package question.v1;
+option go_package = "question/v1;questionv1";
+
+import "google/protobuf/timestamp.proto";
+
+message Question {
+    enum MediaType {
+        MEDIA_TYPE_UNSPECIFIED = 0;
+        MEDIA_TYPE_IMAGE = 1;
+        MEDIA_TYPE_AUDIO = 2;
+        MEDIA_TYPE_VIDEO = 3;
+    }
+
+    message Media {
+        string url = 1;
+        MediaType type = 2;
+    }
+
+    message Answer {
+        int32 id = 1;
+        string text = 2;
+        Media media = 3;
+        string author = 5;
+        google.protobuf.Timestamp created_time = 50;
+    }
+
+    int32 id = 1;
+    string text = 2;
+    Answer answer = 3;
+    string author = 4;
+    Media media = 5;
+    google.protobuf.Timestamp created_time = 50;
+}

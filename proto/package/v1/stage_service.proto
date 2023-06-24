@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+import "package/v1/package.proto";
+import "package/v1/question_type.proto";
+import "package/v1/transfer_type.proto";
+import "package/v1/stage_question.proto";
+
+import "validate/validate.proto";
+import "google/protobuf/empty.proto";
+
+service StageService {
+    // CreateStage create new stage and adds it to package.
+    rpc CreateStage(CreateStageRequest) returns (CreateStageResponse);
+
+    // UpdateStagePosition updates stage position in the package.
+    rpc UpdateStagePosition(UpdateStagePositionRequest) returns (google.protobuf.Empty);
+
+    // ListStages returns list of package stages.
+    rpc ListStages(ListStagesRequest) returns (ListStagesResponse);
+
+    // AddTopic adds topic to package stage.
+    rpc AddTopic(AddTopicRequest) returns (google.protobuf.Empty);
+
+    // RemoveTopic removes topic from package stage (not actually deleting it from DB).
+    rpc RemoveTopic(RemoveTopicRequest) returns (google.protobuf.Empty);
+
+    // CreateStageQuestion adds question for topic in package stage.
+    rpc CreateStageQuestion(CreateStageQuestionRequest) returns (CreateStageQuestionResponse);
+
+    // GetStageQuestion returns stage question.
+    rpc GetStageQuestion(GetStageQuestionRequest) returns (GetStageQuestionResponse);
+}
+
+message CreateStageRequest {
+    int32 package_id = 1; // required
+    string stage_name = 2 [(validate.rules).string = { min_len: 3, max_len: 30 } ]; // required
+    int32 stage_position = 3; // required
+}
+
+message CreateStageResponse {
+    Package package = 1;
+}
+
+message UpdateStagePositionRequest {
+    int32 stage_id = 1; // required
+    int32 stage_position = 2; // required
+}
+
+message ListStagesRequest {
+    int32 package_id = 1; // required
+}
+
+message ListStagesResponse {
+    message Stage {
+        int32 id = 1;
+        string name = 2;
+    }
+
+    repeated Stage stages = 1;
+}
+
+message AddTopicRequest {
+    int32 stage_id = 1; // required
+    int32 topic_id = 2; // required
+}
+
+message RemoveTopicRequest {
+    int32 stage_id = 1; // required
+    int32 topic_id = 2; // required
+}
+
+message CreateStageQuestionRequest {
+    int32 question_id = 1; // required
+    int32 topic_id = 2; // required
+    int32 stage_id = 3; // required
+    QuestionType question_type = 4; // required
+    int32 question_cost = 5;
+    int32 answer_time = 6; // required
+    string host_comment = 7;
+    string secret_topic = 8;
+    int32 secret_cost = 9;
+    bool is_keepable = 10;
+    TransferType transfer_type = 11;
+}
+
+message CreateStageQuestionResponse {
+    StageQuestion stage_question = 1;
+}
+
+message GetStageQuestionRequest {
+    int32 stage_question_id = 1; // required
+}
+
+message GetStageQuestionResponse {
+    StageQuestion stage_question = 1;
+}

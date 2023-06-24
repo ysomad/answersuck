@@ -7,25 +7,25 @@ import (
 
 type Option func(*server)
 
-func Port(port string) Option {
+func WithPort(port string) Option {
 	return func(s *server) {
 		s.server.Addr = net.JoinHostPort("", port)
 	}
 }
 
-func ReadTimeout(timeout time.Duration) Option {
+func WithReadTimeout(timeout time.Duration) Option {
 	return func(s *server) {
 		s.server.ReadTimeout = timeout
 	}
 }
 
-func WriteTimeout(timeout time.Duration) Option {
+func WithWriteTimeout(timeout time.Duration) Option {
 	return func(s *server) {
 		s.server.WriteTimeout = timeout
 	}
 }
 
-func ShutdownTimeout(timeout time.Duration) Option {
+func WithShutdownTimeout(timeout time.Duration) Option {
 	return func(s *server) {
 		s.shutdownTimeout = timeout
 	}

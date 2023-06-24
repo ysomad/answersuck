@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+import "google/protobuf/timestamp.proto";
+
+message Package {
+    message Stage {
+        int32 id = 1;
+        string name = 2;
+    }
+
+    int32 id = 1;
+    string name = 2;
+    string author = 3;
+    bool is_published = 4;
+    string cover_url = 5;
+    repeated Stage stages = 6;
+    google.protobuf.Timestamp created_time = 50;
+    google.protobuf.Timestamp updated_time = 51;
+}

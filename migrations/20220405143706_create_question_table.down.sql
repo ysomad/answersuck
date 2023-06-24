@@ -1,4 +1,0 @@
-DROP TABLE IF EXISTS question CASCADE;
-
-DROP TYPE IF EXISTS question_type CASCADE;
-

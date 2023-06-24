@@ -1,57 +1,14 @@
 app:
-  name: answersuck-backend
-  version: 0.0.3
-
-web:
-  url: http://localhost:8000
+  name: answersuck
+  version: 2.0
+  environment: local
 
 http:
+  host: 0.0.0.0
   port: 8080
 
-logger:
-  log_level: debug
+log:
+  level: debug
 
 postgres:
-  pool_max: 2
-  simple_protocol: true # see pgx.ConnConfig.PreferSimpleProtocol
-
-cache:
-  expiration: 1h
-  db: 0
-
-session:
-  expiration: 4h
-  cookie_name: id
-  cookie_secure: false
-  cookie_http_only: true
-  cookie_path: /v1
-
-security_token:
-  expiration: 1m
-  signing_key: secret
-
-password:
-  reset_token_expiration: 10m
-
-smtp:
-  host: "smtp.yandex.ru"
-  port: 465
-
-file_storage:
-  endpoint: "s3.storage.selcloud.ru"
-  bucket: "answersuck"
-  host: "697408.selcdn.ru"
-  cdn_host: "cdn.answersuck.com"
-  cdn: false
-  ssl: true
-
-email:
-  templates:
-    account_verification: "./web/account_verification.html"
-    account_password_reset: "./web/account_password_reset.html"
-  subjects:
-    account_verification: "Подтверждение аккаунта"
-    account_password_reset: "Сброс пароля"
-  formats:
-    account_verification: "%s/verify?code=%s"
-    account_password_reset: "%s/reset?token=%s"
+  max_connections: 1

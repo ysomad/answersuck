@@ -3,26 +3,50 @@ package migrate
 import (
 	"errors"
 	"log"
-	"os"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 const (
-	defaultAttempts = 20
+	defaultAttempts = 10
 	defaultTimeout  = time.Second
 )
 
-func connect(path string) *migrate.Migrate {
-	databaseURL, ok := os.LookupEnv("PG_URL")
-	if !ok || len(databaseURL) == 0 {
-		log.Fatalf("migrate: environment variable not declared: PG_URL")
+type operation string
+
+const (
+	Up   = operation("up")
+	Down = operation("down")
+)
+
+func Do(op operation, dir, connString string) {
+	m, err := connect(dir, connString)
+	if err != nil {
+		log.Fatalf("migrate: postgres connect error: %s", err.Error())
 	}
 
-	databaseURL += "?sslmode=disable"
+	switch op {
+	case Up:
+		err = m.Up()
+	case Down:
+		err = m.Down()
+	}
+
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatalf("migrate: %s error: %s", op, err.Error())
+	}
+
+	if errors.Is(err, migrate.ErrNoChange) {
+		log.Printf("migrate: %s no change", op)
+	}
+}
+
+func connect(dir, connString string) (*migrate.Migrate, error) {
+	connString += "?sslmode=disable"
 
 	var (
 		attempts = defaultAttempts
@@ -31,53 +55,23 @@ func connect(path string) *migrate.Migrate {
 	)
 
 	for attempts > 0 {
-		m, err = migrate.New("file://"+path, databaseURL)
+		m, err = migrate.New("file://"+dir, connString)
+		if err != nil {
+			return nil, err
+		}
+
 		if err == nil {
 			break
 		}
 
-		log.Printf("Migrate: postgres is trying to connect, attempts left: %d", attempts)
+		log.Printf("migrate: trying connecting to postgres, attempts left: %d", attempts)
 		time.Sleep(defaultTimeout)
 		attempts--
 	}
 
 	if err != nil {
-		log.Fatalf("Migrate: postgres connect error: %s", err)
+		return nil, err
 	}
 
-	return m
-}
-
-func Up(path string) {
-	m := connect(path)
-
-	err := m.Up()
-	defer m.Close()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("Migrate: up error: %s", err)
-	}
-
-	if errors.Is(err, migrate.ErrNoChange) {
-		log.Printf("Migrate: no change")
-		return
-	}
-
-	log.Printf("Migrate: up success")
-}
-
-func Down(path string) {
-	m := connect(path)
-
-	err := m.Down()
-	defer m.Close()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("Migrate: down error: %s", err)
-	}
-
-	if errors.Is(err, migrate.ErrNoChange) {
-		log.Printf("Migrate: no change")
-		return
-	}
-
-	log.Printf("Migrate: down success")
+	return m, nil
 }

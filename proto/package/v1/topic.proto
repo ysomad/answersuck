@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package package.v1;
+option go_package = "package/v1;packagev1";
+
+import "google/protobuf/timestamp.proto";
+
+message Topic {
+    int32 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp created_time = 50;
+}
