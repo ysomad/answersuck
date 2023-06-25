@@ -113,5 +113,11 @@ message GetQuestionGridResponse {
         int32 cost = 4;
     }
 
-    map<string, Question> questions = 1;
+    message Topic {
+        int32 id = 1;
+        string title = 2;
+        repeated Question questions = 3;
+    }
+
+    repeated Topic topics = 1;
 }

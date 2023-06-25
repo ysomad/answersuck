@@ -1506,50 +1506,38 @@ func (m *GetQuestionGridResponse) validate(all bool) error {
 
 	var errors []error
 
-	{
-		sorted_keys := make([]string, len(m.GetQuestions()))
-		i := 0
-		for key := range m.GetQuestions() {
-			sorted_keys[i] = key
-			i++
-		}
-		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
-		for _, key := range sorted_keys {
-			val := m.GetQuestions()[key]
-			_ = val
+	for idx, item := range m.GetTopics() {
+		_, _ = idx, item
 
-			// no validation rules for Questions[key]
-
-			if all {
-				switch v := interface{}(val).(type) {
-				case interface{ ValidateAll() error }:
-					if err := v.ValidateAll(); err != nil {
-						errors = append(errors, GetQuestionGridResponseValidationError{
-							field:  fmt.Sprintf("Questions[%v]", key),
-							reason: "embedded message failed validation",
-							cause:  err,
-						})
-					}
-				case interface{ Validate() error }:
-					if err := v.Validate(); err != nil {
-						errors = append(errors, GetQuestionGridResponseValidationError{
-							field:  fmt.Sprintf("Questions[%v]", key),
-							reason: "embedded message failed validation",
-							cause:  err,
-						})
-					}
-				}
-			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
-				if err := v.Validate(); err != nil {
-					return GetQuestionGridResponseValidationError{
-						field:  fmt.Sprintf("Questions[%v]", key),
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetQuestionGridResponseValidationError{
+						field:  fmt.Sprintf("Topics[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
-					}
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetQuestionGridResponseValidationError{
+						field:  fmt.Sprintf("Topics[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
 				}
 			}
-
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetQuestionGridResponseValidationError{
+					field:  fmt.Sprintf("Topics[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
 		}
+
 	}
 
 	if len(errors) > 0 {
@@ -1850,3 +1838,144 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetQuestionGridResponse_QuestionValidationError{}
+
+// Validate checks the field values on GetQuestionGridResponse_Topic with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetQuestionGridResponse_Topic) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetQuestionGridResponse_Topic with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetQuestionGridResponse_TopicMultiError, or nil if none found.
+func (m *GetQuestionGridResponse_Topic) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetQuestionGridResponse_Topic) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Title
+
+	for idx, item := range m.GetQuestions() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetQuestionGridResponse_TopicValidationError{
+						field:  fmt.Sprintf("Questions[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetQuestionGridResponse_TopicValidationError{
+						field:  fmt.Sprintf("Questions[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetQuestionGridResponse_TopicValidationError{
+					field:  fmt.Sprintf("Questions[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetQuestionGridResponse_TopicMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetQuestionGridResponse_TopicMultiError is an error wrapping multiple
+// validation errors returned by GetQuestionGridResponse_Topic.ValidateAll()
+// if the designated constraints aren't met.
+type GetQuestionGridResponse_TopicMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetQuestionGridResponse_TopicMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetQuestionGridResponse_TopicMultiError) AllErrors() []error { return m }
+
+// GetQuestionGridResponse_TopicValidationError is the validation error
+// returned by GetQuestionGridResponse_Topic.Validate if the designated
+// constraints aren't met.
+type GetQuestionGridResponse_TopicValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetQuestionGridResponse_TopicValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetQuestionGridResponse_TopicValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetQuestionGridResponse_TopicValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetQuestionGridResponse_TopicValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetQuestionGridResponse_TopicValidationError) ErrorName() string {
+	return "GetQuestionGridResponse_TopicValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetQuestionGridResponse_TopicValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetQuestionGridResponse_Topic.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetQuestionGridResponse_TopicValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetQuestionGridResponse_TopicValidationError{}
