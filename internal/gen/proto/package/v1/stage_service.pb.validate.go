@@ -1380,6 +1380,258 @@ var _ interface {
 	ErrorName() string
 } = GetStageQuestionResponseValidationError{}
 
+// Validate checks the field values on GetQuestionGridRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetQuestionGridRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetQuestionGridRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetQuestionGridRequestMultiError, or nil if none found.
+func (m *GetQuestionGridRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetQuestionGridRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for StageId
+
+	if len(errors) > 0 {
+		return GetQuestionGridRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetQuestionGridRequestMultiError is an error wrapping multiple validation
+// errors returned by GetQuestionGridRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetQuestionGridRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetQuestionGridRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetQuestionGridRequestMultiError) AllErrors() []error { return m }
+
+// GetQuestionGridRequestValidationError is the validation error returned by
+// GetQuestionGridRequest.Validate if the designated constraints aren't met.
+type GetQuestionGridRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetQuestionGridRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetQuestionGridRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetQuestionGridRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetQuestionGridRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetQuestionGridRequestValidationError) ErrorName() string {
+	return "GetQuestionGridRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetQuestionGridRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetQuestionGridRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetQuestionGridRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetQuestionGridRequestValidationError{}
+
+// Validate checks the field values on GetQuestionGridResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetQuestionGridResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetQuestionGridResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetQuestionGridResponseMultiError, or nil if none found.
+func (m *GetQuestionGridResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetQuestionGridResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	{
+		sorted_keys := make([]string, len(m.GetQuestions()))
+		i := 0
+		for key := range m.GetQuestions() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetQuestions()[key]
+			_ = val
+
+			// no validation rules for Questions[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, GetQuestionGridResponseValidationError{
+							field:  fmt.Sprintf("Questions[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, GetQuestionGridResponseValidationError{
+							field:  fmt.Sprintf("Questions[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return GetQuestionGridResponseValidationError{
+						field:  fmt.Sprintf("Questions[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetQuestionGridResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetQuestionGridResponseMultiError is an error wrapping multiple validation
+// errors returned by GetQuestionGridResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetQuestionGridResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetQuestionGridResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetQuestionGridResponseMultiError) AllErrors() []error { return m }
+
+// GetQuestionGridResponseValidationError is the validation error returned by
+// GetQuestionGridResponse.Validate if the designated constraints aren't met.
+type GetQuestionGridResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetQuestionGridResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetQuestionGridResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetQuestionGridResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetQuestionGridResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetQuestionGridResponseValidationError) ErrorName() string {
+	return "GetQuestionGridResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetQuestionGridResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetQuestionGridResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetQuestionGridResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetQuestionGridResponseValidationError{}
+
 // Validate checks the field values on ListStagesResponse_Stage with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1485,3 +1737,116 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListStagesResponse_StageValidationError{}
+
+// Validate checks the field values on GetQuestionGridResponse_Question with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetQuestionGridResponse_Question) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetQuestionGridResponse_Question with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// GetQuestionGridResponse_QuestionMultiError, or nil if none found.
+func (m *GetQuestionGridResponse_Question) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetQuestionGridResponse_Question) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Text
+
+	// no validation rules for Type
+
+	// no validation rules for Cost
+
+	if len(errors) > 0 {
+		return GetQuestionGridResponse_QuestionMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetQuestionGridResponse_QuestionMultiError is an error wrapping multiple
+// validation errors returned by
+// GetQuestionGridResponse_Question.ValidateAll() if the designated
+// constraints aren't met.
+type GetQuestionGridResponse_QuestionMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetQuestionGridResponse_QuestionMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetQuestionGridResponse_QuestionMultiError) AllErrors() []error { return m }
+
+// GetQuestionGridResponse_QuestionValidationError is the validation error
+// returned by GetQuestionGridResponse_Question.Validate if the designated
+// constraints aren't met.
+type GetQuestionGridResponse_QuestionValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetQuestionGridResponse_QuestionValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetQuestionGridResponse_QuestionValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetQuestionGridResponse_QuestionValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetQuestionGridResponse_QuestionValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetQuestionGridResponse_QuestionValidationError) ErrorName() string {
+	return "GetQuestionGridResponse_QuestionValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetQuestionGridResponse_QuestionValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetQuestionGridResponse_Question.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetQuestionGridResponse_QuestionValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetQuestionGridResponse_QuestionValidationError{}

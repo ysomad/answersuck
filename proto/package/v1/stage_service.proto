@@ -32,6 +32,9 @@ service StageService {
 
     // GetStageQuestion returns stage question.
     rpc GetStageQuestion(GetStageQuestionRequest) returns (GetStageQuestionResponse);
+
+    // GetQuestionGrid returns grid of question topics as headers and questions as cells.
+    rpc GetQuestionGrid(GetQuestionGridRequest) returns (GetQuestionGridResponse);
 }
 
 message CreateStageRequest {
@@ -96,4 +99,19 @@ message GetStageQuestionRequest {
 
 message GetStageQuestionResponse {
     StageQuestion stage_question = 1;
+}
+
+message GetQuestionGridRequest {
+    int32 stage_id = 1; // required
+}
+
+message GetQuestionGridResponse {
+    message Question {
+        int32 id = 1;
+        string text = 2;
+        StageQuestionType type = 3;
+        int32 cost = 4;
+    }
+
+    map<string, Question> questions = 1;
 }
