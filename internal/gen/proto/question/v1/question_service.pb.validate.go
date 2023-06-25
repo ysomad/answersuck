@@ -108,17 +108,6 @@ func (m *CreateQuestionRequest) validate(all bool) error {
 		}
 	}
 
-	if utf8.RuneCountInString(m.GetMediaUrl()) > 2048 {
-		err := CreateQuestionRequestValidationError{
-			field:  "MediaUrl",
-			reason: "value length must be at most 2048 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if uri, err := url.Parse(m.GetMediaUrl()); err != nil {
 		err = CreateQuestionRequestValidationError{
 			field:  "MediaUrl",
@@ -612,17 +601,6 @@ func (m *CreateQuestionRequest_Answer) validate(all bool) error {
 		err := CreateQuestionRequest_AnswerValidationError{
 			field:  "Text",
 			reason: "value length must be between 3 and 100 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetMediaUrl()) > 2048 {
-		err := CreateQuestionRequest_AnswerValidationError{
-			field:  "MediaUrl",
-			reason: "value length must be at most 2048 runes",
 		}
 		if !all {
 			return err

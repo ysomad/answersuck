@@ -867,11 +867,38 @@ func (m *CreateStageQuestionRequest) validate(all bool) error {
 
 	// no validation rules for StageId
 
-	// no validation rules for QuestionType
+	if _, ok := _CreateStageQuestionRequest_QuestionType_InLookup[m.GetQuestionType()]; !ok {
+		err := CreateStageQuestionRequestValidationError{
+			field:  "QuestionType",
+			reason: "value must be in list [QUESTION_TYPE_STANDARD QUESTION_TYPE_SAFE QUESTION_TYPE_SECRET QUESTION_TYPE_SUPER_SECRET QUESTION_TYPE_AUCTION]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for QuestionCost
+	if m.GetQuestionCost() < 1 {
+		err := CreateStageQuestionRequestValidationError{
+			field:  "QuestionCost",
+			reason: "value must be greater than or equal to 1",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for AnswerTime
+	if val := m.GetAnswerTime(); val < 5 || val > 60 {
+		err := CreateStageQuestionRequestValidationError{
+			field:  "AnswerTime",
+			reason: "value must be inside range [5, 60]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for HostComment
 
@@ -881,7 +908,16 @@ func (m *CreateStageQuestionRequest) validate(all bool) error {
 
 	// no validation rules for IsKeepable
 
-	// no validation rules for TransferType
+	if _, ok := _CreateStageQuestionRequest_TransferType_InLookup[m.GetTransferType()]; !ok {
+		err := CreateStageQuestionRequestValidationError{
+			field:  "TransferType",
+			reason: "value must be in list [TRANSFER_TYPE_BEFORE TRANSFER_TYPE_AFTER TRANSFER_TYPE_NEVER]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return CreateStageQuestionRequestMultiError(errors)
@@ -962,6 +998,20 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CreateStageQuestionRequestValidationError{}
+
+var _CreateStageQuestionRequest_QuestionType_InLookup = map[QuestionType]struct{}{
+	1: {},
+	2: {},
+	3: {},
+	4: {},
+	5: {},
+}
+
+var _CreateStageQuestionRequest_TransferType_InLookup = map[TransferType]struct{}{
+	1: {},
+	2: {},
+	3: {},
+}
 
 // Validate checks the field values on CreateStageQuestionResponse with the
 // rules defined in the proto definition for this message. If any rules are
