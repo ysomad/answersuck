@@ -999,7 +999,7 @@ var _ interface {
 	ErrorName() string
 } = CreateStageQuestionRequestValidationError{}
 
-var _CreateStageQuestionRequest_QuestionType_InLookup = map[QuestionType]struct{}{
+var _CreateStageQuestionRequest_QuestionType_InLookup = map[StageQuestionType]struct{}{
 	1: {},
 	2: {},
 	3: {},

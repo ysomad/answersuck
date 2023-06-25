@@ -4,7 +4,7 @@ package package.v1;
 option go_package = "package/v1;packagev1";
 
 import "package/v1/package.proto";
-import "package/v1/question_type.proto";
+import "package/v1/stage_question_type.proto";
 import "package/v1/transfer_type.proto";
 import "package/v1/stage_question.proto";
 
@@ -76,7 +76,7 @@ message CreateStageQuestionRequest {
     int32 question_id = 1; // required
     int32 topic_id = 2; // required
     int32 stage_id = 3; // required
-    QuestionType question_type = 4 [(validate.rules).enum = { in: [1,2,3,4,5] }]; // required
+    StageQuestionType question_type = 4 [(validate.rules).enum = { in: [1,2,3,4,5] }]; // required
     int32 question_cost = 5 [(validate.rules).int32 = { gte: 1 }]; // required
     int32 answer_time = 6 [(validate.rules).int32 = { gte: 5, lte: 60 }]; // required
     string host_comment = 7;

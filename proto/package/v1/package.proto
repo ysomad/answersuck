@@ -3,7 +3,6 @@ syntax = "proto3";
 package package.v1;
 option go_package = "package/v1;packagev1";
 
-import "tag/v1/tag.proto";
 import "google/protobuf/timestamp.proto";
 
 message Package {
