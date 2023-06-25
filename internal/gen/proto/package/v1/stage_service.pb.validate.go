@@ -870,7 +870,7 @@ func (m *CreateStageQuestionRequest) validate(all bool) error {
 	if _, ok := _CreateStageQuestionRequest_QuestionType_InLookup[m.GetQuestionType()]; !ok {
 		err := CreateStageQuestionRequestValidationError{
 			field:  "QuestionType",
-			reason: "value must be in list [QUESTION_TYPE_STANDARD QUESTION_TYPE_SAFE QUESTION_TYPE_SECRET QUESTION_TYPE_SUPER_SECRET QUESTION_TYPE_AUCTION]",
+			reason: "value must be in list [STANDARD SAFE SECRET SUPER_SECRET AUCTION]",
 		}
 		if !all {
 			return err
@@ -911,7 +911,7 @@ func (m *CreateStageQuestionRequest) validate(all bool) error {
 	if _, ok := _CreateStageQuestionRequest_TransferType_InLookup[m.GetTransferType()]; !ok {
 		err := CreateStageQuestionRequestValidationError{
 			field:  "TransferType",
-			reason: "value must be in list [TRANSFER_TYPE_BEFORE TRANSFER_TYPE_AFTER TRANSFER_TYPE_NEVER]",
+			reason: "value must be in list [BEFORE AFTER NEVER]",
 		}
 		if !all {
 			return err

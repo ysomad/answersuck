@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package tag.v1;
+option go_package = "tag/v1;tagv1";
+
+import "google/protobuf/timestamp.proto";
+
+message Tag {
+    int32 id = 1;
+    string name = 2;
+    google.protobuf.Timestamp created_time = 50;
+}

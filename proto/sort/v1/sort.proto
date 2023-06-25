@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package sort.v1;
+option go_package = "sort/v1;sortv1";
+
+enum SortDirection {
+    SORT_DIRECTION_UNSPECIFIED = 0;
+    DESC = 1;
+    ASC = 2;
+}

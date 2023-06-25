@@ -5,9 +5,9 @@ option go_package = "package/v1;packagev1";
 
 enum QuestionType {
     QUESTION_TYPE_UNSPECIFIED = 0;
-    QUESTION_TYPE_STANDARD = 1;
-    QUESTION_TYPE_SAFE = 2;
-    QUESTION_TYPE_SECRET = 3;
-    QUESTION_TYPE_SUPER_SECRET = 4;
-    QUESTION_TYPE_AUCTION = 5;
+    STANDARD = 1;
+    SAFE = 2;
+    SECRET = 3;
+    SUPER_SECRET = 4;
+    AUCTION = 5;
 }

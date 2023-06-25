@@ -85,7 +85,8 @@ CREATE TABLE IF NOT EXISTS stage_question (
 
 CREATE TABLE IF NOT EXISTS tag (
     id serial NOT NULL PRIMARY KEY,
-    name varchar(32) NOT NULL,
+    name varchar(16) NOT NULL,
+    author varchar(25) NOT NULL REFERENCES player (nickname),
     created_at timestamptz NOT NULL
 );
 
