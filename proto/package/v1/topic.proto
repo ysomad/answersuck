@@ -8,5 +8,5 @@ import "google/protobuf/timestamp.proto";
 message Topic {
     int32 id = 1;
     string title = 2;
-    google.protobuf.Timestamp created_time = 50;
+    google.protobuf.Timestamp creation_time = 50;
 }

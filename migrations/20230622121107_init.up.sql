@@ -84,16 +84,15 @@ CREATE TABLE IF NOT EXISTS stage_question (
 );
 
 CREATE TABLE IF NOT EXISTS tag (
-    id serial NOT NULL PRIMARY KEY,
-    name varchar(16) NOT NULL,
+    name varchar(16) NOT NULL PRIMARY KEY,
     author varchar(25) NOT NULL REFERENCES player (nickname),
     created_at timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS package_tag (
     package_id int NOT NULL REFERENCES package (id),
-    tag_id int NOT NULL REFERENCES tag (id),
-    PRIMARY KEY (package_id, tag_id)
+    tag varchar(16) NOT NULL REFERENCES tag (name),
+    PRIMARY KEY (package_id, tag)
 );
 
 COMMIT;

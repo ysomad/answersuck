@@ -10,5 +10,5 @@ message Player {
   string email = 2;
   string display_name = 3;
   bool email_verified = 4;
-  google.protobuf.Timestamp created_time = 50;
+  google.protobuf.Timestamp creation_time = 50;
 }

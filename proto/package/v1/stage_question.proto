@@ -14,7 +14,7 @@ message StageQuestion {
         string text = 2;
         string author = 3;
         string media_url = 4;
-        google.protobuf.Timestamp created_time = 50;
+        google.protobuf.Timestamp creation_time = 50;
     }
 
     message Answer {
@@ -22,7 +22,7 @@ message StageQuestion {
         string text = 2;
         string author = 3;
         string media_url = 4;
-        google.protobuf.Timestamp created_time = 50;
+        google.protobuf.Timestamp creation_time = 50;
     }
 
     int32 id = 1;

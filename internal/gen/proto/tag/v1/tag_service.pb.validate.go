@@ -305,7 +305,7 @@ func (m *ListTagsRequest) validate(all bool) error {
 
 	// no validation rules for Search
 
-	// no validation rules for LastId
+	// no validation rules for LastTag
 
 	// no validation rules for PageSize
 
@@ -574,7 +574,7 @@ func (m *ListTagsRequest_Sort) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CreatedAt
+	// no validation rules for CreationTime
 
 	if len(errors) > 0 {
 		return ListTagsRequest_SortMultiError(errors)

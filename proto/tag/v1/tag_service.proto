@@ -23,11 +23,11 @@ message CreateTagResponse {
 
 message ListTagsRequest {
     message Sort {
-        sort.v1.SortDirection created_at = 4;
+        sort.v1.SortDirection creation_time = 1;
     }
 
     string search = 1;
-    int32 last_id = 2;
+    int32 last_tag = 2;
     int32 page_size = 3;
     Sort sort = 4;
 }

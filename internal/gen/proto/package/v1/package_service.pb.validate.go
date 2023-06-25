@@ -324,6 +324,38 @@ func (m *CreatePackageRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if len(m.GetTags()) > 5 {
+		err := CreatePackageRequestValidationError{
+			field:  "Tags",
+			reason: "value must contain no more than 5 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	_CreatePackageRequest_Tags_Unique := make(map[string]struct{}, len(m.GetTags()))
+
+	for idx, item := range m.GetTags() {
+		_, _ = idx, item
+
+		if _, exists := _CreatePackageRequest_Tags_Unique[item]; exists {
+			err := CreatePackageRequestValidationError{
+				field:  fmt.Sprintf("Tags[%v]", idx),
+				reason: "repeated value must contain unique items",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+			_CreatePackageRequest_Tags_Unique[item] = struct{}{}
+		}
+
+		// no validation rules for Tags[idx]
+	}
+
 	if len(errors) > 0 {
 		return CreatePackageRequestMultiError(errors)
 	}
