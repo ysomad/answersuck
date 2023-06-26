@@ -259,12 +259,11 @@
 ## 3 Стек технологий
 
 ### 3.1. Сервер
-- Golang 1.18+
-- Router: go-chi
-- Validation: go-ozzo
-- PostgreSQL, pgx, сырые запросы sql
-- Redis - кеширование и викторины
-- Gorilla websockets
+- Golang 1.120+
+- Transport: twirp
+- Validation: protoc-gen-validate
+- PostgreSQL, pgx, squirrel
+- Redis - кеширование, комнаты и процесс игры
 
 ### 3.2. Веб приложение
 - ?????????????????????????????????????
