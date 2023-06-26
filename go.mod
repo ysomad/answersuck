@@ -9,7 +9,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.4.2
 	github.com/jackc/pgx/v5 v5.4.1
 	github.com/stretchr/testify v1.8.4
-	github.com/twitchtv/twirp v8.1.2+incompatible
+	github.com/twitchtv/twirp v8.1.3+incompatible
 	golang.org/x/crypto v0.10.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	google.golang.org/protobuf v1.30.0
