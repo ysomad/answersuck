@@ -13,10 +13,10 @@ service QuestionService {
 
 message Question {
     enum MediaType {
-        MEDIA_TYPE_UNSPECIFIED = 0;
-        MEDIA_TYPE_IMAGE = 1;
-        MEDIA_TYPE_AUDIO = 2;
-        MEDIA_TYPE_VIDEO = 3;
+        UNSPECIFIED = 0;
+        IMAGE = 1;
+        AUDIO = 2;
+        VIDEO = 3;
     }
 
     message Media {
