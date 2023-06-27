@@ -906,111 +906,6 @@ var _ interface {
 	ErrorName() string
 } = UpdateStageQuestionsCostRequestValidationError{}
 
-// Validate checks the field values on UpdateStageQuestionsCostResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the first error encountered is returned, or nil if there are
-// no violations.
-func (m *UpdateStageQuestionsCostResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UpdateStageQuestionsCostResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// UpdateStageQuestionsCostResponseMultiError, or nil if none found.
-func (m *UpdateStageQuestionsCostResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UpdateStageQuestionsCostResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return UpdateStageQuestionsCostResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// UpdateStageQuestionsCostResponseMultiError is an error wrapping multiple
-// validation errors returned by
-// UpdateStageQuestionsCostResponse.ValidateAll() if the designated
-// constraints aren't met.
-type UpdateStageQuestionsCostResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UpdateStageQuestionsCostResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UpdateStageQuestionsCostResponseMultiError) AllErrors() []error { return m }
-
-// UpdateStageQuestionsCostResponseValidationError is the validation error
-// returned by UpdateStageQuestionsCostResponse.Validate if the designated
-// constraints aren't met.
-type UpdateStageQuestionsCostResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UpdateStageQuestionsCostResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UpdateStageQuestionsCostResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UpdateStageQuestionsCostResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UpdateStageQuestionsCostResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UpdateStageQuestionsCostResponseValidationError) ErrorName() string {
-	return "UpdateStageQuestionsCostResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UpdateStageQuestionsCostResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUpdateStageQuestionsCostResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UpdateStageQuestionsCostResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UpdateStageQuestionsCostResponseValidationError{}
-
 // Validate checks the field values on StageQuestion_Question with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1312,6 +1207,10 @@ func (m *UpdateStageQuestionsCostRequest_Question) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for QuestionId
+
+	// no validation rules for Cost
 
 	if len(errors) > 0 {
 		return UpdateStageQuestionsCostRequest_QuestionMultiError(errors)

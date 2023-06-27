@@ -5,6 +5,7 @@ option go_package = "package/v1;packagev1";
 
 import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service StageQuestionService {
     // CreateStageQuestion adds question for topic in package stage.
@@ -14,7 +15,7 @@ service StageQuestionService {
     rpc GetStageQuestion(GetStageQuestionRequest) returns (GetStageQuestionResponse);
 
     // UpdateStageQuestionsCost updates cost for multiple questions.
-    rpc UpdateStageQuestionsCost(UpdateStageQuestionsCostRequest) returns (UpdateStageQuestionsCostRequest);
+    rpc UpdateStageQuestionsCost(UpdateStageQuestionsCostRequest) returns (google.protobuf.Empty);
 }
 
 enum TransferType {
@@ -93,11 +94,10 @@ message GetStageQuestionResponse {
 
 message UpdateStageQuestionsCostRequest {
     message Question {
-
+        int32 question_id = 1; // required
+        int32 cost = 2; // required
     }
 
     int32 stage_id = 1; // required
     repeated Question questions = 2 [(validate.rules).repeated = { min_items: 1, max_items: 10 }]; // required
 }
-
-message UpdateStageQuestionsCostResponse {}
