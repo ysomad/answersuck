@@ -3,7 +3,19 @@ syntax = "proto3";
 package package.v1;
 option go_package = "package/v1;packagev1";
 
+import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+
+service StageQuestionService {
+    // CreateStageQuestion adds question for topic in package stage.
+    rpc CreateStageQuestion(CreateStageQuestionRequest) returns (CreateStageQuestionResponse);
+
+    // GetStageQuestion returns stage question.
+    rpc GetStageQuestion(GetStageQuestionRequest) returns (GetStageQuestionResponse);
+
+    // UpdateStageQuestionsCost updates cost for multiple questions.
+    rpc UpdateStageQuestionsCost(UpdateStageQuestionsCostRequest) returns (UpdateStageQuestionsCostRequest);
+}
 
 enum TransferType {
     TRANSFER_TYPE_UNSPECIFIED = 0;
@@ -52,3 +64,40 @@ message StageQuestion {
     TransferType transfer_type = 12;
     bool is_keepable = 13;
 }
+
+message CreateStageQuestionRequest {
+    int32 question_id = 1; // required
+    int32 topic_id = 2; // required
+    int32 stage_id = 3; // required
+    StageQuestionType question_type = 4 [(validate.rules).enum = { in: [1,2,3,4,5] }]; // required
+    int32 question_cost = 5 [(validate.rules).int32 = { gte: 1 }]; // required
+    int32 answer_time = 6 [(validate.rules).int32 = { gte: 5, lte: 60 }]; // required
+    string host_comment = 7;
+    string secret_topic = 8;
+    int32 secret_cost = 9;
+    bool is_keepable = 10;
+    TransferType transfer_type = 11 [(validate.rules).enum = { in: [1,2,3] }];
+}
+
+message CreateStageQuestionResponse {
+    StageQuestion stage_question = 1;
+}
+
+message GetStageQuestionRequest {
+    int32 stage_question_id = 1; // required
+}
+
+message GetStageQuestionResponse {
+    StageQuestion stage_question = 1;
+}
+
+message UpdateStageQuestionsCostRequest {
+    message Question {
+
+    }
+
+    int32 stage_id = 1; // required
+    repeated Question questions = 2 [(validate.rules).repeated = { min_items: 1, max_items: 10 }]; // required
+}
+
+message UpdateStageQuestionsCostResponse {}

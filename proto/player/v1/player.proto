@@ -3,7 +3,14 @@ syntax = "proto3";
 package player.v1;
 option go_package = "player/v1;playerv1";
 
+import "validate/validate.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+
+service PlayerService {
+  rpc CreatePlayer (CreatePlayerRequest) returns (google.protobuf.Empty);
+  rpc GetPlayer (GetPlayerRequest) returns (GetPlayerResponse);
+}
 
 message Player {
   string nickname = 1;
@@ -11,4 +18,18 @@ message Player {
   string display_name = 3;
   bool email_verified = 4;
   google.protobuf.Timestamp creation_time = 50;
+}
+
+message CreatePlayerRequest {
+  string nickname = 1 [(validate.rules).string.pattern = "^[a-zA-Z0-9][\\w]{3,24}$"]; // required
+  string email = 2 [(validate.rules).string = { email: true, max_len: 320 }]; // required
+  string password = 3 [(validate.rules).string = { min_len: 10, max_len: 128 }]; // required
+}
+
+message GetPlayerRequest {
+  string nickname = 1; // required
+}
+
+message GetPlayerResponse {
+  Player player = 1;
 }

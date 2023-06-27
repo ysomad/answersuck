@@ -4,15 +4,15 @@ go 1.20
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/envoyproxy/protoc-gen-validate v1.0.1
+	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/ilyakaznacheev/cleanenv v1.4.2
 	github.com/jackc/pgx/v5 v5.4.1
 	github.com/stretchr/testify v1.8.4
 	github.com/twitchtv/twirp v8.1.3+incompatible
 	golang.org/x/crypto v0.10.0
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	google.golang.org/protobuf v1.30.0
+	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
+	google.golang.org/protobuf v1.31.0
 )
 
 require (

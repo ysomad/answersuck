@@ -3,10 +3,23 @@ syntax = "proto3";
 package package.v1;
 option go_package = "package/v1;packagev1";
 
+import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+
+service TopicService {
+    rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse);
+}
 
 message Topic {
     int32 id = 1;
     string title = 2;
     google.protobuf.Timestamp creation_time = 50;
+}
+
+message CreateTopicRequest {
+    string topic_title = 1 [(validate.rules).string = { min_len: 3, max_len: 30 }]; // required
+}
+
+message CreateTopicResponse {
+    Topic topic = 1;
 }
