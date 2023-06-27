@@ -25,7 +25,14 @@ CREATE TABLE IF NOT EXISTS package (
     is_published bool DEFAULT FALSE NOT NULL,
     cover_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL
+    updated_at timestamptz NOT NULL,
+
+    stage_count smallint,
+    topic_count smallint,
+    question_count smallint,
+    video_count smallint,
+    audio_count smallint,
+    image_count smallint
 );
 
 CREATE TABLE IF NOT EXISTS stage (

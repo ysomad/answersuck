@@ -35,6 +35,109 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on PackageStage with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PackageStage) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PackageStage with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PackageStageMultiError, or
+// nil if none found.
+func (m *PackageStage) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PackageStage) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	if len(errors) > 0 {
+		return PackageStageMultiError(errors)
+	}
+
+	return nil
+}
+
+// PackageStageMultiError is an error wrapping multiple validation errors
+// returned by PackageStage.ValidateAll() if the designated constraints aren't met.
+type PackageStageMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PackageStageMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PackageStageMultiError) AllErrors() []error { return m }
+
+// PackageStageValidationError is the validation error returned by
+// PackageStage.Validate if the designated constraints aren't met.
+type PackageStageValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PackageStageValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PackageStageValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PackageStageValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PackageStageValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PackageStageValidationError) ErrorName() string { return "PackageStageValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PackageStageValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPackageStage.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PackageStageValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PackageStageValidationError{}
+
 // Validate checks the field values on Package with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -234,6 +337,275 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = PackageValidationError{}
+
+// Validate checks the field values on PackageStats with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PackageStats) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PackageStats with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PackageStatsMultiError, or
+// nil if none found.
+func (m *PackageStats) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PackageStats) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for StageCount
+
+	// no validation rules for TopicCount
+
+	// no validation rules for QuestionCount
+
+	// no validation rules for VideoCount
+
+	// no validation rules for AudioCount
+
+	// no validation rules for ImageCount
+
+	if len(errors) > 0 {
+		return PackageStatsMultiError(errors)
+	}
+
+	return nil
+}
+
+// PackageStatsMultiError is an error wrapping multiple validation errors
+// returned by PackageStats.ValidateAll() if the designated constraints aren't met.
+type PackageStatsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PackageStatsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PackageStatsMultiError) AllErrors() []error { return m }
+
+// PackageStatsValidationError is the validation error returned by
+// PackageStats.Validate if the designated constraints aren't met.
+type PackageStatsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PackageStatsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PackageStatsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PackageStatsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PackageStatsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PackageStatsValidationError) ErrorName() string { return "PackageStatsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PackageStatsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPackageStats.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PackageStatsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PackageStatsValidationError{}
+
+// Validate checks the field values on PackageWithStats with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *PackageWithStats) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PackageWithStats with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PackageWithStatsMultiError, or nil if none found.
+func (m *PackageWithStats) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PackageWithStats) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPackage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PackageWithStatsValidationError{
+					field:  "Package",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PackageWithStatsValidationError{
+					field:  "Package",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPackage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PackageWithStatsValidationError{
+				field:  "Package",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetStats()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PackageWithStatsValidationError{
+					field:  "Stats",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PackageWithStatsValidationError{
+					field:  "Stats",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStats()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PackageWithStatsValidationError{
+				field:  "Stats",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return PackageWithStatsMultiError(errors)
+	}
+
+	return nil
+}
+
+// PackageWithStatsMultiError is an error wrapping multiple validation errors
+// returned by PackageWithStats.ValidateAll() if the designated constraints
+// aren't met.
+type PackageWithStatsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PackageWithStatsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PackageWithStatsMultiError) AllErrors() []error { return m }
+
+// PackageWithStatsValidationError is the validation error returned by
+// PackageWithStats.Validate if the designated constraints aren't met.
+type PackageWithStatsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PackageWithStatsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PackageWithStatsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PackageWithStatsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PackageWithStatsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PackageWithStatsValidationError) ErrorName() string { return "PackageWithStatsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PackageWithStatsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPackageWithStats.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PackageWithStatsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PackageWithStatsValidationError{}
 
 // Validate checks the field values on GetPackageRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -1001,107 +1373,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = PublishPackageResponseValidationError{}
-
-// Validate checks the field values on Package_Stage with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Package_Stage) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Package_Stage with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in Package_StageMultiError, or
-// nil if none found.
-func (m *Package_Stage) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Package_Stage) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Id
-
-	// no validation rules for Name
-
-	if len(errors) > 0 {
-		return Package_StageMultiError(errors)
-	}
-
-	return nil
-}
-
-// Package_StageMultiError is an error wrapping multiple validation errors
-// returned by Package_Stage.ValidateAll() if the designated constraints
-// aren't met.
-type Package_StageMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Package_StageMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Package_StageMultiError) AllErrors() []error { return m }
-
-// Package_StageValidationError is the validation error returned by
-// Package_Stage.Validate if the designated constraints aren't met.
-type Package_StageValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Package_StageValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Package_StageValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Package_StageValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Package_StageValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Package_StageValidationError) ErrorName() string { return "Package_StageValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Package_StageValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sPackage_Stage.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Package_StageValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Package_StageValidationError{}

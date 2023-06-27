@@ -13,25 +13,39 @@ service PackageService {
     // GetPackage returns package with stages.
     rpc GetPackage(GetPackageRequest) returns (GetPackageResponse);
 
-    // PublishPackage publishes package.
+    // PublishPackage publishes package and saving stats for future filtering, returns package with stats.
     rpc PublishPackage(PublishPackageRequest) returns (PublishPackageResponse);
 }
 
-message Package {
-    message Stage {
-        int32 id = 1;
-        string name = 2;
-    }
+message PackageStage {
+    int32 id = 1;
+    string name = 2;
+}
 
+message Package {
     int32 id = 1;
     string name = 2;
     string author = 3;
     bool is_published = 4;
     string cover_url = 5;
-    repeated Stage stages = 6;
+    repeated PackageStage stages = 6;
     repeated string tags = 7;
     google.protobuf.Timestamp creation_time = 50;
     google.protobuf.Timestamp update_time = 51;
+}
+
+message PackageStats {
+    int32 stage_count = 1;
+    int32 topic_count = 2;
+    int32 question_count = 3;
+    int32 video_count = 4;
+    int32 audio_count = 5;
+    int32 image_count = 6;
+}
+
+message PackageWithStats {
+    Package package = 1;
+    PackageStats stats = 2;
 }
 
 message GetPackageRequest {
@@ -57,5 +71,5 @@ message PublishPackageRequest {
 }
 
 message PublishPackageResponse {
-    Package package = 1;
+    PackageWithStats package = 1;
 }
