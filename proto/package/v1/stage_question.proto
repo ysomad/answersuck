@@ -3,10 +3,23 @@ syntax = "proto3";
 package package.v1;
 option go_package = "package/v1;packagev1";
 
-import "package/v1/stage_question_type.proto";
-import "package/v1/transfer_type.proto";
-
 import "google/protobuf/timestamp.proto";
+
+enum TransferType {
+    TRANSFER_TYPE_UNSPECIFIED = 0;
+    BEFORE = 1;
+    AFTER = 2;
+    NEVER = 3;
+}
+
+enum StageQuestionType {
+    STAGE_QUESTION_TYPE_UNSPECIFIED = 0;
+    STANDARD = 1;
+    SAFE = 2;
+    SECRET = 3;
+    SUPER_SECRET = 4;
+    AUCTION = 5;
+}
 
 message StageQuestion {
     message Question {

@@ -71,25 +71,7 @@ gen-proto:
 		--twirp_out=internal/gen/proto \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/question/v1/*.proto
-	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
-		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
-		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/player/v1/*.proto
-	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
-		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
-		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/package/v1/*.proto
+		proto/sort/v1/*.proto
 	protoc \
 		-I proto \
 		-I proto/validate \
@@ -107,7 +89,23 @@ gen-proto:
 		--twirp_out=internal/gen/proto \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/sort/v1/*.proto
-
-
-
+		proto/player/v1/*.proto
+	protoc \
+		-I proto \
+		-I proto/validate \
+		--go_out=internal/gen/proto \
+		--go_opt=paths=source_relative \
+		--twirp_out=internal/gen/proto \
+		--twirp_opt=paths=source_relative \
+		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
+		proto/question/v1/*.proto
+	protoc \
+		-I proto \
+		-I proto/validate \
+		--go_out=internal/gen/proto \
+		--go_opt=paths=source_relative \
+		--twirp_out=internal/gen/proto \
+		--twirp_opt=paths=source_relative \
+		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
+		proto/package/v1/*.proto
+	

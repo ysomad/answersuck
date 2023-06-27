@@ -18,7 +18,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
-	sortv1 "sort/v1"
+	sort1 "github.com/ysomad/answersuck/internal/gen/proto/v1/sort"
 )
 
 // ensure the imports are used
@@ -36,7 +36,7 @@ var (
 	_ = anypb.Any{}
 	_ = sort.Sort
 
-	_ = sortv1.SortDirection(0)
+	_ = sort1.SortDirection(0)
 )
 
 // Validate checks the field values on CreateTagRequest with the rules defined

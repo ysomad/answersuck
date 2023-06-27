@@ -8,10 +8,10 @@ package tagv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	sort "github.com/ysomad/answersuck/internal/gen/proto/v1/sort"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
-	v1 "sort/v1"
 	sync "sync"
 )
 
@@ -247,7 +247,7 @@ type ListTagsRequest_Sort struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CreationTime v1.SortDirection `protobuf:"varint,1,opt,name=creation_time,json=creationTime,proto3,enum=sort.v1.SortDirection" json:"creation_time,omitempty"`
+	CreationTime sort.SortDirection `protobuf:"varint,1,opt,name=creation_time,json=creationTime,proto3,enum=sort.v1.SortDirection" json:"creation_time,omitempty"`
 }
 
 func (x *ListTagsRequest_Sort) Reset() {
@@ -282,11 +282,11 @@ func (*ListTagsRequest_Sort) Descriptor() ([]byte, []int) {
 	return file_tag_v1_tag_service_proto_rawDescGZIP(), []int{2, 0}
 }
 
-func (x *ListTagsRequest_Sort) GetCreationTime() v1.SortDirection {
+func (x *ListTagsRequest_Sort) GetCreationTime() sort.SortDirection {
 	if x != nil {
 		return x.CreationTime
 	}
-	return v1.SortDirection(0)
+	return sort.SortDirection(0)
 }
 
 var File_tag_v1_tag_service_proto protoreflect.FileDescriptor
@@ -357,7 +357,7 @@ var file_tag_v1_tag_service_proto_goTypes = []interface{}{
 	(*ListTagsResponse)(nil),     // 3: tag.v1.ListTagsResponse
 	(*ListTagsRequest_Sort)(nil), // 4: tag.v1.ListTagsRequest.Sort
 	(*Tag)(nil),                  // 5: tag.v1.Tag
-	(v1.SortDirection)(0),        // 6: sort.v1.SortDirection
+	(sort.SortDirection)(0),      // 6: sort.v1.SortDirection
 }
 var file_tag_v1_tag_service_proto_depIdxs = []int32{
 	5, // 0: tag.v1.CreateTagResponse.tag:type_name -> tag.v1.Tag

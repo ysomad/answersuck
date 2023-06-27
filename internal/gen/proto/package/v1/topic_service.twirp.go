@@ -502,7 +502,7 @@ func (s *topicServiceServer) serveCreateTopicProtobuf(ctx context.Context, resp 
 }
 
 func (s *topicServiceServer) ServiceDescriptor() ([]byte, int) {
-	return twirpFileDescriptor2, 0
+	return twirpFileDescriptor3, 0
 }
 
 func (s *topicServiceServer) ProtocGenTwirpVersion() string {
@@ -516,7 +516,7 @@ func (s *topicServiceServer) PathPrefix() string {
 	return baseServicePath(s.pathPrefix, "package.v1", "TopicService")
 }
 
-var twirpFileDescriptor2 = []byte{
+var twirpFileDescriptor3 = []byte{
 	// 215 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2b, 0x48, 0x4c, 0xce,
 	0x4e, 0x4c, 0x4f, 0xd5, 0x2f, 0x33, 0xd4, 0x2f, 0xc9, 0x2f, 0xc8, 0x4c, 0x8e, 0x2f, 0x4e, 0x2d,

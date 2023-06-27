@@ -44,12 +44,6 @@ type StageService interface {
 	// RemoveTopic removes topic from package stage (not actually deleting it from DB).
 	RemoveTopic(context.Context, *RemoveTopicRequest) (*google_protobuf3.Empty, error)
 
-	// CreateStageQuestion adds question for topic in package stage.
-	CreateStageQuestion(context.Context, *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error)
-
-	// GetStageQuestion returns stage question.
-	GetStageQuestion(context.Context, *GetStageQuestionRequest) (*GetStageQuestionResponse, error)
-
 	// GetQuestionGrid returns grid of question topics as headers and questions as cells.
 	GetQuestionGrid(context.Context, *GetQuestionGridRequest) (*GetQuestionGridResponse, error)
 }
@@ -60,7 +54,7 @@ type StageService interface {
 
 type stageServiceProtobufClient struct {
 	client      HTTPClient
-	urls        [8]string
+	urls        [6]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -88,14 +82,12 @@ func NewStageServiceProtobufClient(baseURL string, client HTTPClient, opts ...tw
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "package.v1", "StageService")
-	urls := [8]string{
+	urls := [6]string{
 		serviceURL + "CreateStage",
 		serviceURL + "UpdateStagePosition",
 		serviceURL + "ListStages",
 		serviceURL + "AddTopic",
 		serviceURL + "RemoveTopic",
-		serviceURL + "CreateStageQuestion",
-		serviceURL + "GetStageQuestion",
 		serviceURL + "GetQuestionGrid",
 	}
 
@@ -337,98 +329,6 @@ func (c *stageServiceProtobufClient) callRemoveTopic(ctx context.Context, in *Re
 	return out, nil
 }
 
-func (c *stageServiceProtobufClient) CreateStageQuestion(ctx context.Context, in *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-	ctx = ctxsetters.WithPackageName(ctx, "package.v1")
-	ctx = ctxsetters.WithServiceName(ctx, "StageService")
-	ctx = ctxsetters.WithMethodName(ctx, "CreateStageQuestion")
-	caller := c.callCreateStageQuestion
-	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-			resp, err := c.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*CreateStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*CreateStageQuestionRequest) when calling interceptor")
-					}
-					return c.callCreateStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*CreateStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*CreateStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-	return caller(ctx, in)
-}
-
-func (c *stageServiceProtobufClient) callCreateStageQuestion(ctx context.Context, in *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-	out := new(CreateStageQuestionResponse)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[5], in, out)
-	if err != nil {
-		twerr, ok := err.(twirp.Error)
-		if !ok {
-			twerr = twirp.InternalErrorWith(err)
-		}
-		callClientError(ctx, c.opts.Hooks, twerr)
-		return nil, err
-	}
-
-	callClientResponseReceived(ctx, c.opts.Hooks)
-
-	return out, nil
-}
-
-func (c *stageServiceProtobufClient) GetStageQuestion(ctx context.Context, in *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-	ctx = ctxsetters.WithPackageName(ctx, "package.v1")
-	ctx = ctxsetters.WithServiceName(ctx, "StageService")
-	ctx = ctxsetters.WithMethodName(ctx, "GetStageQuestion")
-	caller := c.callGetStageQuestion
-	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-			resp, err := c.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*GetStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*GetStageQuestionRequest) when calling interceptor")
-					}
-					return c.callGetStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*GetStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*GetStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-	return caller(ctx, in)
-}
-
-func (c *stageServiceProtobufClient) callGetStageQuestion(ctx context.Context, in *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-	out := new(GetStageQuestionResponse)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[6], in, out)
-	if err != nil {
-		twerr, ok := err.(twirp.Error)
-		if !ok {
-			twerr = twirp.InternalErrorWith(err)
-		}
-		callClientError(ctx, c.opts.Hooks, twerr)
-		return nil, err
-	}
-
-	callClientResponseReceived(ctx, c.opts.Hooks)
-
-	return out, nil
-}
-
 func (c *stageServiceProtobufClient) GetQuestionGrid(ctx context.Context, in *GetQuestionGridRequest) (*GetQuestionGridResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "package.v1")
 	ctx = ctxsetters.WithServiceName(ctx, "StageService")
@@ -460,7 +360,7 @@ func (c *stageServiceProtobufClient) GetQuestionGrid(ctx context.Context, in *Ge
 
 func (c *stageServiceProtobufClient) callGetQuestionGrid(ctx context.Context, in *GetQuestionGridRequest) (*GetQuestionGridResponse, error) {
 	out := new(GetQuestionGridResponse)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[7], in, out)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[5], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -481,7 +381,7 @@ func (c *stageServiceProtobufClient) callGetQuestionGrid(ctx context.Context, in
 
 type stageServiceJSONClient struct {
 	client      HTTPClient
-	urls        [8]string
+	urls        [6]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -509,14 +409,12 @@ func NewStageServiceJSONClient(baseURL string, client HTTPClient, opts ...twirp.
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "package.v1", "StageService")
-	urls := [8]string{
+	urls := [6]string{
 		serviceURL + "CreateStage",
 		serviceURL + "UpdateStagePosition",
 		serviceURL + "ListStages",
 		serviceURL + "AddTopic",
 		serviceURL + "RemoveTopic",
-		serviceURL + "CreateStageQuestion",
-		serviceURL + "GetStageQuestion",
 		serviceURL + "GetQuestionGrid",
 	}
 
@@ -758,98 +656,6 @@ func (c *stageServiceJSONClient) callRemoveTopic(ctx context.Context, in *Remove
 	return out, nil
 }
 
-func (c *stageServiceJSONClient) CreateStageQuestion(ctx context.Context, in *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-	ctx = ctxsetters.WithPackageName(ctx, "package.v1")
-	ctx = ctxsetters.WithServiceName(ctx, "StageService")
-	ctx = ctxsetters.WithMethodName(ctx, "CreateStageQuestion")
-	caller := c.callCreateStageQuestion
-	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-			resp, err := c.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*CreateStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*CreateStageQuestionRequest) when calling interceptor")
-					}
-					return c.callCreateStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*CreateStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*CreateStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-	return caller(ctx, in)
-}
-
-func (c *stageServiceJSONClient) callCreateStageQuestion(ctx context.Context, in *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-	out := new(CreateStageQuestionResponse)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[5], in, out)
-	if err != nil {
-		twerr, ok := err.(twirp.Error)
-		if !ok {
-			twerr = twirp.InternalErrorWith(err)
-		}
-		callClientError(ctx, c.opts.Hooks, twerr)
-		return nil, err
-	}
-
-	callClientResponseReceived(ctx, c.opts.Hooks)
-
-	return out, nil
-}
-
-func (c *stageServiceJSONClient) GetStageQuestion(ctx context.Context, in *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-	ctx = ctxsetters.WithPackageName(ctx, "package.v1")
-	ctx = ctxsetters.WithServiceName(ctx, "StageService")
-	ctx = ctxsetters.WithMethodName(ctx, "GetStageQuestion")
-	caller := c.callGetStageQuestion
-	if c.interceptor != nil {
-		caller = func(ctx context.Context, req *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-			resp, err := c.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*GetStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*GetStageQuestionRequest) when calling interceptor")
-					}
-					return c.callGetStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*GetStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*GetStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-	return caller(ctx, in)
-}
-
-func (c *stageServiceJSONClient) callGetStageQuestion(ctx context.Context, in *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-	out := new(GetStageQuestionResponse)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[6], in, out)
-	if err != nil {
-		twerr, ok := err.(twirp.Error)
-		if !ok {
-			twerr = twirp.InternalErrorWith(err)
-		}
-		callClientError(ctx, c.opts.Hooks, twerr)
-		return nil, err
-	}
-
-	callClientResponseReceived(ctx, c.opts.Hooks)
-
-	return out, nil
-}
-
 func (c *stageServiceJSONClient) GetQuestionGrid(ctx context.Context, in *GetQuestionGridRequest) (*GetQuestionGridResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "package.v1")
 	ctx = ctxsetters.WithServiceName(ctx, "StageService")
@@ -881,7 +687,7 @@ func (c *stageServiceJSONClient) GetQuestionGrid(ctx context.Context, in *GetQue
 
 func (c *stageServiceJSONClient) callGetQuestionGrid(ctx context.Context, in *GetQuestionGridRequest) (*GetQuestionGridResponse, error) {
 	out := new(GetQuestionGridResponse)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[7], in, out)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[5], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -1007,12 +813,6 @@ func (s *stageServiceServer) ServeHTTP(resp http.ResponseWriter, req *http.Reque
 		return
 	case "RemoveTopic":
 		s.serveRemoveTopic(ctx, resp, req)
-		return
-	case "CreateStageQuestion":
-		s.serveCreateStageQuestion(ctx, resp, req)
-		return
-	case "GetStageQuestion":
-		s.serveGetStageQuestion(ctx, resp, req)
 		return
 	case "GetQuestionGrid":
 		s.serveGetQuestionGrid(ctx, resp, req)
@@ -1924,366 +1724,6 @@ func (s *stageServiceServer) serveRemoveTopicProtobuf(ctx context.Context, resp 
 	callResponseSent(ctx, s.hooks)
 }
 
-func (s *stageServiceServer) serveCreateStageQuestion(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	header := req.Header.Get("Content-Type")
-	i := strings.Index(header, ";")
-	if i == -1 {
-		i = len(header)
-	}
-	switch strings.TrimSpace(strings.ToLower(header[:i])) {
-	case "application/json":
-		s.serveCreateStageQuestionJSON(ctx, resp, req)
-	case "application/protobuf":
-		s.serveCreateStageQuestionProtobuf(ctx, resp, req)
-	default:
-		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
-		twerr := badRouteError(msg, req.Method, req.URL.Path)
-		s.writeError(ctx, resp, twerr)
-	}
-}
-
-func (s *stageServiceServer) serveCreateStageQuestionJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "CreateStageQuestion")
-	ctx, err = callRequestRouted(ctx, s.hooks)
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-
-	d := json.NewDecoder(req.Body)
-	rawReqBody := json.RawMessage{}
-	if err := d.Decode(&rawReqBody); err != nil {
-		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
-		return
-	}
-	reqContent := new(CreateStageQuestionRequest)
-	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
-	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
-		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
-		return
-	}
-
-	handler := s.StageService.CreateStageQuestion
-	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-			resp, err := s.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*CreateStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*CreateStageQuestionRequest) when calling interceptor")
-					}
-					return s.StageService.CreateStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*CreateStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*CreateStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-
-	// Call service method
-	var respContent *CreateStageQuestionResponse
-	func() {
-		defer ensurePanicResponses(ctx, resp, s.hooks)
-		respContent, err = handler(ctx, reqContent)
-	}()
-
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *CreateStageQuestionResponse and nil error while calling CreateStageQuestion. nil responses are not supported"))
-		return
-	}
-
-	ctx = callResponsePrepared(ctx, s.hooks)
-
-	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
-	respBytes, err := marshaler.Marshal(respContent)
-	if err != nil {
-		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
-		return
-	}
-
-	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
-	resp.Header().Set("Content-Type", "application/json")
-	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
-	resp.WriteHeader(http.StatusOK)
-
-	if n, err := resp.Write(respBytes); err != nil {
-		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
-		twerr := twirp.NewError(twirp.Unknown, msg)
-		ctx = callError(ctx, s.hooks, twerr)
-	}
-	callResponseSent(ctx, s.hooks)
-}
-
-func (s *stageServiceServer) serveCreateStageQuestionProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "CreateStageQuestion")
-	ctx, err = callRequestRouted(ctx, s.hooks)
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-
-	buf, err := io.ReadAll(req.Body)
-	if err != nil {
-		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
-		return
-	}
-	reqContent := new(CreateStageQuestionRequest)
-	if err = proto.Unmarshal(buf, reqContent); err != nil {
-		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
-		return
-	}
-
-	handler := s.StageService.CreateStageQuestion
-	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *CreateStageQuestionRequest) (*CreateStageQuestionResponse, error) {
-			resp, err := s.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*CreateStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*CreateStageQuestionRequest) when calling interceptor")
-					}
-					return s.StageService.CreateStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*CreateStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*CreateStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-
-	// Call service method
-	var respContent *CreateStageQuestionResponse
-	func() {
-		defer ensurePanicResponses(ctx, resp, s.hooks)
-		respContent, err = handler(ctx, reqContent)
-	}()
-
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *CreateStageQuestionResponse and nil error while calling CreateStageQuestion. nil responses are not supported"))
-		return
-	}
-
-	ctx = callResponsePrepared(ctx, s.hooks)
-
-	respBytes, err := proto.Marshal(respContent)
-	if err != nil {
-		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
-		return
-	}
-
-	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
-	resp.Header().Set("Content-Type", "application/protobuf")
-	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
-	resp.WriteHeader(http.StatusOK)
-	if n, err := resp.Write(respBytes); err != nil {
-		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
-		twerr := twirp.NewError(twirp.Unknown, msg)
-		ctx = callError(ctx, s.hooks, twerr)
-	}
-	callResponseSent(ctx, s.hooks)
-}
-
-func (s *stageServiceServer) serveGetStageQuestion(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	header := req.Header.Get("Content-Type")
-	i := strings.Index(header, ";")
-	if i == -1 {
-		i = len(header)
-	}
-	switch strings.TrimSpace(strings.ToLower(header[:i])) {
-	case "application/json":
-		s.serveGetStageQuestionJSON(ctx, resp, req)
-	case "application/protobuf":
-		s.serveGetStageQuestionProtobuf(ctx, resp, req)
-	default:
-		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
-		twerr := badRouteError(msg, req.Method, req.URL.Path)
-		s.writeError(ctx, resp, twerr)
-	}
-}
-
-func (s *stageServiceServer) serveGetStageQuestionJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "GetStageQuestion")
-	ctx, err = callRequestRouted(ctx, s.hooks)
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-
-	d := json.NewDecoder(req.Body)
-	rawReqBody := json.RawMessage{}
-	if err := d.Decode(&rawReqBody); err != nil {
-		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
-		return
-	}
-	reqContent := new(GetStageQuestionRequest)
-	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
-	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
-		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
-		return
-	}
-
-	handler := s.StageService.GetStageQuestion
-	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-			resp, err := s.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*GetStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*GetStageQuestionRequest) when calling interceptor")
-					}
-					return s.StageService.GetStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*GetStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*GetStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-
-	// Call service method
-	var respContent *GetStageQuestionResponse
-	func() {
-		defer ensurePanicResponses(ctx, resp, s.hooks)
-		respContent, err = handler(ctx, reqContent)
-	}()
-
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *GetStageQuestionResponse and nil error while calling GetStageQuestion. nil responses are not supported"))
-		return
-	}
-
-	ctx = callResponsePrepared(ctx, s.hooks)
-
-	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
-	respBytes, err := marshaler.Marshal(respContent)
-	if err != nil {
-		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
-		return
-	}
-
-	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
-	resp.Header().Set("Content-Type", "application/json")
-	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
-	resp.WriteHeader(http.StatusOK)
-
-	if n, err := resp.Write(respBytes); err != nil {
-		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
-		twerr := twirp.NewError(twirp.Unknown, msg)
-		ctx = callError(ctx, s.hooks, twerr)
-	}
-	callResponseSent(ctx, s.hooks)
-}
-
-func (s *stageServiceServer) serveGetStageQuestionProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-	var err error
-	ctx = ctxsetters.WithMethodName(ctx, "GetStageQuestion")
-	ctx, err = callRequestRouted(ctx, s.hooks)
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-
-	buf, err := io.ReadAll(req.Body)
-	if err != nil {
-		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
-		return
-	}
-	reqContent := new(GetStageQuestionRequest)
-	if err = proto.Unmarshal(buf, reqContent); err != nil {
-		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
-		return
-	}
-
-	handler := s.StageService.GetStageQuestion
-	if s.interceptor != nil {
-		handler = func(ctx context.Context, req *GetStageQuestionRequest) (*GetStageQuestionResponse, error) {
-			resp, err := s.interceptor(
-				func(ctx context.Context, req interface{}) (interface{}, error) {
-					typedReq, ok := req.(*GetStageQuestionRequest)
-					if !ok {
-						return nil, twirp.InternalError("failed type assertion req.(*GetStageQuestionRequest) when calling interceptor")
-					}
-					return s.StageService.GetStageQuestion(ctx, typedReq)
-				},
-			)(ctx, req)
-			if resp != nil {
-				typedResp, ok := resp.(*GetStageQuestionResponse)
-				if !ok {
-					return nil, twirp.InternalError("failed type assertion resp.(*GetStageQuestionResponse) when calling interceptor")
-				}
-				return typedResp, err
-			}
-			return nil, err
-		}
-	}
-
-	// Call service method
-	var respContent *GetStageQuestionResponse
-	func() {
-		defer ensurePanicResponses(ctx, resp, s.hooks)
-		respContent, err = handler(ctx, reqContent)
-	}()
-
-	if err != nil {
-		s.writeError(ctx, resp, err)
-		return
-	}
-	if respContent == nil {
-		s.writeError(ctx, resp, twirp.InternalError("received a nil *GetStageQuestionResponse and nil error while calling GetStageQuestion. nil responses are not supported"))
-		return
-	}
-
-	ctx = callResponsePrepared(ctx, s.hooks)
-
-	respBytes, err := proto.Marshal(respContent)
-	if err != nil {
-		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
-		return
-	}
-
-	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
-	resp.Header().Set("Content-Type", "application/protobuf")
-	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
-	resp.WriteHeader(http.StatusOK)
-	if n, err := resp.Write(respBytes); err != nil {
-		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
-		twerr := twirp.NewError(twirp.Unknown, msg)
-		ctx = callError(ctx, s.hooks, twerr)
-	}
-	callResponseSent(ctx, s.hooks)
-}
-
 func (s *stageServiceServer) serveGetQuestionGrid(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	header := req.Header.Get("Content-Type")
 	i := strings.Index(header, ";")
@@ -2465,7 +1905,7 @@ func (s *stageServiceServer) serveGetQuestionGridProtobuf(ctx context.Context, r
 }
 
 func (s *stageServiceServer) ServiceDescriptor() ([]byte, int) {
-	return twirpFileDescriptor1, 0
+	return twirpFileDescriptor2, 0
 }
 
 func (s *stageServiceServer) ProtocGenTwirpVersion() string {
@@ -2479,65 +1919,46 @@ func (s *stageServiceServer) PathPrefix() string {
 	return baseServicePath(s.pathPrefix, "package.v1", "StageService")
 }
 
-var twirpFileDescriptor1 = []byte{
-	// 940 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xcd, 0x6e, 0xdb, 0x46,
-	0x10, 0x06, 0xf5, 0xaf, 0xa1, 0xfc, 0x93, 0x75, 0xe0, 0xac, 0x69, 0xd8, 0x56, 0x19, 0x37, 0x55,
-	0xd3, 0x94, 0x82, 0x95, 0x63, 0x03, 0xb4, 0xa1, 0x6b, 0x18, 0x8e, 0x8b, 0x20, 0x65, 0x94, 0x4b,
-	0xd0, 0x56, 0xa0, 0xc5, 0xb5, 0x4b, 0xc4, 0x14, 0x19, 0xee, 0x5a, 0xad, 0x4f, 0x05, 0x82, 0xbe,
-	0x4e, 0x5f, 0xa5, 0xcf, 0x53, 0xf8, 0x54, 0x70, 0x7f, 0xa4, 0xa5, 0x24, 0x2a, 0x3a, 0xf8, 0xc6,
-	0x9d, 0xf9, 0xf6, 0xdb, 0x99, 0x6f, 0x67, 0x76, 0x08, 0xfb, 0x89, 0x3f, 0xfc, 0xe0, 0x5f, 0x91,
-	0xee, 0xf8, 0xa8, 0x4b, 0x99, 0x7f, 0x45, 0x06, 0x94, 0xa4, 0xe3, 0x70, 0x48, 0x9c, 0x24, 0x8d,
-	0x59, 0x8c, 0x40, 0xfa, 0x9d, 0xf1, 0x91, 0x85, 0x35, 0xac, 0x32, 0x73, 0x94, 0x75, 0x38, 0xc7,
-	0xf2, 0xf1, 0x86, 0x50, 0x16, 0xc6, 0xa3, 0x01, 0xbb, 0x4d, 0x14, 0x4a, 0x3f, 0x8b, 0xa5, 0xfe,
-	0x88, 0x5e, 0x92, 0x54, 0xf7, 0x1f, 0x14, 0xb2, 0x48, 0xc0, 0xa3, 0xb1, 0x7f, 0x1d, 0x06, 0x3e,
-	0x23, 0x5d, 0xf5, 0x21, 0x1d, 0xbb, 0x57, 0x71, 0x7c, 0x75, 0x4d, 0xba, 0x7c, 0x75, 0x71, 0x73,
-	0xd9, 0x25, 0x51, 0xc2, 0x6e, 0x85, 0xd3, 0xfe, 0xdb, 0x00, 0x74, 0x9c, 0x12, 0x9f, 0x91, 0xb7,
-	0x19, 0xa9, 0x47, 0x38, 0x2b, 0xda, 0x03, 0x95, 0xdb, 0x20, 0x0c, 0xb0, 0xd1, 0x36, 0x3a, 0x55,
-	0xaf, 0x29, 0x2d, 0x67, 0x01, 0xea, 0x00, 0x88, 0x18, 0x46, 0x7e, 0x44, 0x70, 0xa9, 0x6d, 0x74,
-	0x9a, 0x6e, 0xf3, 0xce, 0xad, 0xa5, 0x95, 0xcd, 0x32, 0xde, 0xf7, 0x9a, 0xdc, 0xf9, 0xda, 0x8f,
-	0x08, 0xfa, 0x12, 0xd6, 0x05, 0x32, 0x89, 0x69, 0x98, 0x45, 0x8b, 0xcb, 0x9c, 0x6c, 0x8d, 0x5b,
-	0xdf, 0x48, 0xa3, 0xfd, 0x23, 0x6c, 0xe5, 0xa2, 0xa0, 0x49, 0x3c, 0xa2, 0x04, 0x7d, 0x0b, 0x75,
-	0x79, 0x28, 0x8f, 0xc1, 0xec, 0x6d, 0x39, 0x53, 0xc9, 0x9d, 0x37, 0xe2, 0xd3, 0x53, 0x18, 0xfb,
-	0x37, 0xb0, 0xde, 0x25, 0x81, 0x62, 0x51, 0xe4, 0x2a, 0xa7, 0x1d, 0x68, 0x88, 0x50, 0x26, 0x19,
-	0xd5, 0xf9, 0xfa, 0x2c, 0x58, 0x10, 0x65, 0x69, 0x51, 0x94, 0x3d, 0x78, 0xf0, 0x53, 0x48, 0x19,
-	0x67, 0xa7, 0xab, 0x49, 0x65, 0xff, 0x05, 0x48, 0xdf, 0x23, 0x13, 0x7b, 0x01, 0x35, 0x4e, 0x4d,
-	0xb1, 0xd1, 0x2e, 0x77, 0xcc, 0xde, 0xa1, 0x9e, 0xd7, 0x3c, 0xde, 0x11, 0xb2, 0xc8, 0x3d, 0xd6,
-	0x37, 0x50, 0xe5, 0x06, 0xb4, 0x0e, 0xa5, 0xc9, 0x99, 0xa5, 0x30, 0x40, 0x08, 0x2a, 0xd3, 0x1b,
-	0xf1, 0xf8, 0xb7, 0x7d, 0x0a, 0x1b, 0x2f, 0x83, 0xa0, 0x1f, 0x27, 0xe1, 0x70, 0x05, 0x25, 0x76,
-	0xa0, 0xc1, 0x32, 0x68, 0xe6, 0x12, 0x1a, 0xd4, 0xf9, 0xfa, 0x2c, 0xb0, 0x5f, 0x01, 0xf2, 0x48,
-	0x14, 0x8f, 0xc9, 0x3d, 0x70, 0xfd, 0x57, 0x06, 0x4b, 0xbb, 0xf0, 0x9f, 0x65, 0x29, 0x2b, 0xd2,
-	0x03, 0x30, 0x27, 0x3d, 0x32, 0xe1, 0x05, 0x65, 0x5a, 0x4a, 0x9d, 0x0b, 0xa8, 0x9c, 0x0f, 0xa8,
-	0x0f, 0x6b, 0xb9, 0xd6, 0xc3, 0x95, 0xb6, 0xd1, 0x59, 0xef, 0xed, 0xe9, 0xe2, 0xe7, 0xe2, 0xe9,
-	0xdf, 0x26, 0xc4, 0xdd, 0xbc, 0x73, 0xd7, 0x3e, 0x19, 0x80, 0x0d, 0x5c, 0xc2, 0x65, 0x5c, 0xc1,
-	0x55, 0xaf, 0xf5, 0x51, 0xf3, 0xa3, 0x67, 0x1a, 0xeb, 0x30, 0xa6, 0x0c, 0x57, 0xb3, 0x53, 0xdd,
-	0xfa, 0x9d, 0x5b, 0xb1, 0x4a, 0x1d, 0x63, 0x8a, 0x3e, 0x8e, 0x29, 0x43, 0x4f, 0xc1, 0xf4, 0x47,
-	0xf4, 0x8f, 0xac, 0xb9, 0xc3, 0x88, 0xe0, 0x1a, 0xc7, 0x66, 0xbd, 0x63, 0x55, 0xf0, 0x8b, 0x2c,
-	0x4b, 0xe1, 0xed, 0x87, 0x11, 0x41, 0x5f, 0x40, 0xeb, 0xf7, 0x98, 0xb2, 0xc1, 0x30, 0x8e, 0x22,
-	0x32, 0x62, 0xb8, 0xce, 0xaf, 0xd5, 0xcc, 0x6c, 0xc7, 0xc2, 0x94, 0x41, 0x28, 0x19, 0xa6, 0x84,
-	0x0d, 0x78, 0xfe, 0xb8, 0x21, 0x20, 0xc2, 0xc6, 0x2f, 0x2a, 0x13, 0x53, 0x42, 0x78, 0x74, 0x4d,
-	0x21, 0xa6, 0x30, 0xf1, 0x90, 0x0e, 0xc0, 0x0c, 0xe9, 0xe0, 0x03, 0x21, 0x89, 0x7f, 0x71, 0x4d,
-	0x30, 0xb4, 0x8d, 0x4e, 0xc3, 0x83, 0x90, 0x9e, 0x4b, 0x0b, 0x3a, 0x87, 0xb5, 0xdc, 0x93, 0x84,
-	0x4d, 0xae, 0x1b, 0xd6, 0x75, 0xeb, 0x4b, 0x00, 0x97, 0xac, 0x75, 0xe7, 0x36, 0x3f, 0x19, 0x35,
-	0x21, 0x99, 0xd7, 0x62, 0x9a, 0xcf, 0x1e, 0xc0, 0xee, 0xc2, 0x9b, 0x97, 0x9d, 0xf1, 0x83, 0x6a,
-	0x45, 0xa5, 0x9a, 0xec, 0xfc, 0x9d, 0xc2, 0x4b, 0x92, 0x5d, 0xaa, 0x96, 0xf6, 0x09, 0x3c, 0x3a,
-	0x25, 0x6c, 0x61, 0x5d, 0x3d, 0x85, 0x07, 0x33, 0x2f, 0xf0, 0xa4, 0xba, 0x36, 0x72, 0x24, 0x67,
-	0x81, 0xfd, 0x0b, 0xe0, 0x79, 0x9a, 0x7b, 0x0b, 0xf2, 0x39, 0x6c, 0x9f, 0x12, 0xa6, 0x96, 0xa7,
-	0x69, 0x18, 0x7c, 0xbe, 0xa1, 0xec, 0x7f, 0x4b, 0x3c, 0xb5, 0xfc, 0x2e, 0x19, 0xd2, 0x4b, 0xa8,
-	0xf1, 0x0a, 0x50, 0x2f, 0xca, 0xd7, 0x7a, 0x28, 0x05, 0x9b, 0x1c, 0xd1, 0xc9, 0x72, 0xa3, 0x75,
-	0x03, 0x0d, 0x85, 0x5a, 0xf4, 0xb2, 0x30, 0xf2, 0x27, 0x53, 0x2f, 0x4b, 0xf6, 0x8d, 0x8e, 0xa0,
-	0xc2, 0xab, 0xa1, 0xbc, 0x42, 0x17, 0x79, 0x1c, 0x9a, 0xd1, 0xf0, 0x22, 0xac, 0x70, 0x62, 0xfe,
-	0x6d, 0xdd, 0x42, 0x55, 0x14, 0xea, 0xec, 0x99, 0x0f, 0xa1, 0xca, 0x42, 0x76, 0xad, 0x9e, 0x33,
-	0xb1, 0x40, 0xaf, 0xa0, 0xa9, 0x54, 0xa7, 0xb8, 0xcc, 0x73, 0x7d, 0xb6, 0x4a, 0xae, 0x93, 0x9b,
-	0x98, 0x6e, 0xef, 0xfd, 0x53, 0x85, 0x16, 0x0f, 0xf5, 0xad, 0x98, 0xeb, 0xe8, 0x35, 0x98, 0x5a,
-	0x71, 0xa2, 0x7d, 0x9d, 0x78, 0x7e, 0x4c, 0x5a, 0x07, 0x85, 0x7e, 0x79, 0x2b, 0xef, 0x60, 0x6b,
-	0xc1, 0x44, 0x42, 0x4f, 0xf4, 0x7d, 0xc5, 0x23, 0xcb, 0xda, 0x76, 0xc4, 0xec, 0x76, 0xd4, 0xec,
-	0x76, 0x4e, 0xb2, 0xd9, 0x8d, 0xce, 0x01, 0xa6, 0x43, 0x02, 0xed, 0x15, 0x0d, 0x0f, 0x41, 0xb2,
-	0xbf, 0x7c, 0xb6, 0xa0, 0xef, 0xa1, 0xa1, 0x06, 0x04, 0xda, 0xd5, 0xb1, 0x33, 0x63, 0xa3, 0x30,
-	0x9a, 0x13, 0x30, 0xb5, 0xc1, 0x90, 0x17, 0x6d, 0x7e, 0x62, 0x14, 0xd2, 0x5c, 0xe6, 0xfe, 0x01,
-	0x26, 0x95, 0xf8, 0xa4, 0x40, 0xe3, 0x99, 0xde, 0xb6, 0xbe, 0xfa, 0x2c, 0x4e, 0xe6, 0xfb, 0x2b,
-	0x6c, 0xce, 0x36, 0x36, 0x7a, 0x3c, 0x53, 0x41, 0x0b, 0x4f, 0x38, 0x5c, 0x0e, 0x92, 0xf4, 0xef,
-	0x61, 0x63, 0xa6, 0x04, 0x91, 0xbd, 0xb4, 0x3e, 0x05, 0xf9, 0xe3, 0x15, 0x6a, 0xd8, 0xdd, 0x7e,
-	0xff, 0x70, 0xfa, 0x1b, 0xf8, 0x9d, 0xfc, 0x1c, 0x1f, 0x5d, 0xd4, 0xb8, 0x94, 0xcf, 0xff, 0x0f,
-	0x00, 0x00, 0xff, 0xff, 0x63, 0xb1, 0x53, 0xf5, 0xb1, 0x0a, 0x00, 0x00,
+var twirpFileDescriptor2 = []byte{
+	// 625 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x55, 0x4d, 0x6f, 0xd3, 0x4c,
+	0x10, 0x56, 0xbe, 0x93, 0xc9, 0xfb, 0xa6, 0xb0, 0xa9, 0x52, 0xd7, 0x55, 0xd2, 0xc8, 0x7c, 0x28,
+	0x08, 0x70, 0x94, 0xf4, 0x08, 0x12, 0x6a, 0xa0, 0x8a, 0x52, 0x50, 0x55, 0xdc, 0xf6, 0xd2, 0x03,
+	0x95, 0x1b, 0x2f, 0x91, 0x45, 0x12, 0x9b, 0xec, 0xc6, 0x22, 0x27, 0x2e, 0xfc, 0x3e, 0x7e, 0x06,
+	0x3f, 0x82, 0x13, 0xf2, 0xec, 0x6e, 0xed, 0xd6, 0x71, 0xc9, 0x81, 0xdb, 0xec, 0x7c, 0x3c, 0xfb,
+	0xcc, 0x8c, 0x9f, 0x35, 0xb4, 0x7c, 0x7b, 0xfc, 0xc5, 0x9e, 0xd0, 0x6e, 0xd0, 0xeb, 0x32, 0x6e,
+	0x4f, 0xe8, 0x15, 0xa3, 0x8b, 0xc0, 0x1d, 0x53, 0xd3, 0x5f, 0x78, 0xdc, 0x23, 0x20, 0xe3, 0x66,
+	0xd0, 0xd3, 0xb5, 0x58, 0xae, 0x72, 0x63, 0x96, 0xbe, 0x9f, 0x40, 0xf9, 0xba, 0xa4, 0x8c, 0xbb,
+	0xde, 0x5c, 0x26, 0xec, 0x04, 0xf6, 0xd4, 0x75, 0x6c, 0x4e, 0xbb, 0xca, 0x90, 0x81, 0xbd, 0x89,
+	0xe7, 0x4d, 0xa6, 0xb4, 0x8b, 0xa7, 0xeb, 0xe5, 0xe7, 0x2e, 0x9d, 0xf9, 0x7c, 0x25, 0x82, 0xc6,
+	0x8f, 0x0c, 0x90, 0xb7, 0x0b, 0x6a, 0x73, 0x7a, 0x16, 0x82, 0x5a, 0x14, 0x51, 0x49, 0x13, 0x14,
+	0xab, 0x2b, 0xd7, 0xd1, 0x32, 0xed, 0x4c, 0xa7, 0x60, 0x55, 0xa4, 0x67, 0xe4, 0x90, 0x0e, 0x80,
+	0xe0, 0x30, 0xb7, 0x67, 0x54, 0xcb, 0xb6, 0x33, 0x9d, 0xca, 0xa0, 0xf2, 0x7b, 0x50, 0x5c, 0xe4,
+	0x1f, 0xe4, 0xb4, 0x96, 0x55, 0xc1, 0xe0, 0x89, 0x3d, 0xa3, 0xe4, 0x09, 0xd4, 0x44, 0xa6, 0xef,
+	0x31, 0x37, 0x64, 0xab, 0xe5, 0x10, 0xec, 0x7f, 0xf4, 0x9e, 0x4a, 0xa7, 0xf1, 0x0e, 0xea, 0xb7,
+	0x58, 0x30, 0xdf, 0x9b, 0x33, 0x4a, 0x5e, 0x42, 0x49, 0x5e, 0x8a, 0x1c, 0xaa, 0xfd, 0xba, 0x19,
+	0x0d, 0xcb, 0x3c, 0x15, 0xa6, 0xa5, 0x72, 0x8c, 0x4f, 0xa0, 0x5f, 0xf8, 0x8e, 0x42, 0x51, 0xe0,
+	0xaa, 0xa7, 0x5d, 0x28, 0x0b, 0x2a, 0x37, 0x1d, 0x95, 0xf0, 0x3c, 0x72, 0xd6, 0xb0, 0xcc, 0xae,
+	0x63, 0xd9, 0x87, 0x87, 0x1f, 0x5c, 0xc6, 0x11, 0x9d, 0x6d, 0x36, 0x2a, 0xe3, 0x3b, 0x90, 0x78,
+	0x8d, 0x6c, 0xec, 0x35, 0x14, 0x11, 0x9a, 0x69, 0x99, 0x76, 0xae, 0x53, 0xed, 0x3f, 0x8e, 0xf7,
+	0x95, 0xcc, 0x37, 0xc5, 0x58, 0x64, 0x8d, 0xfe, 0x1c, 0x0a, 0xe8, 0x20, 0x35, 0xc8, 0xde, 0xdc,
+	0x99, 0x75, 0x1d, 0x42, 0x20, 0x1f, 0x6d, 0xc4, 0x42, 0xdb, 0x18, 0xc2, 0xd6, 0xa1, 0xe3, 0x9c,
+	0x7b, 0xbe, 0x3b, 0xde, 0x60, 0x12, 0xbb, 0x50, 0xe6, 0x61, 0x6a, 0x18, 0x12, 0x33, 0x28, 0xe1,
+	0x79, 0xe4, 0x18, 0xc7, 0x40, 0x2c, 0x3a, 0xf3, 0x02, 0xfa, 0x0f, 0xb0, 0x0e, 0xa0, 0x31, 0xa4,
+	0xfc, 0xa3, 0xfc, 0x82, 0x87, 0x0b, 0xd7, 0xf9, 0x3b, 0x9e, 0xf1, 0x33, 0x0b, 0x3b, 0x89, 0x2a,
+	0x39, 0xd0, 0x43, 0x28, 0x22, 0xb6, 0x1a, 0xe8, 0xb3, 0xf8, 0x40, 0x53, 0x8a, 0x4c, 0xd1, 0x88,
+	0x2c, 0xd4, 0x97, 0x50, 0x56, 0x59, 0xeb, 0x06, 0xcb, 0xe9, 0x37, 0xae, 0x06, 0x1b, 0xda, 0xa4,
+	0x07, 0x79, 0xbe, 0xf2, 0x29, 0x7e, 0xd0, 0xb5, 0x7e, 0x33, 0x7e, 0x21, 0x6e, 0x47, 0x81, 0x9d,
+	0xaf, 0x7c, 0x6a, 0x61, 0x6a, 0x08, 0x33, 0xf6, 0x18, 0xd7, 0xf2, 0x08, 0x8c, 0xb6, 0xbe, 0x82,
+	0x02, 0xf2, 0x48, 0xdc, 0xb9, 0x0d, 0x05, 0xee, 0xf2, 0xa9, 0xda, 0xa6, 0x38, 0x90, 0x63, 0xa8,
+	0x28, 0xe1, 0x33, 0x2d, 0x87, 0xbd, 0xbe, 0xd8, 0xa4, 0x57, 0xe5, 0xb4, 0xa2, 0xf2, 0xfe, 0xaf,
+	0x1c, 0xfc, 0x87, 0x54, 0xcf, 0xc4, 0x83, 0x44, 0x4e, 0xa0, 0x1a, 0x93, 0x21, 0x69, 0xc5, 0x81,
+	0x93, 0xaf, 0x84, 0xbe, 0x9f, 0x1a, 0x97, 0x5b, 0xb9, 0x80, 0xfa, 0x1a, 0x41, 0x92, 0xa7, 0xf1,
+	0xba, 0x74, 0xc5, 0xea, 0x0d, 0x53, 0x3c, 0x5d, 0xa6, 0x7a, 0xba, 0xcc, 0xa3, 0xf0, 0xe9, 0x22,
+	0xef, 0x01, 0x22, 0x8d, 0x90, 0x66, 0x9a, 0x76, 0x04, 0x48, 0xeb, 0x7e, 0x69, 0x91, 0x37, 0x50,
+	0x56, 0xfa, 0x20, 0x7b, 0xf1, 0xdc, 0x3b, 0xaa, 0x49, 0x65, 0x73, 0x04, 0xd5, 0x98, 0x2e, 0x6e,
+	0x0f, 0x2d, 0x29, 0x98, 0x54, 0x98, 0x4b, 0xd8, 0xba, 0xb3, 0x3b, 0x62, 0xdc, 0xbb, 0x58, 0x01,
+	0xf7, 0x68, 0x83, 0xe5, 0x0f, 0x1a, 0x97, 0xdb, 0xd1, 0xef, 0xe3, 0x95, 0x34, 0x83, 0xde, 0x75,
+	0x11, 0x39, 0x1c, 0xfc, 0x09, 0x00, 0x00, 0xff, 0xff, 0x19, 0x5d, 0x84, 0x94, 0xa3, 0x06, 0x00,
+	0x00,
 }

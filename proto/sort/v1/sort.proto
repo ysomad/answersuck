@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package sort.v1;
-option go_package = "sort/v1;sortv1";
+option go_package = "github.com/ysomad/answersuck/internal/gen/proto/v1/sort";
 
 enum SortDirection {
     SORT_DIRECTION_UNSPECIFIED = 0;
