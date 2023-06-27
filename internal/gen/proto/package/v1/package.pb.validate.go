@@ -35,22 +35,22 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on PackageStage with the rules defined in
+// Validate checks the field values on PackageRound with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *PackageStage) Validate() error {
+func (m *PackageRound) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on PackageStage with the rules defined
+// ValidateAll checks the field values on PackageRound with the rules defined
 // in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in PackageStageMultiError, or
+// result is a list of violation errors wrapped in PackageRoundMultiError, or
 // nil if none found.
-func (m *PackageStage) ValidateAll() error {
+func (m *PackageRound) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *PackageStage) validate(all bool) error {
+func (m *PackageRound) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -62,18 +62,18 @@ func (m *PackageStage) validate(all bool) error {
 	// no validation rules for Name
 
 	if len(errors) > 0 {
-		return PackageStageMultiError(errors)
+		return PackageRoundMultiError(errors)
 	}
 
 	return nil
 }
 
-// PackageStageMultiError is an error wrapping multiple validation errors
-// returned by PackageStage.ValidateAll() if the designated constraints aren't met.
-type PackageStageMultiError []error
+// PackageRoundMultiError is an error wrapping multiple validation errors
+// returned by PackageRound.ValidateAll() if the designated constraints aren't met.
+type PackageRoundMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m PackageStageMultiError) Error() string {
+func (m PackageRoundMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -82,11 +82,11 @@ func (m PackageStageMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m PackageStageMultiError) AllErrors() []error { return m }
+func (m PackageRoundMultiError) AllErrors() []error { return m }
 
-// PackageStageValidationError is the validation error returned by
-// PackageStage.Validate if the designated constraints aren't met.
-type PackageStageValidationError struct {
+// PackageRoundValidationError is the validation error returned by
+// PackageRound.Validate if the designated constraints aren't met.
+type PackageRoundValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -94,22 +94,22 @@ type PackageStageValidationError struct {
 }
 
 // Field function returns field value.
-func (e PackageStageValidationError) Field() string { return e.field }
+func (e PackageRoundValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e PackageStageValidationError) Reason() string { return e.reason }
+func (e PackageRoundValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e PackageStageValidationError) Cause() error { return e.cause }
+func (e PackageRoundValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e PackageStageValidationError) Key() bool { return e.key }
+func (e PackageRoundValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e PackageStageValidationError) ErrorName() string { return "PackageStageValidationError" }
+func (e PackageRoundValidationError) ErrorName() string { return "PackageRoundValidationError" }
 
 // Error satisfies the builtin error interface
-func (e PackageStageValidationError) Error() string {
+func (e PackageRoundValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -121,14 +121,14 @@ func (e PackageStageValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sPackageStage.%s: %s%s",
+		"invalid %sPackageRound.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = PackageStageValidationError{}
+var _ error = PackageRoundValidationError{}
 
 var _ interface {
 	Field() string
@@ -136,7 +136,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = PackageStageValidationError{}
+} = PackageRoundValidationError{}
 
 // Validate checks the field values on Package with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -169,7 +169,7 @@ func (m *Package) validate(all bool) error {
 
 	// no validation rules for CoverUrl
 
-	for idx, item := range m.GetStages() {
+	for idx, item := range m.GetRounds() {
 		_, _ = idx, item
 
 		if all {
@@ -177,7 +177,7 @@ func (m *Package) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, PackageValidationError{
-						field:  fmt.Sprintf("Stages[%v]", idx),
+						field:  fmt.Sprintf("Rounds[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -185,7 +185,7 @@ func (m *Package) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, PackageValidationError{
-						field:  fmt.Sprintf("Stages[%v]", idx),
+						field:  fmt.Sprintf("Rounds[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -194,7 +194,7 @@ func (m *Package) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return PackageValidationError{
-					field:  fmt.Sprintf("Stages[%v]", idx),
+					field:  fmt.Sprintf("Rounds[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -360,7 +360,7 @@ func (m *PackageStats) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for StageCount
+	// no validation rules for RoundCount
 
 	// no validation rules for TopicCount
 

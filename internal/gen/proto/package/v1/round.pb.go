@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        v4.23.3
-// source: package/v1/stage.proto
+// source: package/v1/round.proto
 
 package packagev1
 
@@ -22,33 +22,33 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type CreateStageRequest struct {
+type CreateRoundRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	PackageId     int32  `protobuf:"varint,1,opt,name=package_id,json=packageId,proto3" json:"package_id,omitempty"`             // required
-	StageName     string `protobuf:"bytes,2,opt,name=stage_name,json=stageName,proto3" json:"stage_name,omitempty"`              // required
-	StagePosition int32  `protobuf:"varint,3,opt,name=stage_position,json=stagePosition,proto3" json:"stage_position,omitempty"` // required
+	RoundName     string `protobuf:"bytes,2,opt,name=round_name,json=roundName,proto3" json:"round_name,omitempty"`              // required
+	RoundPosition int32  `protobuf:"varint,3,opt,name=round_position,json=roundPosition,proto3" json:"round_position,omitempty"` // required
 }
 
-func (x *CreateStageRequest) Reset() {
-	*x = CreateStageRequest{}
+func (x *CreateRoundRequest) Reset() {
+	*x = CreateRoundRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[0]
+		mi := &file_package_v1_round_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *CreateStageRequest) String() string {
+func (x *CreateRoundRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateStageRequest) ProtoMessage() {}
+func (*CreateRoundRequest) ProtoMessage() {}
 
-func (x *CreateStageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[0]
+func (x *CreateRoundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_package_v1_round_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,33 +59,33 @@ func (x *CreateStageRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateStageRequest.ProtoReflect.Descriptor instead.
-func (*CreateStageRequest) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use CreateRoundRequest.ProtoReflect.Descriptor instead.
+func (*CreateRoundRequest) Descriptor() ([]byte, []int) {
+	return file_package_v1_round_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CreateStageRequest) GetPackageId() int32 {
+func (x *CreateRoundRequest) GetPackageId() int32 {
 	if x != nil {
 		return x.PackageId
 	}
 	return 0
 }
 
-func (x *CreateStageRequest) GetStageName() string {
+func (x *CreateRoundRequest) GetRoundName() string {
 	if x != nil {
-		return x.StageName
+		return x.RoundName
 	}
 	return ""
 }
 
-func (x *CreateStageRequest) GetStagePosition() int32 {
+func (x *CreateRoundRequest) GetRoundPosition() int32 {
 	if x != nil {
-		return x.StagePosition
+		return x.RoundPosition
 	}
 	return 0
 }
 
-type CreateStageResponse struct {
+type CreateRoundResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -93,23 +93,23 @@ type CreateStageResponse struct {
 	Package *Package `protobuf:"bytes,1,opt,name=package,proto3" json:"package,omitempty"`
 }
 
-func (x *CreateStageResponse) Reset() {
-	*x = CreateStageResponse{}
+func (x *CreateRoundResponse) Reset() {
+	*x = CreateRoundResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[1]
+		mi := &file_package_v1_round_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *CreateStageResponse) String() string {
+func (x *CreateRoundResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateStageResponse) ProtoMessage() {}
+func (*CreateRoundResponse) ProtoMessage() {}
 
-func (x *CreateStageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[1]
+func (x *CreateRoundResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_package_v1_round_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -120,44 +120,44 @@ func (x *CreateStageResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateStageResponse.ProtoReflect.Descriptor instead.
-func (*CreateStageResponse) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{1}
+// Deprecated: Use CreateRoundResponse.ProtoReflect.Descriptor instead.
+func (*CreateRoundResponse) Descriptor() ([]byte, []int) {
+	return file_package_v1_round_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateStageResponse) GetPackage() *Package {
+func (x *CreateRoundResponse) GetPackage() *Package {
 	if x != nil {
 		return x.Package
 	}
 	return nil
 }
 
-type UpdateStagePositionRequest struct {
+type UpdateRoundPositionRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StageId       int32 `protobuf:"varint,1,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"`                   // required
-	StagePosition int32 `protobuf:"varint,2,opt,name=stage_position,json=stagePosition,proto3" json:"stage_position,omitempty"` // required
+	RoundId       int32 `protobuf:"varint,1,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"`                   // required
+	RoundPosition int32 `protobuf:"varint,2,opt,name=round_position,json=roundPosition,proto3" json:"round_position,omitempty"` // required
 }
 
-func (x *UpdateStagePositionRequest) Reset() {
-	*x = UpdateStagePositionRequest{}
+func (x *UpdateRoundPositionRequest) Reset() {
+	*x = UpdateRoundPositionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[2]
+		mi := &file_package_v1_round_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *UpdateStagePositionRequest) String() string {
+func (x *UpdateRoundPositionRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateStagePositionRequest) ProtoMessage() {}
+func (*UpdateRoundPositionRequest) ProtoMessage() {}
 
-func (x *UpdateStagePositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[2]
+func (x *UpdateRoundPositionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_package_v1_round_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,26 +168,26 @@ func (x *UpdateStagePositionRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateStagePositionRequest.ProtoReflect.Descriptor instead.
-func (*UpdateStagePositionRequest) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{2}
+// Deprecated: Use UpdateRoundPositionRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRoundPositionRequest) Descriptor() ([]byte, []int) {
+	return file_package_v1_round_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UpdateStagePositionRequest) GetStageId() int32 {
+func (x *UpdateRoundPositionRequest) GetRoundId() int32 {
 	if x != nil {
-		return x.StageId
+		return x.RoundId
 	}
 	return 0
 }
 
-func (x *UpdateStagePositionRequest) GetStagePosition() int32 {
+func (x *UpdateRoundPositionRequest) GetRoundPosition() int32 {
 	if x != nil {
-		return x.StagePosition
+		return x.RoundPosition
 	}
 	return 0
 }
 
-type ListStagesRequest struct {
+type ListRoundsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -195,23 +195,23 @@ type ListStagesRequest struct {
 	PackageId int32 `protobuf:"varint,1,opt,name=package_id,json=packageId,proto3" json:"package_id,omitempty"` // required
 }
 
-func (x *ListStagesRequest) Reset() {
-	*x = ListStagesRequest{}
+func (x *ListRoundsRequest) Reset() {
+	*x = ListRoundsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[3]
+		mi := &file_package_v1_round_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *ListStagesRequest) String() string {
+func (x *ListRoundsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListStagesRequest) ProtoMessage() {}
+func (*ListRoundsRequest) ProtoMessage() {}
 
-func (x *ListStagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[3]
+func (x *ListRoundsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_package_v1_round_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -222,43 +222,43 @@ func (x *ListStagesRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListStagesRequest.ProtoReflect.Descriptor instead.
-func (*ListStagesRequest) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use ListRoundsRequest.ProtoReflect.Descriptor instead.
+func (*ListRoundsRequest) Descriptor() ([]byte, []int) {
+	return file_package_v1_round_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *ListStagesRequest) GetPackageId() int32 {
+func (x *ListRoundsRequest) GetPackageId() int32 {
 	if x != nil {
 		return x.PackageId
 	}
 	return 0
 }
 
-type ListStagesResponse struct {
+type ListRoundsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Stages []*ListStagesResponse_Stage `protobuf:"bytes,1,rep,name=stages,proto3" json:"stages,omitempty"`
+	Rounds []*ListRoundsResponse_Round `protobuf:"bytes,1,rep,name=rounds,proto3" json:"rounds,omitempty"`
 }
 
-func (x *ListStagesResponse) Reset() {
-	*x = ListStagesResponse{}
+func (x *ListRoundsResponse) Reset() {
+	*x = ListRoundsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[4]
+		mi := &file_package_v1_round_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *ListStagesResponse) String() string {
+func (x *ListRoundsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListStagesResponse) ProtoMessage() {}
+func (*ListRoundsResponse) ProtoMessage() {}
 
-func (x *ListStagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[4]
+func (x *ListRoundsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_package_v1_round_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -269,14 +269,14 @@ func (x *ListStagesResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListStagesResponse.ProtoReflect.Descriptor instead.
-func (*ListStagesResponse) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{4}
+// Deprecated: Use ListRoundsResponse.ProtoReflect.Descriptor instead.
+func (*ListRoundsResponse) Descriptor() ([]byte, []int) {
+	return file_package_v1_round_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ListStagesResponse) GetStages() []*ListStagesResponse_Stage {
+func (x *ListRoundsResponse) GetRounds() []*ListRoundsResponse_Round {
 	if x != nil {
-		return x.Stages
+		return x.Rounds
 	}
 	return nil
 }
@@ -286,14 +286,14 @@ type AddTopicRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StageId int32 `protobuf:"varint,1,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"` // required
+	RoundId int32 `protobuf:"varint,1,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"` // required
 	TopicId int32 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"` // required
 }
 
 func (x *AddTopicRequest) Reset() {
 	*x = AddTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[5]
+		mi := &file_package_v1_round_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -306,7 +306,7 @@ func (x *AddTopicRequest) String() string {
 func (*AddTopicRequest) ProtoMessage() {}
 
 func (x *AddTopicRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[5]
+	mi := &file_package_v1_round_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -319,12 +319,12 @@ func (x *AddTopicRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddTopicRequest.ProtoReflect.Descriptor instead.
 func (*AddTopicRequest) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{5}
+	return file_package_v1_round_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *AddTopicRequest) GetStageId() int32 {
+func (x *AddTopicRequest) GetRoundId() int32 {
 	if x != nil {
-		return x.StageId
+		return x.RoundId
 	}
 	return 0
 }
@@ -341,14 +341,14 @@ type RemoveTopicRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StageId int32 `protobuf:"varint,1,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"` // required
+	RoundId int32 `protobuf:"varint,1,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"` // required
 	TopicId int32 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"` // required
 }
 
 func (x *RemoveTopicRequest) Reset() {
 	*x = RemoveTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[6]
+		mi := &file_package_v1_round_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -361,7 +361,7 @@ func (x *RemoveTopicRequest) String() string {
 func (*RemoveTopicRequest) ProtoMessage() {}
 
 func (x *RemoveTopicRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[6]
+	mi := &file_package_v1_round_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -374,12 +374,12 @@ func (x *RemoveTopicRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveTopicRequest.ProtoReflect.Descriptor instead.
 func (*RemoveTopicRequest) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{6}
+	return file_package_v1_round_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *RemoveTopicRequest) GetStageId() int32 {
+func (x *RemoveTopicRequest) GetRoundId() int32 {
 	if x != nil {
-		return x.StageId
+		return x.RoundId
 	}
 	return 0
 }
@@ -396,13 +396,13 @@ type GetQuestionGridRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	StageId int32 `protobuf:"varint,1,opt,name=stage_id,json=stageId,proto3" json:"stage_id,omitempty"` // required
+	RoundId int32 `protobuf:"varint,1,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"` // required
 }
 
 func (x *GetQuestionGridRequest) Reset() {
 	*x = GetQuestionGridRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[7]
+		mi := &file_package_v1_round_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -415,7 +415,7 @@ func (x *GetQuestionGridRequest) String() string {
 func (*GetQuestionGridRequest) ProtoMessage() {}
 
 func (x *GetQuestionGridRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[7]
+	mi := &file_package_v1_round_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -428,12 +428,12 @@ func (x *GetQuestionGridRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuestionGridRequest.ProtoReflect.Descriptor instead.
 func (*GetQuestionGridRequest) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{7}
+	return file_package_v1_round_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *GetQuestionGridRequest) GetStageId() int32 {
+func (x *GetQuestionGridRequest) GetRoundId() int32 {
 	if x != nil {
-		return x.StageId
+		return x.RoundId
 	}
 	return 0
 }
@@ -449,7 +449,7 @@ type GetQuestionGridResponse struct {
 func (x *GetQuestionGridResponse) Reset() {
 	*x = GetQuestionGridResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[8]
+		mi := &file_package_v1_round_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -462,7 +462,7 @@ func (x *GetQuestionGridResponse) String() string {
 func (*GetQuestionGridResponse) ProtoMessage() {}
 
 func (x *GetQuestionGridResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[8]
+	mi := &file_package_v1_round_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -475,7 +475,7 @@ func (x *GetQuestionGridResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuestionGridResponse.ProtoReflect.Descriptor instead.
 func (*GetQuestionGridResponse) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{8}
+	return file_package_v1_round_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetQuestionGridResponse) GetTopics() []*GetQuestionGridResponse_Topic {
@@ -485,7 +485,7 @@ func (x *GetQuestionGridResponse) GetTopics() []*GetQuestionGridResponse_Topic {
 	return nil
 }
 
-type ListStagesResponse_Stage struct {
+type ListRoundsResponse_Round struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -494,23 +494,23 @@ type ListStagesResponse_Stage struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 }
 
-func (x *ListStagesResponse_Stage) Reset() {
-	*x = ListStagesResponse_Stage{}
+func (x *ListRoundsResponse_Round) Reset() {
+	*x = ListRoundsResponse_Round{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[9]
+		mi := &file_package_v1_round_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *ListStagesResponse_Stage) String() string {
+func (x *ListRoundsResponse_Round) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListStagesResponse_Stage) ProtoMessage() {}
+func (*ListRoundsResponse_Round) ProtoMessage() {}
 
-func (x *ListStagesResponse_Stage) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[9]
+func (x *ListRoundsResponse_Round) ProtoReflect() protoreflect.Message {
+	mi := &file_package_v1_round_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -521,19 +521,19 @@ func (x *ListStagesResponse_Stage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListStagesResponse_Stage.ProtoReflect.Descriptor instead.
-func (*ListStagesResponse_Stage) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{4, 0}
+// Deprecated: Use ListRoundsResponse_Round.ProtoReflect.Descriptor instead.
+func (*ListRoundsResponse_Round) Descriptor() ([]byte, []int) {
+	return file_package_v1_round_proto_rawDescGZIP(), []int{4, 0}
 }
 
-func (x *ListStagesResponse_Stage) GetId() int32 {
+func (x *ListRoundsResponse_Round) GetId() int32 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *ListStagesResponse_Stage) GetName() string {
+func (x *ListRoundsResponse_Round) GetName() string {
 	if x != nil {
 		return x.Name
 	}
@@ -547,14 +547,14 @@ type GetQuestionGridResponse_Question struct {
 
 	Id   int32             `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Text string            `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
-	Type StageQuestionType `protobuf:"varint,3,opt,name=type,proto3,enum=package.v1.StageQuestionType" json:"type,omitempty"`
+	Type RoundQuestionType `protobuf:"varint,3,opt,name=type,proto3,enum=package.v1.RoundQuestionType" json:"type,omitempty"`
 	Cost int32             `protobuf:"varint,4,opt,name=cost,proto3" json:"cost,omitempty"`
 }
 
 func (x *GetQuestionGridResponse_Question) Reset() {
 	*x = GetQuestionGridResponse_Question{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[10]
+		mi := &file_package_v1_round_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -567,7 +567,7 @@ func (x *GetQuestionGridResponse_Question) String() string {
 func (*GetQuestionGridResponse_Question) ProtoMessage() {}
 
 func (x *GetQuestionGridResponse_Question) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[10]
+	mi := &file_package_v1_round_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -580,7 +580,7 @@ func (x *GetQuestionGridResponse_Question) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuestionGridResponse_Question.ProtoReflect.Descriptor instead.
 func (*GetQuestionGridResponse_Question) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{8, 0}
+	return file_package_v1_round_proto_rawDescGZIP(), []int{8, 0}
 }
 
 func (x *GetQuestionGridResponse_Question) GetId() int32 {
@@ -597,11 +597,11 @@ func (x *GetQuestionGridResponse_Question) GetText() string {
 	return ""
 }
 
-func (x *GetQuestionGridResponse_Question) GetType() StageQuestionType {
+func (x *GetQuestionGridResponse_Question) GetType() RoundQuestionType {
 	if x != nil {
 		return x.Type
 	}
-	return StageQuestionType_STAGE_QUESTION_TYPE_UNSPECIFIED
+	return RoundQuestionType_ROUND_QUESTION_TYPE_UNSPECIFIED
 }
 
 func (x *GetQuestionGridResponse_Question) GetCost() int32 {
@@ -624,7 +624,7 @@ type GetQuestionGridResponse_Topic struct {
 func (x *GetQuestionGridResponse_Topic) Reset() {
 	*x = GetQuestionGridResponse_Topic{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_package_v1_stage_proto_msgTypes[11]
+		mi := &file_package_v1_round_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -637,7 +637,7 @@ func (x *GetQuestionGridResponse_Topic) String() string {
 func (*GetQuestionGridResponse_Topic) ProtoMessage() {}
 
 func (x *GetQuestionGridResponse_Topic) ProtoReflect() protoreflect.Message {
-	mi := &file_package_v1_stage_proto_msgTypes[11]
+	mi := &file_package_v1_round_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -650,7 +650,7 @@ func (x *GetQuestionGridResponse_Topic) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuestionGridResponse_Topic.ProtoReflect.Descriptor instead.
 func (*GetQuestionGridResponse_Topic) Descriptor() ([]byte, []int) {
-	return file_package_v1_stage_proto_rawDescGZIP(), []int{8, 1}
+	return file_package_v1_round_proto_rawDescGZIP(), []int{8, 1}
 }
 
 func (x *GetQuestionGridResponse_Topic) GetId() int32 {
@@ -674,61 +674,61 @@ func (x *GetQuestionGridResponse_Topic) GetQuestions() []*GetQuestionGridRespons
 	return nil
 }
 
-var File_package_v1_stage_proto protoreflect.FileDescriptor
+var File_package_v1_round_proto protoreflect.FileDescriptor
 
-var file_package_v1_stage_proto_rawDesc = []byte{
-	0x0a, 0x16, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x73, 0x74, 0x61,
-	0x67, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67,
+var file_package_v1_round_proto_rawDesc = []byte{
+	0x0a, 0x16, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x6f, 0x75,
+	0x6e, 0x64, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67,
 	0x65, 0x2e, 0x76, 0x31, 0x1a, 0x18, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2f, 0x76, 0x31,
 	0x2f, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1f,
-	0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x73, 0x74, 0x61, 0x67, 0x65,
+	0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x6f, 0x75, 0x6e, 0x64,
 	0x5f, 0x71, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x17, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61,
 	0x74, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1b, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
 	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x65, 0x6d, 0x70, 0x74, 0x79, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x84, 0x01, 0x0a, 0x12, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x53, 0x74, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a,
+	0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a,
 	0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05,
-	0x52, 0x09, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x49, 0x64, 0x12, 0x28, 0x0a, 0x0a, 0x73,
-	0x74, 0x61, 0x67, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42,
-	0x09, 0xfa, 0x42, 0x06, 0x72, 0x04, 0x10, 0x03, 0x18, 0x1e, 0x52, 0x09, 0x73, 0x74, 0x61, 0x67,
-	0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x25, 0x0a, 0x0e, 0x73, 0x74, 0x61, 0x67, 0x65, 0x5f, 0x70,
-	0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0d, 0x73,
-	0x74, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x44, 0x0a, 0x13,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x52, 0x09, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x49, 0x64, 0x12, 0x28, 0x0a, 0x0a, 0x72,
+	0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x09, 0xfa, 0x42, 0x06, 0x72, 0x04, 0x10, 0x03, 0x18, 0x1e, 0x52, 0x09, 0x72, 0x6f, 0x75, 0x6e,
+	0x64, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x70,
+	0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0d, 0x72,
+	0x6f, 0x75, 0x6e, 0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x44, 0x0a, 0x13,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x12, 0x2d, 0x0a, 0x07, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76,
 	0x31, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x52, 0x07, 0x70, 0x61, 0x63, 0x6b, 0x61,
-	0x67, 0x65, 0x22, 0x5e, 0x0a, 0x1a, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x67,
-	0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x19, 0x0a, 0x08, 0x73, 0x74, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x07, 0x73, 0x74, 0x61, 0x67, 0x65, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x73,
-	0x74, 0x61, 0x67, 0x65, 0x5f, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x0d, 0x73, 0x74, 0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69,
-	0x6f, 0x6e, 0x22, 0x32, 0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73,
+	0x67, 0x65, 0x22, 0x5e, 0x0a, 0x1a, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e,
+	0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x19, 0x0a, 0x08, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x07, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x72,
+	0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x05, 0x52, 0x0d, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69,
+	0x6f, 0x6e, 0x22, 0x32, 0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x61, 0x63, 0x6b, 0x61,
 	0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x70, 0x61, 0x63,
-	0x6b, 0x61, 0x67, 0x65, 0x49, 0x64, 0x22, 0x7f, 0x0a, 0x12, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x74,
-	0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3c, 0x0a, 0x06,
-	0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x70,
-	0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x74,
-	0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x53, 0x74, 0x61,
-	0x67, 0x65, 0x52, 0x06, 0x73, 0x74, 0x61, 0x67, 0x65, 0x73, 0x1a, 0x2b, 0x0a, 0x05, 0x53, 0x74,
-	0x61, 0x67, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x6b, 0x61, 0x67, 0x65, 0x49, 0x64, 0x22, 0x7f, 0x0a, 0x12, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f,
+	0x75, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3c, 0x0a, 0x06,
+	0x72, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x70,
+	0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f,
+	0x75, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x52, 0x6f, 0x75,
+	0x6e, 0x64, 0x52, 0x06, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x1a, 0x2b, 0x0a, 0x05, 0x52, 0x6f,
+	0x75, 0x6e, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
 	0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x47, 0x0a, 0x0f, 0x41, 0x64, 0x64, 0x54, 0x6f,
-	0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x74,
-	0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73, 0x74,
-	0x61, 0x67, 0x65, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x72, 0x6f,
+	0x75, 0x6e, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x6f,
+	0x75, 0x6e, 0x64, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
 	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
 	0x22, 0x4a, 0x0a, 0x12, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x74, 0x61, 0x67, 0x65, 0x5f,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73, 0x74, 0x61, 0x67, 0x65, 0x49,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x49,
 	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
 	0x01, 0x28, 0x05, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0x33, 0x0a, 0x16,
 	0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x74, 0x61, 0x67, 0x65, 0x5f,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73, 0x74, 0x61, 0x67, 0x65, 0x49,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x49,
 	0x64, 0x22, 0xce, 0x02, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f,
 	0x6e, 0x47, 0x72, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x41, 0x0a,
 	0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e,
@@ -739,8 +739,8 @@ var file_package_v1_stage_proto_rawDesc = []byte{
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04,
 	0x74, 0x65, 0x78, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x65, 0x78, 0x74,
 	0x12, 0x31, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1d,
-	0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x61, 0x67,
-	0x65, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74,
+	0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x6f, 0x75, 0x6e,
+	0x64, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74,
 	0x79, 0x70, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x73, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28,
 	0x05, 0x52, 0x04, 0x63, 0x6f, 0x73, 0x74, 0x1a, 0x79, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63,
 	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x02, 0x69, 0x64,
@@ -750,22 +750,22 @@ var file_package_v1_stage_proto_rawDesc = []byte{
 	0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69,
 	0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x51,
 	0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x09, 0x71, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x32, 0xe6, 0x03, 0x0a, 0x0c, 0x53, 0x74, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61,
-	0x67, 0x65, 0x12, 0x1e, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x6e, 0x73, 0x32, 0xe6, 0x03, 0x0a, 0x0c, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75,
+	0x6e, 0x64, 0x12, 0x1e, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x55, 0x0a, 0x13, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61,
-	0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x26, 0x2e, 0x70, 0x61, 0x63,
-	0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x74,
-	0x61, 0x67, 0x65, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x55, 0x0a, 0x13, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75,
+	0x6e, 0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x26, 0x2e, 0x70, 0x61, 0x63,
+	0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f,
+	0x75, 0x6e, 0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x4b, 0x0a, 0x0a, 0x4c, 0x69,
-	0x73, 0x74, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x12, 0x1d, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61,
-	0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73,
+	0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x12, 0x1d, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61,
+	0x67, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x53, 0x74, 0x61, 0x67, 0x65, 0x73, 0x52,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x52,
 	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3f, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x54, 0x6f,
 	0x70, 0x69, 0x63, 0x12, 0x1b, 0x2e, 0x70, 0x61, 0x63, 0x6b, 0x61, 0x67, 0x65, 0x2e, 0x76, 0x31,
 	0x2e, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
@@ -786,53 +786,53 @@ var file_package_v1_stage_proto_rawDesc = []byte{
 }
 
 var (
-	file_package_v1_stage_proto_rawDescOnce sync.Once
-	file_package_v1_stage_proto_rawDescData = file_package_v1_stage_proto_rawDesc
+	file_package_v1_round_proto_rawDescOnce sync.Once
+	file_package_v1_round_proto_rawDescData = file_package_v1_round_proto_rawDesc
 )
 
-func file_package_v1_stage_proto_rawDescGZIP() []byte {
-	file_package_v1_stage_proto_rawDescOnce.Do(func() {
-		file_package_v1_stage_proto_rawDescData = protoimpl.X.CompressGZIP(file_package_v1_stage_proto_rawDescData)
+func file_package_v1_round_proto_rawDescGZIP() []byte {
+	file_package_v1_round_proto_rawDescOnce.Do(func() {
+		file_package_v1_round_proto_rawDescData = protoimpl.X.CompressGZIP(file_package_v1_round_proto_rawDescData)
 	})
-	return file_package_v1_stage_proto_rawDescData
+	return file_package_v1_round_proto_rawDescData
 }
 
-var file_package_v1_stage_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
-var file_package_v1_stage_proto_goTypes = []interface{}{
-	(*CreateStageRequest)(nil),               // 0: package.v1.CreateStageRequest
-	(*CreateStageResponse)(nil),              // 1: package.v1.CreateStageResponse
-	(*UpdateStagePositionRequest)(nil),       // 2: package.v1.UpdateStagePositionRequest
-	(*ListStagesRequest)(nil),                // 3: package.v1.ListStagesRequest
-	(*ListStagesResponse)(nil),               // 4: package.v1.ListStagesResponse
+var file_package_v1_round_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_package_v1_round_proto_goTypes = []interface{}{
+	(*CreateRoundRequest)(nil),               // 0: package.v1.CreateRoundRequest
+	(*CreateRoundResponse)(nil),              // 1: package.v1.CreateRoundResponse
+	(*UpdateRoundPositionRequest)(nil),       // 2: package.v1.UpdateRoundPositionRequest
+	(*ListRoundsRequest)(nil),                // 3: package.v1.ListRoundsRequest
+	(*ListRoundsResponse)(nil),               // 4: package.v1.ListRoundsResponse
 	(*AddTopicRequest)(nil),                  // 5: package.v1.AddTopicRequest
 	(*RemoveTopicRequest)(nil),               // 6: package.v1.RemoveTopicRequest
 	(*GetQuestionGridRequest)(nil),           // 7: package.v1.GetQuestionGridRequest
 	(*GetQuestionGridResponse)(nil),          // 8: package.v1.GetQuestionGridResponse
-	(*ListStagesResponse_Stage)(nil),         // 9: package.v1.ListStagesResponse.Stage
+	(*ListRoundsResponse_Round)(nil),         // 9: package.v1.ListRoundsResponse.Round
 	(*GetQuestionGridResponse_Question)(nil), // 10: package.v1.GetQuestionGridResponse.Question
 	(*GetQuestionGridResponse_Topic)(nil),    // 11: package.v1.GetQuestionGridResponse.Topic
 	(*Package)(nil),                          // 12: package.v1.Package
-	(StageQuestionType)(0),                   // 13: package.v1.StageQuestionType
+	(RoundQuestionType)(0),                   // 13: package.v1.RoundQuestionType
 	(*emptypb.Empty)(nil),                    // 14: google.protobuf.Empty
 }
-var file_package_v1_stage_proto_depIdxs = []int32{
-	12, // 0: package.v1.CreateStageResponse.package:type_name -> package.v1.Package
-	9,  // 1: package.v1.ListStagesResponse.stages:type_name -> package.v1.ListStagesResponse.Stage
+var file_package_v1_round_proto_depIdxs = []int32{
+	12, // 0: package.v1.CreateRoundResponse.package:type_name -> package.v1.Package
+	9,  // 1: package.v1.ListRoundsResponse.rounds:type_name -> package.v1.ListRoundsResponse.Round
 	11, // 2: package.v1.GetQuestionGridResponse.topics:type_name -> package.v1.GetQuestionGridResponse.Topic
-	13, // 3: package.v1.GetQuestionGridResponse.Question.type:type_name -> package.v1.StageQuestionType
+	13, // 3: package.v1.GetQuestionGridResponse.Question.type:type_name -> package.v1.RoundQuestionType
 	10, // 4: package.v1.GetQuestionGridResponse.Topic.questions:type_name -> package.v1.GetQuestionGridResponse.Question
-	0,  // 5: package.v1.StageService.CreateStage:input_type -> package.v1.CreateStageRequest
-	2,  // 6: package.v1.StageService.UpdateStagePosition:input_type -> package.v1.UpdateStagePositionRequest
-	3,  // 7: package.v1.StageService.ListStages:input_type -> package.v1.ListStagesRequest
-	5,  // 8: package.v1.StageService.AddTopic:input_type -> package.v1.AddTopicRequest
-	6,  // 9: package.v1.StageService.RemoveTopic:input_type -> package.v1.RemoveTopicRequest
-	7,  // 10: package.v1.StageService.GetQuestionGrid:input_type -> package.v1.GetQuestionGridRequest
-	1,  // 11: package.v1.StageService.CreateStage:output_type -> package.v1.CreateStageResponse
-	14, // 12: package.v1.StageService.UpdateStagePosition:output_type -> google.protobuf.Empty
-	4,  // 13: package.v1.StageService.ListStages:output_type -> package.v1.ListStagesResponse
-	14, // 14: package.v1.StageService.AddTopic:output_type -> google.protobuf.Empty
-	14, // 15: package.v1.StageService.RemoveTopic:output_type -> google.protobuf.Empty
-	8,  // 16: package.v1.StageService.GetQuestionGrid:output_type -> package.v1.GetQuestionGridResponse
+	0,  // 5: package.v1.RoundService.CreateRound:input_type -> package.v1.CreateRoundRequest
+	2,  // 6: package.v1.RoundService.UpdateRoundPosition:input_type -> package.v1.UpdateRoundPositionRequest
+	3,  // 7: package.v1.RoundService.ListRounds:input_type -> package.v1.ListRoundsRequest
+	5,  // 8: package.v1.RoundService.AddTopic:input_type -> package.v1.AddTopicRequest
+	6,  // 9: package.v1.RoundService.RemoveTopic:input_type -> package.v1.RemoveTopicRequest
+	7,  // 10: package.v1.RoundService.GetQuestionGrid:input_type -> package.v1.GetQuestionGridRequest
+	1,  // 11: package.v1.RoundService.CreateRound:output_type -> package.v1.CreateRoundResponse
+	14, // 12: package.v1.RoundService.UpdateRoundPosition:output_type -> google.protobuf.Empty
+	4,  // 13: package.v1.RoundService.ListRounds:output_type -> package.v1.ListRoundsResponse
+	14, // 14: package.v1.RoundService.AddTopic:output_type -> google.protobuf.Empty
+	14, // 15: package.v1.RoundService.RemoveTopic:output_type -> google.protobuf.Empty
+	8,  // 16: package.v1.RoundService.GetQuestionGrid:output_type -> package.v1.GetQuestionGridResponse
 	11, // [11:17] is the sub-list for method output_type
 	5,  // [5:11] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
@@ -840,16 +840,16 @@ var file_package_v1_stage_proto_depIdxs = []int32{
 	0,  // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_package_v1_stage_proto_init() }
-func file_package_v1_stage_proto_init() {
-	if File_package_v1_stage_proto != nil {
+func init() { file_package_v1_round_proto_init() }
+func file_package_v1_round_proto_init() {
+	if File_package_v1_round_proto != nil {
 		return
 	}
 	file_package_v1_package_proto_init()
-	file_package_v1_stage_question_proto_init()
+	file_package_v1_round_question_proto_init()
 	if !protoimpl.UnsafeEnabled {
-		file_package_v1_stage_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateStageRequest); i {
+		file_package_v1_round_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateRoundRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -860,8 +860,8 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateStageResponse); i {
+		file_package_v1_round_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateRoundResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -872,8 +872,8 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateStagePositionRequest); i {
+		file_package_v1_round_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateRoundPositionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -884,8 +884,8 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListStagesRequest); i {
+		file_package_v1_round_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListRoundsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -896,8 +896,8 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListStagesResponse); i {
+		file_package_v1_round_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListRoundsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -908,7 +908,7 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_package_v1_round_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AddTopicRequest); i {
 			case 0:
 				return &v.state
@@ -920,7 +920,7 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_package_v1_round_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RemoveTopicRequest); i {
 			case 0:
 				return &v.state
@@ -932,7 +932,7 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_package_v1_round_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetQuestionGridRequest); i {
 			case 0:
 				return &v.state
@@ -944,7 +944,7 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_package_v1_round_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetQuestionGridResponse); i {
 			case 0:
 				return &v.state
@@ -956,8 +956,8 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListStagesResponse_Stage); i {
+		file_package_v1_round_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListRoundsResponse_Round); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -968,7 +968,7 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_package_v1_round_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetQuestionGridResponse_Question); i {
 			case 0:
 				return &v.state
@@ -980,7 +980,7 @@ func file_package_v1_stage_proto_init() {
 				return nil
 			}
 		}
-		file_package_v1_stage_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_package_v1_round_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetQuestionGridResponse_Topic); i {
 			case 0:
 				return &v.state
@@ -997,18 +997,18 @@ func file_package_v1_stage_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_package_v1_stage_proto_rawDesc,
+			RawDescriptor: file_package_v1_round_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_package_v1_stage_proto_goTypes,
-		DependencyIndexes: file_package_v1_stage_proto_depIdxs,
-		MessageInfos:      file_package_v1_stage_proto_msgTypes,
+		GoTypes:           file_package_v1_round_proto_goTypes,
+		DependencyIndexes: file_package_v1_round_proto_depIdxs,
+		MessageInfos:      file_package_v1_round_proto_msgTypes,
 	}.Build()
-	File_package_v1_stage_proto = out.File
-	file_package_v1_stage_proto_rawDesc = nil
-	file_package_v1_stage_proto_goTypes = nil
-	file_package_v1_stage_proto_depIdxs = nil
+	File_package_v1_round_proto = out.File
+	file_package_v1_round_proto_rawDesc = nil
+	file_package_v1_round_proto_goTypes = nil
+	file_package_v1_round_proto_depIdxs = nil
 }

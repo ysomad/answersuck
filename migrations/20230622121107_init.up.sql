@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS package (
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
 
-    stage_count smallint,
+    round_count smallint,
     topic_count smallint,
     question_count smallint,
     video_count smallint,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS package (
     image_count smallint
 );
 
-CREATE TABLE IF NOT EXISTS stage (
+CREATE TABLE IF NOT EXISTS round (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
     position smallint NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS topic (
     id serial NOT NULL PRIMARY KEY,
     title varchar(50) NOT NULL,
     author varchar(25) NOT NULL REFERENCES player (nickname),
-    stage_id int NOT NULL REFERENCES stage (id),
+    round_id int NOT NULL REFERENCES round (id),
     created_at timestamptz NOT NULL
 );
 
@@ -67,15 +67,15 @@ CREATE TABLE IF NOT EXISTS question (
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS stage_topic (
-    stage_id int NOT NULL REFERENCES stage (id),
+CREATE TABLE IF NOT EXISTS round_topic (
+    round_id int NOT NULL REFERENCES round (id),
     topic_id int NOT NULL REFERENCES topic (id),
-    PRIMARY KEY (stage_id, topic_id)
+    PRIMARY KEY (round_id, topic_id)
 );
 
-CREATE TABLE IF NOT EXISTS stage_question (
+CREATE TABLE IF NOT EXISTS round_question (
     id serial NOT NULL PRIMARY KEY,
-    stage_id int NOT NULL REFERENCES stage (id),
+    round_id int NOT NULL REFERENCES round (id),
     topic_id int NOT NULL REFERENCES topic (id),
     question_id int NOT NULL REFERENCES question (id),
 

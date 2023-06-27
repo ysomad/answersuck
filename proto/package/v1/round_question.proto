@@ -7,15 +7,15 @@ import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-service StageQuestionService {
-    // CreateStageQuestion adds question for topic in package stage.
-    rpc CreateStageQuestion(CreateStageQuestionRequest) returns (CreateStageQuestionResponse);
+service RoundQuestionService {
+    // CreateRoundQuestion adds question for topic in package round.
+    rpc CreateRoundQuestion(CreateRoundQuestionRequest) returns (CreateRoundQuestionResponse);
 
-    // GetStageQuestion returns stage question.
-    rpc GetStageQuestion(GetStageQuestionRequest) returns (GetStageQuestionResponse);
+    // GetRoundQuestion returns round question.
+    rpc GetRoundQuestion(GetRoundQuestionRequest) returns (GetRoundQuestionResponse);
 
-    // UpdateStageQuestionsCost updates cost for multiple questions.
-    rpc UpdateStageQuestionsCost(UpdateStageQuestionsCostRequest) returns (google.protobuf.Empty);
+    // UpdateRoundQuestionsCost updates cost for multiple questions.
+    rpc UpdateRoundQuestionsCost(UpdateRoundQuestionsCostRequest) returns (google.protobuf.Empty);
 }
 
 enum TransferType {
@@ -25,8 +25,8 @@ enum TransferType {
     NEVER = 3;
 }
 
-enum StageQuestionType {
-    STAGE_QUESTION_TYPE_UNSPECIFIED = 0;
+enum RoundQuestionType {
+    ROUND_QUESTION_TYPE_UNSPECIFIED = 0;
     STANDARD = 1;
     SAFE = 2;
     SECRET = 3;
@@ -34,7 +34,7 @@ enum StageQuestionType {
     AUCTION = 5;
 }
 
-message StageQuestion {
+message RoundQuestion {
     message Question {
         int32 id = 1;
         string text = 2;
@@ -52,10 +52,10 @@ message StageQuestion {
     }
 
     int32 id = 1;
-    int32 stage_id = 2;
+    int32 round_id = 2;
     int32 topic_id = 3;
     Question question = 4;
-    StageQuestionType question_type = 5;
+    RoundQuestionType question_type = 5;
     int32 question_cost = 6;
     Answer answer = 7; 
     int32 answer_time = 8;
@@ -66,11 +66,11 @@ message StageQuestion {
     bool is_keepable = 13;
 }
 
-message CreateStageQuestionRequest {
+message CreateRoundQuestionRequest {
     int32 question_id = 1; // required
     int32 topic_id = 2; // required
-    int32 stage_id = 3; // required
-    StageQuestionType question_type = 4 [(validate.rules).enum = { in: [1,2,3,4,5] }]; // required
+    int32 round_id = 3; // required
+    RoundQuestionType question_type = 4 [(validate.rules).enum = { in: [1,2,3,4,5] }]; // required
     int32 question_cost = 5 [(validate.rules).int32 = { gte: 1 }]; // required
     int32 answer_time = 6 [(validate.rules).int32 = { gte: 5, lte: 60 }]; // required
     string host_comment = 7;
@@ -80,24 +80,24 @@ message CreateStageQuestionRequest {
     TransferType transfer_type = 11 [(validate.rules).enum = { in: [1,2,3] }];
 }
 
-message CreateStageQuestionResponse {
-    StageQuestion stage_question = 1;
+message CreateRoundQuestionResponse {
+    RoundQuestion round_question = 1;
 }
 
-message GetStageQuestionRequest {
-    int32 stage_question_id = 1; // required
+message GetRoundQuestionRequest {
+    int32 round_question_id = 1; // required
 }
 
-message GetStageQuestionResponse {
-    StageQuestion stage_question = 1;
+message GetRoundQuestionResponse {
+    RoundQuestion round_question = 1;
 }
 
-message UpdateStageQuestionsCostRequest {
+message UpdateRoundQuestionsCostRequest {
     message Question {
-        int32 question_id = 1; // required
+        int32 round_question_id = 1; // required
         int32 cost = 2; // required
     }
 
-    int32 stage_id = 1; // required
+    int32 round_id = 1; // required
     repeated Question questions = 2 [(validate.rules).repeated = { min_items: 1, max_items: 10 }]; // required
 }

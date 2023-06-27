@@ -10,14 +10,14 @@ service PackageService {
     // CreatePackage creates new package.
     rpc CreatePackage(CreatePackageRequest) returns (CreatePackageResponse);
 
-    // GetPackage returns package with stages.
+    // GetPackage returns package with rounds.
     rpc GetPackage(GetPackageRequest) returns (GetPackageResponse);
 
     // PublishPackage publishes package and saving stats for future filtering, returns package with stats.
     rpc PublishPackage(PublishPackageRequest) returns (PublishPackageResponse);
 }
 
-message PackageStage {
+message PackageRound {
     int32 id = 1;
     string name = 2;
 }
@@ -28,14 +28,14 @@ message Package {
     string author = 3;
     bool is_published = 4;
     string cover_url = 5;
-    repeated PackageStage stages = 6;
+    repeated PackageRound rounds = 6;
     repeated string tags = 7;
     google.protobuf.Timestamp creation_time = 50;
     google.protobuf.Timestamp update_time = 51;
 }
 
 message PackageStats {
-    int32 stage_count = 1;
+    int32 round_count = 1;
     int32 topic_count = 2;
     int32 question_count = 3;
     int32 video_count = 4;
