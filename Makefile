@@ -3,6 +3,10 @@ export
 
 MIGRATE := migrate -path migrations -database "$(PG_URL)?sslmode=disable"
 
+.PHONY: compose-dev
+compose-dev:
+	docker-compose up --build -d postgres && docker-compose logs -f
+
 .PHONY: compose-up
 compose-up:
 	docker-compose up --build -d postgres jaeger prometheus grafana && docker-compose logs -f
