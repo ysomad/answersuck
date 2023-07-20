@@ -1,6 +1,6 @@
 app:
   name: answersuck
-  version: 2.0
+  version: 0.2
   environment: local
 
 http:

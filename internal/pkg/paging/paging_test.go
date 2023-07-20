@@ -84,10 +84,10 @@ func TestNewIntSeek(t *testing.T) {
 	}
 }
 
-func TestNewInfList(t *testing.T) {
+func TestNewList(t *testing.T) {
 	type args[T any] struct {
 		items    []T
-		pageSize int32
+		pageSize uint64
 	}
 
 	type test[T any] struct {
@@ -255,7 +255,7 @@ func TestNewInfList(t *testing.T) {
 	}
 }
 
-var _ ListItem = &testList{}
+var _ SeekListItem = &testList{}
 
 type testList struct {
 	id        string
@@ -265,15 +265,15 @@ type testList struct {
 func (l *testList) GetID() string      { return l.id }
 func (l *testList) GetTime() time.Time { return l.createdAt }
 
-func TestNewTokenList(t *testing.T) {
-	type args[T ListItem] struct {
+func TestNewSeekList(t *testing.T) {
+	type args[T SeekListItem] struct {
 		items    []T
 		pageSize int32
 	}
-	type test[T ListItem] struct {
+	type test[T SeekListItem] struct {
 		name    string
 		args    args[T]
-		want    TokenList[T]
+		want    SeekList[T]
 		wantErr bool
 	}
 	time1 := time.Time{}.Add(time.Hour)
@@ -289,7 +289,7 @@ func TestNewTokenList(t *testing.T) {
 				items:    []*testList{},
 				pageSize: 5,
 			},
-			want: TokenList[*testList]{
+			want: SeekList[*testList]{
 				Items: []*testList{},
 			},
 			wantErr: false,
@@ -325,7 +325,7 @@ func TestNewTokenList(t *testing.T) {
 				},
 				pageSize: 5,
 			},
-			want: TokenList[*testList]{
+			want: SeekList[*testList]{
 				Items: []*testList{
 					{
 						id:        "id1",
@@ -379,7 +379,7 @@ func TestNewTokenList(t *testing.T) {
 				},
 				pageSize: 5,
 			},
-			want: TokenList[*testList]{
+			want: SeekList[*testList]{
 				Items: []*testList{
 					{
 						id:        "id1",
@@ -409,7 +409,7 @@ func TestNewTokenList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewTokenList(tt.args.items, tt.args.pageSize)
+			got, err := NewSeekList(tt.args.items, tt.args.pageSize)
 			assert.Equal(t, tt.wantErr, (err != nil))
 			assert.Equal(t, tt.want, got)
 		})

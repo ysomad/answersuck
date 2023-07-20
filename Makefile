@@ -64,52 +64,51 @@ migrate-drop:
 .PHONY: dry-run
 dry-run: migrate-drop run-migrate
 
-.PHONY: gen-proto
-gen-proto:
-	rm -rf internal/gen/proto/*
+.PHONY: gen-api
+gen-api:
+	rm -rf internal/gen/api/*
 	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
+		-I api \
+		-I api/validate \
+		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
+		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/sort/v1/*.proto
+		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
+		api/tag/v1/*.proto
 	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
+		-I api \
+		-I api/validate \
+		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
+		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/tag/v1/*.proto
+		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
+		api/player/v1/*.proto
 	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
+		-I api \
+		-I api/validate \
+		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
+		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/player/v1/*.proto
+		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
+		api/question/v1/*.proto
 	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
+		-I api \
+		-I api/validate \
+		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
+		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/question/v1/*.proto
+		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
+		api/package/v1/*.proto
 	protoc \
-		-I proto \
-		-I proto/validate \
-		--go_out=internal/gen/proto \
+		-I api \
+		-I api/validate \
+		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/proto \
+		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/proto" \
-		proto/package/v1/*.proto
-	
+		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
+		api/auth/v1/*.proto

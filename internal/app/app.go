@@ -9,6 +9,14 @@ import (
 
 	"github.com/ysomad/answersuck/internal/config"
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
+	"github.com/ysomad/answersuck/internal/pkg/pgclient"
+	playerpg "github.com/ysomad/answersuck/internal/postgres/player"
+	tagpg "github.com/ysomad/answersuck/internal/postgres/tag"
+	playersvc "github.com/ysomad/answersuck/internal/service/player"
+	"github.com/ysomad/answersuck/internal/twirp"
+	authtwirpv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
+	playertwirpv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
+	tagtwirpv1 "github.com/ysomad/answersuck/internal/twirp/tag/v1"
 )
 
 func logFatal(msg string, args ...any) {
@@ -16,24 +24,39 @@ func logFatal(msg string, args ...any) {
 	os.Exit(1)
 }
 
-type handlerContainer struct {
-}
-
 func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
-	// pgClient, err := pgclient.New(
-	// 	conf.PG.URL,
-	// 	pgclient.WithMaxConns(conf.PG.MaxConns),
-	// )
-	// if err != nil {
-	// 	logFatal("pgclient.New", err)
-	// }
+	pgClient, err := pgclient.New(
+		conf.PG.URL,
+		pgclient.WithMaxConns(conf.PG.MaxConns),
+	)
+	if err != nil {
+		logFatal("pgclient.New", err)
+	}
 
 	// player
-	// playerPG := player.NewPostgres(pgClient)
-	// playerService := player.NewService(playerPG)
+	playerPostgres := playerpg.NewRepository(pgClient)
+	playerService := playersvc.NewService(playerPostgres)
+
+	type playerUseCase struct {
+		playerpg.Repository
+		playersvc.Service
+	}
+
+	playerHandlerV1 := playertwirpv1.NewHandler(&playerUseCase{*playerPostgres, *playerService})
+
+	// tag
+	tagPostgres := tagpg.NewRepository(pgClient)
+	tagHandlerV1 := tagtwirpv1.NewHandler(tagPostgres)
+
+	// auth
+	authHandlerV1 := authtwirpv1.NewHandler()
 
 	// http
-	mux := newServeMux("/rpc", handlerContainer{})
+	mux := twirp.NewMux([]twirp.Handler{
+		playerHandlerV1,
+		tagHandlerV1,
+		authHandlerV1,
+	})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))
 

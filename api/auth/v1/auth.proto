@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package auth.v1;
+option go_package = "auth/v1;authv1";
+
+import "google/protobuf/empty.proto";
+
+service AuthService {
+    // LogIn authorizes player if login and password are correct.
+    // Sets http cookie with session id.
+    rpc LogIn(LogInRequest) returns (google.protobuf.Empty);
+
+    // LogOut logs out player by removing session id from cookies.
+    rpc LogOut(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+message LogInRequest {
+    string login = 1; // required, email or nickname
+    string password = 2; // required
+}

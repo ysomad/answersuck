@@ -3,3 +3,4 @@ test-data/
 .vscode/
 .idea/
 traces.txt
+.zed

@@ -51,12 +51,14 @@ var (
 	errInvalidArgs = errors.New("paging: length of items should not equal more than pageSize + 1")
 )
 
-func NewList[T any](items []T, pageSize int32) (List[T], error) {
-	if len(items) > int(pageSize) && len(items)-int(pageSize) != 1 {
+func NewList[T any](items []T, pageSize uint64) (List[T], error) {
+	itemsLen := uint64(len(items))
+
+	if itemsLen > pageSize && itemsLen-pageSize != 1 {
 		return List[T]{}, errInvalidArgs
 	}
 
-	if len(items) != int(pageSize+1) {
+	if itemsLen != pageSize+1 {
 		return List[T]{
 			Items:   items,
 			HasNext: false,
@@ -64,61 +66,46 @@ func NewList[T any](items []T, pageSize int32) (List[T], error) {
 	}
 
 	return List[T]{
-		Items:   items[:len(items)-1],
+		Items:   items[:itemsLen-1],
 		HasNext: true,
 	}, nil
 }
 
-// Seek is set of params for seek(keyset) pagination using uuids
+// SeekParams is set of params for seek(keyset) pagination using uuids
 // or other non-sortable primary keys.
-type Seek struct {
+type SeekParams struct {
 	PageToken Token
 	PageSize  int32
 }
 
-func NewSeek(t Token, psize int32) Seek {
-	s := Seek{PageToken: t}
-
-	if psize < minPageSize {
-		s.PageSize = defaultPageSize
-
-		return s
-	}
-
-	if psize > maxPageSize {
-		s.PageSize = maxPageSize
-
-		return s
-	}
-
-	s.PageSize = psize
-
-	return s
-}
-
-type ListItem interface {
+type SeekListItem interface {
 	GetID() string
 	GetTime() time.Time
 }
 
-type TokenList[T ListItem] struct {
+type SeekList[T SeekListItem] struct {
 	Items         []T
 	NextPageToken Token
 }
 
-func NewTokenList[T ListItem](items []T, pageSize int32) (TokenList[T], error) {
+func NewSeekList[T SeekListItem](items []T, pageSize int32) (SeekList[T], error) {
 	if len(items) > int(pageSize) && len(items)-int(pageSize) != 1 {
-		return TokenList[T]{}, errInvalidArgs
+		return SeekList[T]{}, errInvalidArgs
 	}
 
 	if len(items) != int(pageSize+1) {
-		return TokenList[T]{Items: items}, nil
+		return SeekList[T]{Items: items}, nil
 	}
 
 	list := items[:len(items)-1]
 
-	return TokenList[T]{
+	return SeekList[T]{
 		Items:         list,
 		NextPageToken: NewToken(list[len(list)-1].GetID(), list[len(list)-1].GetTime()),
 	}, nil
+}
+
+type OffsetParams struct {
+	Offset uint64
+	Limit  uint64
 }

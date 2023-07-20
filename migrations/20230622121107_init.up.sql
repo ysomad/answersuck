@@ -4,11 +4,11 @@ BEGIN
 CREATE TABLE IF NOT EXISTS player (
     nickname varchar(25) PRIMARY KEY NOT NULL,
     email varchar(255) UNIQUE NOT NULL,
-    display_name varchar(25) NOT NULL,
+    display_name varchar(25),
     email_verified boolean DEFAULT FALSE NOT NULL,
     password text NOT NULL,
     created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL
+    updated_at timestamptz
 );
 
 CREATE TABLE IF NOT EXISTS media (
@@ -95,6 +95,12 @@ CREATE TABLE IF NOT EXISTS tag (
     author varchar(25) NOT NULL REFERENCES player (nickname),
     created_at timestamptz NOT NULL
 );
+
+ALTER TABLE tag ADD COLUMN ts tsvector
+GENERATED ALWAYS AS
+    (setweight(to_tsvector('russian', coalesce(name, '')), 'A')) STORED;
+
+CREATE INDEX tag_gin_idx ON tag USING GIN (ts);
 
 CREATE TABLE IF NOT EXISTS package_tag (
     package_id int NOT NULL REFERENCES package (id),
