@@ -19,7 +19,7 @@ var (
 
 type UseCase interface {
 	Save(context.Context, entity.Tag) error
-	GetAll(context.Context, paging.OffsetParams, []sort.Sort) (paging.List[entity.Tag], error)
+	GetAll(ctx context.Context, search string, p paging.OffsetParams, s []sort.Sort) (paging.List[entity.Tag], error)
 }
 
 type Handler struct {
