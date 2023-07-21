@@ -1,3 +1,5 @@
+-- +goose Up
+-- +goose StatementBegin
 BEGIN
 ;
 
@@ -26,7 +28,6 @@ CREATE TABLE IF NOT EXISTS package (
     cover_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
-
     round_count smallint,
     topic_count smallint,
     question_count smallint,
@@ -78,12 +79,10 @@ CREATE TABLE IF NOT EXISTS round_question (
     round_id int NOT NULL REFERENCES round (id),
     topic_id int NOT NULL REFERENCES topic (id),
     question_id int NOT NULL REFERENCES question (id),
-
     question_type smallint NOT NULL,
     cost smallint NOT NULL,
     answer_time smallint NOT NULL,
     host_comment text,
-
     secret_topic varchar(64),
     secret_cost smallint,
     transfer_type smallint,
@@ -96,9 +95,12 @@ CREATE TABLE IF NOT EXISTS tag (
     created_at timestamptz NOT NULL
 );
 
-ALTER TABLE tag ADD COLUMN ts tsvector
-GENERATED ALWAYS AS
-    (setweight(to_tsvector('russian', coalesce(name, '')), 'A')) STORED;
+ALTER TABLE
+    tag
+ADD
+    COLUMN ts tsvector GENERATED ALWAYS AS (
+        setweight(to_tsvector('russian', coalesce(name, '')), 'A')
+    ) STORED;
 
 CREATE INDEX tag_gin_idx ON tag USING GIN (ts);
 
@@ -109,3 +111,23 @@ CREATE TABLE IF NOT EXISTS package_tag (
 );
 
 COMMIT;
+
+-- +goose StatementEnd
+-- +goose Down
+-- +goose StatementBegin
+BEGIN;
+
+DROP TABLE IF EXISTS package_tag CASCADE;
+DROP TABLE IF EXISTS round_question CASCADE;
+DROP TABLE IF EXISTS round_topic CASCADE;
+DROP TABLE IF EXISTS question CASCADE;
+DROP TABLE IF EXISTS answer CASCADE;
+DROP TABLE IF EXISTS topic CASCADE;
+DROP TABLE IF EXISTS round CASCADE;
+DROP TABLE IF EXISTS tag CASCADE;
+DROP TABLE IF EXISTS package CASCADE;
+DROP TABLE IF EXISTS media CASCADE;
+DROP TABLE IF EXISTS player CASCADE;
+
+COMMIT;
+-- +goose StatementEnd

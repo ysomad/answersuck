@@ -25,6 +25,10 @@ func logFatal(msg string, args ...any) {
 }
 
 func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
+	if flags.Migrate {
+		mustRunMigrations(conf.PG.URL)
+	}
+
 	pgClient, err := pgclient.New(
 		conf.PG.URL,
 		pgclient.WithMaxConns(conf.PG.MaxConns),

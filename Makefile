@@ -1,7 +1,8 @@
 include .env
 export
 
-MIGRATE := migrate -path migrations -database "$(PG_URL)?sslmode=disable"
+export GOOSE_DRIVER=postgres
+export GOOSE_DBSTRING=${PG_URL}
 
 .PHONY: compose-dev
 compose-dev:
@@ -31,7 +32,7 @@ run:
 .PHONY: run-migrate
 run-migrate:
 	go mod tidy && go mod download && \
-	go run -tags migrate ./cmd/app
+	go run ./cmd/app -migrate
 
 .PHONY: lint
 lint:
@@ -41,28 +42,33 @@ lint:
 test:
 	go test -v -cover -race -count 1 ./internal/...
 
-.PHONY: migrate-new
-migrate-new:
+.PHONY: goose-new
+goose-new:
 	@read -p "Enter the name of the new migration: " name; \
-	$(MIGRATE) create -ext sql -dir migrations $${name// /_}
+	goose -s -dir migrations create $${name// /_} sql
 
-.PHONY: migrate-up
-migrate-up:
+.PHONY: goose-up
+goose-up:
 	@echo "Running all new database migrations..."
-	@$(MIGRATE) up
+	goose -dir migrations validate
+	goose -dir migrations up
 
-.PHONY: migrate-down
-migrate-down:
+.PHONY: goose-down
+goose-down:
 	@echo "Running all down database migrations..."
-	@$(MIGRATE) down
+	goose -dir migrations down
 
-.PHONY: migrate-drop
-migrate-drop:
+.PHONY: goose-reset
+goose-reset:
 	@echo "Dropping everything in database..."
-	@$(MIGRATE) drop
+	goose -dir migrations reset
+
+.PHONY: goose-status
+goose-status:
+	goose -dir migrations status
 
 .PHONY: dry-run
-dry-run: migrate-drop run-migrate
+dry-run: goose-reset run-migrate
 
 .PHONY: gen-api
 gen-api:
