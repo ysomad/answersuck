@@ -2,7 +2,7 @@ package appctx
 
 import "context"
 
-var FootPrintKey = struct{}{}
+type FootPrintKey struct{}
 
 type FootPrint struct {
 	RemoteAddr string
@@ -10,7 +10,7 @@ type FootPrint struct {
 }
 
 func GetFootPrint(ctx context.Context) FootPrint {
-	fp, ok := ctx.Value(FootPrintKey).(FootPrint)
+	fp, ok := ctx.Value(FootPrintKey{}).(FootPrint)
 	if !ok {
 		return FootPrint{}
 	}

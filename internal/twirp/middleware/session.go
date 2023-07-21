@@ -21,7 +21,7 @@ func WithSessionID(h http.Handler) http.Handler {
 		}
 
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, appctx.SessionIDKey, sidCookie.Value)
+		ctx = context.WithValue(ctx, appctx.SessionIDKey{}, sidCookie.Value)
 		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 	})

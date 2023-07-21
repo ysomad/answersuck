@@ -27,7 +27,7 @@ func NewAuthorizedServerHooks(session sessionGetter) *twirp.ServerHooks {
 				return ctx, twirp.Unauthenticated.Error("session not found")
 			}
 
-			ctx = context.WithValue(ctx, appctx.SessionKey, s)
+			ctx = context.WithValue(ctx, appctx.SessionKey{}, s)
 
 			return ctx, nil
 		},
