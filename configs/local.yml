@@ -12,3 +12,6 @@ log:
 
 postgres:
   max_connections: 1
+
+session:
+  lifetime: 168h # 7 days

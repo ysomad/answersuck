@@ -2,16 +2,18 @@ package player
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/ysomad/answersuck/internal/entity"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 )
 
-func (r *Repository) GetOne(ctx context.Context, nickname string) (entity.Player, error) {
-	sql, args, err := r.Builder.
+func (r *Repository) GetOne(ctx context.Context, login string, loginType entity.LoginType) (*entity.Player, error) {
+	b := r.Builder.
 		Select(
 			"nickname",
 			"email",
@@ -21,24 +23,35 @@ func (r *Repository) GetOne(ctx context.Context, nickname string) (entity.Player
 			"created_at",
 			"updated_at",
 		).
-		From(playerTable).
-		Where(squirrel.Eq{"nickname": nickname}).
-		ToSql()
+		From(playerTable)
+
+	switch loginType {
+	case entity.LoginTypeEmail:
+		b = b.Where(sq.Eq{"email": login})
+	default:
+		b = b.Where(sq.Eq{"nickname": login})
+	}
+
+	sql, args, err := b.ToSql()
 	if err != nil {
-		return entity.Player{}, err
+		return nil, err
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return entity.Player{}, fmt.Errorf("r.Pool.Query: %w", err)
+		return nil, fmt.Errorf("r.Pool.Query: %w", err)
 	}
 
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[player])
 	if err != nil {
-		return entity.Player{}, fmt.Errorf("pgx.CollectOneRow: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.ErrPlayerNotFound
+		}
+
+		return nil, fmt.Errorf("pgx.CollectOneRow: %w", err)
 	}
 
-	return entity.Player{
+	return &entity.Player{
 		Nickname:      p.Nickname,
 		Email:         p.Email,
 		DisplayName:   string(p.DisplayName),

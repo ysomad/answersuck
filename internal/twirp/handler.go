@@ -12,5 +12,6 @@ func NewMux(handlers []Handler) *http.ServeMux {
 	for _, h := range handlers {
 		h.Handle(m)
 	}
+
 	return m
 }

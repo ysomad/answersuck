@@ -35,229 +35,44 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on ResetPasswordByNicknameRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// Validate checks the field values on ResetPasswordRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ResetPasswordByNicknameRequest) Validate() error {
+func (m *ResetPasswordRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ResetPasswordByNicknameRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// ResetPasswordByNicknameRequestMultiError, or nil if none found.
-func (m *ResetPasswordByNicknameRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ResetPasswordByNicknameRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetNickname()) < 3 {
-		err := ResetPasswordByNicknameRequestValidationError{
-			field:  "Nickname",
-			reason: "value length must be at least 3 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return ResetPasswordByNicknameRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// ResetPasswordByNicknameRequestMultiError is an error wrapping multiple
-// validation errors returned by ResetPasswordByNicknameRequest.ValidateAll()
-// if the designated constraints aren't met.
-type ResetPasswordByNicknameRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ResetPasswordByNicknameRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ResetPasswordByNicknameRequestMultiError) AllErrors() []error { return m }
-
-// ResetPasswordByNicknameRequestValidationError is the validation error
-// returned by ResetPasswordByNicknameRequest.Validate if the designated
-// constraints aren't met.
-type ResetPasswordByNicknameRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ResetPasswordByNicknameRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ResetPasswordByNicknameRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ResetPasswordByNicknameRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ResetPasswordByNicknameRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ResetPasswordByNicknameRequestValidationError) ErrorName() string {
-	return "ResetPasswordByNicknameRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ResetPasswordByNicknameRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sResetPasswordByNicknameRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ResetPasswordByNicknameRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ResetPasswordByNicknameRequestValidationError{}
-
-// Validate checks the field values on ResetPasswordByEmailRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ResetPasswordByEmailRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ResetPasswordByEmailRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on ResetPasswordRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ResetPasswordByEmailRequestMultiError, or nil if none found.
-func (m *ResetPasswordByEmailRequest) ValidateAll() error {
+// ResetPasswordRequestMultiError, or nil if none found.
+func (m *ResetPasswordRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ResetPasswordByEmailRequest) validate(all bool) error {
+func (m *ResetPasswordRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetEmail()) < 3 {
-		err := ResetPasswordByEmailRequestValidationError{
-			field:  "Email",
-			reason: "value length must be at least 3 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if err := m._validateEmail(m.GetEmail()); err != nil {
-		err = ResetPasswordByEmailRequestValidationError{
-			field:  "Email",
-			reason: "value must be a valid email address",
-			cause:  err,
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Login
 
 	if len(errors) > 0 {
-		return ResetPasswordByEmailRequestMultiError(errors)
+		return ResetPasswordRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-func (m *ResetPasswordByEmailRequest) _validateHostname(host string) error {
-	s := strings.ToLower(strings.TrimSuffix(host, "."))
-
-	if len(host) > 253 {
-		return errors.New("hostname cannot exceed 253 characters")
-	}
-
-	for _, part := range strings.Split(s, ".") {
-		if l := len(part); l == 0 || l > 63 {
-			return errors.New("hostname part must be non-empty and cannot exceed 63 characters")
-		}
-
-		if part[0] == '-' {
-			return errors.New("hostname parts cannot begin with hyphens")
-		}
-
-		if part[len(part)-1] == '-' {
-			return errors.New("hostname parts cannot end with hyphens")
-		}
-
-		for _, r := range part {
-			if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-				return fmt.Errorf("hostname parts can only contain alphanumeric characters or hyphens, got %q", string(r))
-			}
-		}
-	}
-
-	return nil
-}
-
-func (m *ResetPasswordByEmailRequest) _validateEmail(addr string) error {
-	a, err := mail.ParseAddress(addr)
-	if err != nil {
-		return err
-	}
-	addr = a.Address
-
-	if len(addr) > 254 {
-		return errors.New("email addresses cannot exceed 254 characters")
-	}
-
-	parts := strings.SplitN(addr, "@", 2)
-
-	if len(parts[0]) > 64 {
-		return errors.New("email address local phrase cannot exceed 64 characters")
-	}
-
-	return m._validateHostname(parts[1])
-}
-
-// ResetPasswordByEmailRequestMultiError is an error wrapping multiple
-// validation errors returned by ResetPasswordByEmailRequest.ValidateAll() if
-// the designated constraints aren't met.
-type ResetPasswordByEmailRequestMultiError []error
+// ResetPasswordRequestMultiError is an error wrapping multiple validation
+// errors returned by ResetPasswordRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ResetPasswordRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ResetPasswordByEmailRequestMultiError) Error() string {
+func (m ResetPasswordRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -266,12 +81,11 @@ func (m ResetPasswordByEmailRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ResetPasswordByEmailRequestMultiError) AllErrors() []error { return m }
+func (m ResetPasswordRequestMultiError) AllErrors() []error { return m }
 
-// ResetPasswordByEmailRequestValidationError is the validation error returned
-// by ResetPasswordByEmailRequest.Validate if the designated constraints
-// aren't met.
-type ResetPasswordByEmailRequestValidationError struct {
+// ResetPasswordRequestValidationError is the validation error returned by
+// ResetPasswordRequest.Validate if the designated constraints aren't met.
+type ResetPasswordRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -279,24 +93,24 @@ type ResetPasswordByEmailRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e ResetPasswordByEmailRequestValidationError) Field() string { return e.field }
+func (e ResetPasswordRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ResetPasswordByEmailRequestValidationError) Reason() string { return e.reason }
+func (e ResetPasswordRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ResetPasswordByEmailRequestValidationError) Cause() error { return e.cause }
+func (e ResetPasswordRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ResetPasswordByEmailRequestValidationError) Key() bool { return e.key }
+func (e ResetPasswordRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ResetPasswordByEmailRequestValidationError) ErrorName() string {
-	return "ResetPasswordByEmailRequestValidationError"
+func (e ResetPasswordRequestValidationError) ErrorName() string {
+	return "ResetPasswordRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ResetPasswordByEmailRequestValidationError) Error() string {
+func (e ResetPasswordRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -308,14 +122,14 @@ func (e ResetPasswordByEmailRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sResetPasswordByEmailRequest.%s: %s%s",
+		"invalid %sResetPasswordRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ResetPasswordByEmailRequestValidationError{}
+var _ error = ResetPasswordRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -323,7 +137,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ResetPasswordByEmailRequestValidationError{}
+} = ResetPasswordRequestValidationError{}
 
 // Validate checks the field values on SetPasswordRequest with the rules
 // defined in the proto definition for this message. If any rules are

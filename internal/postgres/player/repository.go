@@ -2,7 +2,7 @@ package player
 
 import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
-const playerTable = "player"
+const playerTable = "players"
 
 type Repository struct {
 	*pgclient.Client

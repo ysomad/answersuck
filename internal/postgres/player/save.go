@@ -2,11 +2,14 @@ package player
 
 import (
 	"context"
+	"errors"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/ysomad/answersuck/internal/entity"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 )
 
-func (r *Repository) Save(ctx context.Context, p entity.Player) error {
+func (r *Repository) Save(ctx context.Context, p *entity.Player) error {
 	sql, args, err := r.Builder.
 		Insert(playerTable).
 		Columns("nickname", "email", "password", "created_at").
@@ -17,6 +20,12 @@ func (r *Repository) Save(ctx context.Context, p entity.Player) error {
 	}
 
 	if _, err := r.Pool.Exec(ctx, sql, args...); err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && (pgErr.ConstraintName == "players_pkey" || pgErr.ConstraintName == "players_email_key") {
+			return apperr.ErrPlayerAlreadyExist
+		}
+
 		return err
 	}
 

@@ -6,6 +6,11 @@ import (
 	"github.com/Masterminds/squirrel"
 )
 
+const (
+	OrderASC  = "ASC"
+	OrderDESC = "DESC"
+)
+
 type Sort struct {
 	col   string
 	order string
@@ -13,8 +18,8 @@ type Sort struct {
 
 func NewSort(col, order string) Sort {
 	order = strings.ToUpper(order)
-	if order != "ASC" && order != "DESC" {
-		order = "ASC"
+	if order != OrderASC && order != OrderDESC {
+		order = OrderASC
 	}
 
 	return Sort{

@@ -7,8 +7,8 @@ import (
 )
 
 type repository interface {
-	Save(context.Context, entity.Player) error
-	GetOne(ctx context.Context, nickname string) (entity.Player, error)
+	Save(context.Context, *entity.Player) error
+	GetOne(ctx context.Context, login string, lt entity.LoginType) (*entity.Player, error)
 }
 
 type Service struct {

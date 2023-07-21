@@ -14,15 +14,11 @@ func (s *Service) Create(ctx context.Context, nickname, email, pass string) erro
 		return err
 	}
 
-	if err = s.repo.Save(ctx, entity.Player{
+	return s.repo.Save(ctx, &entity.Player{
 		Nickname:      nickname,
 		Email:         email,
 		EmailVerified: false,
 		PasswordHash:  hash,
 		CreatedAt:     time.Now(),
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }

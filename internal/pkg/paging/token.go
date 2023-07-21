@@ -15,6 +15,7 @@ type Token string
 // NewToken encodes primary key and time into base64 string separated with ",".
 func NewToken(id string, t time.Time) Token {
 	s := fmt.Sprintf("%s,%s", id, t.Format(time.RFC3339Nano))
+
 	return Token(base64.StdEncoding.EncodeToString([]byte(s)))
 }
 

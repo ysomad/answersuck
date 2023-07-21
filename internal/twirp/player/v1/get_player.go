@@ -2,18 +2,22 @@ package v1
 
 import (
 	"context"
+	"errors"
 
 	"github.com/twitchtv/twirp"
 	pb "github.com/ysomad/answersuck/internal/gen/api/player/v1"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (h *Handler) GetPlayer(ctx context.Context, p *pb.GetPlayerRequest) (*pb.GetPlayerResponse, error) {
-	player, err := h.player.GetOne(ctx, p.Nickname)
+	player, err := h.player.Get(ctx, p.Nickname)
 	if err != nil {
-		// TODO:
-		// 1. Handle player not found
-		return nil, twirp.NewError(twirp.Internal, err.Error())
+		if errors.Is(err, apperr.ErrPlayerNotFound) {
+			return nil, twirp.NotFoundError(apperr.ErrPlayerNotFound.Error())
+		}
+
+		return nil, twirp.InternalError(err.Error())
 	}
 
 	return &pb.GetPlayerResponse{

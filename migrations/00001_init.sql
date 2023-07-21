@@ -3,6 +3,15 @@
 BEGIN
 ;
 
+CREATE TABLE IF NOT EXISTS sessions (
+    id varchar(128) PRIMARY KEY NOT NULL,
+    user_agent varchar(1000) NOT NULL,
+    player_ip inet NOT NULL,
+    player_verified boolean NOT NULL,
+    player_nickname varchar(25) NOT NULL,
+    expires_at timestamptz NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS players (
     nickname varchar(25) PRIMARY KEY NOT NULL,
     email varchar(255) UNIQUE NOT NULL,
@@ -128,6 +137,7 @@ DROP TABLE IF EXISTS tags CASCADE;
 DROP TABLE IF EXISTS packages CASCADE;
 DROP TABLE IF EXISTS media CASCADE;
 DROP TABLE IF EXISTS players CASCADE;
+DROP TABLE IF EXISTS sessions CASCADE;
 
 COMMIT;
 -- +goose StatementEnd

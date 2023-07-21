@@ -12,6 +12,7 @@ import (
 
 func main() {
 	var flags app.Flags
+
 	flag.BoolVar(&flags.InDocker, "docker", false, "enter true if app is running inside docker")
 	flag.BoolVar(&flags.Migrate, "migrate", false, "entry true to run migrations on startup")
 

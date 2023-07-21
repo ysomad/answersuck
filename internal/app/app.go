@@ -10,8 +10,10 @@ import (
 	"github.com/ysomad/answersuck/internal/config"
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
 	"github.com/ysomad/answersuck/internal/pkg/pgclient"
+	"github.com/ysomad/answersuck/internal/pkg/session"
 	playerpg "github.com/ysomad/answersuck/internal/postgres/player"
 	tagpg "github.com/ysomad/answersuck/internal/postgres/tag"
+	"github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
 	"github.com/ysomad/answersuck/internal/twirp"
 	authtwirpv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
@@ -37,23 +39,23 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 		logFatal("pgclient.New", err)
 	}
 
+	// session
+	sessionPostgres := session.NewPostgresStore(pgClient.Pool)
+	sessionManager := session.NewManager(sessionPostgres, conf.Session.LifeTime)
+
 	// player
 	playerPostgres := playerpg.NewRepository(pgClient)
 	playerService := playersvc.NewService(playerPostgres)
 
-	type playerUseCase struct {
-		playerpg.Repository
-		playersvc.Service
-	}
-
-	playerHandlerV1 := playertwirpv1.NewHandler(&playerUseCase{*playerPostgres, *playerService})
+	playerHandlerV1 := playertwirpv1.NewHandler(playerService, sessionPostgres)
 
 	// tag
 	tagPostgres := tagpg.NewRepository(pgClient)
 	tagHandlerV1 := tagtwirpv1.NewHandler(tagPostgres)
 
 	// auth
-	authHandlerV1 := authtwirpv1.NewHandler()
+	authService := auth.NewService(sessionManager, playerService)
+	authHandlerV1 := authtwirpv1.NewHandler(authService)
 
 	// http
 	mux := twirp.NewMux([]twirp.Handler{

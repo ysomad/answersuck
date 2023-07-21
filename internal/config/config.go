@@ -1,10 +1,13 @@
 package config
 
+import "time"
+
 type Config struct {
-	App  App  `yaml:"app"`
-	HTTP HTTP `yaml:"http"`
-	Log  Log  `yaml:"log"`
-	PG   PG   `yaml:"postgres"`
+	App     App     `yaml:"app"`
+	HTTP    HTTP    `yaml:"http"`
+	Log     Log     `yaml:"log"`
+	PG      PG      `yaml:"postgres"`
+	Session Session `yaml:"session"`
 }
 
 type App struct {
@@ -27,5 +30,9 @@ type (
 		MaxConns int32  `yaml:"max_connections" env-required:"true"`
 		URL      string `env:"PG_URL" env-required:"true"`
 		DBName   string `env:"PG_DB_NAME" env-required:"true"`
+	}
+
+	Session struct {
+		LifeTime time.Duration `yaml:"lifetime" env-required:"true"`
 	}
 )

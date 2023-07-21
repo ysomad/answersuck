@@ -1,10 +1,14 @@
 package v1
 
 import (
+	"context"
 	"net/http"
 
 	pb "github.com/ysomad/answersuck/internal/gen/api/auth/v1"
+	"github.com/ysomad/answersuck/internal/pkg/appctx"
+	"github.com/ysomad/answersuck/internal/pkg/session"
 	"github.com/ysomad/answersuck/internal/twirp"
+	"github.com/ysomad/answersuck/internal/twirp/middleware"
 )
 
 var (
@@ -12,14 +16,19 @@ var (
 	_ pb.AuthService = &Handler{}
 )
 
-type Handler struct {
+type UseCase interface {
+	LogIn(ctx context.Context, login, password string, fp appctx.FootPrint) (*session.Session, error)
 }
 
-func NewHandler() *Handler {
-	return &Handler{}
+type Handler struct {
+	auth UseCase
+}
+
+func NewHandler(uc UseCase) *Handler {
+	return &Handler{auth: uc}
 }
 
 func (h *Handler) Handle(m *http.ServeMux) {
 	s := pb.NewAuthServiceServer(h)
-	m.Handle(s.PathPrefix(), s)
+	m.Handle(s.PathPrefix(), middleware.WithFootPrint(s))
 }
