@@ -14,6 +14,11 @@ import (
 )
 
 func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty, error) {
+	sid := appctx.GetSessionID(ctx)
+	if sid != "" {
+		return new(emptypb.Empty), nil
+	}
+
 	s, err := h.auth.LogIn(ctx, p.Login, p.Password, appctx.GetFootPrint(ctx))
 	if err != nil {
 		if errors.Is(err, apperr.ErrPlayerNotFound) || errors.Is(err, apperr.ErrNotAuthorized) {

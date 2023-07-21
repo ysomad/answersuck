@@ -30,5 +30,5 @@ func NewHandler(uc UseCase) *Handler {
 
 func (h *Handler) Handle(m *http.ServeMux) {
 	s := pb.NewAuthServiceServer(h)
-	m.Handle(s.PathPrefix(), middleware.WithFootPrint(s))
+	m.Handle(s.PathPrefix(), middleware.WithFootPrint(middleware.WithSessionID(s)))
 }

@@ -16,7 +16,7 @@ type sessionGetter interface {
 func NewAuthorizedServerHooks(session sessionGetter) *twirp.ServerHooks {
 	return &twirp.ServerHooks{
 		RequestReceived: func(ctx context.Context) (context.Context, error) {
-			sid := appctx.SessionID(ctx)
+			sid := appctx.GetSessionID(ctx)
 			if sid == "" {
 				return ctx, twirp.Unauthenticated.Error("session id not found in context")
 			}

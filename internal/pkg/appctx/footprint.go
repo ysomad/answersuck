@@ -10,5 +10,10 @@ type FootPrint struct {
 }
 
 func GetFootPrint(ctx context.Context) FootPrint {
-	return ctx.Value(FootPrintKey).(FootPrint)
+	fp, ok := ctx.Value(FootPrintKey).(FootPrint)
+	if !ok {
+		return FootPrint{}
+	}
+
+	return fp
 }
