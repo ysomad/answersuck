@@ -3,7 +3,7 @@
 BEGIN
 ;
 
-CREATE TABLE IF NOT EXISTS player (
+CREATE TABLE IF NOT EXISTS players (
     nickname varchar(25) PRIMARY KEY NOT NULL,
     email varchar(255) UNIQUE NOT NULL,
     display_name varchar(25),
@@ -16,14 +16,14 @@ CREATE TABLE IF NOT EXISTS player (
 CREATE TABLE IF NOT EXISTS media (
     url varchar(2048) NOT NULL PRIMARY KEY,
     type smallint NOT NULL,
-    uploaded_by varchar(25) NOT NULL REFERENCES player (nickname),
+    uploaded_by varchar(25) NOT NULL REFERENCES players (nickname),
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS package (
+CREATE TABLE IF NOT EXISTS packages (
     id serial NOT NULL PRIMARY KEY,
     name varchar(64) NOT NULL,
-    author varchar(25) NOT NULL REFERENCES player (nickname),
+    author varchar(25) NOT NULL REFERENCES players (nickname),
     is_published bool DEFAULT FALSE NOT NULL,
     cover_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL,
@@ -36,49 +36,49 @@ CREATE TABLE IF NOT EXISTS package (
     image_count smallint
 );
 
-CREATE TABLE IF NOT EXISTS round (
+CREATE TABLE IF NOT EXISTS rounds (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
     position smallint NOT NULL,
-    package_id int NOT NULL REFERENCES package (id)
+    package_id int NOT NULL REFERENCES packages (id)
 );
 
-CREATE TABLE IF NOT EXISTS topic (
+CREATE TABLE IF NOT EXISTS topics (
     id serial NOT NULL PRIMARY KEY,
     title varchar(50) NOT NULL,
-    author varchar(25) NOT NULL REFERENCES player (nickname),
-    round_id int NOT NULL REFERENCES round (id),
+    author varchar(25) NOT NULL REFERENCES players (nickname),
+    round_id int NOT NULL REFERENCES rounds (id),
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS answer (
+CREATE TABLE IF NOT EXISTS answers (
     id serial NOT NULL PRIMARY KEY,
     text varchar(112) NOT NULL,
-    author varchar(25) NOT NULL REFERENCES player (nickname),
+    author varchar(25) NOT NULL REFERENCES players (nickname),
     media_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS question (
+CREATE TABLE IF NOT EXISTS questions (
     id serial NOT NULL PRIMARY KEY,
     text varchar(200) NOT NULL,
-    answer_id int NOT NULL REFERENCES answer (id),
-    author varchar(25) NOT NULL REFERENCES player (nickname),
+    answer_id int NOT NULL REFERENCES answers (id),
+    author varchar(25) NOT NULL REFERENCES players (nickname),
     media_url varchar(2048) REFERENCES media (url),
     created_at timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS round_topic (
-    round_id int NOT NULL REFERENCES round (id),
-    topic_id int NOT NULL REFERENCES topic (id),
+CREATE TABLE IF NOT EXISTS round_topics (
+    round_id int NOT NULL REFERENCES rounds (id),
+    topic_id int NOT NULL REFERENCES topics (id),
     PRIMARY KEY (round_id, topic_id)
 );
 
-CREATE TABLE IF NOT EXISTS round_question (
+CREATE TABLE IF NOT EXISTS round_questions (
     id serial NOT NULL PRIMARY KEY,
-    round_id int NOT NULL REFERENCES round (id),
-    topic_id int NOT NULL REFERENCES topic (id),
-    question_id int NOT NULL REFERENCES question (id),
+    round_id int NOT NULL REFERENCES rounds (id),
+    topic_id int NOT NULL REFERENCES topics (id),
+    question_id int NOT NULL REFERENCES questions (id),
     question_type smallint NOT NULL,
     cost smallint NOT NULL,
     answer_time smallint NOT NULL,
@@ -89,24 +89,24 @@ CREATE TABLE IF NOT EXISTS round_question (
     is_keepable boolean
 );
 
-CREATE TABLE IF NOT EXISTS tag (
+CREATE TABLE IF NOT EXISTS tags (
     name varchar(16) NOT NULL PRIMARY KEY,
-    author varchar(25) NOT NULL REFERENCES player (nickname),
+    author varchar(25) NOT NULL REFERENCES players (nickname),
     created_at timestamptz NOT NULL
 );
 
 ALTER TABLE
-    tag
+    tags
 ADD
     COLUMN ts tsvector GENERATED ALWAYS AS (
         setweight(to_tsvector('russian', coalesce(name, '')), 'A')
     ) STORED;
 
-CREATE INDEX tag_gin_idx ON tag USING GIN (ts);
+CREATE INDEX tags_gin_idx ON tags USING GIN (ts);
 
-CREATE TABLE IF NOT EXISTS package_tag (
-    package_id int NOT NULL REFERENCES package (id),
-    tag varchar(16) NOT NULL REFERENCES tag (name),
+CREATE TABLE IF NOT EXISTS package_tags (
+    package_id int NOT NULL REFERENCES packages (id),
+    tag varchar(16) NOT NULL REFERENCES tags (name),
     PRIMARY KEY (package_id, tag)
 );
 
@@ -117,17 +117,17 @@ COMMIT;
 -- +goose StatementBegin
 BEGIN;
 
-DROP TABLE IF EXISTS package_tag CASCADE;
-DROP TABLE IF EXISTS round_question CASCADE;
-DROP TABLE IF EXISTS round_topic CASCADE;
-DROP TABLE IF EXISTS question CASCADE;
-DROP TABLE IF EXISTS answer CASCADE;
-DROP TABLE IF EXISTS topic CASCADE;
-DROP TABLE IF EXISTS round CASCADE;
-DROP TABLE IF EXISTS tag CASCADE;
-DROP TABLE IF EXISTS package CASCADE;
+DROP TABLE IF EXISTS package_tags CASCADE;
+DROP TABLE IF EXISTS round_questions CASCADE;
+DROP TABLE IF EXISTS round_topics CASCADE;
+DROP TABLE IF EXISTS questions CASCADE;
+DROP TABLE IF EXISTS answers CASCADE;
+DROP TABLE IF EXISTS topics CASCADE;
+DROP TABLE IF EXISTS rounds CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS packages CASCADE;
 DROP TABLE IF EXISTS media CASCADE;
-DROP TABLE IF EXISTS player CASCADE;
+DROP TABLE IF EXISTS players CASCADE;
 
 COMMIT;
 -- +goose StatementEnd
