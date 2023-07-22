@@ -11,6 +11,10 @@ import (
 )
 
 func (h *Handler) GetPlayer(ctx context.Context, p *pb.GetPlayerRequest) (*pb.GetPlayerResponse, error) {
+	if p.Nickname == "" {
+		return nil, twirp.RequiredArgumentError("nickname")
+	}
+
 	player, err := h.player.Get(ctx, p.Nickname)
 	if err != nil {
 		if errors.Is(err, apperr.ErrPlayerNotFound) {
