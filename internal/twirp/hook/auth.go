@@ -9,11 +9,11 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type sessionGetter interface {
+type sessionService interface {
 	Get(context.Context, string) (*session.Session, error)
 }
 
-func NewAuthorizedServerHooks(session sessionGetter) *twirp.ServerHooks {
+func NewAuthorizedServerHooks(session sessionService) *twirp.ServerHooks {
 	return &twirp.ServerHooks{
 		RequestReceived: func(ctx context.Context) (context.Context, error) {
 			sid := appctx.GetSessionID(ctx)

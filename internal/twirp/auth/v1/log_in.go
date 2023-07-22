@@ -14,6 +14,10 @@ import (
 )
 
 func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty, error) {
+	if err := h.validateLogInRequest(p); err != nil {
+		return nil, err
+	}
+
 	sid := appctx.GetSessionID(ctx)
 	if sid != "" {
 		return new(emptypb.Empty), nil
@@ -42,4 +46,16 @@ func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty
 	}
 
 	return new(emptypb.Empty), nil
+}
+
+func (h *Handler) validateLogInRequest(p *pb.LogInRequest) error {
+	if p.Login == "" {
+		return twirp.RequiredArgumentError("login")
+	}
+
+	if p.Password == "" {
+		return twirp.RequiredArgumentError("password")
+	}
+
+	return nil
 }
