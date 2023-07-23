@@ -92,34 +92,7 @@ func (m *Question) validate(all bool) error {
 
 	// no validation rules for Author
 
-	if all {
-		switch v := interface{}(m.GetMedia()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, QuestionValidationError{
-					field:  "Media",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, QuestionValidationError{
-					field:  "Media",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMedia()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return QuestionValidationError{
-				field:  "Media",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for MediaUrl
 
 	if all {
 		switch v := interface{}(m.GetCreateTime()).(type) {
@@ -767,110 +740,6 @@ var _ interface {
 	ErrorName() string
 } = GetQuestionResponseValidationError{}
 
-// Validate checks the field values on Question_Media with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Question_Media) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Question_Media with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in Question_MediaMultiError,
-// or nil if none found.
-func (m *Question_Media) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Question_Media) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Url
-
-	// no validation rules for Type
-
-	if len(errors) > 0 {
-		return Question_MediaMultiError(errors)
-	}
-
-	return nil
-}
-
-// Question_MediaMultiError is an error wrapping multiple validation errors
-// returned by Question_Media.ValidateAll() if the designated constraints
-// aren't met.
-type Question_MediaMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Question_MediaMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Question_MediaMultiError) AllErrors() []error { return m }
-
-// Question_MediaValidationError is the validation error returned by
-// Question_Media.Validate if the designated constraints aren't met.
-type Question_MediaValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Question_MediaValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Question_MediaValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Question_MediaValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Question_MediaValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Question_MediaValidationError) ErrorName() string { return "Question_MediaValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Question_MediaValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sQuestion_Media.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Question_MediaValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Question_MediaValidationError{}
-
 // Validate checks the field values on Question_Answer with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -897,34 +766,7 @@ func (m *Question_Answer) validate(all bool) error {
 
 	// no validation rules for Text
 
-	if all {
-		switch v := interface{}(m.GetMedia()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Question_AnswerValidationError{
-					field:  "Media",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Question_AnswerValidationError{
-					field:  "Media",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMedia()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Question_AnswerValidationError{
-				field:  "Media",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for MediaUrl
 
 	// no validation rules for Author
 

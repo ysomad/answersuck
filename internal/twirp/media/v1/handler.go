@@ -6,10 +6,8 @@ import (
 
 	"github.com/twitchtv/twirp"
 	"github.com/ysomad/answersuck/internal/entity"
-	pb "github.com/ysomad/answersuck/internal/gen/api/tag/v1"
-	"github.com/ysomad/answersuck/internal/pkg/paging"
+	pb "github.com/ysomad/answersuck/internal/gen/api/media/v1"
 	"github.com/ysomad/answersuck/internal/pkg/session"
-	"github.com/ysomad/answersuck/internal/pkg/sort"
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	"github.com/ysomad/answersuck/internal/twirp/hooks"
 	"github.com/ysomad/answersuck/internal/twirp/middleware"
@@ -17,12 +15,11 @@ import (
 
 var (
 	_ apptwirp.Handler = &Handler{}
-	_ pb.TagService    = &Handler{}
+	_ pb.MediaService  = &Handler{}
 )
 
 type UseCase interface {
-	Save(context.Context, entity.Tag) error
-	GetAll(ctx context.Context, p paging.OffsetParams, s []sort.Sort) (paging.List[entity.Tag], error)
+	Save(context.Context, entity.Media) (entity.Media, error)
 }
 
 type sessionManager interface {
@@ -30,19 +27,20 @@ type sessionManager interface {
 }
 
 type Handler struct {
-	tag     UseCase
+	media   UseCase
 	session sessionManager
 }
 
 func NewHandler(uc UseCase, sm sessionManager) *Handler {
 	return &Handler{
-		tag:     uc,
+		media:   uc,
 		session: sm,
 	}
 }
 
 func (h *Handler) Handle(m *http.ServeMux) {
-	s := pb.NewTagServiceServer(h,
+	s := pb.NewMediaServiceServer(
+		h,
 		twirp.WithServerHooks(hooks.NewLogging()),
 		twirp.WithServerHooks(hooks.NewSession(h.session)),
 	)

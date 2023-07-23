@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS media (
     url varchar(2048) NOT NULL PRIMARY KEY,
     type smallint NOT NULL,
-    uploaded_by varchar(25) NOT NULL REFERENCES players (nickname),
+    author varchar(25) NOT NULL REFERENCES players (nickname),
     create_time timestamptz NOT NULL
 );
 
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS packages (
     author varchar(25) NOT NULL REFERENCES players (nickname),
     is_published bool DEFAULT FALSE NOT NULL,
     cover_url varchar(2048) REFERENCES media (url),
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL,
+    create_time timestamptz NOT NULL,
+    update_time timestamptz NOT NULL,
     round_count smallint,
     topic_count smallint,
     question_count smallint,

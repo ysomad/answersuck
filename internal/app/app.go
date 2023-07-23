@@ -8,16 +8,20 @@ import (
 	"golang.org/x/exp/slog"
 
 	"github.com/ysomad/answersuck/internal/config"
+	mediapg "github.com/ysomad/answersuck/internal/pgrepo/media"
+	playerpg "github.com/ysomad/answersuck/internal/pgrepo/player"
+	questionpg "github.com/ysomad/answersuck/internal/pgrepo/question"
+	tagpg "github.com/ysomad/answersuck/internal/pgrepo/tag"
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
 	"github.com/ysomad/answersuck/internal/pkg/pgclient"
 	"github.com/ysomad/answersuck/internal/pkg/session"
-	playerpg "github.com/ysomad/answersuck/internal/postgres/player"
-	tagpg "github.com/ysomad/answersuck/internal/postgres/tag"
 	"github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	authtwirpv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
+	mediatwirpv1 "github.com/ysomad/answersuck/internal/twirp/media/v1"
 	playertwirpv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
+	questiontwirpv1 "github.com/ysomad/answersuck/internal/twirp/question/v1"
 	tagtwirpv1 "github.com/ysomad/answersuck/internal/twirp/tag/v1"
 )
 
@@ -57,11 +61,21 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	authService := auth.NewService(sessionManager, playerService)
 	authHandlerV1 := authtwirpv1.NewHandler(authService)
 
+	// media
+	mediaPostgres := mediapg.NewRepository(pgClient)
+	mediaHandlerV1 := mediatwirpv1.NewHandler(mediaPostgres, sessionManager)
+
+	// question
+	questionPostgres := questionpg.NewRepository(pgClient)
+	questionHandlerV1 := questiontwirpv1.NewHandler(questionPostgres, sessionManager)
+
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{
 		playerHandlerV1,
 		tagHandlerV1,
 		authHandlerV1,
+		mediaHandlerV1,
+		questionHandlerV1,
 	})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))

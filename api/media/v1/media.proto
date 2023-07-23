@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package media.v1;
+option go_package = "media/v1;mediav1";
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service MediaService {
+    rpc SaveMedia(SaveMediaRequest) returns (SaveMediaResponse);
+}
+
+enum MediaType {
+    MEDIA_TYPE_UNSPECIFIED = 0;
+    IMAGE = 1;
+    AUDIO = 2;
+    VIDEO = 3;
+}
+
+message Media {
+    string url = 1;
+    MediaType type = 2;
+    string author = 3;
+    google.protobuf.Timestamp create_time = 50;
+}
+
+message SaveMediaRequest {
+    string url = 1 [(validate.rules).string = { uri: true }]; // required
+}
+
+message SaveMediaResponse {
+    Media media = 1;
+}

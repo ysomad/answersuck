@@ -118,3 +118,12 @@ gen-api:
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
 		api/auth/v1/*.proto
+	protoc \
+		-I api \
+		-I api/validate \
+		--go_out=internal/gen/api \
+		--go_opt=paths=source_relative \
+		--twirp_out=internal/gen/api \
+		--twirp_opt=paths=source_relative \
+		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
+		api/media/v1/*.proto

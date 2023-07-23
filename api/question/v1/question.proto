@@ -12,22 +12,10 @@ service QuestionService {
 }
 
 message Question {
-    enum MediaType {
-        MEDIA_TYPE_UNSPECIFIED = 0;
-        IMAGE = 1;
-        AUDIO = 2;
-        VIDEO = 3;
-    }
-
-    message Media {
-        string url = 1;
-        MediaType type = 2;
-    }
-
     message Answer {
         int32 id = 1;
         string text = 2;
-        Media media = 3;
+        string media_url = 3;
         string author = 4;
         google.protobuf.Timestamp create_time = 50;
     }
@@ -36,7 +24,7 @@ message Question {
     string text = 2;
     Answer answer = 3;
     string author = 4;
-    Media media = 5;
+    string media_url = 5;
     google.protobuf.Timestamp create_time = 50;
 }
 

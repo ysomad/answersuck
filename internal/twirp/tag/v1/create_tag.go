@@ -14,17 +14,21 @@ import (
 )
 
 func (h *Handler) CreateTag(ctx context.Context, r *pb.CreateTagRequest) (*pb.CreateTagResponse, error) {
+	session, ok := appctx.GetSession(ctx)
+	if !ok {
+		return nil, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
+	}
+
+	if !session.Player.Verified {
+		return nil, twirp.PermissionDenied.Error(apperr.MsgPlayerNotVerified)
+	}
+
 	if r.TagName == "" {
 		return nil, twirp.RequiredArgumentError("tag_name")
 	}
 
 	if err := r.Validate(); err != nil {
 		return nil, twirp.InvalidArgument.Error(err.Error())
-	}
-
-	session, ok := appctx.GetSession(ctx)
-	if !ok {
-		return nil, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
 	}
 
 	tag := entity.Tag{
