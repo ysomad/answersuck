@@ -12,21 +12,13 @@ type (
 )
 
 // GetSessionID returns sessions id from context or empty string if not found.
-func GetSessionID(ctx context.Context) string {
+func GetSessionID(ctx context.Context) (string, bool) {
 	sid, ok := ctx.Value(SessionIDKey{}).(string)
-	if !ok {
-		return ""
-	}
-
-	return sid
+	return sid, ok
 }
 
 // GetSession returns session from context or nil if session not found in
-func GetSession(ctx context.Context) *session.Session {
+func GetSession(ctx context.Context) (*session.Session, bool) {
 	s, ok := ctx.Value(SessionKey{}).(*session.Session)
-	if !ok {
-		return nil
-	}
-
-	return s
+	return s, ok
 }

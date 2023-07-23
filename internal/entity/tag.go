@@ -9,10 +9,10 @@ import (
 var _ paging.SeekListItem = &Tag{}
 
 type Tag struct {
-	Name      string
-	Author    string
-	CreatedAt time.Time
+	Name       string
+	Author     string
+	CreateTime time.Time
 }
 
 func (t Tag) GetID() string      { return t.Name }
-func (t Tag) GetTime() time.Time { return t.CreatedAt }
+func (t Tag) GetTime() time.Time { return t.CreateTime }

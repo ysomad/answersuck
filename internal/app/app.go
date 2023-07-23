@@ -15,7 +15,7 @@ import (
 	tagpg "github.com/ysomad/answersuck/internal/postgres/tag"
 	"github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
-	"github.com/ysomad/answersuck/internal/twirp"
+	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	authtwirpv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
 	playertwirpv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
 	tagtwirpv1 "github.com/ysomad/answersuck/internal/twirp/tag/v1"
@@ -47,18 +47,18 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	playerPostgres := playerpg.NewRepository(pgClient)
 	playerService := playersvc.NewService(playerPostgres)
 
-	playerHandlerV1 := playertwirpv1.NewHandler(playerService, sessionPostgres)
+	playerHandlerV1 := playertwirpv1.NewHandler(playerService)
 
 	// tag
 	tagPostgres := tagpg.NewRepository(pgClient)
-	tagHandlerV1 := tagtwirpv1.NewHandler(tagPostgres)
+	tagHandlerV1 := tagtwirpv1.NewHandler(tagPostgres, sessionPostgres)
 
 	// auth
 	authService := auth.NewService(sessionManager, playerService)
 	authHandlerV1 := authtwirpv1.NewHandler(authService)
 
 	// http
-	mux := twirp.NewMux([]twirp.Handler{
+	mux := apptwirp.NewMux([]apptwirp.Handler{
 		playerHandlerV1,
 		tagHandlerV1,
 		authHandlerV1,

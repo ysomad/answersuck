@@ -1,19 +1,18 @@
 package appctx
 
-import "context"
+import (
+	"context"
+	"net"
+)
 
 type FootPrintKey struct{}
 
 type FootPrint struct {
-	RemoteAddr string
-	UserAgent  string
+	IP        net.IP
+	UserAgent string
 }
 
-func GetFootPrint(ctx context.Context) FootPrint {
+func GetFootPrint(ctx context.Context) (FootPrint, bool) {
 	fp, ok := ctx.Value(FootPrintKey{}).(FootPrint)
-	if !ok {
-		return FootPrint{}
-	}
-
-	return fp
+	return fp, ok
 }

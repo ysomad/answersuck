@@ -21,13 +21,13 @@ func (s *Service) LogIn(ctx context.Context, login, password string, fp appctx.F
 	}
 
 	if !ok {
-		return nil, apperr.ErrNotAuthorized
+		return nil, apperr.ErrInvalidCredentials
 	}
 
 	return s.session.Create(ctx, session.Player{
-		Nickname:   player.Nickname,
-		UserAgent:  fp.UserAgent,
-		RemoteAddr: fp.RemoteAddr,
-		Verified:   player.EmailVerified,
+		Nickname:  player.Nickname,
+		UserAgent: fp.UserAgent,
+		IP:        fp.IP,
+		Verified:  player.EmailVerified,
 	})
 }

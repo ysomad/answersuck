@@ -6,8 +6,8 @@ import (
 
 	"github.com/ysomad/answersuck/internal/entity"
 	pb "github.com/ysomad/answersuck/internal/gen/api/player/v1"
-	"github.com/ysomad/answersuck/internal/pkg/session"
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
+	"github.com/ysomad/answersuck/internal/twirp/hooks"
 )
 
 var (
@@ -20,23 +20,17 @@ type UseCase interface {
 	Get(ctx context.Context, login string) (*entity.Player, error)
 }
 
-type sessionManager interface {
-	Get(context.Context, string) (*session.Session, error)
-}
-
 type Handler struct {
-	session sessionManager
-	player  UseCase
+	player UseCase
 }
 
-func NewHandler(uc UseCase, s sessionManager) *Handler {
+func NewHandler(uc UseCase) *Handler {
 	return &Handler{
-		session: s,
-		player:  uc,
+		player: uc,
 	}
 }
 
 func (h *Handler) Handle(m *http.ServeMux) {
-	s := pb.NewPlayerServiceServer(h)
+	s := pb.NewPlayerServiceServer(h, hooks.NewLogging())
 	m.Handle(s.PathPrefix(), s)
 }

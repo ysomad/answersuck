@@ -5,16 +5,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
-	"net"
 	"time"
 )
 
 var (
 	errInvalidUserID  = errors.New("session: invalid user id")
 	errEmptyUserAgent = errors.New("session: empty user agent")
-	errInvalidUserIP  = errors.New("session: invalid user ip address")
 )
 
 type Store interface {
@@ -49,18 +46,7 @@ func (m *Manager) Create(ctx context.Context, p Player) (*Session, error) {
 		return nil, errEmptyUserAgent
 	}
 
-	ip, _, err := net.SplitHostPort(p.RemoteAddr)
-	if err != nil {
-		return nil, fmt.Errorf("error splitting ip: %w", err)
-	}
-
-	p.RemoteAddr = ip
-
-	if net.ParseIP(p.RemoteAddr) == nil {
-		return nil, errInvalidUserIP
-	}
-
-	sid, err := m.generateSID()
+	sid, err := m.generateSessionID()
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +72,7 @@ func (m *Manager) Delete(ctx context.Context, sid string) error {
 	return m.store.Delete(ctx, sid)
 }
 
-func (m *Manager) generateSID() (string, error) {
+func (m *Manager) generateSessionID() (string, error) {
 	b := make([]byte, 64)
 
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {

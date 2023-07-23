@@ -22,15 +22,19 @@ func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty
 		return nil, twirp.RequiredArgumentError("password")
 	}
 
-	sid := appctx.GetSessionID(ctx)
-	if sid != "" {
+	if _, ok := appctx.GetSessionID(ctx); ok {
 		return new(emptypb.Empty), nil
 	}
 
-	s, err := h.auth.LogIn(ctx, p.Login, p.Password, appctx.GetFootPrint(ctx))
+	fp, ok := appctx.GetFootPrint(ctx)
+	if !ok {
+		return nil, twirp.InvalidArgument.Error("footprint not found in context")
+	}
+
+	s, err := h.auth.LogIn(ctx, p.Login, p.Password, fp)
 	if err != nil {
-		if errors.Is(err, apperr.ErrPlayerNotFound) || errors.Is(err, apperr.ErrNotAuthorized) {
-			return nil, twirp.Unauthenticated.Error(apperr.ErrNotAuthorized.Error())
+		if errors.Is(err, apperr.ErrPlayerNotFound) || errors.Is(err, apperr.ErrInvalidCredentials) {
+			return nil, twirp.Unauthenticated.Error(apperr.ErrInvalidCredentials.Error())
 		}
 
 		return nil, twirp.InternalError(err.Error())

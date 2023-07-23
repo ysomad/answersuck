@@ -2,7 +2,12 @@ package apperr
 
 import "errors"
 
+const (
+	MsgUnauthorized       = "unauthorized"
+	MsgAuthorized         = "already authorized"
+	MsgInvalidCredentials = "invalid login or password"
+)
+
 var (
-	ErrNotAuthorized     = errors.New("invalid login or password")
-	ErrAlreadyAuthorized = errors.New("already authorized, git gud")
+	ErrInvalidCredentials = errors.New(MsgInvalidCredentials)
 )

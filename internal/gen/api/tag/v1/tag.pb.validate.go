@@ -430,19 +430,21 @@ func (m *ListTagsRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Search
-
 	// no validation rules for OrderBy
 
-	if val := m.GetLimit(); val <= 0 || val > 5000 {
-		err := ListTagsRequestValidationError{
-			field:  "Limit",
-			reason: "value must be inside range (0, 5000]",
+	if m.GetLimit() != 0 {
+
+		if val := m.GetLimit(); val <= 0 || val > 1000 {
+			err := ListTagsRequestValidationError{
+				field:  "Limit",
+				reason: "value must be inside range (0, 1000]",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
 	// no validation rules for Offset
@@ -580,6 +582,8 @@ func (m *ListTagsResponse) validate(all bool) error {
 		}
 
 	}
+
+	// no validation rules for HasNext
 
 	if len(errors) > 0 {
 		return ListTagsResponseMultiError(errors)

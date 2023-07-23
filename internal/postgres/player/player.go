@@ -12,6 +12,6 @@ type player struct {
 	DisplayName   zeronull.Text        `db:"display_name"`
 	EmailVerified bool                 `db:"email_verified"`
 	Password      string               `db:"password"`
-	CreatedAt     time.Time            `db:"created_at"`
-	UpdatedAt     zeronull.Timestamptz `db:"updated_at"`
+	CreateTime    time.Time            `db:"create_time"`
+	UpdateTime    zeronull.Timestamptz `db:"update_time"`
 }

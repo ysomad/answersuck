@@ -26,19 +26,18 @@ message CreateTagResponse {
 }
 
 message ListTagsRequest {
-    string search = 1;
-
     // The string value should follow SQL syntax: comma separated list of fields. 
     // For example: "foo,bar". 
     // The default sorting order is ascending. 
     // To specify descending order for a field, a suffix " desc" should be appended to the field name. 
     // For example: "foo desc,bar".
-    string order_by = 2;     
+    string order_by = 1;     
 
-    uint64 limit = 3 [(validate.rules).uint64 = { gt: 0, lte: 5000 }];
-    uint64 offset = 4;
+    uint64 limit = 2 [(validate.rules).uint64 = { gt: 0, lte: 1000, ignore_empty: true }];
+    uint64 offset = 3;
 }
 
 message ListTagsResponse {
     repeated Tag tags = 1;
+    bool has_next = 2;
 }

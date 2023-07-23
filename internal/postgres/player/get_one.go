@@ -20,8 +20,8 @@ func (r *Repository) GetOne(ctx context.Context, login string, loginType entity.
 			"display_name",
 			"email_verified",
 			"password",
-			"created_at",
-			"updated_at",
+			"create_time",
+			"update_time",
 		).
 		From(playerTable)
 
@@ -57,7 +57,7 @@ func (r *Repository) GetOne(ctx context.Context, login string, loginType entity.
 		DisplayName:   string(p.DisplayName),
 		EmailVerified: p.EmailVerified,
 		PasswordHash:  p.Password,
-		CreatedAt:     p.CreatedAt,
-		UpdatedAt:     time.Time(p.UpdatedAt),
+		CreatedAt:     p.CreateTime,
+		UpdateTime:    time.Time(p.UpdateTime),
 	}, nil
 }

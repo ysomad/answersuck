@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/twitchtv/twirp"
 	"github.com/ysomad/answersuck/internal/pkg/session"
@@ -12,7 +13,9 @@ import (
 func (h *Handler) LogOut(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	cookie := http.Cookie{
 		Name:     session.Cookie,
+		Value:    "",
 		Path:     "/",
+		Expires:  time.Unix(0, 0),
 		Secure:   true,
 		HttpOnly: true,
 	}

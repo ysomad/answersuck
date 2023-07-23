@@ -12,7 +12,7 @@ import (
 func (r *Repository) Save(ctx context.Context, p *entity.Player) error {
 	sql, args, err := r.Builder.
 		Insert(playerTable).
-		Columns("nickname", "email", "password", "created_at").
+		Columns("nickname", "email", "password", "create_time").
 		Values(p.Nickname, p.Email, p.PasswordHash, p.CreatedAt).
 		ToSql()
 	if err != nil {

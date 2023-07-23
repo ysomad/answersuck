@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     player_ip inet NOT NULL,
     player_verified boolean NOT NULL,
     player_nickname varchar(25) NOT NULL,
-    expires_at timestamptz NOT NULL
+    expire_time timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS players (
@@ -18,15 +18,15 @@ CREATE TABLE IF NOT EXISTS players (
     display_name varchar(25),
     email_verified boolean DEFAULT FALSE NOT NULL,
     password text NOT NULL,
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz
+    create_time timestamptz NOT NULL,
+    update_time timestamptz
 );
 
 CREATE TABLE IF NOT EXISTS media (
     url varchar(2048) NOT NULL PRIMARY KEY,
     type smallint NOT NULL,
     uploaded_by varchar(25) NOT NULL REFERENCES players (nickname),
-    created_at timestamptz NOT NULL
+    create_time timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS packages (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS topics (
     title varchar(50) NOT NULL,
     author varchar(25) NOT NULL REFERENCES players (nickname),
     round_id int NOT NULL REFERENCES rounds (id),
-    created_at timestamptz NOT NULL
+    create_time timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS answers (
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS answers (
     text varchar(112) NOT NULL,
     author varchar(25) NOT NULL REFERENCES players (nickname),
     media_url varchar(2048) REFERENCES media (url),
-    created_at timestamptz NOT NULL
+    create_time timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS questions (
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS questions (
     answer_id int NOT NULL REFERENCES answers (id),
     author varchar(25) NOT NULL REFERENCES players (nickname),
     media_url varchar(2048) REFERENCES media (url),
-    created_at timestamptz NOT NULL
+    create_time timestamptz NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS round_topics (
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS round_questions (
 CREATE TABLE IF NOT EXISTS tags (
     name varchar(16) NOT NULL PRIMARY KEY,
     author varchar(25) NOT NULL REFERENCES players (nickname),
-    created_at timestamptz NOT NULL
+    create_time timestamptz NOT NULL
 );
 
 ALTER TABLE

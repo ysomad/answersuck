@@ -1,16 +1,17 @@
 package session
 
 import (
+	"net"
 	"time"
 )
 
 const Cookie = "sid"
 
 type Player struct {
-	Nickname   string
-	UserAgent  string
-	RemoteAddr string
-	Verified   bool
+	Nickname  string
+	UserAgent string
+	IP        net.IP
+	Verified  bool
 }
 
 type Session struct {
