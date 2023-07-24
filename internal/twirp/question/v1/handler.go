@@ -19,7 +19,7 @@ var (
 )
 
 type UseCase interface {
-	Save(context.Context, *entity.Question) (*entity.Question, error)
+	Save(context.Context, *entity.Question) (int32, error)
 }
 
 type sessionManager interface {
@@ -27,14 +27,14 @@ type sessionManager interface {
 }
 
 type Handler struct {
-	tag     UseCase
-	session sessionManager
+	question UseCase
+	session  sessionManager
 }
 
 func NewHandler(uc UseCase, sm sessionManager) *Handler {
 	return &Handler{
-		tag:     uc,
-		session: sm,
+		question: uc,
+		session:  sm,
 	}
 }
 

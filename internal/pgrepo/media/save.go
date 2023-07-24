@@ -10,11 +10,11 @@ import (
 func (r *Repository) Save(ctx context.Context, m entity.Media) (entity.Media, error) {
 	sql, args, err := r.Builder.
 		Insert(mediaTable).
-		Columns("url, type, author, create_time").
-		Values(m.URL, m.Type, m.Author, m.CreateTime).
+		Columns("url, type, uploader, create_time").
+		Values(m.URL, m.Type, m.Uploader, m.CreateTime).
 		Suffix("ON CONFLICT(url) DO UPDATE").
 		Suffix("SET url = EXCLUDED.url").
-		Suffix("RETURNING url, type, author, create_time").
+		Suffix("RETURNING url, type, uploader, create_time").
 		ToSql()
 	if err != nil {
 		return entity.Media{}, err

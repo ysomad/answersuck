@@ -22,7 +22,7 @@ func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty
 		return nil, twirp.RequiredArgumentError("password")
 	}
 
-	if _, ok := appctx.GetSessionID(ctx); ok {
+	if sid, ok := appctx.GetSessionID(ctx); ok && sid != "" {
 		return new(emptypb.Empty), nil
 	}
 

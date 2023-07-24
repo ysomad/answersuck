@@ -4,10 +4,9 @@ package media.v1;
 option go_package = "media/v1;mediav1";
 
 import "validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 
 service MediaService {
-    rpc SaveMedia(SaveMediaRequest) returns (SaveMediaResponse);
+    rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse);
 }
 
 enum MediaType {
@@ -21,13 +20,12 @@ message Media {
     string url = 1;
     MediaType type = 2;
     string author = 3;
-    google.protobuf.Timestamp create_time = 50;
 }
 
-message SaveMediaRequest {
+message UploadMediaRequest {
     string url = 1 [(validate.rules).string = { uri: true }]; // required
 }
 
-message SaveMediaResponse {
+message UploadMediaResponse {
     Media media = 1;
 }

@@ -62,35 +62,6 @@ func (m *Media) validate(all bool) error {
 
 	// no validation rules for Author
 
-	if all {
-		switch v := interface{}(m.GetCreateTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MediaValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MediaValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCreateTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MediaValidationError{
-				field:  "CreateTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
 	if len(errors) > 0 {
 		return MediaMultiError(errors)
 	}
@@ -168,22 +139,22 @@ var _ interface {
 	ErrorName() string
 } = MediaValidationError{}
 
-// Validate checks the field values on SaveMediaRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *SaveMediaRequest) Validate() error {
+// Validate checks the field values on UploadMediaRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadMediaRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on SaveMediaRequest with the rules
+// ValidateAll checks the field values on UploadMediaRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// SaveMediaRequestMultiError, or nil if none found.
-func (m *SaveMediaRequest) ValidateAll() error {
+// UploadMediaRequestMultiError, or nil if none found.
+func (m *UploadMediaRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *SaveMediaRequest) validate(all bool) error {
+func (m *UploadMediaRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -191,7 +162,7 @@ func (m *SaveMediaRequest) validate(all bool) error {
 	var errors []error
 
 	if uri, err := url.Parse(m.GetUrl()); err != nil {
-		err = SaveMediaRequestValidationError{
+		err = UploadMediaRequestValidationError{
 			field:  "Url",
 			reason: "value must be a valid URI",
 			cause:  err,
@@ -201,7 +172,7 @@ func (m *SaveMediaRequest) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	} else if !uri.IsAbs() {
-		err := SaveMediaRequestValidationError{
+		err := UploadMediaRequestValidationError{
 			field:  "Url",
 			reason: "value must be absolute",
 		}
@@ -212,19 +183,19 @@ func (m *SaveMediaRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return SaveMediaRequestMultiError(errors)
+		return UploadMediaRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// SaveMediaRequestMultiError is an error wrapping multiple validation errors
-// returned by SaveMediaRequest.ValidateAll() if the designated constraints
+// UploadMediaRequestMultiError is an error wrapping multiple validation errors
+// returned by UploadMediaRequest.ValidateAll() if the designated constraints
 // aren't met.
-type SaveMediaRequestMultiError []error
+type UploadMediaRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m SaveMediaRequestMultiError) Error() string {
+func (m UploadMediaRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -233,11 +204,11 @@ func (m SaveMediaRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m SaveMediaRequestMultiError) AllErrors() []error { return m }
+func (m UploadMediaRequestMultiError) AllErrors() []error { return m }
 
-// SaveMediaRequestValidationError is the validation error returned by
-// SaveMediaRequest.Validate if the designated constraints aren't met.
-type SaveMediaRequestValidationError struct {
+// UploadMediaRequestValidationError is the validation error returned by
+// UploadMediaRequest.Validate if the designated constraints aren't met.
+type UploadMediaRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -245,22 +216,24 @@ type SaveMediaRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e SaveMediaRequestValidationError) Field() string { return e.field }
+func (e UploadMediaRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e SaveMediaRequestValidationError) Reason() string { return e.reason }
+func (e UploadMediaRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e SaveMediaRequestValidationError) Cause() error { return e.cause }
+func (e UploadMediaRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e SaveMediaRequestValidationError) Key() bool { return e.key }
+func (e UploadMediaRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e SaveMediaRequestValidationError) ErrorName() string { return "SaveMediaRequestValidationError" }
+func (e UploadMediaRequestValidationError) ErrorName() string {
+	return "UploadMediaRequestValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e SaveMediaRequestValidationError) Error() string {
+func (e UploadMediaRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -272,14 +245,14 @@ func (e SaveMediaRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSaveMediaRequest.%s: %s%s",
+		"invalid %sUploadMediaRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = SaveMediaRequestValidationError{}
+var _ error = UploadMediaRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -287,24 +260,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = SaveMediaRequestValidationError{}
+} = UploadMediaRequestValidationError{}
 
-// Validate checks the field values on SaveMediaResponse with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *SaveMediaResponse) Validate() error {
+// Validate checks the field values on UploadMediaResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadMediaResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on SaveMediaResponse with the rules
+// ValidateAll checks the field values on UploadMediaResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// SaveMediaResponseMultiError, or nil if none found.
-func (m *SaveMediaResponse) ValidateAll() error {
+// UploadMediaResponseMultiError, or nil if none found.
+func (m *UploadMediaResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *SaveMediaResponse) validate(all bool) error {
+func (m *UploadMediaResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -315,7 +288,7 @@ func (m *SaveMediaResponse) validate(all bool) error {
 		switch v := interface{}(m.GetMedia()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, SaveMediaResponseValidationError{
+				errors = append(errors, UploadMediaResponseValidationError{
 					field:  "Media",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -323,7 +296,7 @@ func (m *SaveMediaResponse) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, SaveMediaResponseValidationError{
+				errors = append(errors, UploadMediaResponseValidationError{
 					field:  "Media",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -332,7 +305,7 @@ func (m *SaveMediaResponse) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetMedia()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return SaveMediaResponseValidationError{
+			return UploadMediaResponseValidationError{
 				field:  "Media",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -341,19 +314,19 @@ func (m *SaveMediaResponse) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return SaveMediaResponseMultiError(errors)
+		return UploadMediaResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// SaveMediaResponseMultiError is an error wrapping multiple validation errors
-// returned by SaveMediaResponse.ValidateAll() if the designated constraints
-// aren't met.
-type SaveMediaResponseMultiError []error
+// UploadMediaResponseMultiError is an error wrapping multiple validation
+// errors returned by UploadMediaResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UploadMediaResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m SaveMediaResponseMultiError) Error() string {
+func (m UploadMediaResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -362,11 +335,11 @@ func (m SaveMediaResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m SaveMediaResponseMultiError) AllErrors() []error { return m }
+func (m UploadMediaResponseMultiError) AllErrors() []error { return m }
 
-// SaveMediaResponseValidationError is the validation error returned by
-// SaveMediaResponse.Validate if the designated constraints aren't met.
-type SaveMediaResponseValidationError struct {
+// UploadMediaResponseValidationError is the validation error returned by
+// UploadMediaResponse.Validate if the designated constraints aren't met.
+type UploadMediaResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -374,24 +347,24 @@ type SaveMediaResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e SaveMediaResponseValidationError) Field() string { return e.field }
+func (e UploadMediaResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e SaveMediaResponseValidationError) Reason() string { return e.reason }
+func (e UploadMediaResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e SaveMediaResponseValidationError) Cause() error { return e.cause }
+func (e UploadMediaResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e SaveMediaResponseValidationError) Key() bool { return e.key }
+func (e UploadMediaResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e SaveMediaResponseValidationError) ErrorName() string {
-	return "SaveMediaResponseValidationError"
+func (e UploadMediaResponseValidationError) ErrorName() string {
+	return "UploadMediaResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e SaveMediaResponseValidationError) Error() string {
+func (e UploadMediaResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -403,14 +376,14 @@ func (e SaveMediaResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSaveMediaResponse.%s: %s%s",
+		"invalid %sUploadMediaResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = SaveMediaResponseValidationError{}
+var _ error = UploadMediaResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -418,4 +391,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = SaveMediaResponseValidationError{}
+} = UploadMediaResponseValidationError{}

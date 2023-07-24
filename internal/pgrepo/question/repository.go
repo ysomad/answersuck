@@ -4,6 +4,7 @@ import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
 const (
 	questionTable = "questions"
+	answerTable   = "answers"
 )
 
 type Repository struct {

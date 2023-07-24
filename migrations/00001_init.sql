@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS media (
     url varchar(2048) NOT NULL PRIMARY KEY,
     type smallint NOT NULL,
-    author varchar(25) NOT NULL REFERENCES players (nickname),
+    uploader varchar(25) NOT NULL REFERENCES players (nickname),
     create_time timestamptz NOT NULL
 );
 
@@ -63,9 +63,7 @@ CREATE TABLE IF NOT EXISTS topics (
 CREATE TABLE IF NOT EXISTS answers (
     id serial NOT NULL PRIMARY KEY,
     text varchar(112) NOT NULL,
-    author varchar(25) NOT NULL REFERENCES players (nickname),
-    media_url varchar(2048) REFERENCES media (url),
-    create_time timestamptz NOT NULL
+    media_url varchar(2048) REFERENCES media (url)
 );
 
 CREATE TABLE IF NOT EXISTS questions (

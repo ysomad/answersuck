@@ -233,65 +233,65 @@ func (m *CreateQuestionRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetAnswer() == nil {
-		err := CreateQuestionRequestValidationError{
-			field:  "Answer",
-			reason: "value is required",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	if m.GetQuestionMediaUrl() != "" {
 
-	if all {
-		switch v := interface{}(m.GetAnswer()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CreateQuestionRequestValidationError{
-					field:  "Answer",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, CreateQuestionRequestValidationError{
-					field:  "Answer",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetAnswer()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return CreateQuestionRequestValidationError{
-				field:  "Answer",
-				reason: "embedded message failed validation",
+		if uri, err := url.Parse(m.GetQuestionMediaUrl()); err != nil {
+			err = CreateQuestionRequestValidationError{
+				field:  "QuestionMediaUrl",
+				reason: "value must be a valid URI",
 				cause:  err,
 			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else if !uri.IsAbs() {
+			err := CreateQuestionRequestValidationError{
+				field:  "QuestionMediaUrl",
+				reason: "value must be absolute",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
+
 	}
 
-	if uri, err := url.Parse(m.GetMediaUrl()); err != nil {
-		err = CreateQuestionRequestValidationError{
-			field:  "MediaUrl",
-			reason: "value must be a valid URI",
-			cause:  err,
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	} else if !uri.IsAbs() {
+	if l := utf8.RuneCountInString(m.GetAnswer()); l < 3 || l > 100 {
 		err := CreateQuestionRequestValidationError{
-			field:  "MediaUrl",
-			reason: "value must be absolute",
+			field:  "Answer",
+			reason: "value length must be between 3 and 100 runes, inclusive",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
+	}
+
+	if m.GetAnswerMediaUrl() != "" {
+
+		if uri, err := url.Parse(m.GetAnswerMediaUrl()); err != nil {
+			err = CreateQuestionRequestValidationError{
+				field:  "AnswerMediaUrl",
+				reason: "value must be a valid URI",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else if !uri.IsAbs() {
+			err := CreateQuestionRequestValidationError{
+				field:  "AnswerMediaUrl",
+				reason: "value must be absolute",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -396,34 +396,7 @@ func (m *CreateQuestionResponse) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetQuestion()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CreateQuestionResponseValidationError{
-					field:  "Question",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, CreateQuestionResponseValidationError{
-					field:  "Question",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetQuestion()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return CreateQuestionResponseValidationError{
-				field:  "Question",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for QuestionId
 
 	if len(errors) > 0 {
 		return CreateQuestionResponseMultiError(errors)
@@ -766,9 +739,9 @@ func (m *Question_Answer) validate(all bool) error {
 
 	// no validation rules for Text
 
-	// no validation rules for MediaUrl
-
 	// no validation rules for Author
+
+	// no validation rules for MediaUrl
 
 	if all {
 		switch v := interface{}(m.GetCreateTime()).(type) {
@@ -876,138 +849,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Question_AnswerValidationError{}
-
-// Validate checks the field values on CreateQuestionRequest_Answer with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CreateQuestionRequest_Answer) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on CreateQuestionRequest_Answer with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// CreateQuestionRequest_AnswerMultiError, or nil if none found.
-func (m *CreateQuestionRequest_Answer) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *CreateQuestionRequest_Answer) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if l := utf8.RuneCountInString(m.GetText()); l < 3 || l > 100 {
-		err := CreateQuestionRequest_AnswerValidationError{
-			field:  "Text",
-			reason: "value length must be between 3 and 100 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if uri, err := url.Parse(m.GetMediaUrl()); err != nil {
-		err = CreateQuestionRequest_AnswerValidationError{
-			field:  "MediaUrl",
-			reason: "value must be a valid URI",
-			cause:  err,
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	} else if !uri.IsAbs() {
-		err := CreateQuestionRequest_AnswerValidationError{
-			field:  "MediaUrl",
-			reason: "value must be absolute",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return CreateQuestionRequest_AnswerMultiError(errors)
-	}
-
-	return nil
-}
-
-// CreateQuestionRequest_AnswerMultiError is an error wrapping multiple
-// validation errors returned by CreateQuestionRequest_Answer.ValidateAll() if
-// the designated constraints aren't met.
-type CreateQuestionRequest_AnswerMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CreateQuestionRequest_AnswerMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CreateQuestionRequest_AnswerMultiError) AllErrors() []error { return m }
-
-// CreateQuestionRequest_AnswerValidationError is the validation error returned
-// by CreateQuestionRequest_Answer.Validate if the designated constraints
-// aren't met.
-type CreateQuestionRequest_AnswerValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e CreateQuestionRequest_AnswerValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e CreateQuestionRequest_AnswerValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e CreateQuestionRequest_AnswerValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e CreateQuestionRequest_AnswerValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e CreateQuestionRequest_AnswerValidationError) ErrorName() string {
-	return "CreateQuestionRequest_AnswerValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e CreateQuestionRequest_AnswerValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sCreateQuestionRequest_Answer.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = CreateQuestionRequest_AnswerValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = CreateQuestionRequest_AnswerValidationError{}

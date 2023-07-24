@@ -3,11 +3,9 @@ package entity
 import "time"
 
 type Answer struct {
-	ID         int32
-	Text       string
-	Media      Media
-	Author     string
-	CreateTime time.Time
+	ID    int32
+	Text  string
+	Media Media
 }
 
 type Question struct {

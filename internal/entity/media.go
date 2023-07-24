@@ -18,7 +18,7 @@ const (
 type Media struct {
 	URL        string
 	Type       MediaType
-	Author     string
+	Uploader   string
 	CreateTime time.Time
 }
 
@@ -27,7 +27,7 @@ var (
 	errUnsupportedMediaType = errors.New("unsupported media type")
 )
 
-func NewMedia(url, author string) (Media, error) {
+func NewMedia(url, uploader string) (Media, error) {
 	parts := strings.Split(url, ".")
 	if len(parts) == 0 {
 		return Media{}, errInvalidMediaURL
@@ -54,7 +54,7 @@ func NewMedia(url, author string) (Media, error) {
 	return Media{
 		URL:        url,
 		Type:       mtype,
-		Author:     author,
+		Uploader:   uploader,
 		CreateTime: time.Now(),
 	}, nil
 }

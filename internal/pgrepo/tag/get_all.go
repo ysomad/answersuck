@@ -8,7 +8,6 @@ import (
 	"github.com/ysomad/answersuck/internal/entity"
 	"github.com/ysomad/answersuck/internal/pkg/paging"
 	"github.com/ysomad/answersuck/internal/pkg/sort"
-	"golang.org/x/exp/slog"
 )
 
 func (r *repository) GetAll(ctx context.Context, p paging.OffsetParams, sorts []sort.Sort) (paging.List[entity.Tag], error) {
@@ -26,8 +25,6 @@ func (r *repository) GetAll(ctx context.Context, p paging.OffsetParams, sorts []
 	if err != nil {
 		return paging.List[entity.Tag]{}, fmt.Errorf("b.ToSql: %w", err)
 	}
-
-	slog.Info("sql", sql)
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {

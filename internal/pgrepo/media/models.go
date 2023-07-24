@@ -9,6 +9,6 @@ import (
 type media struct {
 	URL        string           `db:"url"`
 	Type       entity.MediaType `db:"type"`
-	Author     string           `db:"author"`
+	Uploader   string           `db:"uploader"`
 	CreateTime time.Time        `db:"create_time"`
 }
