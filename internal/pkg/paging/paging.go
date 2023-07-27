@@ -2,13 +2,9 @@ package paging
 
 import (
 	"errors"
-
-	"golang.org/x/exp/slog"
 )
 
-var (
-	errInvalidArgs = errors.New("paging: length of items should not equal more than pageSize + 1")
-)
+var errInvalidArgs = errors.New("paging: length of items should not equal more than pageSize + 1")
 
 type List[T any] struct {
 	Items         []T
@@ -18,13 +14,12 @@ type List[T any] struct {
 func NewListWithOffset[T any](items []T, pageSize, offset uint64) (List[T], error) {
 	itemsLen := uint64(len(items))
 
-	slog.Info("info", "pageSize", pageSize, "offset", offset, "items", items)
-
 	// more items than len(items) + 1
 	if itemsLen > pageSize && itemsLen-pageSize != 1 {
 		return List[T]{}, errInvalidArgs
 	}
 
+	// has no next page
 	if itemsLen != pageSize+1 {
 		return List[T]{
 			Items:         items,
