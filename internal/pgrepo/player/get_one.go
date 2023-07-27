@@ -45,7 +45,7 @@ func (r *Repository) GetOne(ctx context.Context, login string, loginType entity.
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[player])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, apperr.ErrPlayerNotFound
+			return nil, apperr.PlayerNotFound
 		}
 
 		return nil, fmt.Errorf("pgx.CollectOneRow: %w", err)

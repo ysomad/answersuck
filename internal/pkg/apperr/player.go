@@ -7,6 +7,6 @@ const (
 )
 
 var (
-	ErrPlayerNotFound      = errors.New("player not found")
-	ErrPlayerAlreadyExists = errors.New("player with provided email or nickname already exists")
+	PlayerNotFound      = errors.New("player not found")
+	PlayerAlreadyExists = errors.New("player with provided email or nickname already exists")
 )

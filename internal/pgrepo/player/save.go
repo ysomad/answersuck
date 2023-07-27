@@ -23,7 +23,7 @@ func (r *Repository) Save(ctx context.Context, p *entity.Player) error {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && (pgErr.ConstraintName == "players_pkey" || pgErr.ConstraintName == "players_email_key") {
-			return apperr.ErrPlayerAlreadyExists
+			return apperr.PlayerAlreadyExists
 		}
 
 		return err

@@ -38,7 +38,7 @@ func (h *Handler) CreateTag(ctx context.Context, r *pb.CreateTagRequest) (*pb.Cr
 	}
 
 	if err := h.tag.Save(ctx, tag); err != nil {
-		if errors.Is(err, apperr.ErrTagAlreadyExists) {
+		if errors.Is(err, apperr.TagAlreadyExists) {
 			return nil, twirp.AlreadyExists.Error(apperr.MsgTagAlreadyExists)
 		}
 

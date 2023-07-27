@@ -7,5 +7,5 @@ const (
 )
 
 var (
-	ErrTagAlreadyExists = errors.New(MsgTagAlreadyExists)
+	TagAlreadyExists = errors.New(MsgTagAlreadyExists)
 )

@@ -29,7 +29,7 @@ func (h *Handler) CreatePlayer(ctx context.Context, p *pb.CreatePlayerRequest) (
 	}
 
 	if err := h.player.Create(ctx, p.Nickname, p.Email, p.Password); err != nil {
-		if errors.Is(err, apperr.ErrPlayerAlreadyExists) {
+		if errors.Is(err, apperr.PlayerAlreadyExists) {
 			return nil, twirp.AlreadyExists.Error(err.Error())
 		}
 

@@ -21,7 +21,7 @@ func (s *Service) LogIn(ctx context.Context, login, password string, fp appctx.F
 	}
 
 	if !ok {
-		return nil, apperr.ErrInvalidCredentials
+		return nil, apperr.InvalidCredentials
 	}
 
 	return s.session.Create(ctx, session.User{

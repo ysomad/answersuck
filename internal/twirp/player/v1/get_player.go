@@ -17,8 +17,8 @@ func (h *Handler) GetPlayer(ctx context.Context, p *pb.GetPlayerRequest) (*pb.Ge
 
 	player, err := h.player.Get(ctx, p.Nickname)
 	if err != nil {
-		if errors.Is(err, apperr.ErrPlayerNotFound) {
-			return nil, twirp.NotFoundError(apperr.ErrPlayerNotFound.Error())
+		if errors.Is(err, apperr.PlayerNotFound) {
+			return nil, twirp.NotFoundError(apperr.PlayerNotFound.Error())
 		}
 
 		return nil, twirp.InternalError(err.Error())

@@ -23,7 +23,7 @@ func (r *repository) Save(ctx context.Context, t entity.Tag) error {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && (pgErr.ConstraintName == "tags_pkey" || pgErr.ConstraintName == "players_email_key") {
-			return apperr.ErrTagAlreadyExists
+			return apperr.TagAlreadyExists
 		}
 
 		return err

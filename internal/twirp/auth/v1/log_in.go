@@ -33,8 +33,8 @@ func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty
 
 	s, err := h.auth.LogIn(ctx, p.Login, p.Password, fp)
 	if err != nil {
-		if errors.Is(err, apperr.ErrPlayerNotFound) || errors.Is(err, apperr.ErrInvalidCredentials) {
-			return nil, twirp.Unauthenticated.Error(apperr.ErrInvalidCredentials.Error())
+		if errors.Is(err, apperr.PlayerNotFound) || errors.Is(err, apperr.InvalidCredentials) {
+			return nil, twirp.Unauthenticated.Error(apperr.InvalidCredentials.Error())
 		}
 
 		return nil, twirp.InternalError(err.Error())

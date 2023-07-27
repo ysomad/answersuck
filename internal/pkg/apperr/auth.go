@@ -9,5 +9,5 @@ const (
 )
 
 var (
-	ErrInvalidCredentials = errors.New(MsgInvalidCredentials)
+	InvalidCredentials = errors.New(MsgInvalidCredentials)
 )

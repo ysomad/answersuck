@@ -42,9 +42,9 @@ func (h *Handler) CreateQuestion(ctx context.Context, p *pb.CreateQuestionReques
 	})
 	if err != nil {
 		switch {
-		case errors.Is(err, apperr.ErrAnswerMediaNotExist):
+		case errors.Is(err, apperr.AnswerMediaNotExist):
 			return nil, twirp.InvalidArgumentError("answer_media_url", err.Error())
-		case errors.Is(err, apperr.ErrQestionMediaNotExist):
+		case errors.Is(err, apperr.QuestionMediaNotExist):
 			return nil, twirp.InvalidArgumentError("question_media_url", err.Error())
 		}
 

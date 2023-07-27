@@ -50,9 +50,9 @@ func (r *Repository) Save(ctx context.Context, q *entity.Question) (questionID i
 
 		switch errors.As(err, &pgErr) {
 		case true && pgErr.ConstraintName == "questions_media_url_fkey":
-			return 0, apperr.ErrQestionMediaNotExist
+			return 0, apperr.QuestionMediaNotExist
 		case true && pgErr.ConstraintName == "answers_media_url_fkey":
-			return 0, apperr.ErrAnswerMediaNotExist
+			return 0, apperr.AnswerMediaNotExist
 		}
 
 		return 0, err
