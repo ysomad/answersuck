@@ -8,7 +8,7 @@ import (
 )
 
 type sessionService interface {
-	Create(context.Context, session.Player) (*session.Session, error)
+	Create(context.Context, session.User) (*session.Session, error)
 	Delete(context.Context, string) error
 }
 

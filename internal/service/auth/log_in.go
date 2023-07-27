@@ -24,8 +24,8 @@ func (s *Service) LogIn(ctx context.Context, login, password string, fp appctx.F
 		return nil, apperr.ErrInvalidCredentials
 	}
 
-	return s.session.Create(ctx, session.Player{
-		Nickname:  player.Nickname,
+	return s.session.Create(ctx, session.User{
+		UserID:    player.Nickname,
 		UserAgent: fp.UserAgent,
 		IP:        fp.IP,
 		Verified:  player.EmailVerified,

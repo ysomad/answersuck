@@ -73,7 +73,7 @@ func NewAuthVerified(sg sessionGetter) *twirp.ServerHooks {
 				return ctx, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
 			}
 
-			if !s.Player.Verified {
+			if !s.User.Verified {
 				return ctx, twirp.PermissionDenied.Error(apperr.MsgPlayerNotVerified)
 			}
 

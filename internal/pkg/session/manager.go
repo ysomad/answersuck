@@ -37,8 +37,8 @@ func NewManager(s Store, lifetime time.Duration) *Manager {
 	}
 }
 
-func (m *Manager) Create(ctx context.Context, p Player) (*Session, error) {
-	if p.Nickname == "" {
+func (m *Manager) Create(ctx context.Context, p User) (*Session, error) {
+	if p.UserID == "" {
 		return nil, errInvalidUserID
 	}
 
@@ -53,7 +53,7 @@ func (m *Manager) Create(ctx context.Context, p Player) (*Session, error) {
 
 	session := &Session{
 		ID:        sid,
-		Player:    p,
+		User:      p,
 		ExpiresAt: time.Now().Add(m.lifetime),
 	}
 

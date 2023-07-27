@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package editor.v1;
+option go_package = "editor/v1;editorv1";
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service PackService {
+    // CreatePack creates new pack of questions.
+    rpc CreatePack(CreatePackRequest) returns (CreatePackResponse);
+
+    // GetPack returns pack with rounds.
+    rpc GetPack(GetPackRequest) returns (GetPackResponse);
+
+    // PublishPack publishes pack and saving stats for future filtering, returns pack with stats.
+    rpc PublishPack(PublishPackRequest) returns (PublishPackResponse);
+}
+
+message PackRound {
+    int32 id = 1;
+    string name = 2;
+}
+
+message Pack {
+    int32 id = 1;
+    string name = 2;
+    string author = 3;
+    bool is_published = 4;
+    string cover_url = 5;
+    repeated PackRound rounds = 6;
+    repeated string tags = 7;
+    google.protobuf.Timestamp create_time = 50;
+    google.protobuf.Timestamp publish_time = 51;
+}
+
+message PackStats {
+    int32 round_count = 1;
+    int32 topic_count = 2;
+    int32 question_count = 3;
+    int32 video_count = 4;
+    int32 audio_count = 5;
+    int32 image_count = 6;
+}
+
+message PackWithStats {
+    Pack pack = 1;
+    PackStats stats = 2;
+}
+
+message GetPackRequest {
+    int32 pack_id = 1; // required
+}
+
+message GetPackResponse {
+    Pack pack = 1;
+}
+
+message CreatePackRequest {
+    string pack_name = 1 [(validate.rules).string = { min_len: 3, max_len: 50 }]; // required
+    string cover_url = 2 [(validate.rules).string = { uri: true }];
+    repeated string tags = 3 [(validate.rules).repeated = { unique: true, max_items: 5 }];
+}
+
+message CreatePackResponse {
+    int32 pack_id = 1;
+}
+
+message PublishPackRequest {
+    int32 package_id = 1; // required
+}
+
+message PublishPackResponse {
+    PackWithStats pack = 1;
+}

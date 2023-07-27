@@ -21,7 +21,7 @@ func (p *Postgres) Save(ctx context.Context, s *Session) error {
 	if _, err := p.Exec(
 		ctx,
 		"INSERT INTO sessions (id, user_agent, player_ip, player_verified, player_nickname, expire_time) VALUES ($1, $2, $3, $4, $5, $6)",
-		s.ID, s.Player.UserAgent, s.Player.IP, s.Player.Verified, s.Player.Nickname, s.ExpiresAt,
+		s.ID, s.User.UserAgent, s.User.IP, s.User.Verified, s.User.UserID, s.ExpiresAt,
 	); err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (p *Postgres) Get(ctx context.Context, sid string) (*Session, error) {
 
 	err := p.
 		QueryRow(ctx, "SELECT id, user_agent, player_ip, player_verified, player_nickname, expire_time FROM sessions WHERE id = $1", sid).
-		Scan(&s.ID, &s.Player.UserAgent, &s.Player.IP, &s.Player.Verified, &s.Player.Nickname, &s.ExpiresAt)
+		Scan(&s.ID, &s.User.UserAgent, &s.User.IP, &s.User.Verified, &s.User.UserID, &s.ExpiresAt)
 	if err != nil {
 		return nil, fmt.Errorf("scan error: %w", err)
 	}

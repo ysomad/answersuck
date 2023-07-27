@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package editor.v1;
+option go_package = "editor/v1;editorv1";
+
+import "validate/validate.proto";
+
+service MediaService {
+    rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse);
+}
+
+enum MediaType {
+    MEDIA_TYPE_UNSPECIFIED = 0;
+    IMAGE = 1;
+    AUDIO = 2;
+    VIDEO = 3;
+}
+
+message Media {
+    string url = 1;
+    MediaType type = 2;
+    string author = 3;
+}
+
+message UploadMediaRequest {
+    string url = 1 [(validate.rules).string = { uri: true }]; // required
+}
+
+message UploadMediaResponse {
+    Media media = 1;
+}

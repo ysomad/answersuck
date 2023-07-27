@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package editor.v1;
+option go_package = "editor/v1;editorv1";
+
+import "editor/v1/pack.proto";
+import "editor/v1/round_question.proto";
+
+import "validate/validate.proto";
+import "google/protobuf/empty.proto";
+
+service RoundService {
+    // CreateRound creates new round and adds it to pack.
+    rpc CreateRound(CreateRoundRequest) returns (CreateRoundResponse);
+
+    // UpdateRoundPosition updates round position in the pack.
+    rpc UpdateRoundPosition(UpdateRoundPositionRequest) returns (google.protobuf.Empty);
+
+    // ListRounds returns list of pack rounds.
+    rpc ListRounds(ListRoundsRequest) returns (ListRoundsResponse);
+
+    // AddTopic adds topic to pack rounds.
+    rpc AddTopic(AddTopicRequest) returns (google.protobuf.Empty);
+
+    // RemoveTopic removes topic from pack round (not actually deleting it from DB).
+    rpc RemoveTopic(RemoveTopicRequest) returns (google.protobuf.Empty);
+    
+    // GetQuestionGrid returns grid of question topics as headers and questions as cells.
+    rpc GetQuestionGrid(GetQuestionGridRequest) returns (GetQuestionGridResponse);
+}
+
+message CreateRoundRequest {
+    int32 pack_id = 1; // required
+    string round_name = 2 [(validate.rules).string = { min_len: 3, max_len: 30 } ]; // required
+    int32 round_position = 3; // required
+}
+
+message CreateRoundResponse {
+    Pack pack = 1;
+}
+
+message UpdateRoundPositionRequest {
+    int32 round_id = 1; // required
+    int32 round_position = 2; // required
+}
+
+message ListRoundsRequest {
+    int32 pack_id = 1; // required
+}
+
+message ListRoundsResponse {
+    message Round {
+        int32 id = 1;
+        string name = 2;
+    }
+
+    repeated Round rounds = 1;
+}
+
+message AddTopicRequest {
+    int32 round_id = 1; // required
+    int32 topic_id = 2; // required
+}
+
+message RemoveTopicRequest {
+    int32 round_id = 1; // required
+    int32 topic_id = 2; // required
+}
+
+message GetQuestionGridRequest {
+    int32 round_id = 1; // required
+}
+
+message GridQuestion {
+    int32 id = 1;
+    string text = 2;
+    RoundQuestionType type = 3;
+    int32 cost = 4;
+}
+
+message GridTopic {
+    int32 id = 1;
+    string title = 2;
+    repeated GridQuestion questions = 3;
+}
+
+message GetQuestionGridResponse {
+    repeated GridTopic topics = 1;
+}

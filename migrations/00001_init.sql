@@ -29,14 +29,13 @@ CREATE TABLE IF NOT EXISTS media (
     create_time timestamptz NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS packages (
+CREATE TABLE IF NOT EXISTS packs (
     id serial NOT NULL PRIMARY KEY,
     name varchar(64) NOT NULL,
     author varchar(25) NOT NULL REFERENCES players (nickname),
     is_published bool DEFAULT FALSE NOT NULL,
     cover_url varchar(2048) REFERENCES media (url),
     create_time timestamptz NOT NULL,
-    update_time timestamptz NOT NULL,
     round_count smallint,
     topic_count smallint,
     question_count smallint,
@@ -49,7 +48,7 @@ CREATE TABLE IF NOT EXISTS rounds (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
     position smallint NOT NULL,
-    package_id int NOT NULL REFERENCES packages (id)
+    pack_id int NOT NULL REFERENCES packs (id)
 );
 
 CREATE TABLE IF NOT EXISTS topics (
@@ -111,10 +110,10 @@ ADD
 
 CREATE INDEX tags_gin_idx ON tags USING GIN (ts);
 
-CREATE TABLE IF NOT EXISTS package_tags (
-    package_id int NOT NULL REFERENCES packages (id),
+CREATE TABLE IF NOT EXISTS pack_tags (
+    pack_id int NOT NULL REFERENCES packs (id),
     tag varchar(16) NOT NULL REFERENCES tags (name),
-    PRIMARY KEY (package_id, tag)
+    PRIMARY KEY (pack_id, tag)
 );
 
 COMMIT;
@@ -124,7 +123,7 @@ COMMIT;
 -- +goose StatementBegin
 BEGIN;
 
-DROP TABLE IF EXISTS package_tags CASCADE;
+DROP TABLE IF EXISTS pack_tags CASCADE;
 DROP TABLE IF EXISTS round_questions CASCADE;
 DROP TABLE IF EXISTS round_topics CASCADE;
 DROP TABLE IF EXISTS questions CASCADE;
@@ -132,7 +131,7 @@ DROP TABLE IF EXISTS answers CASCADE;
 DROP TABLE IF EXISTS topics CASCADE;
 DROP TABLE IF EXISTS rounds CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
-DROP TABLE IF EXISTS packages CASCADE;
+DROP TABLE IF EXISTS packs CASCADE;
 DROP TABLE IF EXISTS media CASCADE;
 DROP TABLE IF EXISTS players CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;

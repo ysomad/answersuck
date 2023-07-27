@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package editor.v1;
+option go_package = "editor/v1;editorv1";
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service QuestionService {
+    rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
+    rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse);
+}
+
+message Question {
+    message Answer {
+        int32 id = 1;
+        string text = 2;
+        string author = 3;
+        string media_url = 4;
+        google.protobuf.Timestamp create_time = 50;
+    }
+
+    int32 id = 1;
+    string text = 2;
+    Answer answer = 3;
+    string author = 4;
+    string media_url = 5;
+    google.protobuf.Timestamp create_time = 50;
+}
+
+message CreateQuestionRequest {
+    string question = 1 [(validate.rules).string = { min_len: 3, max_len: 200 }]; // required
+    string question_media_url = 2 [(validate.rules).string = { uri: true, ignore_empty: true}];
+    string answer = 3 [(validate.rules).string = { min_len: 3, max_len: 100 }]; // required
+    string answer_media_url = 4 [(validate.rules).string = { uri: true, ignore_empty: true }];
+}
+
+message CreateQuestionResponse {
+    int32 question_id = 1;
+}
+
+message GetQuestionRequest {
+    int32 question_id = 1; // required
+}
+
+message GetQuestionResponse {
+    Question question = 1;
+}

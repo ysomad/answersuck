@@ -7,8 +7,8 @@ import (
 
 const Cookie = "sid"
 
-type Player struct {
-	Nickname  string
+type User struct {
+	UserID    string
 	UserAgent string
 	IP        net.IP
 	Verified  bool
@@ -16,7 +16,7 @@ type Player struct {
 
 type Session struct {
 	ID        string
-	Player    Player
+	User      User
 	ExpiresAt time.Time
 }
 

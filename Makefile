@@ -81,34 +81,7 @@ gen-api:
 		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/tag/v1/*.proto
-	protoc \
-		-I api \
-		-I api/validate \
-		--go_out=internal/gen/api \
-		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/api \
-		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
 		api/player/v1/*.proto
-	protoc \
-		-I api \
-		-I api/validate \
-		--go_out=internal/gen/api \
-		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/api \
-		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/question/v1/*.proto
-	protoc \
-		-I api \
-		-I api/validate \
-		--go_out=internal/gen/api \
-		--go_opt=paths=source_relative \
-		--twirp_out=internal/gen/api \
-		--twirp_opt=paths=source_relative \
-		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/package/v1/*.proto
 	protoc \
 		-I api \
 		-I api/validate \
@@ -126,4 +99,4 @@ gen-api:
 		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/media/v1/*.proto
+		api/editor/v1/*.proto

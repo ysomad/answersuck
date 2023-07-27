@@ -16,7 +16,7 @@ func CheckPlayerVerification(ctx context.Context) (*session.Session, error) {
 		return nil, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
 	}
 
-	if !s.Player.Verified {
+	if !s.User.Verified {
 		return nil, twirp.PermissionDenied.Error(apperr.MsgPlayerNotVerified)
 	}
 

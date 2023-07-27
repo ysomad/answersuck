@@ -19,10 +19,10 @@ import (
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	authtwirpv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
-	mediatwirpv1 "github.com/ysomad/answersuck/internal/twirp/media/v1"
+	mediatwirpv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/media"
+	questiontwirpv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/question"
+	tagtwirpv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/tag"
 	playertwirpv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
-	questiontwirpv1 "github.com/ysomad/answersuck/internal/twirp/question/v1"
-	tagtwirpv1 "github.com/ysomad/answersuck/internal/twirp/tag/v1"
 )
 
 func logFatal(msg string, args ...any) {
