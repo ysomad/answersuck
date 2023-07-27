@@ -1,0 +1,141 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "tag.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/editor.v1.TagService/CreateTag": {
+      "post": {
+        "tags": [
+          "TagService"
+        ],
+        "operationId": "CreateTag",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateTagRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateTagResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.TagService/ListTags": {
+      "post": {
+        "tags": [
+          "TagService"
+        ],
+        "operationId": "ListTags",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_ListTagsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_ListTagsResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "editor.v1_CreateTagRequest": {
+      "description": "Fields: tag_name",
+      "type": "object",
+      "properties": {
+        "tag_name": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_CreateTagResponse": {
+      "description": "Fields: tag",
+      "type": "object",
+      "properties": {
+        "tag": {
+          "$ref": "#/definitions/editor.v1_Tag"
+        }
+      }
+    },
+    "editor.v1_ListTagsRequest": {
+      "description": "Fields: order_by, page_size, page_token",
+      "type": "object",
+      "properties": {
+        "order_by": {
+          "type": "string",
+          "title": "The string value should follow SQL syntax: comma separated list of fields. For example: \"foo,bar\". The default sorting order is ascending. To specify descending order for a field, a suffix \" desc\" should be appended to the field name. For example: \"foo desc,bar\"."
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Needed for requesting first page next requests will use page_size from page_token."
+        },
+        "page_token": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_ListTagsResponse": {
+      "description": "Fields: tags, next_page_token",
+      "type": "object",
+      "properties": {
+        "next_page_token": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/editor.v1_Tag"
+          }
+        }
+      }
+    },
+    "editor.v1_Tag": {
+      "description": "Fields: name, author, create_time",
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "create_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

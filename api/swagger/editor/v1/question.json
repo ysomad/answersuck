@@ -1,0 +1,163 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "question.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/editor.v1.QuestionService/CreateQuestion": {
+      "post": {
+        "tags": [
+          "QuestionService"
+        ],
+        "operationId": "CreateQuestion",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateQuestionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateQuestionResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.QuestionService/GetQuestion": {
+      "post": {
+        "tags": [
+          "QuestionService"
+        ],
+        "operationId": "GetQuestion",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_GetQuestionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_GetQuestionResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "editor.v1_Answer": {
+      "description": "Fields: id, text, media_url",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "media_url": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_CreateQuestionRequest": {
+      "description": "Fields: question, question_media_url, answer, answer_media_url",
+      "type": "object",
+      "properties": {
+        "answer": {
+          "type": "string"
+        },
+        "answer_media_url": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "question_media_url": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_CreateQuestionResponse": {
+      "description": "Fields: question_id",
+      "type": "object",
+      "properties": {
+        "question_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_GetQuestionRequest": {
+      "description": "Fields: question_id",
+      "type": "object",
+      "properties": {
+        "question_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_GetQuestionResponse": {
+      "description": "Fields: question",
+      "type": "object",
+      "properties": {
+        "question": {
+          "$ref": "#/definitions/editor.v1_Question"
+        }
+      }
+    },
+    "editor.v1_Question": {
+      "description": "Fields: id, text, answer, author, media_url, create_time",
+      "type": "object",
+      "properties": {
+        "answer": {
+          "$ref": "#/definitions/editor.v1_Answer"
+        },
+        "author": {
+          "type": "string"
+        },
+        "create_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "media_url": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

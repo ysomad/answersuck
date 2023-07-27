@@ -1,0 +1,81 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "media.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/editor.v1.MediaService/UploadMedia": {
+      "post": {
+        "tags": [
+          "MediaService"
+        ],
+        "operationId": "UploadMedia",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_UploadMediaRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_UploadMediaResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "editor.v1_Media": {
+      "description": "Fields: url, type, author",
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/editor.v1_MediaType"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_UploadMediaRequest": {
+      "description": "Fields: url",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_UploadMediaResponse": {
+      "description": "Fields: media",
+      "type": "object",
+      "properties": {
+        "media": {
+          "$ref": "#/definitions/editor.v1_Media"
+        }
+      }
+    }
+  }
+}

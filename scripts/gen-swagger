@@ -1,0 +1,32 @@
+#!/bin/bash
+
+api_dir="api"
+swagger_dir="api/swagger"
+proto_dir="api/proto"
+
+# 1. generate swagger file structure
+mkdir -p $swagger_dir
+dirs=( $(find $proto_dir -type d | cut -d'/' -f3-) )
+
+for dir in "${dirs[@]}"
+do
+    dir="$swagger_dir/$dir"
+    mkdir $dir
+done
+
+# 2. delete all previously generated swagger files
+find $swagger_dir -name "*.json" -type f -delete
+
+# 3. generate swagger files from proto 
+protos=( $(find $api_dir -type f -name "*.proto") )
+
+for proto_path in "${protos[@]}"
+do
+    swagger_path=$( echo "${proto_path%%.*}.json" | cut -d'/' -f3- )
+    swagger_path="$swagger_dir/$swagger_path"
+    echo $swagger_path
+    twirp-swagger-gen \
+        -in $proto_path \
+        -out $swagger_path \
+        -host localhost:8080
+done

@@ -74,29 +74,33 @@ dry-run: goose-reset run-migrate
 gen-api:
 	rm -rf internal/gen/api/*
 	protoc \
-		-I api \
-		-I api/validate \
+		-I api/proto \
+		-I api/proto/validate \
 		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
 		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/player/v1/*.proto
+		api/proto/player/v1/*.proto
 	protoc \
-		-I api \
-		-I api/validate \
+		-I api/proto \
+		-I api/proto/validate \
 		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
 		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/auth/v1/*.proto
+		api/proto/auth/v1/*.proto
 	protoc \
-		-I api \
-		-I api/validate \
+		-I api/proto \
+		-I api/proto/validate \
 		--go_out=internal/gen/api \
 		--go_opt=paths=source_relative \
 		--twirp_out=internal/gen/api \
 		--twirp_opt=paths=source_relative \
 		--validate_out="lang=go,paths=source_relative:internal/gen/api" \
-		api/editor/v1/*.proto
+		api/proto/editor/v1/*.proto
+
+.PHONY: gen-swagger
+gen-swagger: 
+	./scripts/gen-swagger

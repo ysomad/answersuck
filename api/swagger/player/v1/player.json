@@ -1,0 +1,129 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "player.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/player.v1.PlayerService/CreatePlayer": {
+      "post": {
+        "tags": [
+          "PlayerService"
+        ],
+        "operationId": "CreatePlayer",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/player.v1_CreatePlayerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/player.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/player.v1.PlayerService/GetPlayer": {
+      "post": {
+        "tags": [
+          "PlayerService"
+        ],
+        "operationId": "GetPlayer",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/player.v1_GetPlayerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/player.v1_GetPlayerResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "player.v1_CreatePlayerRequest": {
+      "description": "Fields: nickname, email, password",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "player.v1_GetPlayerRequest": {
+      "description": "Fields: nickname",
+      "type": "object",
+      "properties": {
+        "nickname": {
+          "type": "string"
+        }
+      }
+    },
+    "player.v1_GetPlayerResponse": {
+      "description": "Fields: player",
+      "type": "object",
+      "properties": {
+        "player": {
+          "$ref": "#/definitions/player.v1_Player"
+        }
+      }
+    },
+    "player.v1_Player": {
+      "description": "Fields: nickname, email, display_name, email_verified, create_time",
+      "type": "object",
+      "properties": {
+        "create_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "email_verified": {
+          "type": "boolean"
+        },
+        "nickname": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

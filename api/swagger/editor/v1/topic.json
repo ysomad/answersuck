@@ -1,0 +1,83 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "topic.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/editor.v1.TopicService/CreateTopic": {
+      "post": {
+        "tags": [
+          "TopicService"
+        ],
+        "operationId": "CreateTopic",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateTopicRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateTopicResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "editor.v1_CreateTopicRequest": {
+      "description": "Fields: topic_title",
+      "type": "object",
+      "properties": {
+        "topic_title": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_CreateTopicResponse": {
+      "description": "Fields: topic",
+      "type": "object",
+      "properties": {
+        "topic": {
+          "$ref": "#/definitions/editor.v1_Topic"
+        }
+      }
+    },
+    "editor.v1_Topic": {
+      "description": "Fields: id, title, create_time",
+      "type": "object",
+      "properties": {
+        "create_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -27,13 +27,13 @@ type sessionManager interface {
 }
 
 type Handler struct {
-	tag     UseCase
+	pack    UseCase
 	session sessionManager
 }
 
 func NewHandler(uc UseCase, sm sessionManager) *Handler {
 	return &Handler{
-		tag:     uc,
+		pack:    uc,
 		session: sm,
 	}
 }

@@ -1,0 +1,280 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "round_question.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/editor.v1.RoundQuestionService/CreateRoundQuestion": {
+      "post": {
+        "tags": [
+          "RoundQuestionService"
+        ],
+        "summary": "CreateRoundQuestion adds question for topic in pack round.",
+        "operationId": "CreateRoundQuestion",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateRoundQuestionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateRoundQuestionResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundQuestionService/GetRoundQuestion": {
+      "post": {
+        "tags": [
+          "RoundQuestionService"
+        ],
+        "summary": "GetRoundQuestion returns round question.",
+        "operationId": "GetRoundQuestion",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_GetRoundQuestionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_GetRoundQuestionResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundQuestionService/UpdateRoundQuestionsCost": {
+      "post": {
+        "tags": [
+          "RoundQuestionService"
+        ],
+        "summary": "UpdateRoundQuestionsCost updates cost for multiple questions.",
+        "operationId": "UpdateRoundQuestionsCost",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_UpdateRoundQuestionsCostRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "editor.v1_Answer": {
+      "description": "Fields: id, text, author, media_url, create_time",
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "create_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "media_url": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_CreateRoundQuestionRequest": {
+      "description": "Fields: question_id, topic_id, round_id, question_type, question_cost, answer_time, host_comment, secret_topic, secret_cost, is_keepable, transfer_type",
+      "type": "object",
+      "properties": {
+        "answer_time": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "host_comment": {
+          "type": "string"
+        },
+        "is_keepable": {
+          "type": "boolean"
+        },
+        "question_cost": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "question_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "question_type": {
+          "$ref": "#/definitions/editor.v1_RoundQuestionType"
+        },
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "secret_cost": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "secret_topic": {
+          "type": "string"
+        },
+        "topic_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "transfer_type": {
+          "$ref": "#/definitions/editor.v1_TransferType"
+        }
+      }
+    },
+    "editor.v1_CreateRoundQuestionResponse": {
+      "description": "Fields: round_question",
+      "type": "object",
+      "properties": {
+        "round_question": {
+          "$ref": "#/definitions/editor.v1_RoundQuestion"
+        }
+      }
+    },
+    "editor.v1_GetRoundQuestionRequest": {
+      "description": "Fields: round_question_id",
+      "type": "object",
+      "properties": {
+        "round_question_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_GetRoundQuestionResponse": {
+      "description": "Fields: round_question",
+      "type": "object",
+      "properties": {
+        "round_question": {
+          "$ref": "#/definitions/editor.v1_RoundQuestion"
+        }
+      }
+    },
+    "editor.v1_Question": {
+      "description": "Fields: round_question_id, cost",
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "round_question_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_RoundQuestion": {
+      "description": "Fields: id, round_id, topic_id, question, question_type, question_cost, answer, answer_time, host_comment, secret_topic, secret_cost, transfer_type, is_keepable",
+      "type": "object",
+      "properties": {
+        "answer": {
+          "$ref": "#/definitions/editor.v1_Answer"
+        },
+        "answer_time": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "host_comment": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "is_keepable": {
+          "type": "boolean"
+        },
+        "question": {
+          "$ref": "#/definitions/editor.v1_Question"
+        },
+        "question_cost": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "question_type": {
+          "$ref": "#/definitions/editor.v1_RoundQuestionType"
+        },
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "secret_cost": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "secret_topic": {
+          "type": "string"
+        },
+        "topic_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "transfer_type": {
+          "$ref": "#/definitions/editor.v1_TransferType"
+        }
+      }
+    },
+    "editor.v1_UpdateRoundQuestionsCostRequest": {
+      "description": "Fields: round_id, questions",
+      "type": "object",
+      "properties": {
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/editor.v1_Question"
+          }
+        },
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

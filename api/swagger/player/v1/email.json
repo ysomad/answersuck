@@ -1,0 +1,133 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "email.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/player.v1.EmailService/SendVerification": {
+      "post": {
+        "tags": [
+          "EmailService"
+        ],
+        "summary": "SendVerification sends creates verification token and sends it to player email.",
+        "operationId": "SendVerification",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/player.v1_google.protobuf.Empty"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/player.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/player.v1.EmailService/UpdateEmail": {
+      "post": {
+        "tags": [
+          "EmailService"
+        ],
+        "summary": "UpdateEmail updates player email.",
+        "operationId": "UpdateEmail",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/player.v1_UpdateEmailRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/player.v1_UpdateEmailResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/player.v1.EmailService/VerifyEmail": {
+      "post": {
+        "tags": [
+          "EmailService"
+        ],
+        "summary": "VerifyEmail verifies player email by provided code.",
+        "operationId": "VerifyEmail",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/player.v1_VerifyEmailRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/player.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "player.v1_UpdateEmailRequest": {
+      "description": "Fields: new_email, password",
+      "type": "object",
+      "properties": {
+        "new_email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "player.v1_UpdateEmailResponse": {
+      "description": "Fields: player",
+      "type": "object",
+      "properties": {
+        "player": {
+          "$ref": "#/definitions/player.v1_Player"
+        }
+      }
+    },
+    "player.v1_VerifyEmailRequest": {
+      "description": "Fields: token",
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

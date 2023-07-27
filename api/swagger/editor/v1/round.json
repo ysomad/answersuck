@@ -1,0 +1,348 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "round.proto",
+    "version": "version not set"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/twirp/editor.v1.RoundService/AddTopic": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "AddTopic adds topic to pack rounds.",
+        "operationId": "AddTopic",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_AddTopicRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundService/CreateRound": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "CreateRound creates new round and adds it to pack.",
+        "operationId": "CreateRound",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateRoundRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_CreateRoundResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundService/GetQuestionGrid": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "GetQuestionGrid returns grid of question topics as headers and questions as cells.",
+        "operationId": "GetQuestionGrid",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_GetQuestionGridRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_GetQuestionGridResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundService/ListRounds": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "ListRounds returns list of pack rounds.",
+        "operationId": "ListRounds",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_ListRoundsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_ListRoundsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundService/RemoveTopic": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "RemoveTopic removes topic from pack round (not actually deleting it from DB).",
+        "operationId": "RemoveTopic",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_RemoveTopicRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    },
+    "/twirp/editor.v1.RoundService/UpdateRoundPosition": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "UpdateRoundPosition updates round position in the pack.",
+        "operationId": "UpdateRoundPosition",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_UpdateRoundPositionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "editor.v1_AddTopicRequest": {
+      "description": "Fields: round_id, topic_id",
+      "type": "object",
+      "properties": {
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "topic_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_CreateRoundRequest": {
+      "description": "Fields: pack_id, round_name, round_position",
+      "type": "object",
+      "properties": {
+        "pack_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "round_name": {
+          "type": "string"
+        },
+        "round_position": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_CreateRoundResponse": {
+      "description": "Fields: pack",
+      "type": "object",
+      "properties": {
+        "pack": {
+          "$ref": "#/definitions/editor.v1_Pack"
+        }
+      }
+    },
+    "editor.v1_GetQuestionGridRequest": {
+      "description": "Fields: round_id",
+      "type": "object",
+      "properties": {
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_GetQuestionGridResponse": {
+      "description": "Fields: topics",
+      "type": "object",
+      "properties": {
+        "topics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/editor.v1_GridTopic"
+          }
+        }
+      }
+    },
+    "editor.v1_GridQuestion": {
+      "description": "Fields: id, text, type, cost",
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/editor.v1_RoundQuestionType"
+        }
+      }
+    },
+    "editor.v1_GridTopic": {
+      "description": "Fields: id, title, questions",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/editor.v1_GridQuestion"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_ListRoundsRequest": {
+      "description": "Fields: pack_id",
+      "type": "object",
+      "properties": {
+        "pack_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_ListRoundsResponse": {
+      "description": "Fields: rounds",
+      "type": "object",
+      "properties": {
+        "rounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/editor.v1_Round"
+          }
+        }
+      }
+    },
+    "editor.v1_RemoveTopicRequest": {
+      "description": "Fields: round_id, topic_id",
+      "type": "object",
+      "properties": {
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "topic_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_Round": {
+      "description": "Fields: id, name",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "editor.v1_UpdateRoundPositionRequest": {
+      "description": "Fields: round_id, round_position",
+      "type": "object",
+      "properties": {
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "round_position": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}
