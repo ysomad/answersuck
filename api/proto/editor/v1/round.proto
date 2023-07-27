@@ -48,12 +48,12 @@ message ListRoundsRequest {
     int32 pack_id = 1; // required
 }
 
-message ListRoundsResponse {
-    message Round {
-        int32 id = 1;
-        string name = 2;
-    }
+message Round {
+    int32 id = 1;
+    string name = 2;
+}
 
+message ListRoundsResponse {
     repeated Round rounds = 1;
 }
 

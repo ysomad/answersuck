@@ -9,17 +9,8 @@ import "google/protobuf/timestamp.proto";
 service PackService {
     rpc CreatePack(CreatePackRequest) returns (CreatePackResponse);
     rpc GetPack(GetPackRequest) returns (GetPackResponse);
-    rpc ListPackRounds(ListPackRoundsRequest) returns (ListPackRoundsResponse);
     rpc ListPackTags(ListPackTagsRequest) returns (ListPackTagsResponse);
     rpc PublishPack(PublishPackRequest) returns (PublishPackResponse);
-}
-
-message ListPackRoundsRequest {
-    int32 pack_id = 1; // required
-}
-
-message ListPackRoundsResponse {
-    repeated PackRound rounds = 1;
 }
 
 message ListPackTagsRequest {
@@ -28,12 +19,6 @@ message ListPackTagsRequest {
 
 message ListPackTagsResponse {
     repeated string tags = 1;
-}
-
-message PackRound {
-    int32 id = 1;
-    string name = 2;
-    int32 position = 3;
 }
 
 message Pack {
