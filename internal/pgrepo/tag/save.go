@@ -11,7 +11,7 @@ import (
 
 func (r *repository) Save(ctx context.Context, t entity.Tag) error {
 	sql, args, err := r.Builder.
-		Insert(tagTable).
+		Insert(TagsTable).
 		Columns("name", "author", "create_time").
 		Values(t.Name, t.Author, t.CreateTime).
 		ToSql()

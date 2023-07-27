@@ -8,9 +8,9 @@ import (
 const Cookie = "sid"
 
 type User struct {
-	UserID    string
-	UserAgent string
+	ID        string
 	IP        net.IP
+	UserAgent string
 	Verified  bool
 }
 

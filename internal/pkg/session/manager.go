@@ -38,7 +38,7 @@ func NewManager(s Store, lifetime time.Duration) *Manager {
 }
 
 func (m *Manager) Create(ctx context.Context, p User) (*Session, error) {
-	if p.UserID == "" {
+	if p.ID == "" {
 		return nil, errInvalidUserID
 	}
 

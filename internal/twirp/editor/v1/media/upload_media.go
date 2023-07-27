@@ -23,7 +23,7 @@ func (h *Handler) UploadMedia(ctx context.Context, p *pb.UploadMediaRequest) (*p
 		return nil, twirp.InvalidArgument.Error(err.Error())
 	}
 
-	media, err := entity.NewMedia(p.Url, session.User.UserID)
+	media, err := entity.NewMedia(p.Url, session.User.ID)
 	if err != nil {
 		return nil, twirp.InvalidArgument.Error(err.Error())
 	}

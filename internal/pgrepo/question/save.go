@@ -48,11 +48,10 @@ func (r *Repository) Save(ctx context.Context, q *entity.Question) (questionID i
 	if err := pgx.BeginTxFunc(ctx, r.Pool, pgx.TxOptions{}, txFunc); err != nil {
 		var pgErr *pgconn.PgError
 
-		switch errors.As(err, &pgErr) {
-		case true && pgErr.ConstraintName == "questions_media_url_fkey":
-			return 0, apperr.QuestionMediaNotExist
-		case true && pgErr.ConstraintName == "answers_media_url_fkey":
-			return 0, apperr.AnswerMediaNotExist
+		if errors.As(err, &pgErr) &&
+			pgErr.ConstraintName == "questions_media_url_fkey" ||
+			pgErr.ConstraintName == "answers_media_url_fkey" {
+			return 0, apperr.MediaNotFound
 		}
 
 		return 0, err

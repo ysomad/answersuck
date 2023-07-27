@@ -9,6 +9,7 @@ import (
 
 	"github.com/ysomad/answersuck/internal/config"
 	mediapg "github.com/ysomad/answersuck/internal/pgrepo/media"
+	packpg "github.com/ysomad/answersuck/internal/pgrepo/pack"
 	playerpg "github.com/ysomad/answersuck/internal/pgrepo/player"
 	questionpg "github.com/ysomad/answersuck/internal/pgrepo/question"
 	tagpg "github.com/ysomad/answersuck/internal/pgrepo/tag"
@@ -18,11 +19,12 @@ import (
 	"github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
-	authtwirpv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
-	mediatwirpv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/media"
-	questiontwirpv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/question"
-	tagtwirpv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/tag"
-	playertwirpv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
+	authv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
+	mediav1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/media"
+	packv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/pack"
+	questionv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/question"
+	tagv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/tag"
+	playerv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
 )
 
 func logFatal(msg string, args ...any) {
@@ -51,23 +53,27 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	playerPostgres := playerpg.NewRepository(pgClient)
 	playerService := playersvc.NewService(playerPostgres)
 
-	playerHandlerV1 := playertwirpv1.NewHandler(playerService)
+	playerHandlerV1 := playerv1.NewHandler(playerService)
 
 	// tag
 	tagPostgres := tagpg.NewRepository(pgClient)
-	tagHandlerV1 := tagtwirpv1.NewHandler(tagPostgres, sessionPostgres)
+	tagHandlerV1 := tagv1.NewHandler(tagPostgres, sessionPostgres)
 
 	// auth
 	authService := auth.NewService(sessionManager, playerService)
-	authHandlerV1 := authtwirpv1.NewHandler(authService)
+	authHandlerV1 := authv1.NewHandler(authService)
 
 	// media
 	mediaPostgres := mediapg.NewRepository(pgClient)
-	mediaHandlerV1 := mediatwirpv1.NewHandler(mediaPostgres, sessionManager)
+	mediaHandlerV1 := mediav1.NewHandler(mediaPostgres, sessionManager)
 
 	// question
 	questionPostgres := questionpg.NewRepository(pgClient)
-	questionHandlerV1 := questiontwirpv1.NewHandler(questionPostgres, sessionManager)
+	questionHandlerV1 := questionv1.NewHandler(questionPostgres, sessionManager)
+
+	// pack
+	packPostgres := packpg.NewRepository(pgClient)
+	packHandlerV1 := packv1.NewHandler(packPostgres, sessionManager)
 
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{
@@ -76,6 +82,7 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 		authHandlerV1,
 		mediaHandlerV1,
 		questionHandlerV1,
+		packHandlerV1,
 	})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))

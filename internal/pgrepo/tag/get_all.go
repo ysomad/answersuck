@@ -23,7 +23,7 @@ func (r *repository) GetAll(ctx context.Context, p paging.Params, sorts []sort.S
 
 	b := r.Builder.
 		Select("name, author, create_time").
-		From(tagTable).
+		From(TagsTable).
 		Limit(limit + 1).
 		Offset(offset)
 

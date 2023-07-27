@@ -33,7 +33,7 @@ func (h *Handler) CreateTag(ctx context.Context, r *pb.CreateTagRequest) (*pb.Cr
 
 	tag := entity.Tag{
 		Name:       r.TagName,
-		Author:     session.User.UserID,
+		Author:     session.User.ID,
 		CreateTime: time.Now(),
 	}
 

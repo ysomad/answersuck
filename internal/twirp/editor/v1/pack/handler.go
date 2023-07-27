@@ -19,7 +19,7 @@ var (
 )
 
 type UseCase interface {
-	Save(context.Context, *entity.Pack) (packID int32, err error)
+	Save(ctx context.Context, p *entity.Pack, tags []string) (packID int32, err error)
 }
 
 type sessionManager interface {

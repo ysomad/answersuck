@@ -9,7 +9,6 @@ type Pack struct {
 	Published  bool
 	CoverURL   string
 	CreateTime time.Time
-	UpdateTime time.Time
 }
 
 type PackWithTags struct {

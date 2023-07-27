@@ -32,7 +32,7 @@ func (h *Handler) CreateQuestion(ctx context.Context, p *pb.CreateQuestionReques
 
 	questionID, err := h.question.Save(ctx, &entity.Question{
 		Text:       p.Question,
-		Author:     session.User.UserID,
+		Author:     session.User.ID,
 		MediaURL:   p.QuestionMediaUrl,
 		CreateTime: time.Now(),
 		Answer: entity.Answer{
@@ -41,11 +41,8 @@ func (h *Handler) CreateQuestion(ctx context.Context, p *pb.CreateQuestionReques
 		},
 	})
 	if err != nil {
-		switch {
-		case errors.Is(err, apperr.AnswerMediaNotExist):
-			return nil, twirp.InvalidArgumentError("answer_media_url", err.Error())
-		case errors.Is(err, apperr.QuestionMediaNotExist):
-			return nil, twirp.InvalidArgumentError("question_media_url", err.Error())
+		if errors.Is(err, apperr.MediaNotFound) {
+			return nil, twirp.InvalidArgument.Error(apperr.MsgQuestionMediaNotFound)
 		}
 
 		return nil, twirp.InternalError(err.Error())

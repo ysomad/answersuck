@@ -2,7 +2,7 @@ package tag
 
 import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
-const tagTable = "tags"
+const TagsTable = "tags"
 
 type repository struct {
 	*pgclient.Client

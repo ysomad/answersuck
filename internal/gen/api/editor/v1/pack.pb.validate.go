@@ -871,25 +871,29 @@ func (m *CreatePackRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if uri, err := url.Parse(m.GetCoverUrl()); err != nil {
-		err = CreatePackRequestValidationError{
-			field:  "CoverUrl",
-			reason: "value must be a valid URI",
-			cause:  err,
+	if m.GetCoverUrl() != "" {
+
+		if uri, err := url.Parse(m.GetCoverUrl()); err != nil {
+			err = CreatePackRequestValidationError{
+				field:  "CoverUrl",
+				reason: "value must be a valid URI",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else if !uri.IsAbs() {
+			err := CreatePackRequestValidationError{
+				field:  "CoverUrl",
+				reason: "value must be absolute",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	} else if !uri.IsAbs() {
-		err := CreatePackRequestValidationError{
-			field:  "CoverUrl",
-			reason: "value must be absolute",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
 	if len(m.GetTags()) > 5 {
