@@ -46,7 +46,6 @@ func (t UnsortableToken) Decode() (string, time.Time, error) {
 type OffsetToken string
 
 // NewOffsetToken encodes limit and offset into base64 string.
-// Example: "1000,500", where 1000 is limit and 500 is offset
 func NewOffsetToken(limit, offset uint64) OffsetToken {
 	limitBytes := uint64ToBytes(limit)
 	offsetBytes := uint64ToBytes(offset)
