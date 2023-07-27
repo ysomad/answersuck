@@ -36,8 +36,6 @@ func (s Sort) Attach(b sq.SelectBuilder) sq.SelectBuilder {
 
 var errInvalidSortString = errors.New("invalid sort string")
 
-type SortList []Sort
-
 // NewSortList parses sort string into slice of sorts.
 // Sort string must follow pattern: '{column} {order},{column} {order}...', order is optional
 // and ASC by default.

@@ -10,9 +10,7 @@ import (
 	"unsafe"
 )
 
-var (
-	ErrInvalidToken = errors.New("invalid page token, must be valid base64 or empty string")
-)
+var ErrInvalidToken = errors.New("invalid page token, must be valid base64 or empty string")
 
 type UnsortableToken string
 
