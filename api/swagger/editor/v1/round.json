@@ -318,7 +318,7 @@
       }
     },
     "editor.v1_Round": {
-      "description": "Fields: id, name, position",
+      "description": "Fields: id, name, position, pack_id",
       "type": "object",
       "properties": {
         "id": {
@@ -327,6 +327,10 @@
         },
         "name": {
           "type": "string"
+        },
+        "pack_id": {
+          "type": "integer",
+          "format": "int32"
         },
         "position": {
           "type": "integer",
