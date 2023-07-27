@@ -2,11 +2,13 @@ package question
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/twitchtv/twirp"
 	"github.com/ysomad/answersuck/internal/entity"
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"github.com/ysomad/answersuck/internal/twirp/common"
 )
 
@@ -39,6 +41,13 @@ func (h *Handler) CreateQuestion(ctx context.Context, p *pb.CreateQuestionReques
 		CreateTime: time.Now(),
 	})
 	if err != nil {
+		switch {
+		case errors.Is(err, apperr.ErrAnswerMediaNotExist):
+			return nil, twirp.InvalidArgumentError("answer_media_url", err.Error())
+		case errors.Is(err, apperr.ErrQestionMediaNotExist):
+			return nil, twirp.InvalidArgumentError("question_media_url", err.Error())
+		}
+
 		return nil, twirp.InternalError(err.Error())
 	}
 

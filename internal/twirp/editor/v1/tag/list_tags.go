@@ -12,10 +12,6 @@ import (
 )
 
 func (h *Handler) ListTags(ctx context.Context, r *pb.ListTagsRequest) (*pb.ListTagsResponse, error) {
-	if err := r.Validate(); err != nil {
-		return nil, twirp.NewError(twirp.InvalidArgument, err.Error())
-	}
-
 	sorts, err := sort.NewSortList(r.OrderBy)
 	if err != nil {
 		return nil, twirp.InvalidArgumentError("order_by", err.Error())

@@ -2,11 +2,14 @@ package question
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/ysomad/answersuck/internal/entity"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 )
 
 func (r *Repository) Save(ctx context.Context, q *entity.Question) (questionID int32, err error) {
@@ -43,6 +46,15 @@ func (r *Repository) Save(ctx context.Context, q *entity.Question) (questionID i
 	}
 
 	if err := pgx.BeginTxFunc(ctx, r.Pool, pgx.TxOptions{}, txFunc); err != nil {
+		var pgErr *pgconn.PgError
+
+		switch errors.As(err, &pgErr) {
+		case true && pgErr.ConstraintName == "questions_media_url_fkey":
+			return 0, apperr.ErrQestionMediaNotExist
+		case true && pgErr.ConstraintName == "answers_media_url_fkey":
+			return 0, apperr.ErrAnswerMediaNotExist
+		}
+
 		return 0, err
 	}
 
