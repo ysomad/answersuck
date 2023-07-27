@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS packs (
     is_published bool DEFAULT FALSE NOT NULL,
     cover_url varchar(2048) REFERENCES media (url),
     create_time timestamptz NOT NULL,
+    publish_time timestamptz,
     round_count smallint,
     topic_count smallint,
     question_count smallint,

@@ -27,13 +27,14 @@ const _ = twirp.TwirpPackageMinVersion_8_1_0
 // =====================
 
 type PackService interface {
-	// CreatePack creates new pack of questions.
 	CreatePack(context.Context, *CreatePackRequest) (*CreatePackResponse, error)
 
-	// GetPack returns pack with rounds.
 	GetPack(context.Context, *GetPackRequest) (*GetPackResponse, error)
 
-	// PublishPack publishes pack and saving stats for future filtering, returns pack with stats.
+	ListPackRounds(context.Context, *ListPackRoundsRequest) (*ListPackRoundsResponse, error)
+
+	ListPackTags(context.Context, *ListPackTagsRequest) (*ListPackTagsResponse, error)
+
 	PublishPack(context.Context, *PublishPackRequest) (*PublishPackResponse, error)
 }
 
@@ -43,7 +44,7 @@ type PackService interface {
 
 type packServiceProtobufClient struct {
 	client      HTTPClient
-	urls        [3]string
+	urls        [5]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -71,9 +72,11 @@ func NewPackServiceProtobufClient(baseURL string, client HTTPClient, opts ...twi
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "editor.v1", "PackService")
-	urls := [3]string{
+	urls := [5]string{
 		serviceURL + "CreatePack",
 		serviceURL + "GetPack",
+		serviceURL + "ListPackRounds",
+		serviceURL + "ListPackTags",
 		serviceURL + "PublishPack",
 	}
 
@@ -177,6 +180,98 @@ func (c *packServiceProtobufClient) callGetPack(ctx context.Context, in *GetPack
 	return out, nil
 }
 
+func (c *packServiceProtobufClient) ListPackRounds(ctx context.Context, in *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "editor.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "PackService")
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackRounds")
+	caller := c.callListPackRounds
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackRoundsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackRoundsRequest) when calling interceptor")
+					}
+					return c.callListPackRounds(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackRoundsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackRoundsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *packServiceProtobufClient) callListPackRounds(ctx context.Context, in *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+	out := new(ListPackRoundsResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *packServiceProtobufClient) ListPackTags(ctx context.Context, in *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "editor.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "PackService")
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackTags")
+	caller := c.callListPackTags
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackTagsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackTagsRequest) when calling interceptor")
+					}
+					return c.callListPackTags(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackTagsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackTagsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *packServiceProtobufClient) callListPackTags(ctx context.Context, in *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+	out := new(ListPackTagsResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[3], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 func (c *packServiceProtobufClient) PublishPack(ctx context.Context, in *PublishPackRequest) (*PublishPackResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "editor.v1")
 	ctx = ctxsetters.WithServiceName(ctx, "PackService")
@@ -208,7 +303,7 @@ func (c *packServiceProtobufClient) PublishPack(ctx context.Context, in *Publish
 
 func (c *packServiceProtobufClient) callPublishPack(ctx context.Context, in *PublishPackRequest) (*PublishPackResponse, error) {
 	out := new(PublishPackResponse)
-	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[4], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -229,7 +324,7 @@ func (c *packServiceProtobufClient) callPublishPack(ctx context.Context, in *Pub
 
 type packServiceJSONClient struct {
 	client      HTTPClient
-	urls        [3]string
+	urls        [5]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -257,9 +352,11 @@ func NewPackServiceJSONClient(baseURL string, client HTTPClient, opts ...twirp.C
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "editor.v1", "PackService")
-	urls := [3]string{
+	urls := [5]string{
 		serviceURL + "CreatePack",
 		serviceURL + "GetPack",
+		serviceURL + "ListPackRounds",
+		serviceURL + "ListPackTags",
 		serviceURL + "PublishPack",
 	}
 
@@ -363,6 +460,98 @@ func (c *packServiceJSONClient) callGetPack(ctx context.Context, in *GetPackRequ
 	return out, nil
 }
 
+func (c *packServiceJSONClient) ListPackRounds(ctx context.Context, in *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "editor.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "PackService")
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackRounds")
+	caller := c.callListPackRounds
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackRoundsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackRoundsRequest) when calling interceptor")
+					}
+					return c.callListPackRounds(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackRoundsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackRoundsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *packServiceJSONClient) callListPackRounds(ctx context.Context, in *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+	out := new(ListPackRoundsResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *packServiceJSONClient) ListPackTags(ctx context.Context, in *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "editor.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "PackService")
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackTags")
+	caller := c.callListPackTags
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackTagsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackTagsRequest) when calling interceptor")
+					}
+					return c.callListPackTags(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackTagsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackTagsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *packServiceJSONClient) callListPackTags(ctx context.Context, in *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+	out := new(ListPackTagsResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[3], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 func (c *packServiceJSONClient) PublishPack(ctx context.Context, in *PublishPackRequest) (*PublishPackResponse, error) {
 	ctx = ctxsetters.WithPackageName(ctx, "editor.v1")
 	ctx = ctxsetters.WithServiceName(ctx, "PackService")
@@ -394,7 +583,7 @@ func (c *packServiceJSONClient) PublishPack(ctx context.Context, in *PublishPack
 
 func (c *packServiceJSONClient) callPublishPack(ctx context.Context, in *PublishPackRequest) (*PublishPackResponse, error) {
 	out := new(PublishPackResponse)
-	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[4], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -511,6 +700,12 @@ func (s *packServiceServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 		return
 	case "GetPack":
 		s.serveGetPack(ctx, resp, req)
+		return
+	case "ListPackRounds":
+		s.serveListPackRounds(ctx, resp, req)
+		return
+	case "ListPackTags":
+		s.serveListPackTags(ctx, resp, req)
 		return
 	case "PublishPack":
 		s.servePublishPack(ctx, resp, req)
@@ -882,6 +1077,366 @@ func (s *packServiceServer) serveGetPackProtobuf(ctx context.Context, resp http.
 	callResponseSent(ctx, s.hooks)
 }
 
+func (s *packServiceServer) serveListPackRounds(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveListPackRoundsJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveListPackRoundsProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *packServiceServer) serveListPackRoundsJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackRounds")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ListPackRoundsRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.PackService.ListPackRounds
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackRoundsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackRoundsRequest) when calling interceptor")
+					}
+					return s.PackService.ListPackRounds(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackRoundsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackRoundsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListPackRoundsResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListPackRoundsResponse and nil error while calling ListPackRounds. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *packServiceServer) serveListPackRoundsProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackRounds")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ListPackRoundsRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.PackService.ListPackRounds
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListPackRoundsRequest) (*ListPackRoundsResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackRoundsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackRoundsRequest) when calling interceptor")
+					}
+					return s.PackService.ListPackRounds(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackRoundsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackRoundsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListPackRoundsResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListPackRoundsResponse and nil error while calling ListPackRounds. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *packServiceServer) serveListPackTags(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveListPackTagsJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveListPackTagsProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *packServiceServer) serveListPackTagsJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackTags")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ListPackTagsRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.PackService.ListPackTags
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackTagsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackTagsRequest) when calling interceptor")
+					}
+					return s.PackService.ListPackTags(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackTagsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackTagsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListPackTagsResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListPackTagsResponse and nil error while calling ListPackTags. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *packServiceServer) serveListPackTagsProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListPackTags")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ListPackTagsRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.PackService.ListPackTags
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListPackTagsRequest) (*ListPackTagsResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListPackTagsRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListPackTagsRequest) when calling interceptor")
+					}
+					return s.PackService.ListPackTags(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListPackTagsResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListPackTagsResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListPackTagsResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListPackTagsResponse and nil error while calling ListPackTags. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
 func (s *packServiceServer) servePublishPack(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 	header := req.Header.Get("Content-Type")
 	i := strings.Index(header, ";")
@@ -1078,47 +1633,51 @@ func (s *packServiceServer) PathPrefix() string {
 }
 
 var twirpFileDescriptor1 = []byte{
-	// 667 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x94, 0xcf, 0x6e, 0xd3, 0x4a,
-	0x14, 0xc6, 0x35, 0x89, 0xe3, 0xc4, 0xc7, 0xfd, 0x77, 0xe7, 0x56, 0xb7, 0xbe, 0x86, 0xb6, 0xc1,
-	0x08, 0x14, 0x50, 0x71, 0xd4, 0x54, 0x62, 0x53, 0x21, 0x21, 0x77, 0x81, 0x2a, 0x21, 0x54, 0x19,
-	0x10, 0x12, 0x9b, 0xe0, 0xda, 0x43, 0x3a, 0x6a, 0x92, 0x09, 0xf6, 0xd8, 0x6f, 0x80, 0xc4, 0x9a,
-	0x27, 0xe2, 0x11, 0xd8, 0xf1, 0x0a, 0x3c, 0x43, 0x57, 0x68, 0xce, 0x4c, 0x8c, 0xdb, 0x52, 0xd1,
-	0xdd, 0xf8, 0x9b, 0xdf, 0x99, 0x39, 0xe7, 0x3b, 0x67, 0x0c, 0x9b, 0x2c, 0xe3, 0x52, 0xe4, 0xc3,
-	0x6a, 0x7f, 0xb8, 0x48, 0xd2, 0xf3, 0x70, 0x91, 0x0b, 0x29, 0xa8, 0xa3, 0xd5, 0xb0, 0xda, 0xf7,
-	0xb7, 0xaa, 0x64, 0xca, 0xb3, 0x44, 0xb2, 0xe1, 0x72, 0xa1, 0x19, 0x7f, 0x77, 0x22, 0xc4, 0x64,
-	0xca, 0x86, 0xf8, 0x75, 0x5a, 0x7e, 0x1c, 0x4a, 0x3e, 0x63, 0x85, 0x4c, 0x66, 0x0b, 0x0d, 0x04,
-	0x43, 0x70, 0x4e, 0x92, 0xf4, 0x3c, 0x16, 0xe5, 0x3c, 0xa3, 0x6b, 0xd0, 0xe2, 0x99, 0x47, 0xfa,
-	0x64, 0xd0, 0x89, 0x5b, 0x3c, 0xa3, 0x14, 0xac, 0x79, 0x32, 0x63, 0x5e, 0xab, 0x4f, 0x06, 0x4e,
-	0x8c, 0xeb, 0xe0, 0x5b, 0x0b, 0x2c, 0x15, 0x71, 0x1b, 0x98, 0xfe, 0x07, 0x76, 0x52, 0xca, 0x33,
-	0x91, 0x7b, 0x6d, 0x54, 0xcd, 0x17, 0xbd, 0x07, 0x2b, 0xbc, 0x18, 0x2f, 0xca, 0xd3, 0x29, 0x2f,
-	0xce, 0x58, 0xe6, 0x59, 0x7d, 0x32, 0xe8, 0xc5, 0x2e, 0x2f, 0x4e, 0x96, 0x12, 0xbd, 0x03, 0x4e,
-	0x2a, 0x2a, 0x96, 0x8f, 0xcb, 0x7c, 0xea, 0x75, 0x30, 0xba, 0x87, 0xc2, 0xdb, 0x7c, 0x4a, 0xf7,
-	0xc0, 0xce, 0x55, 0xc6, 0x85, 0x67, 0xf7, 0xdb, 0x03, 0x77, 0xb4, 0x19, 0xd6, 0x5e, 0x84, 0x75,
-	0x39, 0xb1, 0x61, 0x54, 0x66, 0x32, 0x99, 0x14, 0x5e, 0xb7, 0xdf, 0x56, 0x99, 0xa9, 0x35, 0x3d,
-	0x04, 0x37, 0xcd, 0x59, 0x22, 0xd9, 0x58, 0x39, 0xe2, 0x8d, 0xfa, 0x64, 0xe0, 0x8e, 0xfc, 0x50,
-	0xdb, 0x15, 0x2e, 0xed, 0x0a, 0xdf, 0x2c, 0xed, 0x8a, 0x41, 0xe3, 0x4a, 0xa0, 0xcf, 0x60, 0xc5,
-	0xe4, 0xae, 0xa3, 0x0f, 0xfe, 0x1a, 0xed, 0x1a, 0x5e, 0x29, 0xc1, 0x0f, 0xa2, 0x4d, 0x7f, 0x2d,
-	0x13, 0x59, 0xd0, 0x5d, 0x70, 0x31, 0xcf, 0x71, 0x2a, 0xca, 0xb9, 0x34, 0x86, 0x02, 0x4a, 0x47,
-	0x4a, 0x51, 0x80, 0x14, 0x0b, 0x9e, 0x1a, 0xa0, 0xa5, 0x01, 0x94, 0x34, 0xf0, 0x00, 0xd6, 0x3e,
-	0x95, 0xac, 0x90, 0x5c, 0xcc, 0x0d, 0xd3, 0x46, 0x66, 0x75, 0xa9, 0xd6, 0xe7, 0x54, 0x3c, 0x63,
-	0xc2, 0x30, 0x96, 0x3e, 0x07, 0xa5, 0x1a, 0x48, 0xca, 0x8c, 0x2f, 0x81, 0x8e, 0x06, 0x50, 0xaa,
-	0x01, 0x3e, 0x4b, 0x26, 0xcc, 0x00, 0xb6, 0x06, 0x50, 0x42, 0x20, 0xf8, 0x00, 0xab, 0xaa, 0xb0,
-	0x77, 0x5c, 0x9e, 0xe9, 0xe2, 0xee, 0x83, 0xa5, 0x26, 0x16, 0xab, 0x72, 0x47, 0xeb, 0x57, 0xdb,
-	0x84, 0x9b, 0xf4, 0x31, 0x74, 0x0a, 0x45, 0x63, 0x69, 0xd7, 0x9b, 0x89, 0x27, 0xc5, 0x1a, 0x09,
-	0x1e, 0xc1, 0xda, 0x0b, 0x26, 0x31, 0x98, 0x61, 0x79, 0x74, 0x0b, 0xba, 0xea, 0x94, 0x71, 0x3d,
-	0x8c, 0xb6, 0xfa, 0x3c, 0xce, 0x82, 0xa7, 0xb0, 0x5e, 0xa3, 0xc5, 0x42, 0xcc, 0x0b, 0x76, 0xab,
-	0x74, 0x82, 0xcf, 0x04, 0xfe, 0x39, 0xc2, 0x66, 0x37, 0xaf, 0x79, 0x08, 0x0e, 0x5e, 0x83, 0x33,
-	0xae, 0xe2, 0x9d, 0xc8, 0xb9, 0x88, 0xec, 0xdc, 0xda, 0x68, 0x7b, 0xa3, 0xb8, 0xa7, 0xf6, 0x5e,
-	0xa9, 0x91, 0x1f, 0x34, 0xe7, 0x16, 0xdf, 0x42, 0xe4, 0x5e, 0x44, 0xbd, 0xdc, 0xfe, 0x42, 0xc8,
-	0x77, 0x42, 0x1a, 0x43, 0xbc, 0x63, 0xc6, 0xb2, 0xad, 0xc6, 0x32, 0x82, 0x8b, 0xa8, 0xfb, 0x95,
-	0x58, 0x1b, 0x1d, 0x8f, 0xe8, 0x11, 0x0d, 0x9e, 0x00, 0x6d, 0xa6, 0x61, 0x4a, 0xb8, 0xb1, 0xdc,
-	0x03, 0xa0, 0xe6, 0xf5, 0x34, 0xd3, 0xde, 0x06, 0x50, 0xfb, 0xaa, 0x69, 0x75, 0x84, 0x63, 0x94,
-	0xe3, 0x2c, 0x38, 0x82, 0x7f, 0x2f, 0x05, 0x99, 0x4b, 0xf6, 0x2e, 0xf9, 0xe4, 0x5d, 0xf1, 0xa9,
-	0x6e, 0xaf, 0x36, 0x6c, 0xf4, 0x93, 0x80, 0x8b, 0x8d, 0x62, 0x79, 0xc5, 0x53, 0x46, 0x8f, 0x01,
-	0x7e, 0x27, 0x4e, 0xef, 0x36, 0xa2, 0xaf, 0xd9, 0xea, 0x6f, 0xdf, 0xb0, 0x6b, 0x12, 0x79, 0x0e,
-	0x5d, 0xd3, 0x43, 0xfa, 0x7f, 0x83, 0xbc, 0x3c, 0x02, 0xbe, 0xff, 0xa7, 0x2d, 0x73, 0xc2, 0x4b,
-	0x70, 0x1b, 0x15, 0xd2, 0xe6, 0x7d, 0xd7, 0xed, 0xf2, 0x77, 0x6e, 0xda, 0xd6, 0xa7, 0x45, 0x9b,
-	0xef, 0x69, 0xfd, 0x2f, 0x3e, 0xd4, 0xab, 0x6a, 0xff, 0xd4, 0xc6, 0x17, 0x7f, 0xf0, 0x2b, 0x00,
-	0x00, 0xff, 0xff, 0x9a, 0x28, 0xc1, 0x07, 0xa8, 0x05, 0x00, 0x00,
+	// 730 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x95, 0xdf, 0x4e, 0xd4, 0x4e,
+	0x14, 0xc7, 0x33, 0xfb, 0x8f, 0xed, 0x29, 0x2c, 0xfc, 0x86, 0xfd, 0x41, 0xad, 0x02, 0x4b, 0x8d,
+	0x66, 0x25, 0xda, 0x95, 0x25, 0xf1, 0x86, 0x1b, 0xb3, 0x24, 0x1a, 0x22, 0x51, 0x52, 0x21, 0x26,
+	0xde, 0xac, 0xa5, 0x1d, 0x97, 0x09, 0xbb, 0x3b, 0xb5, 0x9d, 0xf6, 0x0d, 0x4c, 0xbc, 0x34, 0xbe,
+	0x90, 0xaf, 0xe0, 0x9d, 0xef, 0xc2, 0x95, 0x99, 0x3f, 0xad, 0x5d, 0x60, 0x85, 0xbb, 0x99, 0x33,
+	0x9f, 0x73, 0xce, 0x9c, 0x73, 0xbe, 0x9d, 0x42, 0x9b, 0x84, 0x94, 0xb3, 0xb8, 0x97, 0xed, 0xf6,
+	0x22, 0x3f, 0xb8, 0x70, 0xa3, 0x98, 0x71, 0x86, 0x0d, 0x65, 0x75, 0xb3, 0x5d, 0x7b, 0x3d, 0xf3,
+	0xc7, 0x34, 0xf4, 0x39, 0xe9, 0xe5, 0x0b, 0xc5, 0xd8, 0x5b, 0x23, 0xc6, 0x46, 0x63, 0xd2, 0x93,
+	0xbb, 0xb3, 0xf4, 0x73, 0x8f, 0xd3, 0x09, 0x49, 0xb8, 0x3f, 0x89, 0x14, 0xe0, 0x3c, 0x87, 0xff,
+	0x8f, 0x68, 0xc2, 0x8f, 0xfd, 0xe0, 0xc2, 0x63, 0xe9, 0x34, 0x4c, 0x3c, 0xf2, 0x25, 0x25, 0x09,
+	0xc7, 0xeb, 0xb0, 0x20, 0x72, 0x0d, 0x69, 0x68, 0xa1, 0x0e, 0xea, 0xd6, 0xbd, 0x86, 0xd8, 0x1e,
+	0x86, 0xce, 0x2b, 0x58, 0xbb, 0xea, 0x91, 0x44, 0x6c, 0x9a, 0x10, 0xfc, 0x14, 0x1a, 0xb1, 0xb4,
+	0x58, 0xa8, 0x53, 0xed, 0x9a, 0xfd, 0xb6, 0x5b, 0xdc, 0xd0, 0x2d, 0x70, 0x4f, 0x33, 0x8e, 0x0b,
+	0xab, 0x79, 0x9c, 0x13, 0x7f, 0x74, 0x7b, 0xde, 0x1d, 0x68, 0xcf, 0xf2, 0x3a, 0x2b, 0x86, 0x1a,
+	0xf7, 0x47, 0x2a, 0xa7, 0xe1, 0xc9, 0xb5, 0xf3, 0x06, 0x8c, 0x22, 0x21, 0x6e, 0x41, 0xa5, 0x08,
+	0x56, 0xa1, 0xa1, 0x70, 0x98, 0xfa, 0x13, 0x62, 0x55, 0x3a, 0x48, 0x38, 0x88, 0x35, 0xb6, 0xa1,
+	0x19, 0xb1, 0x84, 0x72, 0xca, 0xa6, 0x56, 0x55, 0x92, 0xc5, 0xde, 0xf9, 0x89, 0xa0, 0x26, 0xa2,
+	0xdd, 0x29, 0xd0, 0x1a, 0x34, 0xfc, 0x94, 0x9f, 0xb3, 0x58, 0x86, 0x31, 0x3c, 0xbd, 0xc3, 0xdb,
+	0xb0, 0x48, 0x93, 0x61, 0x94, 0x9e, 0x8d, 0x69, 0x72, 0x4e, 0x42, 0xab, 0xd6, 0x41, 0xdd, 0xa6,
+	0x67, 0xd2, 0xe4, 0x38, 0x37, 0xe1, 0xfb, 0x60, 0x04, 0x2c, 0x23, 0xf1, 0x30, 0x8d, 0xc7, 0x56,
+	0x5d, 0x7a, 0x37, 0xa5, 0xe1, 0x34, 0x1e, 0xe3, 0x7d, 0x30, 0x83, 0x98, 0xf8, 0x9c, 0x0c, 0xc5,
+	0x04, 0xad, 0x7e, 0x07, 0x75, 0xcd, 0xbe, 0xed, 0xaa, 0xf1, 0xba, 0xf9, 0x78, 0xdd, 0x93, 0x7c,
+	0xbc, 0x1e, 0x28, 0x5c, 0x18, 0x9c, 0xdf, 0x48, 0xf5, 0xe3, 0x3d, 0xf7, 0x79, 0x82, 0xb7, 0xc0,
+	0x94, 0x23, 0x18, 0x06, 0x2c, 0x9d, 0x72, 0x5d, 0x0f, 0x48, 0xd3, 0x81, 0xb0, 0x08, 0x80, 0xb3,
+	0x88, 0x06, 0x1a, 0xa8, 0x28, 0x40, 0x9a, 0x14, 0xf0, 0x08, 0x5a, 0x72, 0x58, 0x94, 0x4d, 0x35,
+	0xa3, 0x7a, 0xb6, 0x94, 0x5b, 0x8b, 0x38, 0x19, 0x0d, 0x09, 0xd3, 0x4c, 0x4d, 0xc5, 0x91, 0xa6,
+	0x02, 0xf0, 0xd3, 0x90, 0xe6, 0x40, 0x5d, 0x01, 0xd2, 0x54, 0x00, 0x74, 0xe2, 0x8f, 0x88, 0x06,
+	0x1a, 0x0a, 0x90, 0x26, 0x09, 0x38, 0x9f, 0x60, 0x49, 0x14, 0xf6, 0x81, 0xf2, 0x73, 0x55, 0xdc,
+	0x43, 0xa8, 0x09, 0xbd, 0xc8, 0xaa, 0xcc, 0xfe, 0xf2, 0x55, 0x05, 0xca, 0x43, 0xbc, 0x03, 0xf5,
+	0x44, 0xd0, 0xb2, 0xb4, 0xeb, 0x3a, 0x95, 0x91, 0x3c, 0x85, 0x38, 0x4f, 0xa0, 0xf5, 0x9a, 0x28,
+	0xb5, 0xdf, 0xa6, 0xd0, 0x17, 0xb0, 0x5c, 0xa0, 0x5a, 0x9c, 0x77, 0xb9, 0x8e, 0xf3, 0x15, 0xc1,
+	0x7f, 0x07, 0x72, 0x5a, 0xe5, 0x34, 0x8f, 0xc1, 0x90, 0x69, 0xa4, 0xc4, 0x84, 0xbf, 0x31, 0x30,
+	0x2e, 0x07, 0x8d, 0xb8, 0xb6, 0x52, 0xb5, 0xfa, 0x5e, 0x53, 0x9c, 0xbd, 0x15, 0x8a, 0xeb, 0x96,
+	0x65, 0x23, 0xa5, 0x38, 0x30, 0x2f, 0x07, 0xcd, 0xb8, 0xf1, 0x0d, 0xa1, 0x5f, 0x08, 0x95, 0x34,
+	0xb4, 0xa9, 0xbf, 0x94, 0xaa, 0xf8, 0x52, 0x06, 0x70, 0x39, 0x58, 0xf8, 0x81, 0x6a, 0x2b, 0x75,
+	0x0b, 0xe9, 0xaf, 0xe6, 0x19, 0xe0, 0xf2, 0x35, 0x74, 0x09, 0x73, 0xcb, 0xdd, 0x03, 0xac, 0xc5,
+	0x5b, 0xbe, 0xf6, 0x06, 0x80, 0x38, 0x17, 0x43, 0x2b, 0x3c, 0x0c, 0x6d, 0x39, 0x0c, 0x9d, 0x03,
+	0x58, 0x9d, 0x71, 0x2a, 0x9e, 0x8e, 0x72, 0x9f, 0xac, 0x2b, 0x7d, 0x2a, 0xc6, 0xab, 0x1a, 0xd6,
+	0xff, 0x5e, 0x05, 0x53, 0x0e, 0x8a, 0xc4, 0x19, 0x0d, 0x08, 0x3e, 0x04, 0xf8, 0x7b, 0x71, 0xfc,
+	0xa0, 0xe4, 0x7d, 0xad, 0xad, 0xf6, 0xc6, 0x9c, 0x53, 0x7d, 0x91, 0x97, 0xb0, 0xa0, 0x67, 0x88,
+	0xef, 0x95, 0xc8, 0x59, 0x09, 0xd8, 0xf6, 0x4d, 0x47, 0x3a, 0xc2, 0x29, 0xb4, 0x66, 0xdf, 0x47,
+	0xdc, 0x29, 0xd1, 0x37, 0x3e, 0xb6, 0xf6, 0xf6, 0x3f, 0x08, 0x1d, 0xf6, 0x1d, 0x2c, 0x96, 0x9f,
+	0x3f, 0xbc, 0x79, 0x83, 0x4b, 0xe9, 0x1d, 0xb5, 0xb7, 0xe6, 0x9e, 0xeb, 0x80, 0x47, 0x60, 0x96,
+	0x26, 0x81, 0xcb, 0x7d, 0xb9, 0x3e, 0x56, 0x7b, 0x73, 0xde, 0xb1, 0x8a, 0x36, 0x68, 0x7f, 0xc4,
+	0xc5, 0x4f, 0x6a, 0x5f, 0xad, 0xb2, 0xdd, 0xb3, 0x86, 0x7c, 0x98, 0xf6, 0xfe, 0x04, 0x00, 0x00,
+	0xff, 0xff, 0x2d, 0xa8, 0x7c, 0x1d, 0xc1, 0x06, 0x00, 0x00,
 }

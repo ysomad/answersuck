@@ -7,19 +7,33 @@ import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service PackService {
-    // CreatePack creates new pack of questions.
     rpc CreatePack(CreatePackRequest) returns (CreatePackResponse);
-
-    // GetPack returns pack with rounds.
     rpc GetPack(GetPackRequest) returns (GetPackResponse);
-
-    // PublishPack publishes pack and saving stats for future filtering, returns pack with stats.
+    rpc ListPackRounds(ListPackRoundsRequest) returns (ListPackRoundsResponse);
+    rpc ListPackTags(ListPackTagsRequest) returns (ListPackTagsResponse);
     rpc PublishPack(PublishPackRequest) returns (PublishPackResponse);
+}
+
+message ListPackRoundsRequest {
+    int32 pack_id = 1; // required
+}
+
+message ListPackRoundsResponse {
+    repeated PackRound rounds = 1;
+}
+
+message ListPackTagsRequest {
+    int32 pack_id = 1; // required
+}
+
+message ListPackTagsResponse {
+    repeated string tags = 1;
 }
 
 message PackRound {
     int32 id = 1;
     string name = 2;
+    int32 position = 3;
 }
 
 message Pack {
@@ -28,10 +42,7 @@ message Pack {
     string author = 3;
     bool is_published = 4;
     string cover_url = 5;
-    repeated PackRound rounds = 6;
-    repeated string tags = 7;
     google.protobuf.Timestamp create_time = 50;
-    google.protobuf.Timestamp publish_time = 51;
 }
 
 message PackStats {

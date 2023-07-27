@@ -13,12 +13,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty, error) {
-	if p.Login == "" {
+func (h *Handler) LogIn(ctx context.Context, r *pb.LogInRequest) (*emptypb.Empty, error) {
+	if r.Login == "" {
 		return nil, twirp.RequiredArgumentError("login")
 	}
 
-	if p.Password == "" {
+	if r.Password == "" {
 		return nil, twirp.RequiredArgumentError("password")
 	}
 
@@ -31,7 +31,7 @@ func (h *Handler) LogIn(ctx context.Context, p *pb.LogInRequest) (*emptypb.Empty
 		return nil, twirp.InvalidArgument.Error("footprint not found in context")
 	}
 
-	s, err := h.auth.LogIn(ctx, p.Login, p.Password, fp)
+	s, err := h.auth.LogIn(ctx, r.Login, r.Password, fp)
 	if err != nil {
 		if errors.Is(err, apperr.PlayerNotFound) || errors.Is(err, apperr.InvalidCredentials) {
 			return nil, twirp.Unauthenticated.Error(apperr.InvalidCredentials.Error())

@@ -10,12 +10,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (h *Handler) GetQuestion(ctx context.Context, p *pb.GetQuestionRequest) (*pb.GetQuestionResponse, error) {
-	if p.QuestionId == 0 {
+func (h *Handler) GetQuestion(ctx context.Context, r *pb.GetQuestionRequest) (*pb.GetQuestionResponse, error) {
+	if r.QuestionId == 0 {
 		return nil, twirp.RequiredArgumentError("question_id")
 	}
 
-	q, err := h.question.GetOne(ctx, p.QuestionId)
+	q, err := h.question.GetOne(ctx, r.QuestionId)
 	if err != nil {
 		if errors.Is(err, apperr.QuestionNotFound) {
 			return nil, twirp.NotFoundError(err.Error())

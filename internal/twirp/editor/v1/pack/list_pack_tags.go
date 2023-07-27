@@ -6,6 +6,6 @@ import (
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
 )
 
-func (h *Handler) PublishPack(ctx context.Context, r *pb.PublishPackRequest) (*pb.PublishPackResponse, error) {
+func (h *Handler) ListPackTags(ctx context.Context, r *pb.ListPackTagsRequest) (*pb.ListPackTagsResponse, error) {
 	return nil, nil
 }

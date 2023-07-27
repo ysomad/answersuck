@@ -9,21 +9,21 @@ import (
 	"github.com/ysomad/answersuck/internal/twirp/common"
 )
 
-func (h *Handler) UploadMedia(ctx context.Context, p *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
+func (h *Handler) UploadMedia(ctx context.Context, r *pb.UploadMediaRequest) (*pb.UploadMediaResponse, error) {
 	session, err := common.CheckPlayerVerification(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if p.Url == "" {
+	if r.Url == "" {
 		return nil, twirp.RequiredArgumentError("url")
 	}
 
-	if err := p.Validate(); err != nil {
+	if err := r.Validate(); err != nil {
 		return nil, twirp.InvalidArgument.Error(err.Error())
 	}
 
-	media, err := entity.NewMedia(p.Url, session.User.ID)
+	media, err := entity.NewMedia(r.Url, session.User.ID)
 	if err != nil {
 		return nil, twirp.InvalidArgument.Error(err.Error())
 	}

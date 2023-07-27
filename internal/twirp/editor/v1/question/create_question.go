@@ -12,32 +12,32 @@ import (
 	"github.com/ysomad/answersuck/internal/twirp/common"
 )
 
-func (h *Handler) CreateQuestion(ctx context.Context, p *pb.CreateQuestionRequest) (*pb.CreateQuestionResponse, error) {
+func (h *Handler) CreateQuestion(ctx context.Context, r *pb.CreateQuestionRequest) (*pb.CreateQuestionResponse, error) {
 	session, err := common.CheckPlayerVerification(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if p.Question == "" {
+	if r.Question == "" {
 		return nil, twirp.RequiredArgumentError("question")
 	}
 
-	if p.Answer == "" {
+	if r.Answer == "" {
 		return nil, twirp.RequiredArgumentError("answer")
 	}
 
-	if err := p.Validate(); err != nil {
+	if err := r.Validate(); err != nil {
 		return nil, twirp.InvalidArgument.Error(err.Error())
 	}
 
 	questionID, err := h.question.Save(ctx, &entity.Question{
-		Text:       p.Question,
+		Text:       r.Question,
 		Author:     session.User.ID,
-		MediaURL:   p.QuestionMediaUrl,
+		MediaURL:   r.QuestionMediaUrl,
 		CreateTime: time.Now(),
 		Answer: entity.Answer{
-			Text:     p.Answer,
-			MediaURL: p.AnswerMediaUrl,
+			Text:     r.Answer,
+			MediaURL: r.AnswerMediaUrl,
 		},
 	})
 	if err != nil {

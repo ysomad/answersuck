@@ -10,12 +10,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (h *Handler) GetPlayer(ctx context.Context, p *pb.GetPlayerRequest) (*pb.GetPlayerResponse, error) {
-	if p.Nickname == "" {
+func (h *Handler) GetPlayer(ctx context.Context, r *pb.GetPlayerRequest) (*pb.GetPlayerResponse, error) {
+	if r.Nickname == "" {
 		return nil, twirp.RequiredArgumentError("nickname")
 	}
 
-	player, err := h.player.Get(ctx, p.Nickname)
+	player, err := h.player.Get(ctx, r.Nickname)
 	if err != nil {
 		if errors.Is(err, apperr.PlayerNotFound) {
 			return nil, twirp.NotFoundError(apperr.PlayerNotFound.Error())

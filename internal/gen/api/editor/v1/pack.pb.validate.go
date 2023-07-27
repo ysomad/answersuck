@@ -35,6 +35,452 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on ListPackRoundsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPackRoundsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPackRoundsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPackRoundsRequestMultiError, or nil if none found.
+func (m *ListPackRoundsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPackRoundsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PackId
+
+	if len(errors) > 0 {
+		return ListPackRoundsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPackRoundsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListPackRoundsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListPackRoundsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPackRoundsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPackRoundsRequestMultiError) AllErrors() []error { return m }
+
+// ListPackRoundsRequestValidationError is the validation error returned by
+// ListPackRoundsRequest.Validate if the designated constraints aren't met.
+type ListPackRoundsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPackRoundsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPackRoundsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPackRoundsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPackRoundsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPackRoundsRequestValidationError) ErrorName() string {
+	return "ListPackRoundsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPackRoundsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPackRoundsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPackRoundsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPackRoundsRequestValidationError{}
+
+// Validate checks the field values on ListPackRoundsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPackRoundsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPackRoundsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPackRoundsResponseMultiError, or nil if none found.
+func (m *ListPackRoundsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPackRoundsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetRounds() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListPackRoundsResponseValidationError{
+						field:  fmt.Sprintf("Rounds[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListPackRoundsResponseValidationError{
+						field:  fmt.Sprintf("Rounds[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListPackRoundsResponseValidationError{
+					field:  fmt.Sprintf("Rounds[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListPackRoundsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPackRoundsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListPackRoundsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListPackRoundsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPackRoundsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPackRoundsResponseMultiError) AllErrors() []error { return m }
+
+// ListPackRoundsResponseValidationError is the validation error returned by
+// ListPackRoundsResponse.Validate if the designated constraints aren't met.
+type ListPackRoundsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPackRoundsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPackRoundsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPackRoundsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPackRoundsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPackRoundsResponseValidationError) ErrorName() string {
+	return "ListPackRoundsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPackRoundsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPackRoundsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPackRoundsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPackRoundsResponseValidationError{}
+
+// Validate checks the field values on ListPackTagsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPackTagsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPackTagsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPackTagsRequestMultiError, or nil if none found.
+func (m *ListPackTagsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPackTagsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PackId
+
+	if len(errors) > 0 {
+		return ListPackTagsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPackTagsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListPackTagsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListPackTagsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPackTagsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPackTagsRequestMultiError) AllErrors() []error { return m }
+
+// ListPackTagsRequestValidationError is the validation error returned by
+// ListPackTagsRequest.Validate if the designated constraints aren't met.
+type ListPackTagsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPackTagsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPackTagsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPackTagsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPackTagsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPackTagsRequestValidationError) ErrorName() string {
+	return "ListPackTagsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPackTagsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPackTagsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPackTagsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPackTagsRequestValidationError{}
+
+// Validate checks the field values on ListPackTagsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPackTagsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPackTagsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPackTagsResponseMultiError, or nil if none found.
+func (m *ListPackTagsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPackTagsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListPackTagsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPackTagsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListPackTagsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListPackTagsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPackTagsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPackTagsResponseMultiError) AllErrors() []error { return m }
+
+// ListPackTagsResponseValidationError is the validation error returned by
+// ListPackTagsResponse.Validate if the designated constraints aren't met.
+type ListPackTagsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPackTagsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPackTagsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPackTagsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPackTagsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPackTagsResponseValidationError) ErrorName() string {
+	return "ListPackTagsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPackTagsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPackTagsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPackTagsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPackTagsResponseValidationError{}
+
 // Validate checks the field values on PackRound with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -60,6 +506,8 @@ func (m *PackRound) validate(all bool) error {
 	// no validation rules for Id
 
 	// no validation rules for Name
+
+	// no validation rules for Position
 
 	if len(errors) > 0 {
 		return PackRoundMultiError(errors)
@@ -169,40 +617,6 @@ func (m *Pack) validate(all bool) error {
 
 	// no validation rules for CoverUrl
 
-	for idx, item := range m.GetRounds() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, PackValidationError{
-						field:  fmt.Sprintf("Rounds[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, PackValidationError{
-						field:  fmt.Sprintf("Rounds[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return PackValidationError{
-					field:  fmt.Sprintf("Rounds[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
 	if all {
 		switch v := interface{}(m.GetCreateTime()).(type) {
 		case interface{ ValidateAll() error }:
@@ -226,35 +640,6 @@ func (m *Pack) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return PackValidationError{
 				field:  "CreateTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetPublishTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, PackValidationError{
-					field:  "PublishTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, PackValidationError{
-					field:  "PublishTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPublishTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return PackValidationError{
-				field:  "PublishTime",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
