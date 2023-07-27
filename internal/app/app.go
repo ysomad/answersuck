@@ -8,23 +8,30 @@ import (
 	"golang.org/x/exp/slog"
 
 	"github.com/ysomad/answersuck/internal/config"
+
 	mediapg "github.com/ysomad/answersuck/internal/pgrepo/media"
 	packpg "github.com/ysomad/answersuck/internal/pgrepo/pack"
 	playerpg "github.com/ysomad/answersuck/internal/pgrepo/player"
 	questionpg "github.com/ysomad/answersuck/internal/pgrepo/question"
+	roundpg "github.com/ysomad/answersuck/internal/pgrepo/round"
 	tagpg "github.com/ysomad/answersuck/internal/pgrepo/tag"
-	"github.com/ysomad/answersuck/internal/pkg/httpserver"
-	"github.com/ysomad/answersuck/internal/pkg/pgclient"
-	"github.com/ysomad/answersuck/internal/pkg/session"
-	"github.com/ysomad/answersuck/internal/service/auth"
+
+	authsvc "github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
+	roundsvc "github.com/ysomad/answersuck/internal/service/round"
+
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	authv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
 	mediav1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/media"
 	packv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/pack"
 	questionv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/question"
+	roundv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/round"
 	tagv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/tag"
 	playerv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
+
+	"github.com/ysomad/answersuck/internal/pkg/httpserver"
+	"github.com/ysomad/answersuck/internal/pkg/pgclient"
+	"github.com/ysomad/answersuck/internal/pkg/session"
 )
 
 func logFatal(msg string, args ...any) {
@@ -60,7 +67,7 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	tagHandlerV1 := tagv1.NewHandler(tagPostgres, sessionPostgres)
 
 	// auth
-	authService := auth.NewService(sessionManager, playerService)
+	authService := authsvc.NewService(sessionManager, playerService)
 	authHandlerV1 := authv1.NewHandler(authService)
 
 	// media
@@ -75,6 +82,11 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	packPostgres := packpg.NewRepository(pgClient)
 	packHandlerV1 := packv1.NewHandler(packPostgres, sessionManager)
 
+	// round
+	roundPostgres := roundpg.NewRepository(pgClient)
+	roundService := roundsvc.NewService(roundPostgres, packPostgres)
+	roundHandlerV1 := roundv1.NewHandler(roundService, sessionManager)
+
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{
 		playerHandlerV1,
@@ -83,6 +95,7 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 		mediaHandlerV1,
 		questionHandlerV1,
 		packHandlerV1,
+		roundHandlerV1,
 	})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))

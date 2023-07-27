@@ -52,7 +52,7 @@ type queryRower interface {
 
 func (r *repository) insertPack(ctx context.Context, db queryRower, p *entity.Pack) (int32, error) {
 	sql, args, err := r.Builder.
-		Insert(packsTable).
+		Insert(PacksTable).
 		Columns("name, author, is_published, cover_url, create_time").
 		Values(p.Name, p.Author, false, zeronull.Text(p.CoverURL), p.CreateTime).
 		Suffix("RETURNING id").

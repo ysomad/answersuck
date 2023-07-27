@@ -175,11 +175,11 @@ func (m *CreateRoundResponse) validate(all bool) error {
 	var errors []error
 
 	if all {
-		switch v := interface{}(m.GetPack()).(type) {
+		switch v := interface{}(m.GetRound()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, CreateRoundResponseValidationError{
-					field:  "Pack",
+					field:  "Round",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -187,16 +187,16 @@ func (m *CreateRoundResponse) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, CreateRoundResponseValidationError{
-					field:  "Pack",
+					field:  "Round",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetPack()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetRound()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return CreateRoundResponseValidationError{
-				field:  "Pack",
+				field:  "Round",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -283,22 +283,22 @@ var _ interface {
 	ErrorName() string
 } = CreateRoundResponseValidationError{}
 
-// Validate checks the field values on UpdateRoundPositionRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// Validate checks the field values on UpdateRoundPosRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UpdateRoundPositionRequest) Validate() error {
+func (m *UpdateRoundPosRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UpdateRoundPositionRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on UpdateRoundPosRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// UpdateRoundPositionRequestMultiError, or nil if none found.
-func (m *UpdateRoundPositionRequest) ValidateAll() error {
+// UpdateRoundPosRequestMultiError, or nil if none found.
+func (m *UpdateRoundPosRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UpdateRoundPositionRequest) validate(all bool) error {
+func (m *UpdateRoundPosRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -310,19 +310,19 @@ func (m *UpdateRoundPositionRequest) validate(all bool) error {
 	// no validation rules for RoundPosition
 
 	if len(errors) > 0 {
-		return UpdateRoundPositionRequestMultiError(errors)
+		return UpdateRoundPosRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// UpdateRoundPositionRequestMultiError is an error wrapping multiple
-// validation errors returned by UpdateRoundPositionRequest.ValidateAll() if
-// the designated constraints aren't met.
-type UpdateRoundPositionRequestMultiError []error
+// UpdateRoundPosRequestMultiError is an error wrapping multiple validation
+// errors returned by UpdateRoundPosRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdateRoundPosRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UpdateRoundPositionRequestMultiError) Error() string {
+func (m UpdateRoundPosRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -331,11 +331,11 @@ func (m UpdateRoundPositionRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UpdateRoundPositionRequestMultiError) AllErrors() []error { return m }
+func (m UpdateRoundPosRequestMultiError) AllErrors() []error { return m }
 
-// UpdateRoundPositionRequestValidationError is the validation error returned
-// by UpdateRoundPositionRequest.Validate if the designated constraints aren't met.
-type UpdateRoundPositionRequestValidationError struct {
+// UpdateRoundPosRequestValidationError is the validation error returned by
+// UpdateRoundPosRequest.Validate if the designated constraints aren't met.
+type UpdateRoundPosRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -343,24 +343,24 @@ type UpdateRoundPositionRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e UpdateRoundPositionRequestValidationError) Field() string { return e.field }
+func (e UpdateRoundPosRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UpdateRoundPositionRequestValidationError) Reason() string { return e.reason }
+func (e UpdateRoundPosRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UpdateRoundPositionRequestValidationError) Cause() error { return e.cause }
+func (e UpdateRoundPosRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UpdateRoundPositionRequestValidationError) Key() bool { return e.key }
+func (e UpdateRoundPosRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UpdateRoundPositionRequestValidationError) ErrorName() string {
-	return "UpdateRoundPositionRequestValidationError"
+func (e UpdateRoundPosRequestValidationError) ErrorName() string {
+	return "UpdateRoundPosRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e UpdateRoundPositionRequestValidationError) Error() string {
+func (e UpdateRoundPosRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -372,14 +372,14 @@ func (e UpdateRoundPositionRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUpdateRoundPositionRequest.%s: %s%s",
+		"invalid %sUpdateRoundPosRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UpdateRoundPositionRequestValidationError{}
+var _ error = UpdateRoundPosRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -387,7 +387,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UpdateRoundPositionRequestValidationError{}
+} = UpdateRoundPosRequestValidationError{}
 
 // Validate checks the field values on ListRoundsRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -492,6 +492,112 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListRoundsRequestValidationError{}
+
+// Validate checks the field values on Round with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Round) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Round with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in RoundMultiError, or nil if none found.
+func (m *Round) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Round) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for Position
+
+	// no validation rules for PackId
+
+	if len(errors) > 0 {
+		return RoundMultiError(errors)
+	}
+
+	return nil
+}
+
+// RoundMultiError is an error wrapping multiple validation errors returned by
+// Round.ValidateAll() if the designated constraints aren't met.
+type RoundMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RoundMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RoundMultiError) AllErrors() []error { return m }
+
+// RoundValidationError is the validation error returned by Round.Validate if
+// the designated constraints aren't met.
+type RoundValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RoundValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RoundValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RoundValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RoundValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RoundValidationError) ErrorName() string { return "RoundValidationError" }
+
+// Error satisfies the builtin error interface
+func (e RoundValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRound.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RoundValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RoundValidationError{}
 
 // Validate checks the field values on ListRoundsResponse with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1322,109 +1428,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetQuestionGridResponseValidationError{}
-
-// Validate checks the field values on ListRoundsResponse_Round with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListRoundsResponse_Round) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ListRoundsResponse_Round with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ListRoundsResponse_RoundMultiError, or nil if none found.
-func (m *ListRoundsResponse_Round) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ListRoundsResponse_Round) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Id
-
-	// no validation rules for Name
-
-	if len(errors) > 0 {
-		return ListRoundsResponse_RoundMultiError(errors)
-	}
-
-	return nil
-}
-
-// ListRoundsResponse_RoundMultiError is an error wrapping multiple validation
-// errors returned by ListRoundsResponse_Round.ValidateAll() if the designated
-// constraints aren't met.
-type ListRoundsResponse_RoundMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListRoundsResponse_RoundMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListRoundsResponse_RoundMultiError) AllErrors() []error { return m }
-
-// ListRoundsResponse_RoundValidationError is the validation error returned by
-// ListRoundsResponse_Round.Validate if the designated constraints aren't met.
-type ListRoundsResponse_RoundValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ListRoundsResponse_RoundValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ListRoundsResponse_RoundValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ListRoundsResponse_RoundValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ListRoundsResponse_RoundValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ListRoundsResponse_RoundValidationError) ErrorName() string {
-	return "ListRoundsResponse_RoundValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ListRoundsResponse_RoundValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sListRoundsResponse_Round.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ListRoundsResponse_RoundValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ListRoundsResponse_RoundValidationError{}

@@ -13,7 +13,7 @@ import (
 func (r *repository) GetOne(ctx context.Context, packID int32) (*entity.Pack, error) {
 	sql, args, err := r.Builder.
 		Select("id, name, author, is_published, cover_url, create_time").
-		From(packsTable).
+		From(PacksTable).
 		Where(squirrel.Eq{"id": packID}).
 		ToSql()
 	if err != nil {

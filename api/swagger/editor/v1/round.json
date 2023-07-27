@@ -151,20 +151,20 @@
         }
       }
     },
-    "/twirp/editor.v1.RoundService/UpdateRoundPosition": {
+    "/twirp/editor.v1.RoundService/UpdateRoundPos": {
       "post": {
         "tags": [
           "RoundService"
         ],
-        "summary": "UpdateRoundPosition updates round position in the pack.",
-        "operationId": "UpdateRoundPosition",
+        "summary": "UpdateRoundPos updates round position in the pack.",
+        "operationId": "UpdateRoundPos",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/editor.v1_UpdateRoundPositionRequest"
+              "$ref": "#/definitions/editor.v1_UpdateRoundPosRequest"
             }
           }
         ],
@@ -212,11 +212,11 @@
       }
     },
     "editor.v1_CreateRoundResponse": {
-      "description": "Fields: pack",
+      "description": "Fields: round",
       "type": "object",
       "properties": {
-        "pack": {
-          "$ref": "#/definitions/editor.v1_Pack"
+        "round": {
+          "$ref": "#/definitions/editor.v1_Round"
         }
       }
     },
@@ -318,7 +318,7 @@
       }
     },
     "editor.v1_Round": {
-      "description": "Fields: id, name",
+      "description": "Fields: id, name, position",
       "type": "object",
       "properties": {
         "id": {
@@ -327,10 +327,14 @@
         },
         "name": {
           "type": "string"
+        },
+        "position": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
-    "editor.v1_UpdateRoundPositionRequest": {
+    "editor.v1_UpdateRoundPosRequest": {
       "description": "Fields: round_id, round_position",
       "type": "object",
       "properties": {

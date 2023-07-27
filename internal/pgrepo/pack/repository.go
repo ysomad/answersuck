@@ -3,7 +3,7 @@ package pack
 import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
 const (
-	packsTable    = "packs"
+	PacksTable    = "packs"
 	packTagsTable = "pack_tags"
 )
 

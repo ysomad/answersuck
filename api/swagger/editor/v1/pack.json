@@ -21,7 +21,6 @@
         "tags": [
           "PackService"
         ],
-        "summary": "CreatePack creates new pack of questions.",
         "operationId": "CreatePack",
         "parameters": [
           {
@@ -48,7 +47,6 @@
         "tags": [
           "PackService"
         ],
-        "summary": "GetPack returns pack with rounds.",
         "operationId": "GetPack",
         "parameters": [
           {
@@ -70,12 +68,37 @@
         }
       }
     },
+    "/twirp/editor.v1.PackService/ListPackTags": {
+      "post": {
+        "tags": [
+          "PackService"
+        ],
+        "operationId": "ListPackTags",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_ListPackTagsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_ListPackTagsResponse"
+            }
+          }
+        }
+      }
+    },
     "/twirp/editor.v1.PackService/PublishPack": {
       "post": {
         "tags": [
           "PackService"
         ],
-        "summary": "PublishPack publishes pack and saving stats for future filtering, returns pack with stats.",
         "operationId": "PublishPack",
         "parameters": [
           {
@@ -146,8 +169,30 @@
         }
       }
     },
+    "editor.v1_ListPackTagsRequest": {
+      "description": "Fields: pack_id",
+      "type": "object",
+      "properties": {
+        "pack_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_ListPackTagsResponse": {
+      "description": "Fields: tags",
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "editor.v1_Pack": {
-      "description": "Fields: id, name, author, is_published, cover_url, rounds, tags, create_time, publish_time",
+      "description": "Fields: id, name, author, is_published, cover_url, create_time",
       "type": "object",
       "properties": {
         "author": {
@@ -166,35 +211,6 @@
         },
         "is_published": {
           "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "publish_time": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "rounds": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/editor.v1_PackRound"
-          }
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "editor.v1_PackRound": {
-      "description": "Fields: id, name",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int32"
         },
         "name": {
           "type": "string"
