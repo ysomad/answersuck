@@ -22,9 +22,5 @@ func (r *repository) GetTags(ctx context.Context, packID int32) ([]string, error
 		return nil, err
 	}
 
-	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (string, error) {
-		var tag string
-		err := row.Scan(&tag)
-		return tag, err
-	})
+	return pgx.CollectRows(rows, pgx.RowTo[string])
 }
