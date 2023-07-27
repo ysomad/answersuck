@@ -11,7 +11,7 @@ dirs=( $(find $proto_dir -type d | cut -d'/' -f3-) )
 for dir in "${dirs[@]}"
 do
     dir="$swagger_dir/$dir"
-    mkdir $dir
+    mkdir -p $dir
 done
 
 # 2. delete all previously generated swagger files
