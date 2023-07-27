@@ -432,22 +432,7 @@ func (m *ListTagsRequest) validate(all bool) error {
 
 	// no validation rules for OrderBy
 
-	if m.GetLimit() != 0 {
-
-		if val := m.GetLimit(); val <= 0 || val > 1000 {
-			err := ListTagsRequestValidationError{
-				field:  "Limit",
-				reason: "value must be inside range (0, 1000]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-	}
-
-	// no validation rules for Offset
+	// no validation rules for PageToken
 
 	if len(errors) > 0 {
 		return ListTagsRequestMultiError(errors)
@@ -582,6 +567,8 @@ func (m *ListTagsResponse) validate(all bool) error {
 		}
 
 	}
+
+	// no validation rules for NextPageToken
 
 	if len(errors) > 0 {
 		return ListTagsResponseMultiError(errors)

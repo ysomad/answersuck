@@ -5,7 +5,6 @@ import (
 
 	"github.com/twitchtv/twirp"
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
-	"github.com/ysomad/answersuck/internal/pkg/paging"
 	"github.com/ysomad/answersuck/internal/pkg/sort"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -20,10 +19,7 @@ func (h *Handler) ListTags(ctx context.Context, r *pb.ListTagsRequest) (*pb.List
 		return nil, twirp.InvalidArgumentError("order_by", err.Error())
 	}
 
-	tagList, err := h.tag.GetAll(ctx, paging.OffsetParams{
-		Offset: r.Offset,
-		Limit:  r.Limit,
-	}, sorts)
+	tagList, err := h.tag.GetAll(ctx, r.PageToken, sorts)
 	if err != nil {
 		return nil, twirp.InternalError(err.Error())
 	}
@@ -38,5 +34,8 @@ func (h *Handler) ListTags(ctx context.Context, r *pb.ListTagsRequest) (*pb.List
 		}
 	}
 
-	return &pb.ListTagsResponse{Tags: tags}, nil
+	return &pb.ListTagsResponse{
+		Tags:          tags,
+		NextPageToken: tagList.NextPageToken,
+	}, nil
 }

@@ -22,7 +22,7 @@ var (
 
 type UseCase interface {
 	Save(context.Context, entity.Tag) error
-	GetAll(ctx context.Context, p paging.OffsetParams, s []sort.Sort) (paging.List[entity.Tag], error)
+	GetAll(ctx context.Context, pageToken string, s []sort.Sort) (paging.List[entity.Tag], error)
 }
 
 type sessionManager interface {

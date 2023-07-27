@@ -33,10 +33,10 @@ message ListTagsRequest {
     // For example: "foo desc,bar".
     string order_by = 1;     
 
-    uint64 limit = 2 [(validate.rules).uint64 = { gt: 0, lte: 1000, ignore_empty: true }];
-    uint64 offset = 3;
+    string page_token = 2;
 }
 
 message ListTagsResponse {
     repeated Tag tags = 1;
+    string next_page_token = 2;
 }

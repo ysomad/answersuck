@@ -13,22 +13,22 @@ import (
 var (
 	testPK    string
 	testTime  time.Time
-	testToken Token
+	testToken UnsortableToken
 )
 
-func generateTestToken(pk string, t time.Time) Token {
-	return Token(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s,%s", pk, t.Format(time.RFC3339Nano)))))
+func genUnsortableTestToken(pk string, t time.Time) UnsortableToken {
+	return UnsortableToken(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s,%s", pk, t.Format(time.RFC3339Nano)))))
 }
 
 func TestMain(m *testing.M) {
 	testPK = "80862cb4-947a-4d64-8dbe-858fea7d84f2"
 	testTime = time.Now()
-	testToken = generateTestToken(testPK, testTime)
+	testToken = genUnsortableTestToken(testPK, testTime)
 
 	os.Exit(m.Run())
 }
 
-func TestNewToken(t *testing.T) {
+func TestNewUnsortableToken(t *testing.T) {
 	type args struct {
 		uuid string
 		t    time.Time
@@ -37,7 +37,7 @@ func TestNewToken(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want Token
+		want UnsortableToken
 	}{
 		{
 			name: "success",
@@ -53,7 +53,7 @@ func TestNewToken(t *testing.T) {
 				uuid: "",
 				t:    testTime,
 			},
-			want: generateTestToken("", testTime),
+			want: genUnsortableTestToken("", testTime),
 		},
 		{
 			name: "empty time",
@@ -61,7 +61,7 @@ func TestNewToken(t *testing.T) {
 				uuid: testPK,
 				t:    time.Time{},
 			},
-			want: generateTestToken(testPK, time.Time{}),
+			want: genUnsortableTestToken(testPK, time.Time{}),
 		},
 		{
 			name: "empty pk and time",
@@ -69,23 +69,23 @@ func TestNewToken(t *testing.T) {
 				uuid: "",
 				t:    time.Time{},
 			},
-			want: generateTestToken("", time.Time{}),
+			want: genUnsortableTestToken("", time.Time{}),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewToken(tt.args.uuid, tt.args.t)
+			got := NewUnsortableToken(tt.args.uuid, tt.args.t)
 
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestToken_Decode(t *testing.T) {
+func TestUnsortableToken_Decode(t *testing.T) {
 	tests := []struct {
 		name         string
-		encodedToken Token
+		encodedToken UnsortableToken
 		wantPK       string
 		wantTime     time.Time
 		wantErr      bool
@@ -127,6 +127,103 @@ func TestToken_Decode(t *testing.T) {
 			assert.Equal(t, tt.wantErr, (err != nil))
 			assert.Equal(t, tt.wantPK, gotPK)
 			assert.ObjectsAreEqual(tt.wantTime, gotTime)
+		})
+	}
+}
+
+func TestNewOffsetToken(t *testing.T) {
+	type args struct {
+		limit  uint64
+		offset uint64
+	}
+	tests := []struct {
+		name string
+		args args
+		want OffsetToken
+	}{
+		{
+			name: "success",
+			args: args{
+				limit:  100,
+				offset: 500,
+			},
+			want: "ZAAAAAAAAAD0AQAAAAAAAA==",
+		},
+		{
+			name: "0 limit and offset",
+			args: args{
+				limit:  0,
+				offset: 0,
+			},
+			want: "AAAAAAAAAAAAAAAAAAAAAA==",
+		},
+		{
+			name: "max limit and offset",
+			args: args{
+				limit:  18446744073709551615,
+				offset: 18446744073709551615,
+			},
+			want: "/////////////////////w==",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewOffsetToken(tt.args.limit, tt.args.offset)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestOffsetToken_Decode(t *testing.T) {
+	tests := []struct {
+		name       string
+		tr         OffsetToken
+		wantLimit  uint64
+		wantOffset uint64
+		wantErr    bool
+	}{
+		{
+			name:       "success",
+			tr:         "ZAAAAAAAAAD0AQAAAAAAAA==",
+			wantLimit:  100,
+			wantOffset: 500,
+			wantErr:    false,
+		},
+		{
+			name:       "0 limit, 0 offset",
+			tr:         "AAAAAAAAAAAAAAAAAAAAAA==",
+			wantLimit:  0,
+			wantOffset: 0,
+			wantErr:    false,
+		},
+		{
+			name:       "max limit and offset",
+			tr:         "/////////////////////w==",
+			wantLimit:  18446744073709551615,
+			wantOffset: 18446744073709551615,
+			wantErr:    false,
+		},
+		{
+			name:       "empty token",
+			tr:         "",
+			wantLimit:  0,
+			wantOffset: 0,
+			wantErr:    true,
+		},
+		{
+			name:       "invalid base64",
+			tr:         "asdasdasdasdasdasdasdasdasdaasdasdasdasdada==",
+			wantLimit:  0,
+			wantOffset: 0,
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotLimit, gotOffset, err := tt.tr.Decode()
+			assert.Equal(t, tt.wantErr, (err != nil))
+			assert.Equal(t, tt.wantLimit, gotLimit)
+			assert.Equal(t, tt.wantOffset, gotOffset)
 		})
 	}
 }

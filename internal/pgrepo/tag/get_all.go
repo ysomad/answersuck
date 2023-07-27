@@ -10,12 +10,17 @@ import (
 	"github.com/ysomad/answersuck/internal/pkg/sort"
 )
 
-func (r *repository) GetAll(ctx context.Context, p paging.OffsetParams, sorts []sort.Sort) (paging.List[entity.Tag], error) {
+func (r *repository) GetAll(ctx context.Context, pageToken string, sorts []sort.Sort) (paging.List[entity.Tag], error) {
+	limit, offset, err := paging.OffsetToken(pageToken).Decode()
+	if err != nil {
+		limit = entity.TagPageSize
+	}
+
 	b := r.Builder.
 		Select("name, author, create_time").
 		From(tagTable).
-		Limit(p.Limit + 1).
-		Offset(p.Offset)
+		Limit(limit + 1).
+		Offset(offset)
 
 	for _, sort := range sorts {
 		b = sort.Attach(b)
@@ -36,5 +41,5 @@ func (r *repository) GetAll(ctx context.Context, p paging.OffsetParams, sorts []
 		return paging.List[entity.Tag]{}, fmt.Errorf("pgx.RowToStructPyBos: %w", err)
 	}
 
-	return paging.NewList(tags, p.Limit)
+	return paging.NewListWithOffset(tags, limit, offset)
 }
