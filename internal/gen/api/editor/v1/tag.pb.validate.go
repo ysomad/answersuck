@@ -432,6 +432,17 @@ func (m *ListTagsRequest) validate(all bool) error {
 
 	// no validation rules for OrderBy
 
+	if val := m.GetPageSize(); val <= 0 || val >= 500 {
+		err := ListTagsRequestValidationError{
+			field:  "PageSize",
+			reason: "value must be inside range (0, 500)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for PageToken
 
 	if len(errors) > 0 {

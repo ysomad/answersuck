@@ -10,14 +10,15 @@ import (
 	"github.com/ysomad/answersuck/internal/pkg/sort"
 )
 
-func (r *repository) GetAll(ctx context.Context, pageToken string, sorts []sort.Sort) (paging.List[entity.Tag], error) {
-	limit, offset, err := paging.OffsetToken(pageToken).Decode()
+func (r *repository) GetAll(ctx context.Context, p paging.Params, sorts []sort.Sort) (paging.List[entity.Tag], error) {
+	limit, offset, err := paging.OffsetToken(p.PageToken).Decode()
 	if err != nil {
 		return paging.List[entity.Tag]{}, err
 	}
 
+	// use limit from params only if token has no limit
 	if limit == 0 {
-		limit = entity.TagPageSize
+		limit = uint64(p.PageSize)
 	}
 
 	b := r.Builder.

@@ -12,12 +12,19 @@ import (
 )
 
 func (h *Handler) ListTags(ctx context.Context, r *pb.ListTagsRequest) (*pb.ListTagsResponse, error) {
+	if err := r.Validate(); err != nil {
+		return nil, twirp.InvalidArgument.Error(err.Error())
+	}
+
 	sorts, err := sort.NewSortList(r.OrderBy)
 	if err != nil {
 		return nil, twirp.InvalidArgumentError("order_by", err.Error())
 	}
 
-	tagList, err := h.tag.GetAll(ctx, r.PageToken, sorts)
+	tagList, err := h.tag.GetAll(ctx, paging.Params{
+		PageSize:  r.PageSize,
+		PageToken: r.PageToken,
+	}, sorts)
 	if err != nil {
 		if errors.Is(err, paging.ErrInvalidToken) {
 			return nil, twirp.InvalidArgumentError("page_token", err.Error())

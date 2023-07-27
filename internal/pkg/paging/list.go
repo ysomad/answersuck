@@ -6,6 +6,11 @@ import (
 
 var errInvalidArgs = errors.New("paging: length of items should not equal more than pageSize + 1")
 
+type Params struct {
+	PageSize  int32
+	PageToken string
+}
+
 type List[T any] struct {
 	Items         []T
 	NextPageToken string

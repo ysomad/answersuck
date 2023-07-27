@@ -33,7 +33,11 @@ message ListTagsRequest {
     // For example: "foo desc,bar".
     string order_by = 1;     
 
-    string page_token = 2;
+    // Needed for requesting first page
+    // next requests will use page_size from page_token.
+    int32 page_size = 2 [(validate.rules).int32 = { gt: 0, lt: 500 }]; // required
+
+    string page_token = 3;
 }
 
 message ListTagsResponse {
