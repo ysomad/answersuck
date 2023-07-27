@@ -2,9 +2,11 @@ package tag
 
 import (
 	"context"
+	"errors"
 
 	"github.com/twitchtv/twirp"
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
+	"github.com/ysomad/answersuck/internal/pkg/paging"
 	"github.com/ysomad/answersuck/internal/pkg/sort"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -21,6 +23,10 @@ func (h *Handler) ListTags(ctx context.Context, r *pb.ListTagsRequest) (*pb.List
 
 	tagList, err := h.tag.GetAll(ctx, r.PageToken, sorts)
 	if err != nil {
+		if errors.Is(err, paging.ErrInvalidToken) {
+			return nil, twirp.InvalidArgumentError("page_token", err.Error())
+		}
+
 		return nil, twirp.InternalError(err.Error())
 	}
 

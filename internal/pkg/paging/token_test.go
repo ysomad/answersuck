@@ -208,7 +208,7 @@ func TestOffsetToken_Decode(t *testing.T) {
 			tr:         "",
 			wantLimit:  0,
 			wantOffset: 0,
-			wantErr:    true,
+			wantErr:    false,
 		},
 		{
 			name:       "invalid base64",

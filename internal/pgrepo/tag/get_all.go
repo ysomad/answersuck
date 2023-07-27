@@ -13,6 +13,10 @@ import (
 func (r *repository) GetAll(ctx context.Context, pageToken string, sorts []sort.Sort) (paging.List[entity.Tag], error) {
 	limit, offset, err := paging.OffsetToken(pageToken).Decode()
 	if err != nil {
+		return paging.List[entity.Tag]{}, err
+	}
+
+	if limit == 0 {
 		limit = entity.TagPageSize
 	}
 

@@ -10,7 +10,9 @@ import (
 	"unsafe"
 )
 
-var errInvalidToken = errors.New("paging: invalid page token")
+var (
+	ErrInvalidToken = errors.New("invalid page token, must be valid base64 or empty string")
+)
 
 type UnsortableToken string
 
@@ -27,17 +29,17 @@ func NewUnsortableToken(id string, t time.Time) UnsortableToken {
 func (t UnsortableToken) Decode() (string, time.Time, error) {
 	b, err := base64.StdEncoding.DecodeString(string(t))
 	if err != nil {
-		return "", time.Time{}, fmt.Errorf("token decode error: %w", err)
+		return "", time.Time{}, ErrInvalidToken
 	}
 
 	parts := strings.Split(string(b), ",")
 	if len(parts) != 2 {
-		return "", time.Time{}, errInvalidToken
+		return "", time.Time{}, ErrInvalidToken
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339Nano, parts[1])
 	if err != nil {
-		return "", time.Time{}, fmt.Errorf("time parse error: %w", err)
+		return "", time.Time{}, ErrInvalidToken
 	}
 
 	return parts[0], parsedTime, nil
@@ -52,14 +54,21 @@ func NewOffsetToken(limit, offset uint64) OffsetToken {
 	return OffsetToken(base64.StdEncoding.EncodeToString(append(limitBytes, offsetBytes...)))
 }
 
+// Decode decodes token into limit and offset.
+// If token is empty returns default values and no error.
+// If token is invalid, returns error.
 func (t OffsetToken) Decode() (limit, offset uint64, err error) {
+	if t == "" {
+		return 0, 0, nil
+	}
+
 	b, err := base64.StdEncoding.DecodeString(string(t))
 	if err != nil {
-		return 0, 0, fmt.Errorf("token decode error: %w", err)
+		return 0, 0, ErrInvalidToken
 	}
 
 	if len(b) != 16 {
-		return 0, 0, errInvalidToken
+		return 0, 0, ErrInvalidToken
 	}
 
 	return bytesToUint64(b[:8]), bytesToUint64(b[8:]), nil
