@@ -20,6 +20,7 @@ var (
 
 type UseCase interface {
 	Save(context.Context, *entity.Question) (int32, error)
+	GetOne(context.Context, int32) (*entity.Question, error)
 }
 
 type sessionManager interface {

@@ -35,6 +35,110 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on Answer with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Answer) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Answer with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in AnswerMultiError, or nil if none found.
+func (m *Answer) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Answer) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Text
+
+	// no validation rules for MediaUrl
+
+	if len(errors) > 0 {
+		return AnswerMultiError(errors)
+	}
+
+	return nil
+}
+
+// AnswerMultiError is an error wrapping multiple validation errors returned by
+// Answer.ValidateAll() if the designated constraints aren't met.
+type AnswerMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AnswerMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AnswerMultiError) AllErrors() []error { return m }
+
+// AnswerValidationError is the validation error returned by Answer.Validate if
+// the designated constraints aren't met.
+type AnswerValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AnswerValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AnswerValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AnswerValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AnswerValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AnswerValidationError) ErrorName() string { return "AnswerValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AnswerValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAnswer.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AnswerValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AnswerValidationError{}
+
 // Validate checks the field values on Question with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -712,140 +816,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetQuestionResponseValidationError{}
-
-// Validate checks the field values on Question_Answer with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *Question_Answer) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Question_Answer with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// Question_AnswerMultiError, or nil if none found.
-func (m *Question_Answer) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Question_Answer) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Id
-
-	// no validation rules for Text
-
-	// no validation rules for Author
-
-	// no validation rules for MediaUrl
-
-	if all {
-		switch v := interface{}(m.GetCreateTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Question_AnswerValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Question_AnswerValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCreateTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Question_AnswerValidationError{
-				field:  "CreateTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return Question_AnswerMultiError(errors)
-	}
-
-	return nil
-}
-
-// Question_AnswerMultiError is an error wrapping multiple validation errors
-// returned by Question_Answer.ValidateAll() if the designated constraints
-// aren't met.
-type Question_AnswerMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Question_AnswerMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Question_AnswerMultiError) AllErrors() []error { return m }
-
-// Question_AnswerValidationError is the validation error returned by
-// Question_Answer.Validate if the designated constraints aren't met.
-type Question_AnswerValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Question_AnswerValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Question_AnswerValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Question_AnswerValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Question_AnswerValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Question_AnswerValidationError) ErrorName() string { return "Question_AnswerValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Question_AnswerValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sQuestion_Answer.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Question_AnswerValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Question_AnswerValidationError{}

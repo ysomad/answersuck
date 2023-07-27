@@ -11,15 +11,13 @@ service QuestionService {
     rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse);
 }
 
-message Question {
-    message Answer {
-        int32 id = 1;
-        string text = 2;
-        string author = 3;
-        string media_url = 4;
-        google.protobuf.Timestamp create_time = 50;
-    }
+ message Answer {
+    int32 id = 1;
+    string text = 2;
+    string media_url = 3;
+}
 
+message Question {
     int32 id = 1;
     string text = 2;
     Answer answer = 3;

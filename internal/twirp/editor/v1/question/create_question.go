@@ -31,14 +31,14 @@ func (h *Handler) CreateQuestion(ctx context.Context, p *pb.CreateQuestionReques
 	}
 
 	questionID, err := h.question.Save(ctx, &entity.Question{
-		Text: p.Question,
-		Answer: entity.Answer{
-			Text:  p.Answer,
-			Media: entity.Media{URL: p.AnswerMediaUrl},
-		},
+		Text:       p.Question,
 		Author:     session.User.UserID,
-		Media:      entity.Media{URL: p.QuestionMediaUrl},
+		MediaURL:   p.QuestionMediaUrl,
 		CreateTime: time.Now(),
+		Answer: entity.Answer{
+			Text:     p.Answer,
+			MediaURL: p.AnswerMediaUrl,
+		},
 	})
 	if err != nil {
 		switch {

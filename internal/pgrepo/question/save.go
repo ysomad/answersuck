@@ -17,7 +17,7 @@ func (r *Repository) Save(ctx context.Context, q *entity.Question) (questionID i
 		sql, args, err := r.Builder.
 			Insert(answerTable).
 			Columns("text, media_url").
-			Values(q.Answer.Text, zeronull.Text(q.Answer.Media.URL)).
+			Values(q.Answer.Text, zeronull.Text(q.Answer.MediaURL)).
 			Suffix("RETURNING id").
 			ToSql()
 		if err != nil {
@@ -31,7 +31,7 @@ func (r *Repository) Save(ctx context.Context, q *entity.Question) (questionID i
 		sql, args, err = r.Builder.
 			Insert(questionTable).
 			Columns("text, answer_id, author, media_url, create_time").
-			Values(q.Text, q.Answer.ID, q.Author, zeronull.Text(q.Media.URL), q.CreateTime).
+			Values(q.Text, q.Answer.ID, q.Author, zeronull.Text(q.MediaURL), q.CreateTime).
 			Suffix("RETURNING id").
 			ToSql()
 		if err != nil {

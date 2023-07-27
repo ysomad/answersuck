@@ -101,15 +101,6 @@ CREATE TABLE IF NOT EXISTS tags (
     create_time timestamptz NOT NULL
 );
 
-ALTER TABLE
-    tags
-ADD
-    COLUMN ts tsvector GENERATED ALWAYS AS (
-        setweight(to_tsvector('russian', coalesce(name, '')), 'A')
-    ) STORED;
-
-CREATE INDEX tags_gin_idx ON tags USING GIN (ts);
-
 CREATE TABLE IF NOT EXISTS pack_tags (
     pack_id int NOT NULL REFERENCES packs (id),
     tag varchar(16) NOT NULL REFERENCES tags (name),
