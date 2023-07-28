@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/ysomad/answersuck/internal/entity"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 )
 
 func (r *Repository) GetAll(ctx context.Context, packID int32) ([]entity.Round, error) {
@@ -23,5 +24,20 @@ func (r *Repository) GetAll(ctx context.Context, packID int32) ([]entity.Round, 
 		return nil, err
 	}
 
-	return pgx.CollectRows(rows, pgx.RowToStructByPos[entity.Round])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByName[round])
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res) == 0 {
+		return nil, apperr.PackNotFound
+	}
+
+	rounds := make([]entity.Round, len(res))
+
+	for i, round := range res {
+		rounds[i] = entity.Round(round)
+	}
+
+	return rounds, nil
 }

@@ -2,9 +2,11 @@ package round
 
 import (
 	"context"
+	"errors"
 
 	"github.com/twitchtv/twirp"
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 )
 
 func (h *Handler) ListRounds(ctx context.Context, r *pb.ListRoundsRequest) (*pb.ListRoundsResponse, error) {
@@ -14,6 +16,10 @@ func (h *Handler) ListRounds(ctx context.Context, r *pb.ListRoundsRequest) (*pb.
 
 	rounds, err := h.round.GetAll(ctx, r.PackId)
 	if err != nil {
+		if errors.Is(err, apperr.PackNotFound) {
+			return nil, twirp.InvalidArgument.Error(apperr.MsgPackNotFound)
+		}
+
 		return nil, twirp.InternalError(err.Error())
 	}
 
