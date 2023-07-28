@@ -16,33 +16,6 @@
   },
   "host": "localhost:8080",
   "paths": {
-    "/twirp/editor.v1.RoundService/AddTopic": {
-      "post": {
-        "tags": [
-          "RoundService"
-        ],
-        "summary": "AddTopic adds topic to pack rounds.",
-        "operationId": "AddTopic",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/editor.v1_AddTopicRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
-            }
-          }
-        }
-      }
-    },
     "/twirp/editor.v1.RoundService/CreateRound": {
       "post": {
         "tags": [
@@ -151,20 +124,20 @@
         }
       }
     },
-    "/twirp/editor.v1.RoundService/UpdateRoundPos": {
+    "/twirp/editor.v1.RoundService/UpdateRound": {
       "post": {
         "tags": [
           "RoundService"
         ],
-        "summary": "UpdateRoundPos updates round position in the pack.",
-        "operationId": "UpdateRoundPos",
+        "summary": "UpdateRound updates round position in the pack.",
+        "operationId": "UpdateRound",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/editor.v1_UpdateRoundPosRequest"
+              "$ref": "#/definitions/editor.v1_UpdateRoundRequest"
             }
           }
         ],
@@ -172,7 +145,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+              "$ref": "#/definitions/editor.v1_UpdateRoundResponse"
             }
           }
         }
@@ -180,20 +153,6 @@
     }
   },
   "definitions": {
-    "editor.v1_AddTopicRequest": {
-      "description": "Fields: round_id, topic_id",
-      "type": "object",
-      "properties": {
-        "round_id": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "topic_id": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
     "editor.v1_CreateRoundRequest": {
       "description": "Fields: pack_id, round_name, round_position",
       "type": "object",
@@ -338,17 +297,33 @@
         }
       }
     },
-    "editor.v1_UpdateRoundPosRequest": {
-      "description": "Fields: round_id, round_position",
+    "editor.v1_UpdateRoundRequest": {
+      "description": "Fields: round_id, round_name, round_position, pack_id",
       "type": "object",
       "properties": {
+        "pack_id": {
+          "type": "integer",
+          "format": "int32"
+        },
         "round_id": {
           "type": "integer",
           "format": "int32"
         },
+        "round_name": {
+          "type": "string"
+        },
         "round_position": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "editor.v1_UpdateRoundResponse": {
+      "description": "Fields: round",
+      "type": "object",
+      "properties": {
+        "round": {
+          "$ref": "#/definitions/editor.v1_Round"
         }
       }
     }

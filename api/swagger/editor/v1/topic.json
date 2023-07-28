@@ -45,9 +45,13 @@
   },
   "definitions": {
     "editor.v1_CreateTopicRequest": {
-      "description": "Fields: topic_title",
+      "description": "Fields: topic_title, round_id",
       "type": "object",
       "properties": {
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
         "topic_title": {
           "type": "string"
         }
@@ -63,7 +67,7 @@
       }
     },
     "editor.v1_Topic": {
-      "description": "Fields: id, title, create_time",
+      "description": "Fields: id, title, round_id, create_time",
       "type": "object",
       "properties": {
         "create_time": {
@@ -71,6 +75,10 @@
           "format": "date-time"
         },
         "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "round_id": {
           "type": "integer",
           "format": "int32"
         },

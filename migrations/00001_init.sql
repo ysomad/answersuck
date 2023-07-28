@@ -56,7 +56,6 @@ CREATE TABLE IF NOT EXISTS topics (
     id serial NOT NULL PRIMARY KEY,
     title varchar(50) NOT NULL,
     author varchar(25) NOT NULL REFERENCES players (nickname),
-    round_id int NOT NULL REFERENCES rounds (id),
     create_time timestamptz NOT NULL
 );
 

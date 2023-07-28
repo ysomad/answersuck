@@ -15,6 +15,7 @@ import (
 	questionpg "github.com/ysomad/answersuck/internal/pgrepo/question"
 	roundpg "github.com/ysomad/answersuck/internal/pgrepo/round"
 	tagpg "github.com/ysomad/answersuck/internal/pgrepo/tag"
+	"github.com/ysomad/answersuck/internal/pgrepo/topic"
 
 	authsvc "github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
@@ -27,6 +28,7 @@ import (
 	questionv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/question"
 	roundv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/round"
 	tagv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/tag"
+	topicv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/topic"
 	playerv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
 
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
@@ -93,6 +95,10 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 
 	roundHandlerV1 := roundv1.NewHandler(&roundUseCase{roundPostgres, roundService}, sessionManager)
 
+	// topic
+	topicPostgres := topic.NewRepository(pgClient)
+	topicHandlerV1 := topicv1.NewHandler(topicPostgres, sessionManager)
+
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{
 		playerHandlerV1,
@@ -102,6 +108,7 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 		questionHandlerV1,
 		packHandlerV1,
 		roundHandlerV1,
+		topicHandlerV1,
 	})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))

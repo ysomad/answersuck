@@ -8,5 +8,5 @@ import (
 )
 
 func (h *Handler) AddTopic(ctx context.Context, r *pb.AddTopicRequest) (*emptypb.Empty, error) {
-	return nil, nil
+	return new(emptypb.Empty), nil
 }
