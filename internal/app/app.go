@@ -85,7 +85,13 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	// round
 	roundPostgres := roundpg.NewRepository(pgClient)
 	roundService := roundsvc.NewService(roundPostgres, packPostgres)
-	roundHandlerV1 := roundv1.NewHandler(roundService, sessionManager)
+
+	type roundUseCase struct {
+		*roundpg.Repository
+		*roundsvc.Service
+	}
+
+	roundHandlerV1 := roundv1.NewHandler(&roundUseCase{roundPostgres, roundService}, sessionManager)
 
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{

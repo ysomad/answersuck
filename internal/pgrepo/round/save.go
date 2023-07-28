@@ -6,7 +6,7 @@ import (
 	"github.com/ysomad/answersuck/internal/entity"
 )
 
-func (r *repository) Save(ctx context.Context, round entity.Round) (int32, error) {
+func (r *Repository) Save(ctx context.Context, round entity.Round) (int32, error) {
 	sql, args, err := r.Builder.
 		Insert(roundsTable).
 		Columns("name, position, pack_id").

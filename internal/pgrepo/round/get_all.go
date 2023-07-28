@@ -8,9 +8,9 @@ import (
 	"github.com/ysomad/answersuck/internal/entity"
 )
 
-func (r *repository) GetAll(ctx context.Context, packID int32) ([]entity.Round, error) {
+func (r *Repository) GetAll(ctx context.Context, packID int32) ([]entity.Round, error) {
 	sql, args, err := r.Builder.
-		Select("id, name, position").
+		Select("id, name, pack_id, position").
 		From(roundsTable).
 		Where(squirrel.Eq{"pack_id": packID}).
 		ToSql()

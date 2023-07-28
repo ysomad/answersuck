@@ -52,6 +52,7 @@ func (h *Handler) UpdateRound(ctx context.Context, r *pb.UpdateRoundRequest) (*p
 		case errors.Is(err, apperr.PackNotFound):
 			return nil, twirp.InvalidArgument.Error(apperr.MsgPackNotFound)
 		}
+
 		return nil, twirp.InternalError(err.Error())
 	}
 

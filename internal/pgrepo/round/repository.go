@@ -4,10 +4,10 @@ import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
 const roundsTable = "rounds"
 
-type repository struct {
+type Repository struct {
 	*pgclient.Client
 }
 
-func NewRepository(c *pgclient.Client) *repository {
-	return &repository{c}
+func NewRepository(c *pgclient.Client) *Repository {
+	return &Repository{c}
 }

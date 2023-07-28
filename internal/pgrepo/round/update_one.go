@@ -8,7 +8,7 @@ import (
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
 )
 
-func (r *repository) UpdateOne(ctx context.Context, round entity.Round) error {
+func (r *Repository) UpdateOne(ctx context.Context, round entity.Round) error {
 	sql, args, err := r.Builder.
 		Update(roundsTable).
 		SetMap(map[string]interface{}{
