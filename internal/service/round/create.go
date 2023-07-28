@@ -5,17 +5,12 @@ import (
 	"fmt"
 
 	"github.com/ysomad/answersuck/internal/entity"
-	"github.com/ysomad/answersuck/internal/pkg/apperr"
+	"github.com/ysomad/answersuck/internal/service/common"
 )
 
-func (s *Service) Create(ctx context.Context, nickname string, r entity.Round) (int32, error) {
-	p, err := s.pack.GetOne(ctx, r.PackID)
-	if err != nil {
-		return 0, fmt.Errorf("s.pack.GetOne: %w", err)
-	}
-
-	if p.Author != nickname {
-		return 0, apperr.PackNotAuthor
+func (s *Service) Create(ctx context.Context, r entity.Round) (int32, error) {
+	if err := common.VerifyAuthorship(ctx, s.pack, r.PackID); err != nil {
+		return 0, fmt.Errorf("common.VerifyAuthorship: %w", err)
 	}
 
 	return s.repo.Save(ctx, r)

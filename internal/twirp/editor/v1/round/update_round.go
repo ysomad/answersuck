@@ -12,8 +12,7 @@ import (
 )
 
 func (h *Handler) UpdateRound(ctx context.Context, r *pb.UpdateRoundRequest) (*pb.UpdateRoundResponse, error) {
-	session, err := common.CheckPlayerVerification(ctx)
-	if err != nil {
+	if _, err := common.CheckPlayerVerification(ctx); err != nil {
 		return nil, err
 	}
 
@@ -44,7 +43,7 @@ func (h *Handler) UpdateRound(ctx context.Context, r *pb.UpdateRoundRequest) (*p
 		Position: int16(r.RoundPosition),
 	}
 
-	if err := h.round.Update(ctx, session.User.ID, round); err != nil {
+	if err := h.round.Update(ctx, round); err != nil {
 		switch {
 		case errors.Is(err, apperr.PackNotAuthor):
 			return nil, twirp.PermissionDenied.Error(apperr.MsgPackNotAuthor)

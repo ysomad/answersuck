@@ -19,8 +19,8 @@ var (
 )
 
 type UseCase interface {
-	Create(ctx context.Context, nickname string, r entity.Round) (roundID int32, err error)
-	Update(ctx context.Context, nickname string, r entity.Round) error
+	Create(ctx context.Context, r entity.Round) (roundID int32, err error)
+	Update(ctx context.Context, r entity.Round) error
 }
 
 type sessionManager interface {

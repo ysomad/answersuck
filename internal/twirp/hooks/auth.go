@@ -39,6 +39,7 @@ func NewSession(sg sessionGetter) *twirp.ServerHooks {
 			}
 
 			ctx = context.WithValue(ctx, appctx.SessionKey{}, session)
+			ctx = context.WithValue(ctx, appctx.NicknameKey{}, session.User.ID)
 
 			return ctx, nil
 		},
@@ -56,6 +57,7 @@ func NewAuth(sg sessionGetter) *twirp.ServerHooks {
 			}
 
 			ctx = context.WithValue(ctx, appctx.SessionKey{}, session)
+			ctx = context.WithValue(ctx, appctx.NicknameKey{}, session.User.ID)
 
 			return ctx, nil
 		},
@@ -67,17 +69,18 @@ func NewAuth(sg sessionGetter) *twirp.ServerHooks {
 func NewAuthVerified(sg sessionGetter) *twirp.ServerHooks {
 	return &twirp.ServerHooks{
 		RequestReceived: func(ctx context.Context) (context.Context, error) {
-			s, err := getSession(ctx, sg)
+			session, err := getSession(ctx, sg)
 			if err != nil {
 				slog.Info("error getting session", slog.String("error", err.Error()))
 				return ctx, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
 			}
 
-			if !s.User.Verified {
+			if !session.User.Verified {
 				return ctx, twirp.PermissionDenied.Error(apperr.MsgPlayerNotVerified)
 			}
 
-			ctx = context.WithValue(ctx, appctx.SessionKey{}, s)
+			ctx = context.WithValue(ctx, appctx.SessionKey{}, session)
+			ctx = context.WithValue(ctx, appctx.NicknameKey{}, session.User.ID)
 
 			return ctx, nil
 		},

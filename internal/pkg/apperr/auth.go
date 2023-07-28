@@ -10,4 +10,5 @@ const (
 
 var (
 	InvalidCredentials = errors.New(MsgInvalidCredentials)
+	Unauthorized       = errors.New(MsgUnauthorized)
 )

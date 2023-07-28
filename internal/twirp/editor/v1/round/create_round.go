@@ -12,8 +12,9 @@ import (
 )
 
 func (h *Handler) CreateRound(ctx context.Context, r *pb.CreateRoundRequest) (*pb.CreateRoundResponse, error) {
-	session, err := common.CheckPlayerVerification(ctx)
-	if err != nil {
+	var err error
+
+	if _, err = common.CheckPlayerVerification(ctx); err != nil {
 		return nil, err
 	}
 
@@ -39,7 +40,7 @@ func (h *Handler) CreateRound(ctx context.Context, r *pb.CreateRoundRequest) (*p
 		Position: int16(r.RoundPosition),
 	}
 
-	round.ID, err = h.round.Create(ctx, session.User.ID, round)
+	round.ID, err = h.round.Create(ctx, round)
 	if err != nil {
 		switch {
 		case errors.Is(err, apperr.PackNotFound):
