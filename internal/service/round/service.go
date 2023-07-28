@@ -12,6 +12,7 @@ type packService interface {
 
 type repository interface {
 	Save(ctx context.Context, round entity.Round) (int32, error)
+	UpdateOne(context.Context, entity.Round) error
 }
 
 type Service struct {

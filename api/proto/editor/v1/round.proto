@@ -12,8 +12,8 @@ service RoundService {
     // CreateRound creates new round and adds it to pack.
     rpc CreateRound(CreateRoundRequest) returns (CreateRoundResponse);
 
-    // UpdateRoundPos updates round position in the pack.
-    rpc UpdateRoundPos(UpdateRoundPosRequest) returns (google.protobuf.Empty);
+    // UpdateRound updates round position in the pack.
+    rpc UpdateRound(UpdateRoundRequest) returns (UpdateRoundResponse);
 
     // ListRounds returns list of pack rounds.
     rpc ListRounds(ListRoundsRequest) returns (ListRoundsResponse);
@@ -38,9 +38,15 @@ message CreateRoundResponse {
     Round round = 1;
 }
 
-message UpdateRoundPosRequest {
+message UpdateRoundRequest {
     int32 round_id = 1; // required
-    int32 round_position = 2; // required
+    string round_name = 2 [(validate.rules).string = { min_len: 3, max_len: 30 } ]; // required
+    int32 round_position = 3; // required
+    int32 pack_id = 4; // required
+}
+
+message UpdateRoundResponse {
+    Round round = 1;
 }
 
 message ListRoundsRequest {

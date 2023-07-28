@@ -132,17 +132,19 @@ func (x *CreateRoundResponse) GetRound() *Round {
 	return nil
 }
 
-type UpdateRoundPosRequest struct {
+type UpdateRoundRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	RoundId       int32 `protobuf:"varint,1,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"`                   // required
-	RoundPosition int32 `protobuf:"varint,2,opt,name=round_position,json=roundPosition,proto3" json:"round_position,omitempty"` // required
+	RoundId       int32  `protobuf:"varint,1,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"`                   // required
+	RoundName     string `protobuf:"bytes,2,opt,name=round_name,json=roundName,proto3" json:"round_name,omitempty"`              // required
+	RoundPosition int32  `protobuf:"varint,3,opt,name=round_position,json=roundPosition,proto3" json:"round_position,omitempty"` // required
+	PackId        int32  `protobuf:"varint,4,opt,name=pack_id,json=packId,proto3" json:"pack_id,omitempty"`                      // required
 }
 
-func (x *UpdateRoundPosRequest) Reset() {
-	*x = UpdateRoundPosRequest{}
+func (x *UpdateRoundRequest) Reset() {
+	*x = UpdateRoundRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_editor_v1_round_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -150,13 +152,13 @@ func (x *UpdateRoundPosRequest) Reset() {
 	}
 }
 
-func (x *UpdateRoundPosRequest) String() string {
+func (x *UpdateRoundRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateRoundPosRequest) ProtoMessage() {}
+func (*UpdateRoundRequest) ProtoMessage() {}
 
-func (x *UpdateRoundPosRequest) ProtoReflect() protoreflect.Message {
+func (x *UpdateRoundRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_editor_v1_round_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -168,23 +170,84 @@ func (x *UpdateRoundPosRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateRoundPosRequest.ProtoReflect.Descriptor instead.
-func (*UpdateRoundPosRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateRoundRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRoundRequest) Descriptor() ([]byte, []int) {
 	return file_editor_v1_round_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UpdateRoundPosRequest) GetRoundId() int32 {
+func (x *UpdateRoundRequest) GetRoundId() int32 {
 	if x != nil {
 		return x.RoundId
 	}
 	return 0
 }
 
-func (x *UpdateRoundPosRequest) GetRoundPosition() int32 {
+func (x *UpdateRoundRequest) GetRoundName() string {
+	if x != nil {
+		return x.RoundName
+	}
+	return ""
+}
+
+func (x *UpdateRoundRequest) GetRoundPosition() int32 {
 	if x != nil {
 		return x.RoundPosition
 	}
 	return 0
+}
+
+func (x *UpdateRoundRequest) GetPackId() int32 {
+	if x != nil {
+		return x.PackId
+	}
+	return 0
+}
+
+type UpdateRoundResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Round *Round `protobuf:"bytes,1,opt,name=round,proto3" json:"round,omitempty"`
+}
+
+func (x *UpdateRoundResponse) Reset() {
+	*x = UpdateRoundResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_editor_v1_round_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateRoundResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRoundResponse) ProtoMessage() {}
+
+func (x *UpdateRoundResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_editor_v1_round_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRoundResponse.ProtoReflect.Descriptor instead.
+func (*UpdateRoundResponse) Descriptor() ([]byte, []int) {
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateRoundResponse) GetRound() *Round {
+	if x != nil {
+		return x.Round
+	}
+	return nil
 }
 
 type ListRoundsRequest struct {
@@ -198,7 +261,7 @@ type ListRoundsRequest struct {
 func (x *ListRoundsRequest) Reset() {
 	*x = ListRoundsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[3]
+		mi := &file_editor_v1_round_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -211,7 +274,7 @@ func (x *ListRoundsRequest) String() string {
 func (*ListRoundsRequest) ProtoMessage() {}
 
 func (x *ListRoundsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[3]
+	mi := &file_editor_v1_round_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -224,7 +287,7 @@ func (x *ListRoundsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRoundsRequest.ProtoReflect.Descriptor instead.
 func (*ListRoundsRequest) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{3}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListRoundsRequest) GetPackId() int32 {
@@ -248,7 +311,7 @@ type Round struct {
 func (x *Round) Reset() {
 	*x = Round{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[4]
+		mi := &file_editor_v1_round_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -261,7 +324,7 @@ func (x *Round) String() string {
 func (*Round) ProtoMessage() {}
 
 func (x *Round) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[4]
+	mi := &file_editor_v1_round_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -274,7 +337,7 @@ func (x *Round) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Round.ProtoReflect.Descriptor instead.
 func (*Round) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{4}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Round) GetId() int32 {
@@ -316,7 +379,7 @@ type ListRoundsResponse struct {
 func (x *ListRoundsResponse) Reset() {
 	*x = ListRoundsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[5]
+		mi := &file_editor_v1_round_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -329,7 +392,7 @@ func (x *ListRoundsResponse) String() string {
 func (*ListRoundsResponse) ProtoMessage() {}
 
 func (x *ListRoundsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[5]
+	mi := &file_editor_v1_round_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -342,7 +405,7 @@ func (x *ListRoundsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRoundsResponse.ProtoReflect.Descriptor instead.
 func (*ListRoundsResponse) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{5}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListRoundsResponse) GetRounds() []*Round {
@@ -364,7 +427,7 @@ type AddTopicRequest struct {
 func (x *AddTopicRequest) Reset() {
 	*x = AddTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[6]
+		mi := &file_editor_v1_round_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -377,7 +440,7 @@ func (x *AddTopicRequest) String() string {
 func (*AddTopicRequest) ProtoMessage() {}
 
 func (x *AddTopicRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[6]
+	mi := &file_editor_v1_round_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -390,7 +453,7 @@ func (x *AddTopicRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddTopicRequest.ProtoReflect.Descriptor instead.
 func (*AddTopicRequest) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{6}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AddTopicRequest) GetRoundId() int32 {
@@ -419,7 +482,7 @@ type RemoveTopicRequest struct {
 func (x *RemoveTopicRequest) Reset() {
 	*x = RemoveTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[7]
+		mi := &file_editor_v1_round_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -432,7 +495,7 @@ func (x *RemoveTopicRequest) String() string {
 func (*RemoveTopicRequest) ProtoMessage() {}
 
 func (x *RemoveTopicRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[7]
+	mi := &file_editor_v1_round_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -445,7 +508,7 @@ func (x *RemoveTopicRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveTopicRequest.ProtoReflect.Descriptor instead.
 func (*RemoveTopicRequest) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{7}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RemoveTopicRequest) GetRoundId() int32 {
@@ -473,7 +536,7 @@ type GetQuestionGridRequest struct {
 func (x *GetQuestionGridRequest) Reset() {
 	*x = GetQuestionGridRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[8]
+		mi := &file_editor_v1_round_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -486,7 +549,7 @@ func (x *GetQuestionGridRequest) String() string {
 func (*GetQuestionGridRequest) ProtoMessage() {}
 
 func (x *GetQuestionGridRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[8]
+	mi := &file_editor_v1_round_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +562,7 @@ func (x *GetQuestionGridRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuestionGridRequest.ProtoReflect.Descriptor instead.
 func (*GetQuestionGridRequest) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{8}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetQuestionGridRequest) GetRoundId() int32 {
@@ -523,7 +586,7 @@ type GridQuestion struct {
 func (x *GridQuestion) Reset() {
 	*x = GridQuestion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[9]
+		mi := &file_editor_v1_round_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -536,7 +599,7 @@ func (x *GridQuestion) String() string {
 func (*GridQuestion) ProtoMessage() {}
 
 func (x *GridQuestion) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[9]
+	mi := &file_editor_v1_round_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -549,7 +612,7 @@ func (x *GridQuestion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GridQuestion.ProtoReflect.Descriptor instead.
 func (*GridQuestion) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{9}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GridQuestion) GetId() int32 {
@@ -593,7 +656,7 @@ type GridTopic struct {
 func (x *GridTopic) Reset() {
 	*x = GridTopic{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[10]
+		mi := &file_editor_v1_round_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -606,7 +669,7 @@ func (x *GridTopic) String() string {
 func (*GridTopic) ProtoMessage() {}
 
 func (x *GridTopic) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[10]
+	mi := &file_editor_v1_round_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +682,7 @@ func (x *GridTopic) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GridTopic.ProtoReflect.Descriptor instead.
 func (*GridTopic) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{10}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GridTopic) GetId() int32 {
@@ -654,7 +717,7 @@ type GetQuestionGridResponse struct {
 func (x *GetQuestionGridResponse) Reset() {
 	*x = GetQuestionGridResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_editor_v1_round_proto_msgTypes[11]
+		mi := &file_editor_v1_round_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -667,7 +730,7 @@ func (x *GetQuestionGridResponse) String() string {
 func (*GetQuestionGridResponse) ProtoMessage() {}
 
 func (x *GetQuestionGridResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_editor_v1_round_proto_msgTypes[11]
+	mi := &file_editor_v1_round_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -680,7 +743,7 @@ func (x *GetQuestionGridResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetQuestionGridResponse.ProtoReflect.Descriptor instead.
 func (*GetQuestionGridResponse) Descriptor() ([]byte, []int) {
-	return file_editor_v1_round_proto_rawDescGZIP(), []int{11}
+	return file_editor_v1_round_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetQuestionGridResponse) GetTopics() []*GridTopic {
@@ -712,13 +775,21 @@ var file_editor_v1_round_proto_rawDesc = []byte{
 	0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
 	0x26, 0x0a, 0x05, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x10,
 	0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x6f, 0x75, 0x6e, 0x64,
-	0x52, 0x05, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x22, 0x59, 0x0a, 0x15, 0x55, 0x70, 0x64, 0x61, 0x74,
-	0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x50, 0x6f, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x19, 0x0a, 0x08, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x07, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x72,
-	0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x0d, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69,
-	0x6f, 0x6e, 0x22, 0x2c, 0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73,
+	0x52, 0x05, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x22, 0x99, 0x01, 0x0a, 0x12, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19,
+	0x0a, 0x08, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x07, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x49, 0x64, 0x12, 0x28, 0x0a, 0x0a, 0x72, 0x6f, 0x75,
+	0x6e, 0x64, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x09, 0xfa,
+	0x42, 0x06, 0x72, 0x04, 0x10, 0x03, 0x18, 0x1e, 0x52, 0x09, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x4e,
+	0x61, 0x6d, 0x65, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x70, 0x6f, 0x73,
+	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0d, 0x72, 0x6f, 0x75,
+	0x6e, 0x64, 0x50, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x61,
+	0x63, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x70, 0x61, 0x63,
+	0x6b, 0x49, 0x64, 0x22, 0x3d, 0x0a, 0x13, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75,
+	0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x26, 0x0a, 0x05, 0x72, 0x6f,
+	0x75, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x65, 0x64, 0x69, 0x74,
+	0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x05, 0x72, 0x6f, 0x75,
+	0x6e, 0x64, 0x22, 0x2c, 0x0a, 0x11, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x61, 0x63, 0x6b, 0x5f,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x70, 0x61, 0x63, 0x6b, 0x49, 0x64,
 	0x22, 0x60, 0x0a, 0x05, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
@@ -762,38 +833,38 @@ var file_editor_v1_round_proto_rawDesc = []byte{
 	0x72, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x06, 0x74,
 	0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65, 0x64,
 	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x72, 0x69, 0x64, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x32, 0xd3, 0x03, 0x0a, 0x0c, 0x52, 0x6f,
+	0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x32, 0xd5, 0x03, 0x0a, 0x0c, 0x52, 0x6f,
 	0x75, 0x6e, 0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4c, 0x0a, 0x0b, 0x43, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x12, 0x1d, 0x2e, 0x65, 0x64, 0x69, 0x74,
 	0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e,
 	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f,
 	0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4a, 0x0a, 0x0e, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x50, 0x6f, 0x73, 0x12, 0x20, 0x2e, 0x65, 0x64, 0x69,
-	0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75,
-	0x6e, 0x64, 0x50, 0x6f, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45,
-	0x6d, 0x70, 0x74, 0x79, 0x12, 0x49, 0x0a, 0x0a, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e,
-	0x64, 0x73, 0x12, 0x1c, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4c,
-	0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x1d, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73,
-	0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x3e, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x1a, 0x2e, 0x65, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12,
-	0x44, 0x0a, 0x0b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x1d,
-	0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76,
-	0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e,
-	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x58, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73,
-	0x74, 0x69, 0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x12, 0x21, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e,
-	0x47, 0x72, 0x69, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x65, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73, 0x74,
-	0x69, 0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
-	0x14, 0x5a, 0x12, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x64, 0x69,
-	0x74, 0x6f, 0x72, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4c, 0x0a, 0x0b, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x12, 0x1d, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72,
+	0x2e, 0x76, 0x31, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
+	0x76, 0x31, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x49, 0x0a, 0x0a, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f,
+	0x75, 0x6e, 0x64, 0x73, 0x12, 0x1c, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31,
+	0x2e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4c,
+	0x69, 0x73, 0x74, 0x52, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x3e, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x1a, 0x2e,
+	0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x70,
+	0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74,
+	0x79, 0x12, 0x44, 0x0a, 0x0b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x12, 0x1d, 0x2e, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x58, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x51, 0x75,
+	0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x12, 0x21, 0x2e, 0x65, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69,
+	0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e,
+	0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x51, 0x75, 0x65,
+	0x73, 0x74, 0x69, 0x6f, 0x6e, 0x47, 0x72, 0x69, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x42, 0x14, 0x5a, 0x12, 0x65, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2f, 0x76, 0x31, 0x3b, 0x65,
+	0x64, 0x69, 0x74, 0x6f, 0x72, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -808,46 +879,48 @@ func file_editor_v1_round_proto_rawDescGZIP() []byte {
 	return file_editor_v1_round_proto_rawDescData
 }
 
-var file_editor_v1_round_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_editor_v1_round_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_editor_v1_round_proto_goTypes = []interface{}{
 	(*CreateRoundRequest)(nil),      // 0: editor.v1.CreateRoundRequest
 	(*CreateRoundResponse)(nil),     // 1: editor.v1.CreateRoundResponse
-	(*UpdateRoundPosRequest)(nil),   // 2: editor.v1.UpdateRoundPosRequest
-	(*ListRoundsRequest)(nil),       // 3: editor.v1.ListRoundsRequest
-	(*Round)(nil),                   // 4: editor.v1.Round
-	(*ListRoundsResponse)(nil),      // 5: editor.v1.ListRoundsResponse
-	(*AddTopicRequest)(nil),         // 6: editor.v1.AddTopicRequest
-	(*RemoveTopicRequest)(nil),      // 7: editor.v1.RemoveTopicRequest
-	(*GetQuestionGridRequest)(nil),  // 8: editor.v1.GetQuestionGridRequest
-	(*GridQuestion)(nil),            // 9: editor.v1.GridQuestion
-	(*GridTopic)(nil),               // 10: editor.v1.GridTopic
-	(*GetQuestionGridResponse)(nil), // 11: editor.v1.GetQuestionGridResponse
-	(RoundQuestionType)(0),          // 12: editor.v1.RoundQuestionType
-	(*emptypb.Empty)(nil),           // 13: google.protobuf.Empty
+	(*UpdateRoundRequest)(nil),      // 2: editor.v1.UpdateRoundRequest
+	(*UpdateRoundResponse)(nil),     // 3: editor.v1.UpdateRoundResponse
+	(*ListRoundsRequest)(nil),       // 4: editor.v1.ListRoundsRequest
+	(*Round)(nil),                   // 5: editor.v1.Round
+	(*ListRoundsResponse)(nil),      // 6: editor.v1.ListRoundsResponse
+	(*AddTopicRequest)(nil),         // 7: editor.v1.AddTopicRequest
+	(*RemoveTopicRequest)(nil),      // 8: editor.v1.RemoveTopicRequest
+	(*GetQuestionGridRequest)(nil),  // 9: editor.v1.GetQuestionGridRequest
+	(*GridQuestion)(nil),            // 10: editor.v1.GridQuestion
+	(*GridTopic)(nil),               // 11: editor.v1.GridTopic
+	(*GetQuestionGridResponse)(nil), // 12: editor.v1.GetQuestionGridResponse
+	(RoundQuestionType)(0),          // 13: editor.v1.RoundQuestionType
+	(*emptypb.Empty)(nil),           // 14: google.protobuf.Empty
 }
 var file_editor_v1_round_proto_depIdxs = []int32{
-	4,  // 0: editor.v1.CreateRoundResponse.round:type_name -> editor.v1.Round
-	4,  // 1: editor.v1.ListRoundsResponse.rounds:type_name -> editor.v1.Round
-	12, // 2: editor.v1.GridQuestion.type:type_name -> editor.v1.RoundQuestionType
-	9,  // 3: editor.v1.GridTopic.questions:type_name -> editor.v1.GridQuestion
-	10, // 4: editor.v1.GetQuestionGridResponse.topics:type_name -> editor.v1.GridTopic
-	0,  // 5: editor.v1.RoundService.CreateRound:input_type -> editor.v1.CreateRoundRequest
-	2,  // 6: editor.v1.RoundService.UpdateRoundPos:input_type -> editor.v1.UpdateRoundPosRequest
-	3,  // 7: editor.v1.RoundService.ListRounds:input_type -> editor.v1.ListRoundsRequest
-	6,  // 8: editor.v1.RoundService.AddTopic:input_type -> editor.v1.AddTopicRequest
-	7,  // 9: editor.v1.RoundService.RemoveTopic:input_type -> editor.v1.RemoveTopicRequest
-	8,  // 10: editor.v1.RoundService.GetQuestionGrid:input_type -> editor.v1.GetQuestionGridRequest
-	1,  // 11: editor.v1.RoundService.CreateRound:output_type -> editor.v1.CreateRoundResponse
-	13, // 12: editor.v1.RoundService.UpdateRoundPos:output_type -> google.protobuf.Empty
-	5,  // 13: editor.v1.RoundService.ListRounds:output_type -> editor.v1.ListRoundsResponse
-	13, // 14: editor.v1.RoundService.AddTopic:output_type -> google.protobuf.Empty
-	13, // 15: editor.v1.RoundService.RemoveTopic:output_type -> google.protobuf.Empty
-	11, // 16: editor.v1.RoundService.GetQuestionGrid:output_type -> editor.v1.GetQuestionGridResponse
-	11, // [11:17] is the sub-list for method output_type
-	5,  // [5:11] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	5,  // 0: editor.v1.CreateRoundResponse.round:type_name -> editor.v1.Round
+	5,  // 1: editor.v1.UpdateRoundResponse.round:type_name -> editor.v1.Round
+	5,  // 2: editor.v1.ListRoundsResponse.rounds:type_name -> editor.v1.Round
+	13, // 3: editor.v1.GridQuestion.type:type_name -> editor.v1.RoundQuestionType
+	10, // 4: editor.v1.GridTopic.questions:type_name -> editor.v1.GridQuestion
+	11, // 5: editor.v1.GetQuestionGridResponse.topics:type_name -> editor.v1.GridTopic
+	0,  // 6: editor.v1.RoundService.CreateRound:input_type -> editor.v1.CreateRoundRequest
+	2,  // 7: editor.v1.RoundService.UpdateRound:input_type -> editor.v1.UpdateRoundRequest
+	4,  // 8: editor.v1.RoundService.ListRounds:input_type -> editor.v1.ListRoundsRequest
+	7,  // 9: editor.v1.RoundService.AddTopic:input_type -> editor.v1.AddTopicRequest
+	8,  // 10: editor.v1.RoundService.RemoveTopic:input_type -> editor.v1.RemoveTopicRequest
+	9,  // 11: editor.v1.RoundService.GetQuestionGrid:input_type -> editor.v1.GetQuestionGridRequest
+	1,  // 12: editor.v1.RoundService.CreateRound:output_type -> editor.v1.CreateRoundResponse
+	3,  // 13: editor.v1.RoundService.UpdateRound:output_type -> editor.v1.UpdateRoundResponse
+	6,  // 14: editor.v1.RoundService.ListRounds:output_type -> editor.v1.ListRoundsResponse
+	14, // 15: editor.v1.RoundService.AddTopic:output_type -> google.protobuf.Empty
+	14, // 16: editor.v1.RoundService.RemoveTopic:output_type -> google.protobuf.Empty
+	12, // 17: editor.v1.RoundService.GetQuestionGrid:output_type -> editor.v1.GetQuestionGridResponse
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_editor_v1_round_proto_init() }
@@ -882,7 +955,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateRoundPosRequest); i {
+			switch v := v.(*UpdateRoundRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -894,7 +967,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListRoundsRequest); i {
+			switch v := v.(*UpdateRoundResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -906,7 +979,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Round); i {
+			switch v := v.(*ListRoundsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -918,7 +991,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListRoundsResponse); i {
+			switch v := v.(*Round); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -930,7 +1003,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddTopicRequest); i {
+			switch v := v.(*ListRoundsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -942,7 +1015,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RemoveTopicRequest); i {
+			switch v := v.(*AddTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -954,7 +1027,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetQuestionGridRequest); i {
+			switch v := v.(*RemoveTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -966,7 +1039,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GridQuestion); i {
+			switch v := v.(*GetQuestionGridRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -978,7 +1051,7 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GridTopic); i {
+			switch v := v.(*GridQuestion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -990,6 +1063,18 @@ func file_editor_v1_round_proto_init() {
 			}
 		}
 		file_editor_v1_round_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GridTopic); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_editor_v1_round_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetQuestionGridResponse); i {
 			case 0:
 				return &v.state
@@ -1008,7 +1093,7 @@ func file_editor_v1_round_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_editor_v1_round_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
