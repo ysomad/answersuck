@@ -13,6 +13,7 @@ type packService interface {
 type roundTopicService interface {
 	GetAll(ctx context.Context, roundID int32) ([]entity.Topic, error)
 	Save(ctx context.Context, roundID, topicID int32) error
+	DeleteOne(ctx context.Context, roundID, topicID int32) error
 }
 
 type repository interface {

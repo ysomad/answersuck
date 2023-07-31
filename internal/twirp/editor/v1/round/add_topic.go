@@ -32,8 +32,8 @@ func (h *Handler) AddTopic(ctx context.Context, r *pb.AddTopicRequest) (*emptypb
 			return nil, twirp.PermissionDenied.Error(apperr.MsgPackNotAuthor)
 		case errors.Is(err, apperr.RoundTopicNotAdded):
 			return nil, twirp.InvalidArgument.Error(apperr.MsgRoundTopicNotAdded)
-		case errors.Is(err, apperr.TopicAlreadyInRound):
-			return nil, twirp.InvalidArgument.Error(apperr.MsgTopicAlreadyInRound)
+		case errors.Is(err, apperr.RoundTopicAlreadyExists):
+			return nil, twirp.InvalidArgument.Error(apperr.MsgRoundTopicAlreadyExists)
 		}
 
 		return nil, twirp.InternalError(err.Error())

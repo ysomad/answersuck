@@ -23,6 +23,7 @@ type UseCase interface {
 	Update(ctx context.Context, r entity.Round) error
 	GetAll(ctx context.Context, packID int32) ([]entity.Round, error)
 	AddTopic(ctx context.Context, roundID, topicID int32) error
+	RemoveTopic(ctx context.Context, roundID, topicID int32) error
 }
 
 type sessionManager interface {

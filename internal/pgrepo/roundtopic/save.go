@@ -22,7 +22,7 @@ func (r *Repository) Save(ctx context.Context, roundID, topicID int32) error {
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && pgErr.ConstraintName == "round_topics_pkey" {
-			return apperr.TopicAlreadyInRound
+			return apperr.RoundTopicAlreadyExists
 		}
 
 		return err
