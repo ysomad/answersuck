@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS rounds (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
     position smallint NOT NULL,
+    author varchar(25) NOT NULL REFERENCES players (nickname),
     pack_id int NOT NULL REFERENCES packs (id)
 );
 

@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 )
 
-type pack struct {
+type Pack struct {
 	ID         int32         `db:"id"`
 	Name       string        `db:"name"`
 	Author     string        `db:"author"`

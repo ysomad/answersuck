@@ -14,8 +14,9 @@ import (
 	playerpg "github.com/ysomad/answersuck/internal/pgrepo/player"
 	questionpg "github.com/ysomad/answersuck/internal/pgrepo/question"
 	roundpg "github.com/ysomad/answersuck/internal/pgrepo/round"
+	roundtopicpg "github.com/ysomad/answersuck/internal/pgrepo/roundtopic"
 	tagpg "github.com/ysomad/answersuck/internal/pgrepo/tag"
-	"github.com/ysomad/answersuck/internal/pgrepo/topic"
+	topicpg "github.com/ysomad/answersuck/internal/pgrepo/topic"
 
 	authsvc "github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
@@ -84,9 +85,16 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	packPostgres := packpg.NewRepository(pgClient)
 	packHandlerV1 := packv1.NewHandler(packPostgres, sessionManager)
 
+	// topic
+	topicPostgres := topicpg.NewRepository(pgClient)
+	topicHandlerV1 := topicv1.NewHandler(topicPostgres, sessionManager)
+
+	// roundTopic
+	roundTopicPostgres := roundtopicpg.NewRepository(pgClient)
+
 	// round
 	roundPostgres := roundpg.NewRepository(pgClient)
-	roundService := roundsvc.NewService(roundPostgres, packPostgres)
+	roundService := roundsvc.NewService(roundPostgres, packPostgres, roundTopicPostgres)
 
 	type roundUseCase struct {
 		*roundpg.Repository
@@ -94,10 +102,6 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	}
 
 	roundHandlerV1 := roundv1.NewHandler(&roundUseCase{roundPostgres, roundService}, sessionManager)
-
-	// topic
-	topicPostgres := topic.NewRepository(pgClient)
-	topicHandlerV1 := topicv1.NewHandler(topicPostgres, sessionManager)
 
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{

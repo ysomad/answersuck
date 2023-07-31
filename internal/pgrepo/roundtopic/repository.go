@@ -1,8 +1,8 @@
-package round
+package roundtopic
 
 import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
-const RoundsTable = "rounds"
+const roundTopicsTable = "round_topics"
 
 type Repository struct {
 	*pgclient.Client

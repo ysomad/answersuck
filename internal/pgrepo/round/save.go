@@ -8,7 +8,7 @@ import (
 
 func (r *Repository) Save(ctx context.Context, round entity.Round) (int32, error) {
 	sql, args, err := r.Builder.
-		Insert(roundsTable).
+		Insert(RoundsTable).
 		Columns("name, position, pack_id").
 		Values(round.Name, round.Position, round.PackID).
 		Suffix("RETURNING id").

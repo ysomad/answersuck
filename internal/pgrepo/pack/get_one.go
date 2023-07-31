@@ -25,7 +25,7 @@ func (r *repository) GetOne(ctx context.Context, packID int32) (*entity.Pack, er
 		return nil, err
 	}
 
-	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[pack])
+	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Pack])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperr.PackNotFound

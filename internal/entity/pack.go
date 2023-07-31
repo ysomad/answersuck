@@ -10,8 +10,3 @@ type Pack struct {
 	CoverURL   string
 	CreateTime time.Time
 }
-
-type PackWithTags struct {
-	Pack
-	Tags []Tag
-}

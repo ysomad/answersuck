@@ -10,7 +10,7 @@ import (
 
 func (r *Repository) UpdateOne(ctx context.Context, round entity.Round) error {
 	sql, args, err := r.Builder.
-		Update(roundsTable).
+		Update(RoundsTable).
 		SetMap(map[string]interface{}{
 			"name":     round.Name,
 			"position": round.Position,

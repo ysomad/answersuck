@@ -8,7 +8,7 @@ import (
 
 func (r *Repository) Save(ctx context.Context, t entity.Topic) (int32, error) {
 	sql, args, err := r.Builder.
-		Insert(topicsTable).
+		Insert(TopicsTable).
 		Columns("title, author, create_time").
 		Values(t.Title, t.Author, t.CreateTime).
 		Suffix("RETURNING id").

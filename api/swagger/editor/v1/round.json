@@ -16,6 +16,33 @@
   },
   "host": "localhost:8080",
   "paths": {
+    "/twirp/editor.v1.RoundService/AddTopic": {
+      "post": {
+        "tags": [
+          "RoundService"
+        ],
+        "summary": "AddTopic adds topic to pack rounds.",
+        "operationId": "AddTopic",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/editor.v1_AddTopicRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+            }
+          }
+        }
+      }
+    },
     "/twirp/editor.v1.RoundService/CreateRound": {
       "post": {
         "tags": [
@@ -153,6 +180,20 @@
     }
   },
   "definitions": {
+    "editor.v1_AddTopicRequest": {
+      "description": "Fields: round_id, topic_id",
+      "type": "object",
+      "properties": {
+        "round_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "topic_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "editor.v1_CreateRoundRequest": {
       "description": "Fields: pack_id, round_name, round_position",
       "type": "object",

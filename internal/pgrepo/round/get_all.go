@@ -12,7 +12,7 @@ import (
 func (r *Repository) GetAll(ctx context.Context, packID int32) ([]entity.Round, error) {
 	sql, args, err := r.Builder.
 		Select("id, name, pack_id, position").
-		From(roundsTable).
+		From(RoundsTable).
 		Where(squirrel.Eq{"pack_id": packID}).
 		ToSql()
 	if err != nil {

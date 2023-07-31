@@ -2,7 +2,7 @@ package topic
 
 import "github.com/ysomad/answersuck/internal/pkg/pgclient"
 
-const topicsTable = "topics"
+const TopicsTable = "topics"
 
 type Repository struct {
 	*pgclient.Client
