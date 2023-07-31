@@ -13,8 +13,8 @@ type packService interface {
 	GetOne(context.Context, int32) (*entity.Pack, error)
 }
 
-// VerifyAuthorship returns no error if current user from session is author of pack.
-func VerifyAuthorship(ctx context.Context, s packService, packID int32) error {
+// VerifyPackAuthorship returns no error if current user from session is author of pack.
+func VerifyPackAuthorship(ctx context.Context, s packService, packID int32) error {
 	nickname, ok := appctx.GetNickname(ctx)
 	if !ok {
 		return apperr.Unauthorized
