@@ -2,21 +2,37 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 	"net/http"
 
+	"github.com/twitchtv/twirp"
 	"github.com/ysomad/answersuck/internal/pkg/appctx"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"github.com/ysomad/answersuck/internal/pkg/session"
 	"golang.org/x/exp/slog"
 )
+
+type httpError struct {
+	Code string `json:"code"`
+	Msg  string `json:"msg"`
+}
 
 // WithFootPrint writes remote addr and user agent into context.
 func WithFootPrint(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := net.ParseIP(r.Header.Get("X-Real-IP"))
 		if ip == nil {
-			slog.Error("got invalid X-Real-IP header")
-			h.ServeHTTP(w, r)
+			w.Header().Set("Content-Type", "application/json")
+
+			if err := json.NewEncoder(w).Encode(httpError{
+				Code: string(twirp.InvalidArgument),
+				Msg:  apperr.MsgInvalidXRealIPHeader,
+			}); err != nil {
+				slog.Error("error encoding http error", slog.String("error", err.Error()))
+
+				return
+			}
 
 			return
 		}
