@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/ysomad/answersuck/internal/entity"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
-	"golang.org/x/exp/slog"
 )
 
 func (r *Repository) GetOne(ctx context.Context, questionID int32) (*entity.Question, error) {
@@ -30,8 +29,6 @@ func (r *Repository) GetOne(ctx context.Context, questionID int32) (*entity.Ques
 	if err != nil {
 		return nil, err
 	}
-
-	slog.Info(sql)
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {

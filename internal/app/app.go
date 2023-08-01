@@ -9,14 +9,14 @@ import (
 
 	"github.com/ysomad/answersuck/internal/config"
 
-	mediapg "github.com/ysomad/answersuck/internal/pgrepo/media"
-	packpg "github.com/ysomad/answersuck/internal/pgrepo/pack"
-	playerpg "github.com/ysomad/answersuck/internal/pgrepo/player"
-	questionpg "github.com/ysomad/answersuck/internal/pgrepo/question"
-	roundpg "github.com/ysomad/answersuck/internal/pgrepo/round"
-	roundtopicpg "github.com/ysomad/answersuck/internal/pgrepo/roundtopic"
-	tagpg "github.com/ysomad/answersuck/internal/pgrepo/tag"
-	topicpg "github.com/ysomad/answersuck/internal/pgrepo/topic"
+	mediapg "github.com/ysomad/answersuck/internal/postgres/media"
+	packpg "github.com/ysomad/answersuck/internal/postgres/pack"
+	playerpg "github.com/ysomad/answersuck/internal/postgres/player"
+	questionpg "github.com/ysomad/answersuck/internal/postgres/question"
+	roundpg "github.com/ysomad/answersuck/internal/postgres/round"
+	roundtopicpg "github.com/ysomad/answersuck/internal/postgres/roundtopic"
+	tagpg "github.com/ysomad/answersuck/internal/postgres/tag"
+	topicpg "github.com/ysomad/answersuck/internal/postgres/topic"
 
 	authsvc "github.com/ysomad/answersuck/internal/service/auth"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"

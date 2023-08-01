@@ -24,19 +24,19 @@ func (r *Repository) GetAll(ctx context.Context, packID int32) ([]entity.Round, 
 		return nil, err
 	}
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByName[round])
+	rr, err := pgx.CollectRows(rows, pgx.RowToStructByName[round])
 	if err != nil {
 		return nil, err
 	}
 
-	if len(res) == 0 {
+	if len(rr) == 0 {
 		return nil, apperr.PackNotFound
 	}
 
-	rounds := make([]entity.Round, len(res))
+	rounds := make([]entity.Round, len(rr))
 
-	for i, round := range res {
-		rounds[i] = entity.Round(round)
+	for i, r := range rr {
+		rounds[i] = entity.Round(r)
 	}
 
 	return rounds, nil

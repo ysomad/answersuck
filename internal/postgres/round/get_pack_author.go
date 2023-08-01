@@ -6,8 +6,8 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
-	"github.com/ysomad/answersuck/internal/pgrepo/pack"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
+	"github.com/ysomad/answersuck/internal/postgres/pack"
 )
 
 func (r *Repository) GetPackAuthor(ctx context.Context, roundID int32) (string, error) {

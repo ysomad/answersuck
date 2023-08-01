@@ -41,10 +41,10 @@ func (r *repository) GetAll(ctx context.Context, p paging.Params, sorts []sort.S
 		return paging.List[entity.Tag]{}, fmt.Errorf("r.Pool.Query: %w", err)
 	}
 
-	tags, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entity.Tag])
+	tt, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entity.Tag])
 	if err != nil {
 		return paging.List[entity.Tag]{}, fmt.Errorf("pgx.RowToStructPyBos: %w", err)
 	}
 
-	return paging.NewListWithOffset(tags, limit, offset)
+	return paging.NewListWithOffset(tt, limit, offset)
 }

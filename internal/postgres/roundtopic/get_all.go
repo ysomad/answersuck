@@ -6,7 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/ysomad/answersuck/internal/entity"
-	"github.com/ysomad/answersuck/internal/pgrepo/topic"
+	"github.com/ysomad/answersuck/internal/postgres/topic"
 )
 
 func (r *Repository) GetAll(ctx context.Context, roundID int32) ([]entity.Topic, error) {
@@ -29,14 +29,14 @@ func (r *Repository) GetAll(ctx context.Context, roundID int32) ([]entity.Topic,
 		return nil, err
 	}
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByName[topic.Topic])
+	tt, err := pgx.CollectRows(rows, pgx.RowToStructByName[topic.Topic])
 	if err != nil {
 		return nil, err
 	}
 
-	topics := make([]entity.Topic, len(res))
+	topics := make([]entity.Topic, len(tt))
 
-	for i, t := range res {
+	for i, t := range tt {
 		topics[i] = entity.Topic(t)
 	}
 

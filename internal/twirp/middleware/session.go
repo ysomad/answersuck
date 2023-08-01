@@ -30,8 +30,6 @@ func WithFootPrint(h http.Handler) http.Handler {
 				Msg:  apperr.MsgInvalidXRealIPHeader,
 			}); err != nil {
 				slog.Error("error encoding http error", slog.String("error", err.Error()))
-
-				return
 			}
 
 			return

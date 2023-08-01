@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 	"github.com/ysomad/answersuck/internal/entity"
-	"github.com/ysomad/answersuck/internal/pgrepo/tag"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
+	"github.com/ysomad/answersuck/internal/postgres/tag"
 	"golang.org/x/exp/slog"
 )
 
