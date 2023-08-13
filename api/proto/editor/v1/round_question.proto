@@ -5,7 +5,7 @@ option go_package = "editor/v1;editorv1";
 
 import "validate/validate.proto";
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
 
 service RoundQuestionService {
     // CreateRoundQuestion adds question for topic in pack round.
@@ -13,9 +13,6 @@ service RoundQuestionService {
 
     // GetRoundQuestion returns round question.
     rpc GetRoundQuestion(GetRoundQuestionRequest) returns (GetRoundQuestionResponse);
-
-    // UpdateRoundQuestionsCost updates cost for multiple questions.
-    rpc UpdateRoundQuestionsCost(UpdateRoundQuestionsCostRequest) returns (google.protobuf.Empty);
 }
 
 enum TransferType {
@@ -72,16 +69,16 @@ message CreateRoundQuestionRequest {
     int32 round_id = 3; // required
     RoundQuestionType question_type = 4 [(validate.rules).enum = { in: [1,2,3,4,5] }]; // required
     int32 question_cost = 5 [(validate.rules).int32 = { gte: 1 }]; // required
-    int32 answer_time = 6 [(validate.rules).int32 = { gte: 5, lte: 60 }]; // required
+    google.protobuf.Duration answer_time = 6 [(validate.rules).duration = { required: true, lte: { seconds: 60 }, gte: { seconds: 5 }}]; // required
     string host_comment = 7;
     string secret_topic = 8;
     int32 secret_cost = 9;
     bool is_keepable = 10;
-    TransferType transfer_type = 11 [(validate.rules).enum = { in: [1,2,3] }];
+    TransferType transfer_type = 11 [(validate.rules).enum = { in: [0,1,2,3] }];
 }
 
 message CreateRoundQuestionResponse {
-    RoundQuestion round_question = 1;
+    int32 round_question_id = 1;
 }
 
 message GetRoundQuestionRequest {
@@ -90,14 +87,4 @@ message GetRoundQuestionRequest {
 
 message GetRoundQuestionResponse {
     RoundQuestion round_question = 1;
-}
-
-message UpdateRoundQuestionsCostRequest {
-    message Question {
-        int32 round_question_id = 1; // required
-        int32 cost = 2; // required
-    }
-
-    int32 round_id = 1; // required
-    repeated Question questions = 2 [(validate.rules).repeated = { min_items: 1, max_items: 10 }]; // required
 }

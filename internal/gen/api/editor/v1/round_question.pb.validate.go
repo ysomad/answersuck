@@ -265,15 +265,46 @@ func (m *CreateRoundQuestionRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if val := m.GetAnswerTime(); val < 5 || val > 60 {
+	if m.GetAnswerTime() == nil {
 		err := CreateRoundQuestionRequestValidationError{
 			field:  "AnswerTime",
-			reason: "value must be inside range [5, 60]",
+			reason: "value is required",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
+	}
+
+	if d := m.GetAnswerTime(); d != nil {
+		dur, err := d.AsDuration(), d.CheckValid()
+		if err != nil {
+			err = CreateRoundQuestionRequestValidationError{
+				field:  "AnswerTime",
+				reason: "value is not a valid duration",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+
+			lte := time.Duration(60*time.Second + 0*time.Nanosecond)
+			gte := time.Duration(5*time.Second + 0*time.Nanosecond)
+
+			if dur < gte || dur > lte {
+				err := CreateRoundQuestionRequestValidationError{
+					field:  "AnswerTime",
+					reason: "value must be inside range [5s, 1m0s]",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+		}
 	}
 
 	// no validation rules for HostComment
@@ -287,7 +318,7 @@ func (m *CreateRoundQuestionRequest) validate(all bool) error {
 	if _, ok := _CreateRoundQuestionRequest_TransferType_InLookup[m.GetTransferType()]; !ok {
 		err := CreateRoundQuestionRequestValidationError{
 			field:  "TransferType",
-			reason: "value must be in list [BEFORE AFTER NEVER]",
+			reason: "value must be in list [TRANSFER_TYPE_UNSPECIFIED BEFORE AFTER NEVER]",
 		}
 		if !all {
 			return err
@@ -384,6 +415,7 @@ var _CreateRoundQuestionRequest_QuestionType_InLookup = map[RoundQuestionType]st
 }
 
 var _CreateRoundQuestionRequest_TransferType_InLookup = map[TransferType]struct{}{
+	0: {},
 	1: {},
 	2: {},
 	3: {},
@@ -411,34 +443,7 @@ func (m *CreateRoundQuestionResponse) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetRoundQuestion()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CreateRoundQuestionResponseValidationError{
-					field:  "RoundQuestion",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, CreateRoundQuestionResponseValidationError{
-					field:  "RoundQuestion",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRoundQuestion()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return CreateRoundQuestionResponseValidationError{
-				field:  "RoundQuestion",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for RoundQuestionId
 
 	if len(errors) > 0 {
 		return CreateRoundQuestionResponseMultiError(errors)
@@ -756,156 +761,6 @@ var _ interface {
 	ErrorName() string
 } = GetRoundQuestionResponseValidationError{}
 
-// Validate checks the field values on UpdateRoundQuestionsCostRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UpdateRoundQuestionsCostRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UpdateRoundQuestionsCostRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// UpdateRoundQuestionsCostRequestMultiError, or nil if none found.
-func (m *UpdateRoundQuestionsCostRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UpdateRoundQuestionsCostRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for RoundId
-
-	if l := len(m.GetQuestions()); l < 1 || l > 10 {
-		err := UpdateRoundQuestionsCostRequestValidationError{
-			field:  "Questions",
-			reason: "value must contain between 1 and 10 items, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	for idx, item := range m.GetQuestions() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UpdateRoundQuestionsCostRequestValidationError{
-						field:  fmt.Sprintf("Questions[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UpdateRoundQuestionsCostRequestValidationError{
-						field:  fmt.Sprintf("Questions[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UpdateRoundQuestionsCostRequestValidationError{
-					field:  fmt.Sprintf("Questions[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if len(errors) > 0 {
-		return UpdateRoundQuestionsCostRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// UpdateRoundQuestionsCostRequestMultiError is an error wrapping multiple
-// validation errors returned by UpdateRoundQuestionsCostRequest.ValidateAll()
-// if the designated constraints aren't met.
-type UpdateRoundQuestionsCostRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UpdateRoundQuestionsCostRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UpdateRoundQuestionsCostRequestMultiError) AllErrors() []error { return m }
-
-// UpdateRoundQuestionsCostRequestValidationError is the validation error
-// returned by UpdateRoundQuestionsCostRequest.Validate if the designated
-// constraints aren't met.
-type UpdateRoundQuestionsCostRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UpdateRoundQuestionsCostRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UpdateRoundQuestionsCostRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UpdateRoundQuestionsCostRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UpdateRoundQuestionsCostRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UpdateRoundQuestionsCostRequestValidationError) ErrorName() string {
-	return "UpdateRoundQuestionsCostRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UpdateRoundQuestionsCostRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUpdateRoundQuestionsCostRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UpdateRoundQuestionsCostRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UpdateRoundQuestionsCostRequestValidationError{}
-
 // Validate checks the field values on RoundQuestion_Question with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1183,113 +1038,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RoundQuestion_AnswerValidationError{}
-
-// Validate checks the field values on UpdateRoundQuestionsCostRequest_Question
-// with the rules defined in the proto definition for this message. If any
-// rules are violated, the first error encountered is returned, or nil if
-// there are no violations.
-func (m *UpdateRoundQuestionsCostRequest_Question) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on
-// UpdateRoundQuestionsCostRequest_Question with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in
-// UpdateRoundQuestionsCostRequest_QuestionMultiError, or nil if none found.
-func (m *UpdateRoundQuestionsCostRequest_Question) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UpdateRoundQuestionsCostRequest_Question) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for RoundQuestionId
-
-	// no validation rules for Cost
-
-	if len(errors) > 0 {
-		return UpdateRoundQuestionsCostRequest_QuestionMultiError(errors)
-	}
-
-	return nil
-}
-
-// UpdateRoundQuestionsCostRequest_QuestionMultiError is an error wrapping
-// multiple validation errors returned by
-// UpdateRoundQuestionsCostRequest_Question.ValidateAll() if the designated
-// constraints aren't met.
-type UpdateRoundQuestionsCostRequest_QuestionMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UpdateRoundQuestionsCostRequest_QuestionMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UpdateRoundQuestionsCostRequest_QuestionMultiError) AllErrors() []error { return m }
-
-// UpdateRoundQuestionsCostRequest_QuestionValidationError is the validation
-// error returned by UpdateRoundQuestionsCostRequest_Question.Validate if the
-// designated constraints aren't met.
-type UpdateRoundQuestionsCostRequest_QuestionValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UpdateRoundQuestionsCostRequest_QuestionValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UpdateRoundQuestionsCostRequest_QuestionValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UpdateRoundQuestionsCostRequest_QuestionValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UpdateRoundQuestionsCostRequest_QuestionValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UpdateRoundQuestionsCostRequest_QuestionValidationError) ErrorName() string {
-	return "UpdateRoundQuestionsCostRequest_QuestionValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UpdateRoundQuestionsCostRequest_QuestionValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUpdateRoundQuestionsCostRequest_Question.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UpdateRoundQuestionsCostRequest_QuestionValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UpdateRoundQuestionsCostRequest_QuestionValidationError{}

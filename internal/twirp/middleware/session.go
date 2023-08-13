@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net"
 	"net/http"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/ysomad/answersuck/internal/pkg/appctx"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"github.com/ysomad/answersuck/internal/pkg/session"
-	"golang.org/x/exp/slog"
 )
 
 type httpError struct {

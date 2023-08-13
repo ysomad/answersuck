@@ -19,7 +19,7 @@ service RoundService {
     rpc ListRounds(ListRoundsRequest) returns (ListRoundsResponse);
 
     // AddTopic adds topic to pack rounds.
-    rpc AddTopic(AddTopicRequest) returns (google.protobuf.Empty);
+    rpc AddTopic(AddTopicRequest) returns (AddTopicResponse);
 
     // RemoveTopic removes topic from pack round (not actually deleting it from DB).
     rpc RemoveTopic(RemoveTopicRequest) returns (google.protobuf.Empty);
@@ -67,6 +67,10 @@ message ListRoundsResponse {
 message AddTopicRequest {
     int32 round_id = 1; // required
     int32 topic_id = 2; // required
+}
+
+message AddTopicResponse {
+    int32 round_topic_id = 1;
 }
 
 message RemoveTopicRequest {

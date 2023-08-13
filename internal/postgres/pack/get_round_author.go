@@ -1,4 +1,4 @@
-package round
+package pack
 
 import (
 	"context"
@@ -7,14 +7,13 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
-	"github.com/ysomad/answersuck/internal/postgres/pack"
 )
 
-func (r *Repository) GetPackAuthor(ctx context.Context, roundID int32) (string, error) {
+func (r *repository) GetRoundAuthor(ctx context.Context, roundID int32) (string, error) {
 	sql, args, err := r.Builder.
 		Select("p.author").
-		From(RoundsTable + " r").
-		InnerJoin(pack.PacksTable + " p ON r.pack_id = p.id").
+		From("rounds r").
+		InnerJoin("packs p ON r.pack_id = p.id").
 		Where(squirrel.Eq{"r.id": roundID}).
 		ToSql()
 	if err != nil {

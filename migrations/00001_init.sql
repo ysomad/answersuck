@@ -1,8 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
-BEGIN
-;
-
 CREATE TABLE IF NOT EXISTS sessions (
     id varchar(128) PRIMARY KEY NOT NULL,
     user_agent varchar(1000) NOT NULL,
@@ -49,7 +46,6 @@ CREATE TABLE IF NOT EXISTS rounds (
     id serial NOT NULL PRIMARY KEY,
     name varchar(32) NOT NULL,
     position smallint NOT NULL,
-    author varchar(25) NOT NULL REFERENCES players (nickname),
     pack_id int NOT NULL REFERENCES packs (id)
 );
 
@@ -76,19 +72,18 @@ CREATE TABLE IF NOT EXISTS questions (
 );
 
 CREATE TABLE IF NOT EXISTS round_topics (
+    id serial NOT NULL PRIMARY KEY,
     round_id int NOT NULL REFERENCES rounds (id),
-    topic_id int NOT NULL REFERENCES topics (id),
-    PRIMARY KEY (round_id, topic_id)
+    topic_id int NOT NULL REFERENCES topics (id)
 );
 
 CREATE TABLE IF NOT EXISTS round_questions (
     id serial NOT NULL PRIMARY KEY,
-    round_id int NOT NULL REFERENCES rounds (id),
-    topic_id int NOT NULL REFERENCES topics (id),
+    round_topic_id int NOT NULL REFERENCES round_topics (id),
     question_id int NOT NULL REFERENCES questions (id),
     question_type smallint NOT NULL,
     cost smallint NOT NULL,
-    answer_time smallint NOT NULL,
+    answer_time bigint NOT NULL,
     host_comment text,
     secret_topic varchar(64),
     secret_cost smallint,
@@ -113,20 +108,31 @@ COMMIT;
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
-BEGIN;
+BEGIN
+;
 
 DROP TABLE IF EXISTS pack_tags CASCADE;
+
 DROP TABLE IF EXISTS round_questions CASCADE;
+
 DROP TABLE IF EXISTS round_topics CASCADE;
+
 DROP TABLE IF EXISTS questions CASCADE;
+
 DROP TABLE IF EXISTS answers CASCADE;
+
 DROP TABLE IF EXISTS topics CASCADE;
+
 DROP TABLE IF EXISTS rounds CASCADE;
+
 DROP TABLE IF EXISTS tags CASCADE;
+
 DROP TABLE IF EXISTS packs CASCADE;
+
 DROP TABLE IF EXISTS media CASCADE;
+
 DROP TABLE IF EXISTS players CASCADE;
+
 DROP TABLE IF EXISTS sessions CASCADE;
 
-COMMIT;
 -- +goose StatementEnd

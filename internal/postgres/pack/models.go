@@ -14,3 +14,8 @@ type Pack struct {
 	CoverURL   zeronull.Text `db:"cover_url"`
 	CreateTime time.Time     `db:"create_time"`
 }
+
+type packWithTag struct {
+	Pack
+	Tag string `db:"tag"`
+}

@@ -10,6 +10,7 @@ import (
 )
 
 // CheckPlayerVerification verifies that request is authorized and player verified.
+// Returns twirp errors.
 func CheckPlayerVerification(ctx context.Context) (*session.Session, error) {
 	s, ok := appctx.GetSession(ctx)
 	if !ok {

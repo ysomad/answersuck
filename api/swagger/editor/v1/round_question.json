@@ -69,33 +69,6 @@
           }
         }
       }
-    },
-    "/twirp/editor.v1.RoundQuestionService/UpdateRoundQuestionsCost": {
-      "post": {
-        "tags": [
-          "RoundQuestionService"
-        ],
-        "summary": "UpdateRoundQuestionsCost updates cost for multiple questions.",
-        "operationId": "UpdateRoundQuestionsCost",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/editor.v1_UpdateRoundQuestionsCostRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
-            }
-          }
-        }
-      }
     }
   },
   "definitions": {
@@ -127,8 +100,7 @@
       "type": "object",
       "properties": {
         "answer_time": {
-          "type": "integer",
-          "format": "int32"
+          "type": "string"
         },
         "host_comment": {
           "type": "string"
@@ -168,11 +140,12 @@
       }
     },
     "editor.v1_CreateRoundQuestionResponse": {
-      "description": "Fields: round_question",
+      "description": "Fields: round_question_id",
       "type": "object",
       "properties": {
-        "round_question": {
-          "$ref": "#/definitions/editor.v1_RoundQuestion"
+        "round_question_id": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -196,16 +169,25 @@
       }
     },
     "editor.v1_Question": {
-      "description": "Fields: round_question_id, cost",
+      "description": "Fields: id, text, author, media_url, create_time",
       "type": "object",
       "properties": {
-        "cost": {
+        "author": {
+          "type": "string"
+        },
+        "create_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
           "type": "integer",
           "format": "int32"
         },
-        "round_question_id": {
-          "type": "integer",
-          "format": "int32"
+        "media_url": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
         }
       }
     },
@@ -257,22 +239,6 @@
         },
         "transfer_type": {
           "$ref": "#/definitions/editor.v1_TransferType"
-        }
-      }
-    },
-    "editor.v1_UpdateRoundQuestionsCostRequest": {
-      "description": "Fields: round_id, questions",
-      "type": "object",
-      "properties": {
-        "questions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/editor.v1_Question"
-          }
-        },
-        "round_id": {
-          "type": "integer",
-          "format": "int32"
         }
       }
     }

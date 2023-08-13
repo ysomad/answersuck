@@ -2,85 +2,81 @@ package hooks
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/twitchtv/twirp"
 	"github.com/ysomad/answersuck/internal/pkg/appctx"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"github.com/ysomad/answersuck/internal/pkg/session"
-	"golang.org/x/exp/slog"
 )
 
-type sessionGetter interface {
-	Get(context.Context, string) (*session.Session, error)
-}
-
-func getSession(ctx context.Context, sg sessionGetter) (*session.Session, error) {
+func getSession(ctx context.Context, sm *session.Manager) (*session.Session, error) {
 	sid, ok := appctx.GetSessionID(ctx)
 	if !ok {
 		return nil, twirp.Unauthenticated.Error("session id not found in context")
 	}
 
-	s, err := sg.Get(ctx, sid)
+	sess, err := sm.Get(ctx, sid)
 	if err != nil {
 		return nil, err
 	}
 
-	return s, nil
+	return sess, nil
 }
 
-// NewSession adds session to context if its present.
-func NewSession(sg sessionGetter) *twirp.ServerHooks {
+// WithSession adds session to context if its present. Do not return error if
+// player is not authenticated.
+func WithSession(sm *session.Manager) *twirp.ServerHooks {
 	return &twirp.ServerHooks{
 		RequestReceived: func(ctx context.Context) (context.Context, error) {
-			session, err := getSession(ctx, sg)
+			sm, err := getSession(ctx, sm)
 			if err != nil {
 				slog.Info("error getting session", slog.String("error", err.Error()))
 				return ctx, nil
 			}
 
-			ctx = context.WithValue(ctx, appctx.SessionKey{}, session)
-			ctx = context.WithValue(ctx, appctx.NicknameKey{}, session.User.ID)
+			ctx = context.WithValue(ctx, appctx.SessionKey{}, sm)
+			ctx = context.WithValue(ctx, appctx.NicknameKey{}, sm.User.ID)
 
 			return ctx, nil
 		},
 	}
 }
 
-// NewAuth returns Unauthenticated error if session id or session not found.
-func NewAuth(sg sessionGetter) *twirp.ServerHooks {
+// WithAuth authenticates player or returns unauthenticated error.
+func WithAuth(sm *session.Manager) *twirp.ServerHooks {
 	return &twirp.ServerHooks{
 		RequestReceived: func(ctx context.Context) (context.Context, error) {
-			session, err := getSession(ctx, sg)
+			sess, err := getSession(ctx, sm)
 			if err != nil {
 				slog.Info("error getting session", slog.String("error", err.Error()))
 				return ctx, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
 			}
 
-			ctx = context.WithValue(ctx, appctx.SessionKey{}, session)
-			ctx = context.WithValue(ctx, appctx.NicknameKey{}, session.User.ID)
+			ctx = context.WithValue(ctx, appctx.SessionKey{}, sess)
+			ctx = context.WithValue(ctx, appctx.NicknameKey{}, sess.User.ID)
 
 			return ctx, nil
 		},
 	}
 }
 
-// NewAuthVerified returns Unauthenticated error if session id
-// or session not found or PermissionDenied if player is not verified.
-func NewAuthVerified(sg sessionGetter) *twirp.ServerHooks {
+// WithVerifiedPlayer authenticates player and checks whether he verified or not.
+func WithVerifiedPlayer(sm *session.Manager) *twirp.ServerHooks {
 	return &twirp.ServerHooks{
 		RequestReceived: func(ctx context.Context) (context.Context, error) {
-			session, err := getSession(ctx, sg)
+			sess, err := getSession(ctx, sm)
 			if err != nil {
 				slog.Info("error getting session", slog.String("error", err.Error()))
 				return ctx, twirp.Unauthenticated.Error(apperr.MsgUnauthorized)
 			}
 
-			if !session.User.Verified {
+			if !sess.User.Verified {
 				return ctx, twirp.PermissionDenied.Error(apperr.MsgPlayerNotVerified)
 			}
 
-			ctx = context.WithValue(ctx, appctx.SessionKey{}, session)
-			ctx = context.WithValue(ctx, appctx.NicknameKey{}, session.User.ID)
+			ctx = context.WithValue(ctx, appctx.SessionKey{}, sess)
+			ctx = context.WithValue(ctx, appctx.NicknameKey{}, sess.User.ID)
 
 			return ctx, nil
 		},

@@ -983,6 +983,108 @@ var _ interface {
 	ErrorName() string
 } = AddTopicRequestValidationError{}
 
+// Validate checks the field values on AddTopicResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AddTopicResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AddTopicResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AddTopicResponseMultiError, or nil if none found.
+func (m *AddTopicResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AddTopicResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for RoundTopicId
+
+	if len(errors) > 0 {
+		return AddTopicResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// AddTopicResponseMultiError is an error wrapping multiple validation errors
+// returned by AddTopicResponse.ValidateAll() if the designated constraints
+// aren't met.
+type AddTopicResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AddTopicResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AddTopicResponseMultiError) AllErrors() []error { return m }
+
+// AddTopicResponseValidationError is the validation error returned by
+// AddTopicResponse.Validate if the designated constraints aren't met.
+type AddTopicResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddTopicResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddTopicResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddTopicResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddTopicResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddTopicResponseValidationError) ErrorName() string { return "AddTopicResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AddTopicResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddTopicResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddTopicResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddTopicResponseValidationError{}
+
 // Validate checks the field values on RemoveTopicRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

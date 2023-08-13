@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Service) RemoveTopic(ctx context.Context, roundID, topicID int32) error {
-	if err := s.verifyPackAuthorship(ctx, roundID); err != nil {
+	if err := s.pack.VerifyRoundAuthorship(ctx, roundID); err != nil {
 		return fmt.Errorf("s.verifyPackAuthorship: %w", err)
 	}
 

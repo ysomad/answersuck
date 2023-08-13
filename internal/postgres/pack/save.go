@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -12,7 +13,6 @@ import (
 	"github.com/ysomad/answersuck/internal/entity"
 	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"github.com/ysomad/answersuck/internal/postgres/tag"
-	"golang.org/x/exp/slog"
 )
 
 func (r *repository) Save(ctx context.Context, p *entity.Pack, tags []string) (packID int32, err error) {

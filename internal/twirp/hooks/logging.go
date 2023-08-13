@@ -2,10 +2,10 @@ package hooks
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/twitchtv/twirp"
-	"golang.org/x/exp/slog"
 )
 
 type startTimeKey struct{}

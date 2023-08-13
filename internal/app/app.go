@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/ysomad/answersuck/internal/config"
 
@@ -14,22 +14,19 @@ import (
 	playerpg "github.com/ysomad/answersuck/internal/postgres/player"
 	questionpg "github.com/ysomad/answersuck/internal/postgres/question"
 	roundpg "github.com/ysomad/answersuck/internal/postgres/round"
+	"github.com/ysomad/answersuck/internal/postgres/roundquestion"
 	roundtopicpg "github.com/ysomad/answersuck/internal/postgres/roundtopic"
 	tagpg "github.com/ysomad/answersuck/internal/postgres/tag"
 	topicpg "github.com/ysomad/answersuck/internal/postgres/topic"
 
 	authsvc "github.com/ysomad/answersuck/internal/service/auth"
+	"github.com/ysomad/answersuck/internal/service/pack"
 	playersvc "github.com/ysomad/answersuck/internal/service/player"
 	roundsvc "github.com/ysomad/answersuck/internal/service/round"
 
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	authv1 "github.com/ysomad/answersuck/internal/twirp/auth/v1"
-	mediav1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/media"
-	packv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/pack"
-	questionv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/question"
-	roundv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/round"
-	tagv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/tag"
-	topicv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1/topic"
+	editorv1 "github.com/ysomad/answersuck/internal/twirp/editor/v1"
 	playerv1 "github.com/ysomad/answersuck/internal/twirp/player/v1"
 
 	"github.com/ysomad/answersuck/internal/pkg/httpserver"
@@ -67,41 +64,46 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 
 	// tag
 	tagPostgres := tagpg.NewRepository(pgClient)
-	tagHandlerV1 := tagv1.NewHandler(tagPostgres, sessionPostgres)
+	tagHandlerV1 := editorv1.NewTagHandler(tagPostgres, sessionManager)
 
 	// auth
 	authService := authsvc.NewService(sessionManager, playerService)
-	authHandlerV1 := authv1.NewHandler(authService)
+	authHandlerV1 := authv1.NewAuthHandler(authService)
 
 	// media
 	mediaPostgres := mediapg.NewRepository(pgClient)
-	mediaHandlerV1 := mediav1.NewHandler(mediaPostgres, sessionManager)
+	mediaHandlerV1 := editorv1.NewMediaHandler(mediaPostgres, sessionManager)
 
 	// question
 	questionPostgres := questionpg.NewRepository(pgClient)
-	questionHandlerV1 := questionv1.NewHandler(questionPostgres, sessionManager)
+	questionHandlerV1 := editorv1.NewQuestionHandler(questionPostgres, sessionManager)
 
 	// pack
 	packPostgres := packpg.NewRepository(pgClient)
-	packHandlerV1 := packv1.NewHandler(packPostgres, sessionManager)
+	packSvc := pack.NewService(packPostgres)
+	packHandlerV1 := editorv1.NewPackHandler(packPostgres, sessionManager)
 
 	// topic
 	topicPostgres := topicpg.NewRepository(pgClient)
-	topicHandlerV1 := topicv1.NewHandler(topicPostgres, sessionManager)
+	topicHandlerV1 := editorv1.NewTopicHandler(topicPostgres, sessionManager)
 
 	// roundTopic
 	roundTopicPostgres := roundtopicpg.NewRepository(pgClient)
 
 	// round
 	roundPostgres := roundpg.NewRepository(pgClient)
-	roundService := roundsvc.NewService(roundPostgres, packPostgres, roundTopicPostgres)
+	roundService := roundsvc.NewService(roundPostgres, packSvc, roundTopicPostgres)
 
 	type roundUseCase struct {
 		*roundpg.Repository
 		*roundsvc.Service
 	}
 
-	roundHandlerV1 := roundv1.NewHandler(&roundUseCase{roundPostgres, roundService}, sessionManager)
+	roundHandlerV1 := editorv1.NewRoundHandler(&roundUseCase{roundPostgres, roundService}, sessionManager)
+
+	// round question
+	roundQuestionPostgres := roundquestion.NewRepository(pgClient)
+	roundQuestionHandlerV1 := editorv1.NewRoundQuestionHandler(roundQuestionPostgres, sessionManager)
 
 	// http
 	mux := apptwirp.NewMux([]apptwirp.Handler{
@@ -113,6 +115,7 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 		packHandlerV1,
 		roundHandlerV1,
 		topicHandlerV1,
+		roundQuestionHandlerV1,
 	})
 
 	srv := httpserver.New(mux, httpserver.WithPort(conf.HTTP.Port))
