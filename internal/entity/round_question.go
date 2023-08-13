@@ -5,18 +5,28 @@ import (
 	"time"
 )
 
-type QuestionTranfserType int8
+type QuestionType int8
 
 const (
-	QTranfserTypeUnspecified QuestionTranfserType = iota
-	QTranfserTypeBefore
-	QTranfserTypeAfter
-	QTranfserTypeNever
+	QTypeStandard QuestionType = iota + 1
+	QTypeSafe
+	QTypeSecret
+	QTypeSuperSecret
+	QTypeAuction
 )
 
-func (t QuestionTranfserType) valid() bool {
+type QuestionTransferType int8
+
+const (
+	QTransferTypeUnspecified QuestionTransferType = iota
+	QTransferTypeBefore
+	QTransferTypeAfter
+	QTransferTypeNever
+)
+
+func (t QuestionTransferType) valid() bool {
 	switch t {
-	case QTranfserTypeAfter, QTranfserTypeNever, QTranfserTypeBefore:
+	case QTransferTypeAfter, QTransferTypeNever, QTransferTypeBefore:
 		return true
 	}
 
@@ -35,7 +45,7 @@ type RoundQuestion struct {
 	SecretTopic  string
 	SecretCost   int32
 	Keepable     bool
-	TransferType QuestionTranfserType
+	TransferType QuestionTransferType
 }
 
 var (

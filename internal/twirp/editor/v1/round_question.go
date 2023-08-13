@@ -78,7 +78,7 @@ func (h *RoundQuestionHandler) CreateRoundQuestion(ctx context.Context,
 		SecretTopic:  r.SecretTopic,
 		SecretCost:   r.SecretCost,
 		Keepable:     r.IsKeepable,
-		TransferType: entity.QuestionTranfserType(r.TransferType),
+		TransferType: entity.QuestionTransferType(r.TransferType),
 	}
 
 	if err = q.Validate(); err != nil {
