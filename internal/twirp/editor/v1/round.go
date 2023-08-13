@@ -251,7 +251,7 @@ func (h *RoundHandler) RemoveTopic(
 		return nil, twirp.InternalError(err.Error())
 	}
 
-	return new(emptypb.Empty), nil
+	return &emptypb.Empty{}, nil
 }
 
 func (h *RoundHandler) GetQuestionGrid(

@@ -50,7 +50,7 @@ func (h *AuthHandler) LogIn(
 	}
 
 	if sid, ok := appctx.GetSessionID(ctx); ok && sid != "" {
-		return new(emptypb.Empty), nil
+		return &emptypb.Empty{}, nil
 	}
 
 	fp, ok := appctx.GetFootPrint(ctx)
@@ -81,7 +81,7 @@ func (h *AuthHandler) LogIn(
 		return nil, twirp.InternalError(err.Error())
 	}
 
-	return new(emptypb.Empty), nil
+	return &emptypb.Empty{}, nil
 }
 
 func (h *AuthHandler) LogOut(
@@ -100,5 +100,5 @@ func (h *AuthHandler) LogOut(
 		return nil, twirp.InternalError(err.Error())
 	}
 
-	return new(emptypb.Empty), nil
+	return &emptypb.Empty{}, nil
 }

@@ -60,7 +60,7 @@ func Run(conf *config.Config, flags Flags) { //nolint:funlen // main func
 	playerPostgres := playerpg.NewRepository(pgClient)
 	playerService := playersvc.NewService(playerPostgres)
 
-	playerHandlerV1 := playerv1.NewHandler(playerService)
+	playerHandlerV1 := playerv1.NewPlayerHandler(playerService)
 
 	// tag
 	tagPostgres := tagpg.NewRepository(pgClient)
