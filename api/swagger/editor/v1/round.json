@@ -37,7 +37,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/editor.v1_google.protobuf.Empty"
+              "$ref": "#/definitions/editor.v1_AddTopicResponse"
             }
           }
         }
@@ -189,6 +189,16 @@
           "format": "int32"
         },
         "topic_id": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "editor.v1_AddTopicResponse": {
+      "description": "Fields: round_topic_id",
+      "type": "object",
+      "properties": {
+        "round_topic_id": {
           "type": "integer",
           "format": "int32"
         }

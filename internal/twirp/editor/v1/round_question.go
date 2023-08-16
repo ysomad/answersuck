@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/twitchtv/twirp"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/ysomad/answersuck/internal/entity"
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
@@ -24,6 +25,7 @@ var (
 
 type RoundQuestionUseCase interface {
 	Save(ctx context.Context, q *entity.RoundQuestion) (int32, error)
+	GetOne(ctx context.Context, id int32) (*entity.RoundQuestionDetailed, error)
 }
 
 type RoundQuestionHandler struct {
@@ -91,11 +93,11 @@ func (h *RoundQuestionHandler) CreateRoundQuestion(ctx context.Context,
 	if err != nil {
 		switch {
 		case errors.Is(err, apperr.RoundNotFound):
-			return nil, twirp.InvalidArgumentError("round_id", apperr.MsgRoundNotFound)
+			return nil, twirp.NotFoundError(apperr.MsgRoundNotFound)
 		case errors.Is(err, apperr.TopicNotFound):
-			return nil, twirp.InvalidArgumentError("topic_id", apperr.MsgTopicNotFound)
+			return nil, twirp.NotFoundError(apperr.MsgTopicNotFound)
 		case errors.Is(err, apperr.QuestionNotFound):
-			return nil, twirp.InvalidArgumentError("question_id", apperr.MsgQuestionNotFound)
+			return nil, twirp.NotFoundError(apperr.MsgQuestionNotFound)
 		}
 
 		return nil, twirp.InternalError(err.Error())
@@ -107,6 +109,42 @@ func (h *RoundQuestionHandler) CreateRoundQuestion(ctx context.Context,
 func (h *RoundQuestionHandler) GetRoundQuestion(
 	ctx context.Context,
 	r *pb.GetRoundQuestionRequest) (*pb.GetRoundQuestionResponse, error) {
-	// TODO: IMPLEMENT
-	return nil, nil
+	if r.RoundQuestionId == 0 {
+		return nil, twirp.RequiredArgumentError("round_question_id")
+	}
+
+	q, err := h.round.GetOne(ctx, r.RoundQuestionId)
+	if err != nil {
+		if errors.Is(err, apperr.RoundQuestionNotFound) {
+			return nil, twirp.NotFoundError(apperr.MsgRoundQuestionNotFound)
+		}
+
+		return nil, twirp.InternalError(err.Error())
+	}
+
+	return &pb.GetRoundQuestionResponse{
+		RoundQuestion: &pb.RoundQuestion{
+			Id:      q.ID,
+			RoundId: q.RoundID,
+			TopicId: q.TopicID,
+			Question: &pb.RoundQuestion_Question{
+				Id:       q.QuestionID,
+				Text:     q.Question,
+				MediaUrl: q.AnswerMediaURL,
+			},
+			QuestionType: pb.RoundQuestionType(q.Type),
+			QuestionCost: q.Cost,
+			Answer: &pb.RoundQuestion_Answer{
+				Id:       q.AnswerID,
+				Text:     q.Answer,
+				MediaUrl: q.AnswerMediaURL,
+			},
+			AnswerTime:   durationpb.New(q.AnswerTime),
+			HostComment:  q.HostComment,
+			SecretTopic:  q.SecretTopic,
+			SecretCost:   q.SecretCost,
+			TransferType: pb.TransferType(q.TransferType),
+			IsKeepable:   q.Keepable,
+		},
+	}, nil
 }

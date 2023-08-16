@@ -73,16 +73,9 @@
   },
   "definitions": {
     "editor.v1_Answer": {
-      "description": "Fields: id, text, author, media_url, create_time",
+      "description": "Fields: id, text, media_url",
       "type": "object",
       "properties": {
-        "author": {
-          "type": "string"
-        },
-        "create_time": {
-          "type": "string",
-          "format": "date-time"
-        },
         "id": {
           "type": "integer",
           "format": "int32"
@@ -169,16 +162,9 @@
       }
     },
     "editor.v1_Question": {
-      "description": "Fields: id, text, author, media_url, create_time",
+      "description": "Fields: id, text, media_url",
       "type": "object",
       "properties": {
-        "author": {
-          "type": "string"
-        },
-        "create_time": {
-          "type": "string",
-          "format": "date-time"
-        },
         "id": {
           "type": "integer",
           "format": "int32"
@@ -199,8 +185,7 @@
           "$ref": "#/definitions/editor.v1_Answer"
         },
         "answer_time": {
-          "type": "integer",
-          "format": "int32"
+          "type": "string"
         },
         "host_comment": {
           "type": "string"

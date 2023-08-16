@@ -68,32 +68,6 @@
         }
       }
     },
-    "/twirp/editor.v1.PackService/ListPackTags": {
-      "post": {
-        "tags": [
-          "PackService"
-        ],
-        "operationId": "ListPackTags",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/editor.v1_ListPackTagsRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/editor.v1_ListPackTagsResponse"
-            }
-          }
-        }
-      }
-    },
     "/twirp/editor.v1.PackService/PublishPack": {
       "post": {
         "tags": [
@@ -161,28 +135,12 @@
       }
     },
     "editor.v1_GetPackResponse": {
-      "description": "Fields: pack",
+      "description": "Fields: pack, tags",
       "type": "object",
       "properties": {
         "pack": {
           "$ref": "#/definitions/editor.v1_Pack"
-        }
-      }
-    },
-    "editor.v1_ListPackTagsRequest": {
-      "description": "Fields: pack_id",
-      "type": "object",
-      "properties": {
-        "pack_id": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "editor.v1_ListPackTagsResponse": {
-      "description": "Fields: tags",
-      "type": "object",
-      "properties": {
+        },
         "tags": {
           "type": "array",
           "items": {

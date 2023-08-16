@@ -125,7 +125,34 @@ func (m *RoundQuestion) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for AnswerTime
+	if all {
+		switch v := interface{}(m.GetAnswerTime()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, RoundQuestionValidationError{
+					field:  "AnswerTime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, RoundQuestionValidationError{
+					field:  "AnswerTime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAnswerTime()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return RoundQuestionValidationError{
+				field:  "AnswerTime",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	// no validation rules for HostComment
 
@@ -787,38 +814,7 @@ func (m *RoundQuestion_Question) validate(all bool) error {
 
 	// no validation rules for Text
 
-	// no validation rules for Author
-
 	// no validation rules for MediaUrl
-
-	if all {
-		switch v := interface{}(m.GetCreateTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, RoundQuestion_QuestionValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, RoundQuestion_QuestionValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCreateTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return RoundQuestion_QuestionValidationError{
-				field:  "CreateTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
 	if len(errors) > 0 {
 		return RoundQuestion_QuestionMultiError(errors)
@@ -926,38 +922,7 @@ func (m *RoundQuestion_Answer) validate(all bool) error {
 
 	// no validation rules for Text
 
-	// no validation rules for Author
-
 	// no validation rules for MediaUrl
-
-	if all {
-		switch v := interface{}(m.GetCreateTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, RoundQuestion_AnswerValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, RoundQuestion_AnswerValidationError{
-					field:  "CreateTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCreateTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return RoundQuestion_AnswerValidationError{
-				field:  "CreateTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
 	if len(errors) > 0 {
 		return RoundQuestion_AnswerMultiError(errors)

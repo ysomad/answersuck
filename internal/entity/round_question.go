@@ -67,3 +67,14 @@ func (q *RoundQuestion) Validate() error {
 
 	return nil
 }
+
+type RoundQuestionDetailed struct {
+	RoundQuestion
+
+	Question         string
+	QuestionMediaURL string
+
+	AnswerID       int32
+	Answer         string
+	AnswerMediaURL string
+}

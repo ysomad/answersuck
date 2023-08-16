@@ -4,7 +4,6 @@ package editor.v1;
 option go_package = "editor/v1;editorv1";
 
 import "validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
 service RoundQuestionService {
@@ -35,17 +34,13 @@ message RoundQuestion {
     message Question {
         int32 id = 1;
         string text = 2;
-        string author = 3;
-        string media_url = 4;
-        google.protobuf.Timestamp create_time = 50;
+        string media_url = 3;
     }
 
     message Answer {
         int32 id = 1;
         string text = 2;
-        string author = 3;
-        string media_url = 4;
-        google.protobuf.Timestamp create_time = 50;
+        string media_url = 3;
     }
 
     int32 id = 1;
@@ -55,7 +50,7 @@ message RoundQuestion {
     RoundQuestionType question_type = 5;
     int32 question_cost = 6;
     Answer answer = 7; 
-    int32 answer_time = 8;
+    google.protobuf.Duration answer_time = 8;
     string host_comment = 9;
     string secret_topic = 10;
     int32 secret_cost = 11;
