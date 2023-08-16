@@ -2,12 +2,14 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/twitchtv/twirp"
 
 	"github.com/ysomad/answersuck/internal/entity"
 	pb "github.com/ysomad/answersuck/internal/gen/api/editor/v1"
+	"github.com/ysomad/answersuck/internal/pkg/apperr"
 	"github.com/ysomad/answersuck/internal/pkg/session"
 	apptwirp "github.com/ysomad/answersuck/internal/twirp"
 	"github.com/ysomad/answersuck/internal/twirp/common"
@@ -87,7 +89,15 @@ func (h *RoundQuestionHandler) CreateRoundQuestion(ctx context.Context,
 
 	q.ID, err = h.round.Save(ctx, q)
 	if err != nil {
-		// TODO: handle specific errors
+		switch {
+		case errors.Is(err, apperr.RoundNotFound):
+			return nil, twirp.InvalidArgumentError("round_id", apperr.MsgRoundNotFound)
+		case errors.Is(err, apperr.TopicNotFound):
+			return nil, twirp.InvalidArgumentError("topic_id", apperr.MsgTopicNotFound)
+		case errors.Is(err, apperr.QuestionNotFound):
+			return nil, twirp.InvalidArgumentError("question_id", apperr.MsgQuestionNotFound)
+		}
+
 		return nil, twirp.InternalError(err.Error())
 	}
 
